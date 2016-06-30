@@ -20,8 +20,7 @@ public class BatchWebServiceDataRetriever extends FileRetriever {
 	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
-	protected void downloadData() throws Exception
-	{
+	public void fetchData() throws Exception  {
 		String originalDest = this.destination;
 		List<String> wsArgs = sourceForWSCalls.get();
 		logger.debug("Number of ws calls to make: {}",wsArgs.size());
@@ -31,9 +30,9 @@ public class BatchWebServiceDataRetriever extends FileRetriever {
 			String url = this.dataUrl.replaceAll("#+ID#+", String.valueOf(id));
 			this.setDataURL( new URI(url));
 			this.setFetchDestination ( originalDest+"/"+this.name+"_"+id );
-			super.downloadData();
+			super.fetchData();
 		}
-	}
+	}	
 
 	public void setDataURL(String dataUrl)
 	{
