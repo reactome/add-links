@@ -33,6 +33,7 @@ public class FileRetriever implements DataRetriever {
 	
 	private static final Logger logger = LogManager.getLogger();
 	
+	
 	@Override
 	public void fetchData() throws Exception  {
 		
@@ -83,6 +84,7 @@ public class FileRetriever implements DataRetriever {
 				CloseableHttpResponse response = client.execute(get) )
 			{
 				Path path = Paths.get(new URI("file://"+this.destination));
+				Files.createDirectories(path.getParent());
 				Files.write(path, EntityUtils.toByteArray(response.getEntity()));
 			} catch (IOException | URISyntaxException e) {
 				logger.error("Exception caught: {}",e.getMessage());
