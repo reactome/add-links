@@ -19,28 +19,17 @@ public class AddLinks {
 		{
 			FileRetriever retriever = beans.get(key);
 			logger.info("Executing {}",key);
-			retriever.fetchData();
+			try
+			{
+				retriever.fetchData();
+			}
+			catch (Exception e)
+			{
+				logger.info("Exception caught while processing {}, message is: {}. Will continue with next file retriever.",key,e.getMessage());
+			}
 		}
-		context.close();
 		logger.info("Finished downloading files.");
-		
-//		BatchWebServiceDataRetriever getGenecardsReferenceDatabaseToReferencePeptideSequence = new BatchWebServiceDataRetriever();
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setDataURL("http://www.genecards.org/cgi-bin/carddisp.pl?id=###ID###&id_type=%22uniprot%22");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setDbHost("127.0.0.1");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setDbName("test_reactome_57");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setDbUser("curator");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setDbPassword("");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setDbPort(3307);
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setFetchDestination("/tmp/");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setName("GeneCardsPeptideSequence");
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setMaxAge(Duration.of(0, ChronoUnit.SECONDS));
-//		getGenecardsReferenceDatabaseToReferencePeptideSequence.setObjectClassName("ReferenceGeneProduct");
-//		try {
-//			getGenecardsReferenceDatabaseToReferencePeptideSequence.fetchData();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		context.close();
 	}
 
 }
