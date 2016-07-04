@@ -17,6 +17,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -30,8 +32,10 @@ public class FileRetriever implements DataRetriever {
 	protected String destination;
 	protected Duration maxAge;
 	private Duration timeout = Duration.ofSeconds(30);
+	private int numRetries = 1;
 	
 	private static final Logger logger = LogManager.getLogger();
+	
 	
 	@Override
 	public void fetchData() throws Exception  {
@@ -75,18 +79,45 @@ public class FileRetriever implements DataRetriever {
 		{
 			
 			HttpGet get = new HttpGet(this.uri);
-			RequestConfig config = RequestConfig.custom().setConnectionRequestTimeout((int)this.timeout.getSeconds())
-														.setConnectTimeout((int)this.timeout.getSeconds())
-														.build();
+			RequestConfig config = RequestConfig.custom().setConnectTimeout((int)this.timeout.getSeconds())
+														.setConnectionRequestTimeout((int)this.timeout.getSeconds()).build();
 			get.setConfig(config);
-			try( CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get) )
+			int retries = this.numRetries;
+			boolean done = retries + 1 <= 0;
+			while(!done)
 			{
-				Path path = Paths.get(new URI("file://"+this.destination));
-				Files.write(path, EntityUtils.toByteArray(response.getEntity()));
-			} catch (IOException | URISyntaxException e) {
-				logger.error("Exception caught: {}",e.getMessage());
-				throw e;
+				try( CloseableHttpClient client = HttpClients.createDefault();
+					CloseableHttpResponse response = client.execute(get) )
+				{
+					Path path = Paths.get(new URI("file://"+this.destination));
+					Files.createDirectories(path.getParent());
+					Files.write(path, EntityUtils.toByteArray(response.getEntity()));
+					done = true;
+				}
+				catch (ConnectTimeoutException e)
+				{
+					// we will only be retrying the connection timeouts, defined as the time required to establish a connection.
+					// we will not handle socket timeouts (inactivity that occurs after the connection has been established).
+					// we will not handle connection manager timeouts (time waiting for connection manager or connection pool).
+					e.printStackTrace();
+					logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", retries);
+					retries--;
+					done = retries + 1 <= 0;
+					if (done)
+					{
+						throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.",e);
+					}
+				}
+				catch (HttpHostConnectException e)
+				{
+					logger.error("Could not connect to host {} !",get.getURI().getHost());
+					e.printStackTrace();
+					throw e;
+				}
+				catch (IOException | URISyntaxException e) {
+					logger.error("Exception caught: {}",e.getMessage());
+					throw e;
+				}
 			}
 		}
 		else if (this.uri.getScheme().equals("ftp"))
@@ -98,9 +129,9 @@ public class FileRetriever implements DataRetriever {
 			InputStream inStream = client.retrieveFileStream(this.uri.getPath());
 			//Should probably have more/better reply-code checks.
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
-			if (client.getReplyString().startsWith("550"))
+			if (client.getReplyString().matches("^5\\d\\d.*"))
 			{
-				throw new Exception(client.getReplyString());
+				throw new Exception("5xx reply code detected, reply string is: "+client.getReplyString());
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int b = inStream.read();
@@ -140,5 +171,15 @@ public class FileRetriever implements DataRetriever {
 		this.maxAge = age;
 	}
 
+	public void setNumRetries(int i)
+	{
+		this.numRetries = i;
+	}
+	
+	public void setTimeout(Duration timeout)
+	{
+		this.timeout = timeout;
+	}
+	
 }
 
