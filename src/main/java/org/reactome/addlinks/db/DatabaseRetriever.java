@@ -1,4 +1,4 @@
-package org.reactome.addlinks.dataretrieval;
+package org.reactome.addlinks.db;
 
 import java.util.List;
 import java.util.stream.Collectors;
