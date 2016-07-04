@@ -1,8 +1,11 @@
-package org.reactome.test;
+package org.reactome.addlinks.test;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
@@ -33,13 +36,15 @@ import java.util.function.Supplier;
 @PrepareForTest({ org.apache.http.impl.client.HttpClients.class})
 public class TestWSRetrieval {
 
+	private static final String MESSAGE_CONTENT = "this is a test";
+
 	@Mock
 	CloseableHttpClient mockClient;
 
 	@Mock
 	CloseableHttpResponse response;
 
-	HttpEntity entity = new ByteArrayEntity("this is a test".getBytes());
+	HttpEntity entity = new ByteArrayEntity(MESSAGE_CONTENT.getBytes());
 
 	@Before
 	public void setup() {
@@ -48,8 +53,6 @@ public class TestWSRetrieval {
 
 	@Test
 	public void testGetFromWebService() throws ClientProtocolException, IOException, Exception {
-		// Mockito.when(EntityUtils.toByteArray( entity )).thenReturn("this is a
-		// test".getBytes());
 
 		Mockito.when(response.getEntity()).thenReturn(entity);
 
@@ -71,6 +74,7 @@ public class TestWSRetrieval {
 		wsRetriever.fetchData();
 		
 		//TODO: Proper test assertions.
+		assertEquals(new String(Files.readAllBytes(Paths.get("/tmp/unittests/"+this.getClass().getName()+"_123"))),MESSAGE_CONTENT);
 	}
 
 }

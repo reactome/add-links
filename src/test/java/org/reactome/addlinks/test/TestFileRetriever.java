@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.reactome.test;
+package org.reactome.addlinks.test;
 
 import static org.junit.Assert.*;
 
