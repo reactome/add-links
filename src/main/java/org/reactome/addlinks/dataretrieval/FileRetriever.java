@@ -131,7 +131,7 @@ public class FileRetriever implements DataRetriever {
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
 			if (client.getReplyString().matches("^5\\d\\d.*"))
 			{
-				throw new Exception(client.getReplyString());
+				throw new Exception("5xx reply code detected, reply string is: "+client.getReplyString());
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int b = inStream.read();
