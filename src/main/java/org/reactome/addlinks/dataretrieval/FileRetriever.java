@@ -79,7 +79,8 @@ public class FileRetriever implements DataRetriever {
 		{
 			
 			HttpGet get = new HttpGet(this.uri);
-			RequestConfig config = RequestConfig.custom().setConnectTimeout((int)this.timeout.getSeconds()).build();
+			RequestConfig config = RequestConfig.custom().setConnectTimeout((int)this.timeout.getSeconds())
+														.setConnectionRequestTimeout((int)this.timeout.getSeconds()).build();
 			get.setConfig(config);
 			int retries = this.numRetries;
 			boolean done = retries + 1 <= 0;
