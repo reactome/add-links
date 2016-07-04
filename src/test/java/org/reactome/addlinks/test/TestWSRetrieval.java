@@ -67,6 +67,8 @@ public class TestWSRetrieval {
 		wsRetriever.setFetchDestination("/tmp/unittests/");
 		wsRetriever.setMaxAge(Duration.of(1, ChronoUnit.SECONDS));
 		wsRetriever.setName(this.getClass().getName());
+		wsRetriever.setNumRetries(0);
+		wsRetriever.setTimeout(Duration.of(1, ChronoUnit.SECONDS));
 		
 		Supplier<List<String>> supplier = () -> Arrays.asList("123");
 		wsRetriever.setInputSupplier(supplier );
