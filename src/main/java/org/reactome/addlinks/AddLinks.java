@@ -18,7 +18,7 @@ public class AddLinks {
 		for (String key : beans.keySet())
 		{
 			FileRetriever retriever = beans.get(key);
-			logger.info("Executing {}",key);
+			logger.info("Executing downloader: {}",key);
 			try
 			{
 				retriever.fetchData();
