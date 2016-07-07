@@ -21,7 +21,7 @@ PR:000000010	UniProtKB:O57472
 PR:000000010	UniProtKB:Q24025
 PR:000000010	UniProtKB:Q63148
 */
-public class PROFileProcessor implements FileProcessor
+public class PROFileProcessor extends FileProcessor
 {
 	private static final Logger logger = LogManager.getLogger();
 	private Path pathToFile;
