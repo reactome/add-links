@@ -2,7 +2,6 @@ package org.reactome.addlinks.fileprocessors;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,14 +24,7 @@ PR:000000010	UniProtKB:Q63148
 public class PROFileProcessor extends FileProcessor
 {
 	private static final Logger logger = LogManager.getLogger();
-	private Path pathToFile;
 	
-	@Override
-	public void setPath(Path p)
-	{
-		this.pathToFile = p;
-	}
-
 	@Override
 	public Map<String,String> getIdMappingsFromFile()
 	{
