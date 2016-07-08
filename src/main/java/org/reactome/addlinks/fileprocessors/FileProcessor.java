@@ -18,7 +18,12 @@ public abstract class FileProcessor
 {
 	private static final Logger logger = LogManager.getLogger();
 	
-	public abstract void setPath(Path p);
+	protected Path pathToFile;
+	
+	public void setPath(Path p)
+	{
+		this.pathToFile = p;
+	}
 	
 	public abstract Map<String,String> getIdMappingsFromFile();
 	

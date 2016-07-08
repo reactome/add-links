@@ -2,7 +2,6 @@ package org.reactome.addlinks.fileprocessors;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,12 +13,6 @@ import org.apache.logging.log4j.Logger;
 public class FlyBaseFileProcessor extends FileProcessor
 {
 	private static final Logger logger = LogManager.getLogger();
-	private Path pathToFile;
-	@Override
-	public void setPath(Path p)
-	{
-		this.pathToFile = p;
-	}
 
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
