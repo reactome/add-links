@@ -6,8 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -24,9 +22,9 @@ public abstract class FileProcessor
 	
 	public abstract Map<String,String> getIdMappingsFromFile();
 	
-	public List<String> unzipFile(Path p)
+	public String unzipFile(Path p)
 	{
-		List<String> fileNames = new ArrayList<>();
+		String fileName = null ;
 		logger.debug("Unzipping {}",p);
 
 		String extension = p.toString().substring(p.toString().lastIndexOf("."));
@@ -46,16 +44,18 @@ public abstract class FileProcessor
 			{
 				outStream.write(buffer);
 			}
-			fileNames.add(outFileName);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			fileName = outFileName;
+		}
+		catch (FileNotFoundException e)
+		{
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
-			}
+		}
 
 		logger.debug("File was unzipped to {}", outFileName);
-		return fileNames;
+		return fileName;
 	}
 }
