@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,12 +37,13 @@ public class PROFileProcessor extends FileProcessor
 	public Map<String,String> getIdMappingsFromFile()
 	{
 		Map<String,String> mappings = new HashMap<String,String>();
-		
+		AtomicInteger lineCount = new AtomicInteger(0);
 		try
 		{
 			//We filter to only process UniProtKB: because that's the way the old Perl code did it. It ignored UniProtKB_VAR
-			Files.lines(this.pathToFile).filter(p -> p.contains("UniProtKB:")).forEach( line ->
+			Files.lines(this.pathToFile).filter(p -> p.contains("UniProtKB:")).sequential().forEach( line ->
 			{
+				lineCount.set(lineCount.get()+1);
 				//the UniProt ID
 				String key = line.substring(line.indexOf("UniProtKB:"));
 				// the PRO ID
@@ -54,7 +56,7 @@ public class PROFileProcessor extends FileProcessor
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		logger.debug("Number of UniProt IDs in mapping: {}",mappings.keySet().size());
+		logger.debug("Number of UniProt IDs in mapping: {}; number of lines processed: {}",mappings.keySet().size(),lineCount.get());
 		return mappings;
 	}
 }
