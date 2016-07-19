@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
+import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -44,6 +45,12 @@ public class AddLinks {
 		flyBaseFileProcessor.setPath(Paths.get("/tmp/FlyBase.tsv.gz"));
 		Map<String,String> flyBaseMappings = flyBaseFileProcessor.getIdMappingsFromFile();		
 		
+		HmdbMetabolitesFileProcessor hmdbMetabolitesProcessor = new HmdbMetabolitesFileProcessor();
+		hmdbMetabolitesProcessor.setPath(Paths.get("/tmp/hmdb_metabolites.zip"));
+		Map<String,String> hmdbMetabolitesMappings = hmdbMetabolitesProcessor.getIdMappingsFromFile();
+		
+		
+		logger.info("Process complete.");
 		context.close();
 	}
 
