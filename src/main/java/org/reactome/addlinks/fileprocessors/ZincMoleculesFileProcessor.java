@@ -19,6 +19,7 @@ public class ZincMoleculesFileProcessor extends FileProcessor
 		try
 		{
 			Files.readAllLines(this.pathToFile).stream()
+				// Filter so that only ChEBI lines are processed.
 				.filter(line -> line.matches("ZINC\\d+\\tChEBI.*"))
 				.forEach( line ->
 			{
