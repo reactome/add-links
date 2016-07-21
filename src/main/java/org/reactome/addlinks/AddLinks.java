@@ -8,7 +8,10 @@ import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
+import org.reactome.addlinks.fileprocessors.IntActFileProcessor;
+import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
+import org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -49,6 +52,23 @@ public class AddLinks {
 		hmdbMetabolitesProcessor.setPath(Paths.get("/tmp/hmdb_metabolites.zip"));
 		Map<String,String> hmdbMetabolitesMappings = hmdbMetabolitesProcessor.getIdMappingsFromFile();
 		
+		//...because it's the same code, just a different input file. right?
+//		HmdbMetabolitesFileProcessor hmdbProteinsProcessor = new HmdbMetabolitesFileProcessor();
+//		hmdbProteinsProcessor.setPath(Paths.get("/tmp/hmdb_proteins.zip"));
+//		Map<String,String> hmdbProteinsMappings = hmdbProteinsProcessor.getIdMappingsFromFile();
+
+		
+		OrphanetFileProcessor orphanetFileProcessor = new OrphanetFileProcessor();
+		orphanetFileProcessor.setPath(Paths.get("/tmp/genes_diseases_external_references.xml"));
+		Map<String,String> orphanetMappings = orphanetFileProcessor.getIdMappingsFromFile();
+		
+		IntActFileProcessor intactFileProcessor = new IntActFileProcessor();
+		intactFileProcessor.setPath(Paths.get("/tmp/reactome.dat"));
+		Map<String,String> intactFileMappings = intactFileProcessor.getIdMappingsFromFile();
+
+		ZincMoleculesFileProcessor zincMoleculesFileProcessor = new ZincMoleculesFileProcessor();
+		zincMoleculesFileProcessor.setPath(Paths.get("/tmp/zinc_chebi_purch.xls"));
+		Map<String,String> zincMappings = zincMoleculesFileProcessor.getIdMappingsFromFile();
 		
 		logger.info("Process complete.");
 		context.close();
