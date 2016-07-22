@@ -13,6 +13,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -51,6 +52,7 @@ public class FileRetriever implements DataRetriever {
 			//If the file is older than the maxAge...
 			if (fileCreateTime.isBefore( now.minus(this.maxAge) ))
 			{
+				//TODO: Option to save back-ups of old files.
 				logger.debug("File {} is older than allowed amount ({}) so it will be downloaded again.",this.destination,this.maxAge);
 				downloadData();
 				logger.debug("Download is complete.");
@@ -131,6 +133,8 @@ public class FileRetriever implements DataRetriever {
 			client.connect(this.uri.getHost());
 			client.login("anonymous", ""); //TODO: Extract this to a separate class that takes username/password.
 			logger.debug("connect/login reply code: {}",client.getReplyCode());
+			client.setFileType(FTP.BINARY_FILE_TYPE);
+			client.setFileTransferMode(FTP.COMPRESSED_TRANSFER_MODE);
 			InputStream inStream = client.retrieveFileStream(this.uri.getPath());
 			//Should probably have more/better reply-code checks.
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
