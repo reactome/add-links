@@ -30,6 +30,9 @@ public class UniprotFileRetreiver extends FileRetriever
 {
 	private static final Logger logger = LogManager.getLogger();
 
+	private String mapFromDb="";
+	private String mapToDb="";
+	
 	@Override
 	public void downloadData()
 	{
@@ -50,59 +53,52 @@ public class UniprotFileRetreiver extends FileRetriever
 							new FileInputStream(new File(
 									"/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt")),
 							ContentType.TEXT_PLAIN, "uniprot_ids.txt")
-					// .addBinaryBody("file", new
-					// File("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt"))
-					// .addTextBody("file", text, ContentType.TEXT_PLAIN)
 					.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
-					.addPart("from", new StringBody("ACC+ID", ContentType.MULTIPART_FORM_DATA))
-					.addPart("to", new StringBody("ACC", ContentType.MULTIPART_FORM_DATA)).build();
-			// post.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
+					.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
+					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA)).build();
 			post.setEntity(attachment);
-			// post.setHeader("format", "tab");
-			// post.setHeader("from","ACC+ID");
-			// post.setHeader("to","ACC");
 
-			try (CloseableHttpClient client = HttpClients.createDefault();
-					CloseableHttpResponse response = client.execute(post);)
+			try (CloseableHttpClient postClient = HttpClients.createDefault();
+					CloseableHttpResponse postResponse = postClient.execute(post);)
 			{
 
-				logger.debug("Status: {}", response.getStatusLine());
+				logger.debug("Status: {}", postResponse.getStatusLine());
 
 				//The uniprot response will contain the actual URL for the data in the "Location" header.
-				String location = response.getHeaders("Location")[0].getValue();
+				String location = postResponse.getHeaders("Location")[0].getValue();
 				logger.debug("Location of data: {}",location);
 				URIBuilder builder = new URIBuilder();
 				
 				String[] parts = location.split("\\?");
-				builder.setScheme("http");
-				builder.setHost(parts[0].replace("http://", ""));
+				String[] schemeAndHost = parts[0].split("://");
+				builder.setScheme(schemeAndHost[0]);
+				builder.setHost(schemeAndHost[1]);
 				
-				String[] params = parts[1].split("&");
-				
-				for(String s : params)
+				if (parts.length>1)
 				{
-					String[] nameAndValue = s.split("=");
-					builder.addParameter(nameAndValue[0], nameAndValue[1]);
+					// If the Location header string contains query information, we need to properly reformat that before requesting it. 
+					String[] params = parts[1].split("&");
+					for(String s : params)
+					{
+						String[] nameAndValue = s.split("=");
+						builder.addParameter(nameAndValue[0], nameAndValue[1]);
+					}
+				}
+				else
+				{
+					//Add .tab to get table.
+					builder.setHost(builder.getHost() + ".tab");
 				}
 				
 				HttpGet get = new HttpGet(builder.build());
-				try (CloseableHttpClient client2 = HttpClients.createDefault();
-						CloseableHttpResponse response2 = client.execute(get);)
+				try (CloseableHttpClient getClient = HttpClients.createDefault();
+						CloseableHttpResponse getResponse = postClient.execute(get);)
 				{
 					Path path = Paths.get(new URI("file://" + this.destination));
 					Files.createDirectories(path.getParent());
-	
-					// byte buffer[] = new byte[1024];
-					// StringBuilder sb = new StringBuilder();
-					// while (-1 != response.getEntity().getContent().read(buffer))
-					// {
-					// sb.append(new String(buffer));
-					// }
-					//
-					Files.write(path, EntityUtils.toByteArray(response2.getEntity()));
-					// Files.write(path, sb.toString().getBytes());
-					// client.close();
-				}
+					Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+				}	
+
 			}
 		} catch (URISyntaxException e)
 		{
@@ -121,5 +117,15 @@ public class UniprotFileRetreiver extends FileRetriever
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void setMapFromDb(String mapFromDb)
+	{
+		this.mapFromDb = mapFromDb;
+	}
+
+	public void setMapToDb(String mapToDb)
+	{
+		this.mapToDb = mapToDb;
 	}
 }
