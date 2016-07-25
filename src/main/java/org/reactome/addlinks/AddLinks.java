@@ -56,7 +56,6 @@ public class AddLinks {
 //		HmdbMetabolitesFileProcessor hmdbProteinsProcessor = new HmdbMetabolitesFileProcessor();
 //		hmdbProteinsProcessor.setPath(Paths.get("/tmp/hmdb_proteins.zip"));
 //		Map<String,String> hmdbProteinsMappings = hmdbProteinsProcessor.getIdMappingsFromFile();
-
 		
 		OrphanetFileProcessor orphanetFileProcessor = new OrphanetFileProcessor();
 		orphanetFileProcessor.setPath(Paths.get("/tmp/genes_diseases_external_references.xml"));
@@ -66,6 +65,7 @@ public class AddLinks {
 		intactFileProcessor.setPath(Paths.get("/tmp/reactome.dat"));
 		Map<String,String> intactFileMappings = intactFileProcessor.getIdMappingsFromFile();
 
+		//Only ZincMolecules needs a file processor. ZincProteins can be read straight from the file because it just a listing of IDs, one per line.
 		ZincMoleculesFileProcessor zincMoleculesFileProcessor = new ZincMoleculesFileProcessor();
 		zincMoleculesFileProcessor.setPath(Paths.get("/tmp/zinc_chebi_purch.xls"));
 		Map<String,String> zincMappings = zincMoleculesFileProcessor.getIdMappingsFromFile();
