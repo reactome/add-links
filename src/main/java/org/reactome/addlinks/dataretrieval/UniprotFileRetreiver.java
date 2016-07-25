@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -33,21 +35,23 @@ public class UniprotFileRetreiver extends FileRetriever
 	private String mapFromDb="";
 	private String mapToDb="";
 	
+	private static final Map<String,String> ReactomeToUniprotDBMappings = Arrays.stream(new String[][] {
+		{"OMIM","MIM_ID"},
+		{"PDB","PDB_ID"},
+		{"RefSeqPeptide","P_REFSEQ_AC"},
+		{"RefSeqRNA","REFSEQ_NT_ID"},
+		{"ENSEMBL","ENSEMBL_ID"},
+		{"Wormbase","WORMBASE_ID"},
+		{"Entrez Gene","P_ENTREZGENEID"},
+	}).collect(Collectors.toMap(kv -> kv[0], kv -> kv[1]));
+	
 	@Override
 	public void downloadData()
 	{
-		HttpPost post = new HttpPost(this.uri);
 		try
 		{
+			HttpPost post = new HttpPost(this.uri);
 			logger.debug("URI: {}", post.getURI().toURL());
-		} catch (MalformedURLException e2)
-		{
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-
-		try
-		{
 			HttpEntity attachment = MultipartEntityBuilder.create()
 					.addBinaryBody("file",
 							new FileInputStream(new File(
@@ -55,7 +59,8 @@ public class UniprotFileRetreiver extends FileRetriever
 							ContentType.TEXT_PLAIN, "uniprot_ids.txt")
 					.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
 					.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
-					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA)).build();
+					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
+					.build();
 			post.setEntity(attachment);
 
 			try (CloseableHttpClient postClient = HttpClients.createDefault();
@@ -100,19 +105,23 @@ public class UniprotFileRetreiver extends FileRetriever
 				}	
 
 			}
-		} catch (URISyntaxException e)
+		}
+		catch (URISyntaxException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (UnsupportedEncodingException e1)
+		}
+		catch (UnsupportedEncodingException e1)
 		{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} catch (ClientProtocolException e)
+		}
+		catch (ClientProtocolException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
