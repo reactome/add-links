@@ -105,6 +105,15 @@
 		</property>
 	</bean>
 
+	<bean id="OrthologsFromZinc" class="org.reactome.addlinks.dataretrieval.FileRetriever">
+		<property name="dataURL"
+			value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
+		<property name="fetchDestination" value="/tmp/uniprot_ortholog.txt" />
+		<property name="maxAge">
+			<ref bean="maxFileAge"/>
+		</property>
+	</bean>
+
 	<bean id="Zinc" class="org.reactome.addlinks.dataretrieval.FileRetriever">
 		<property name="dataURL"
 			value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
