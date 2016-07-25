@@ -54,7 +54,7 @@ public class AddLinks {
 		
 		//...because it's the same code, just a different input file. right?
 //		HmdbMetabolitesFileProcessor hmdbProteinsProcessor = new HmdbMetabolitesFileProcessor();
-//		hmdbProteinsProcessor.setPath(Paths.get("/tmp/hmdb_proteins.txt"));
+//		hmdbProteinsProcessor.setPath(Paths.get("/tmp/hmdb_proteins.zip"));
 //		Map<String,String> hmdbProteinsMappings = hmdbProteinsProcessor.getIdMappingsFromFile();
 		
 		OrphanetFileProcessor orphanetFileProcessor = new OrphanetFileProcessor();
