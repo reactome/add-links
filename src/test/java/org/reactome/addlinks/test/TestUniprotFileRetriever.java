@@ -1,5 +1,7 @@
 package org.reactome.addlinks.test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,8 +42,10 @@ public class TestUniprotFileRetriever
 		
 		UniprotFileRetreiver retriever = new UniprotFileRetreiver();
 		retriever.setDataURL(new URI("http://www.uniprot.org/uploadlists/"));
-		String mapFrom="ACC+ID";
-		String mapTo="ENSEMBL_ID";
+		FileInputStream inStream = new FileInputStream(new File("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt"));
+		retriever.setDataInputStream(inStream);
+		String mapFrom=UniprotFileRetreiver.UniprotDB.UniProt.getUniprotName();//"ACC+ID";
+		String mapTo=UniprotFileRetreiver.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
 		String pathToFile = "/tmp/uniprot_mapping_service/uniprot_xrefs_"+mapFrom+"_to_"+mapTo+".txt";
 		retriever.setFetchDestination(pathToFile);
 		retriever.setMaxAge(Duration.ofSeconds(1));

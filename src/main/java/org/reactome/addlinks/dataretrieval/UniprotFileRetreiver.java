@@ -1,8 +1,7 @@
 package org.reactome.addlinks.dataretrieval;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,16 +33,39 @@ public class UniprotFileRetreiver extends FileRetriever
 
 	private String mapFromDb="";
 	private String mapToDb="";
+	private InputStream inStream;
 	
-	private static final Map<String,String> ReactomeToUniprotDBMappings = Arrays.stream(new String[][] {
-		{"OMIM","MIM_ID"},
-		{"PDB","PDB_ID"},
-		{"RefSeqPeptide","P_REFSEQ_AC"},
-		{"RefSeqRNA","REFSEQ_NT_ID"},
-		{"ENSEMBL","ENSEMBL_ID"},
-		{"Wormbase","WORMBASE_ID"},
-		{"Entrez Gene","P_ENTREZGENEID"},
-	}).collect(Collectors.toMap(kv -> kv[0], kv -> kv[1]));
+	/**
+	 * This enum provides a  mapping between Reactome names for reference
+	 * databases and the Uniprot ID that is used by their mapping service.
+	 * @author sshorser
+	 *
+	 */
+	public enum UniprotDB
+	{
+		OMIM("MIM_ID"),
+		PDB("PDB_ID"),
+		RefSeqPeptide("P_REFSEQ_AC"),
+		RefSeqRNA("REFSEQ_NT_ID"), 
+		ENSEMBL("ENSEMBL_ID"), 
+		Wormbase("WORMBASE_ID"), 
+		Entrez_Gene("P_ENTREZGENEID"),
+		GeneName("GENENAME"),
+		KEGG("KEGG_ID"),
+		UniProt("ACC+ID");
+		
+		private String uniprotName;
+		
+		private UniprotDB(String s)
+		{
+			this.uniprotName = s;
+		}
+		
+		public String getUniprotName()
+		{
+			return this.uniprotName;
+		}
+	}
 	
 	@Override
 	public void downloadData()
@@ -54,8 +76,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			logger.debug("URI: {}", post.getURI().toURL());
 			HttpEntity attachment = MultipartEntityBuilder.create()
 					.addBinaryBody("file",
-							new FileInputStream(new File(
-									"/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt")),
+							this.inStream,
 							ContentType.TEXT_PLAIN, "uniprot_ids.txt")
 					.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
 					.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
@@ -67,8 +88,11 @@ public class UniprotFileRetreiver extends FileRetriever
 					CloseableHttpResponse postResponse = postClient.execute(post);)
 			{
 
-				logger.debug("Status: {}", postResponse.getStatusLine());
-
+				logger.info("Status: {}", postResponse.getStatusLine());
+				if (postResponse.getStatusLine().getStatusCode() == 500)
+				{
+					logger.error("Error 500 detected! Message: {}",postResponse.getStatusLine().getReasonPhrase());
+				}
 				//The uniprot response will contain the actual URL for the data in the "Location" header.
 				String location = postResponse.getHeaders("Location")[0].getValue();
 				logger.debug("Location of data: {}",location);
@@ -137,4 +161,10 @@ public class UniprotFileRetreiver extends FileRetriever
 	{
 		this.mapToDb = mapToDb;
 	}
+	
+	public void setDataInputStream(InputStream inStream)
+	{
+		this.inStream = inStream;
+	}
+	
 }
