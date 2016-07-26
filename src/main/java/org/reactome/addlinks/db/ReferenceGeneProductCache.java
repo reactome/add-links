@@ -73,9 +73,9 @@ public final class ReferenceGeneProductCache
 										" inner join ReferenceSequence on ReferenceSequence.db_id = ReferenceEntity.db_id "+
 										" where _class  = \'ReferenceGeneProduct\'; ";
 	
-	private static final String refdbMappingQuery = " select distinct _displayName, db_id from DatabaseObject where db_id in (select ReferenceDatabase_2_name.DB_ID from ReferenceDatabase_2_name) order by _displayName asc; ";
+	private static final String refdbMappingQuery = " select distinct name, db_id from ReferenceDatabase_2_name order by name asc; ";
 	
-	private static final String speciesMappingQuery = " select distinct _displayName, db_id from DatabaseObject where db_id in (select Taxon_2_name.db_id from Taxon_2_name) order by _displayName asc; ";
+	private static final String speciesMappingQuery = " select distinct name, db_id from Taxon_2_name order by name asc; ";
 	
 	private static String host;
 	private static String database;
@@ -163,22 +163,33 @@ public final class ReferenceGeneProductCache
 			while (refDbResultSet.next())
 			{
 				String db_id = refDbResultSet.getString("db_id");
-				String name = refDbResultSet.getString("_displayName");
+				String name = refDbResultSet.getString("name");
 				List<String> listOfIds;
 				// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
 				if (ReferenceGeneProductCache.refDbNamesToIds.containsKey(name))
 				{
 					listOfIds = ReferenceGeneProductCache.refDbNamesToIds.get(name);
-					listOfIds.add(db_id);
 				}
 				else
 				{
 					listOfIds = new ArrayList<String>(1);
-					listOfIds.add(db_id);
 				}
+				listOfIds.add(db_id);
+
 				ReferenceGeneProductCache.refDbNamesToIds.put(name, listOfIds);
-				//refdbMapping is a 1:1 from db_ids to names.
-				ReferenceGeneProductCache.refdbMapping.put(db_id,name);
+
+				// refdbMapping is a 1:n from db_ids to names.
+				List<String> listOfNames;
+				if (ReferenceGeneProductCache.refdbMapping.containsKey(db_id))
+				{
+					listOfNames = ReferenceGeneProductCache.refdbMapping.get(db_id);
+				}
+				else
+				{
+					listOfNames = new ArrayList<String>(1);
+				}
+				listOfNames.add(name);
+				ReferenceGeneProductCache.refdbMapping.put(db_id,listOfNames);
 			}
 			refDbResultSet.close();
 			
@@ -187,20 +198,30 @@ public final class ReferenceGeneProductCache
 			while (speciesResultSet.next())
 			{
 				String db_id = speciesResultSet.getString("db_id");
-				String name = speciesResultSet.getString("_displayName");
+				String name = speciesResultSet.getString("name");
 				List<String> listOfIds;
 				if (ReferenceGeneProductCache.speciesNamesToIds.containsKey(name))
 				{
 					listOfIds = ReferenceGeneProductCache.speciesNamesToIds.get(name);
-					listOfIds.add(db_id);
 				}
 				else
 				{
 					listOfIds = new ArrayList<String>(1);
-					listOfIds.add(db_id);
 				}
+				listOfIds.add(db_id);
 				ReferenceGeneProductCache.speciesNamesToIds.put(name, listOfIds);
-				ReferenceGeneProductCache.speciesMapping.put(speciesResultSet.getString("db_id"),speciesResultSet.getString("_displayName"));
+				
+				List<String> listOfNames;
+				if (ReferenceGeneProductCache.speciesMapping.containsKey(db_id))
+				{
+					listOfNames = ReferenceGeneProductCache.speciesMapping.get(db_id);
+				}
+				else
+				{
+					listOfNames = new ArrayList<String>(1);
+				}
+				listOfNames.add(name);
+				ReferenceGeneProductCache.speciesMapping.put(db_id,listOfNames);
 			}
 			speciesResultSet.close();
 			
@@ -229,8 +250,9 @@ public final class ReferenceGeneProductCache
 	private static Map<String,ReferenceGeneProductShell> cacheById = new HashMap<String,ReferenceGeneProductShell>();
 	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
-	private static Map<String,String> speciesMapping = new HashMap<String,String>();
-	private static Map<String,String> refdbMapping = new HashMap<String,String>();
+	//These really should be 1:n mappings...
+	private static Map<String,List<String>> speciesMapping = new HashMap<String,List<String>>();
+	private static Map<String,List<String>> refdbMapping = new HashMap<String,List<String>>();
 	//...Aaaaaand mappings from names to IDs which will be 1:n
 	private static Map<String,List<String>> refDbNamesToIds = new HashMap<String,List<String>>();
 	private static Map<String,List<String>> speciesNamesToIds = new HashMap<String,List<String>>();
@@ -294,7 +316,7 @@ public final class ReferenceGeneProductCache
 	 * Returns a map of Reference Database names, keyed by their DB_IDs.
 	 * @return
 	 */
-	public Map<String,String> getRefDBMappings()
+	public Map<String,List<String>> getRefDBMappings()
 	{
 		return ReferenceGeneProductCache.refdbMapping;
 	}
@@ -330,7 +352,7 @@ public final class ReferenceGeneProductCache
 	 * Returns a map of Species names, keyed by their DB_IDs.
 	 * @return
 	 */
-	public Map<String,String> getSpeciesMappings()
+	public Map<String,List<String>> getSpeciesMappings()
 	{
 		return ReferenceGeneProductCache.speciesMapping;
 	}
