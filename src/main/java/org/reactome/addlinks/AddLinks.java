@@ -3,6 +3,7 @@ package org.reactome.addlinks;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,6 +45,62 @@ public class AddLinks {
 				logger.info("Exception caught while processing {}, message is: {}. Will continue with next file retriever.",key,e.getMessage());
 			}
 		}
+		
+		//Now download mapping data from Uniprot.
+		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		
+		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
+		for (String key : uniprotFileRetrievers.keySet())
+		{
+			logger.info("Executing Downloader: {}", key);
+			UniprotFileRetreiver retriever = uniprotFileRetrievers.get(key);
+			
+			UniprotDB toDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapToDb());
+			UniprotDB fromDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapFromDb());
+			//String toDb = retriever.getMapToDb();
+			String originalFileDestinationName = retriever.getFetchDestination();
+			List<String> refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+			int downloadCounter = 0;
+			if (refDbIds != null && refDbIds.size() > 0 )
+			{
+				for (String refDb : refDbIds)
+				{
+					for (String speciesId : ReferenceGeneProductCache.getInstance().getListOfSpecies())
+					{
+						List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+						
+						if (refGenes != null && refGenes.size() > 0)
+						{
+							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {} ) is: {}",toDb.toString(),refDb, speciesId,refGenes.size());
+							String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
+							InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
+							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
+							
+							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
+							retriever.setDataInputStream(inStream);
+							retriever.downloadData();
+							downloadCounter ++ ;
+							//Let's sleep a bit after 5 downloads, so we don't get blocked! In the future this could all be parameterized.
+							if (downloadCounter % 5 ==0)
+							{
+								Duration sleepDelay = Duration.ofSeconds(5);
+								logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
+								Thread.sleep(sleepDelay.toMillis());
+							}
+						}
+						else
+						{
+							logger.info("Could not find any RefefenceGeneProducts for reference database ID: {}",refDb);
+						}
+					}
+				}
+			}
+			else
+			{
+				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
+			}
+		}
+		
 		logger.info("Finished downloading files.");
 		
 		logger.info("Now processing the files...");
@@ -78,47 +135,7 @@ public class AddLinks {
 		zincMoleculesFileProcessor.setPath(Paths.get("/tmp/zinc_chebi_purch.xls"));
 		Map<String,String> zincMappings = zincMoleculesFileProcessor.getIdMappingsFromFile();
 
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
-		
-		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
-		for (String key : uniprotFileRetrievers.keySet())
-		{
-			logger.info("Executing Downloader: {}", key);
-			UniprotFileRetreiver retriever = uniprotFileRetrievers.get(key);
-			
-			UniprotDB toDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapToDb());
-			//String toDb = retriever.getMapToDb();
-			
-			List<String> refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(toDb.toString() );
-			if (refDbIds != null && refDbIds.size() > 0 )
-			{
-				for (String refDb : refDbIds)
-				{
-					List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDb(refDb);
-					
-					if (refGenes != null && refGenes.size() > 0)
-					{
-						logger.info("Number of identifiers that we will attempt to map from UniProt to {} is: {}",toDb.toString(),refGenes.size());
-						String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
-						InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
-						
-						retriever.setDataInputStream(inStream);
-						retriever.downloadData();
-					}
-					else
-					{
-						logger.info("Could not find any RefefenceGeneProducts for reference database ID: {}",refDb);
-					}
-					//
-				}
-				
-			}
-			else
-			{
-				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
-			}
-		}
-		
+
 		logger.info("Process complete.");
 		context.close();
 	}
