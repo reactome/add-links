@@ -46,7 +46,8 @@ public class UniprotFileRetreiver extends FileRetriever
 		PDB("PDB_ID"),
 		RefSeqPeptide("P_REFSEQ_AC"),
 		RefSeqRNA("REFSEQ_NT_ID"), 
-		ENSEMBL("ENSEMBL_ID"), 
+		ENSEMBL("ENSEMBL_ID"),
+		Ensembl("ENSEMBL_ID"), 
 		Wormbase("WORMBASE_ID"), 
 		Entrez_Gene("P_ENTREZGENEID"),
 		GeneName("GENENAME"),
@@ -216,4 +217,8 @@ public class UniprotFileRetreiver extends FileRetriever
 		this.inStream = inStream;
 	}
 	
+	public String getFetchDestination()
+	{
+		return this.destination;
+	}
 }
