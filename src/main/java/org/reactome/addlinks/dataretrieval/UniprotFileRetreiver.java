@@ -8,9 +8,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -70,6 +67,20 @@ public class UniprotFileRetreiver extends FileRetriever
 	@Override
 	public void downloadData()
 	{
+		// Check inputs:
+		if (this.inStream == null)
+		{
+			throw new RuntimeException("inStream is null! You must provide an data input stream!");
+		}
+		else if (this.mapFromDb.trim().length() == 0)
+		{
+			throw new RuntimeException("You must provide a database name to map from!");
+		}
+		else if(this.mapToDb.trim().length() == 0)
+		{
+			throw new RuntimeException("You must provide a database name to map to!");
+		}
+		
 		try
 		{
 			HttpPost post = new HttpPost(this.uri);
@@ -126,7 +137,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					Path path = Paths.get(new URI("file://" + this.destination));
 					Files.createDirectories(path.getParent());
 					Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
-				}	
+				}
 
 			}
 		}
