@@ -178,7 +178,7 @@ public class TestFileRetriever {
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			assertTrue(e.getMessage().startsWith("500 ERROR"));
+			assertTrue(e.getMessage().contains("500 ERROR"));
 		}
 	}
 	
