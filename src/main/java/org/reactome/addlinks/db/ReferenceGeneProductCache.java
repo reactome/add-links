@@ -1,6 +1,7 @@
 package org.reactome.addlinks.db;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,6 +83,8 @@ public final class ReferenceGeneProductCache
 	private static String password;
 	private static int port;
 	
+	private static boolean cacheInitializedMessageHasBeenPrinted = false;
+	
 	public static synchronized ReferenceGeneProductCache getInstance() 
 	{
 		if (ReferenceGeneProductCache.cache == null)
@@ -89,9 +92,10 @@ public final class ReferenceGeneProductCache
 			logger.info("Cache is not initialized. Will initialize now.");
 			ReferenceGeneProductCache.cache = new ReferenceGeneProductCache();
 		}
-		else
+		else if (!cacheInitializedMessageHasBeenPrinted)
 		{
 			logger.info("Cache is already initialized.");
+			cacheInitializedMessageHasBeenPrinted = true;
 		}
 		
 		return ReferenceGeneProductCache.cache;
@@ -154,17 +158,48 @@ public final class ReferenceGeneProductCache
 			}
 			rs.close();
 			
+			// Build up the Reference Database caches.
 			ResultSet refDbResultSet = adapter.executeQuery(ReferenceGeneProductCache.refdbMappingQuery,null);
 			while (refDbResultSet.next())
 			{
-				ReferenceGeneProductCache.refdbMapping.put(refDbResultSet.getString("db_id"),refDbResultSet.getString("_displayName"));
+				String db_id = refDbResultSet.getString("db_id");
+				String name = refDbResultSet.getString("_displayName");
+				List<String> listOfIds;
+				// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
+				if (ReferenceGeneProductCache.refDbNamesToIds.containsKey(name))
+				{
+					listOfIds = ReferenceGeneProductCache.refDbNamesToIds.get(name);
+					listOfIds.add(db_id);
+				}
+				else
+				{
+					listOfIds = new ArrayList<String>(1);
+					listOfIds.add(db_id);
+				}
+				ReferenceGeneProductCache.refDbNamesToIds.put(name, listOfIds);
+				//refdbMapping is a 1:1 from db_ids to names.
+				ReferenceGeneProductCache.refdbMapping.put(db_id,name);
 			}
 			refDbResultSet.close();
 			
-			
+			// Build up the species caches.
 			ResultSet speciesResultSet = adapter.executeQuery(ReferenceGeneProductCache.speciesMappingQuery,null);
 			while (speciesResultSet.next())
 			{
+				String db_id = speciesResultSet.getString("db_id");
+				String name = speciesResultSet.getString("_displayName");
+				List<String> listOfIds;
+				if (ReferenceGeneProductCache.speciesNamesToIds.containsKey(name))
+				{
+					listOfIds = ReferenceGeneProductCache.speciesNamesToIds.get(name);
+					listOfIds.add(db_id);
+				}
+				else
+				{
+					listOfIds = new ArrayList<String>(1);
+					listOfIds.add(db_id);
+				}
+				ReferenceGeneProductCache.speciesNamesToIds.put(name, listOfIds);
 				ReferenceGeneProductCache.speciesMapping.put(speciesResultSet.getString("db_id"),speciesResultSet.getString("_displayName"));
 			}
 			speciesResultSet.close();
@@ -196,6 +231,9 @@ public final class ReferenceGeneProductCache
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	private static Map<String,String> speciesMapping = new HashMap<String,String>();
 	private static Map<String,String> refdbMapping = new HashMap<String,String>();
+	//...Aaaaaand mappings from names to IDs which will be 1:n
+	private static Map<String,List<String>> refDbNamesToIds = new HashMap<String,List<String>>();
+	private static Map<String,List<String>> speciesNamesToIds = new HashMap<String,List<String>>();
 	
 	/**
 	 * Get a list of ReferenceGeneProduct shells keyed by Reference Database.
@@ -259,6 +297,24 @@ public final class ReferenceGeneProductCache
 	public Map<String,String> getRefDBMappings()
 	{
 		return ReferenceGeneProductCache.refdbMapping;
+	}
+	
+	/**
+	 * Returns a 1:n mapping of Reference Datbase names mapped to a list of DB_IDs.
+	 * @return
+	 */
+	public Map<String,List<String>> getRefDbNamesToIds()
+	{
+		return ReferenceGeneProductCache.refDbNamesToIds;
+	}
+	
+	/**
+	 * Returns a 1:n mapping of Species names mapped to a list of DB_IDs.
+	 * @return
+	 */
+	public Map<String,List<String>> getSpeciesNamesToIds()
+	{
+		return ReferenceGeneProductCache.speciesNamesToIds;
 	}
 	
 	/**
