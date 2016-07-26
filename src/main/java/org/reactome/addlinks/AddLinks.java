@@ -1,11 +1,19 @@
 package org.reactome.addlinks;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
+import org.reactome.addlinks.db.ReferenceGeneProductCache;
+import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
 import org.reactome.addlinks.fileprocessors.IntActFileProcessor;
@@ -20,11 +28,11 @@ public class AddLinks {
 	public static void main(String[] args) throws Exception {
 		
 		ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
-		Map<String,FileRetriever> beans = context.getBeansOfType(FileRetriever.class);
+		Map<String,FileRetriever> fileRetrievers = context.getBean("FileRetrievers", Map.class);
 		
-		for (String key : beans.keySet())
+		for (String key : fileRetrievers.keySet())
 		{
-			FileRetriever retriever = beans.get(key);
+			FileRetriever retriever = fileRetrievers.get(key);
 			logger.info("Executing downloader: {}",key);
 			try
 			{
@@ -69,6 +77,47 @@ public class AddLinks {
 		ZincMoleculesFileProcessor zincMoleculesFileProcessor = new ZincMoleculesFileProcessor();
 		zincMoleculesFileProcessor.setPath(Paths.get("/tmp/zinc_chebi_purch.xls"));
 		Map<String,String> zincMappings = zincMoleculesFileProcessor.getIdMappingsFromFile();
+
+		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		
+		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
+		for (String key : uniprotFileRetrievers.keySet())
+		{
+			logger.info("Executing Downloader: {}", key);
+			UniprotFileRetreiver retriever = uniprotFileRetrievers.get(key);
+			
+			UniprotDB toDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapToDb());
+			//String toDb = retriever.getMapToDb();
+			
+			List<String> refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(toDb.toString() );
+			if (refDbIds != null && refDbIds.size() > 0 )
+			{
+				for (String refDb : refDbIds)
+				{
+					List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDb(refDb);
+					
+					if (refGenes != null && refGenes.size() > 0)
+					{
+						logger.info("Number of identifiers that we will attempt to map from UniProt to {} is: {}",toDb.toString(),refGenes.size());
+						String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
+						InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
+						
+						retriever.setDataInputStream(inStream);
+						retriever.downloadData();
+					}
+					else
+					{
+						logger.info("Could not find any RefefenceGeneProducts for reference database ID: {}",refDb);
+					}
+					//
+				}
+				
+			}
+			else
+			{
+				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
+			}
+		}
 		
 		logger.info("Process complete.");
 		context.close();
