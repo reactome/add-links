@@ -8,6 +8,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -52,15 +54,31 @@ public class UniprotFileRetreiver extends FileRetriever
 		UniProt("ACC+ID");
 		
 		private String uniprotName;
+		private static Map<String,UniprotDB> mapToEnum;
 		
 		private UniprotDB(String s)
 		{
 			this.uniprotName = s;
+			updateMap(s);
 		}
 		
+		private void updateMap(String s)
+		{
+			if (mapToEnum == null )
+			{
+				mapToEnum = new HashMap<String,UniprotDB>(10);
+			}
+			mapToEnum.put(s, this);
+		}
+//		
 		public String getUniprotName()
 		{
 			return this.uniprotName;
+		}
+		
+		public static UniprotDB uniprotDBFromUniprotName(String uniprotName)
+		{
+			return mapToEnum.get(uniprotName);
 		}
 	}
 	
@@ -163,12 +181,22 @@ public class UniprotFileRetreiver extends FileRetriever
 		}
 	}
 
-	public void setMapFromDb(UniprotDB mapFromDb)
+	public String getMapFromDb()
+	{
+		return this.mapFromDb;
+	}
+	
+	public String getMapToDb()
+	{
+		return this.mapToDb;
+	}
+	
+	public void setMapFromDbEnum(UniprotDB mapFromDb)
 	{
 		this.mapFromDb = mapFromDb.getUniprotName();
 	}
 
-	public void setMapToDb(UniprotDB mapToDb)
+	public void setMapToDbEnum(UniprotDB mapToDb)
 	{
 		this.mapToDb = mapToDb.getUniprotName();
 	}
