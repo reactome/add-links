@@ -163,6 +163,16 @@ public class UniprotFileRetreiver extends FileRetriever
 		}
 	}
 
+	public void setMapFromDb(UniprotDB mapFromDb)
+	{
+		this.mapFromDb = mapFromDb.getUniprotName();
+	}
+
+	public void setMapToDb(UniprotDB mapToDb)
+	{
+		this.mapToDb = mapToDb.getUniprotName();
+	}
+	
 	public void setMapFromDb(String mapFromDb)
 	{
 		this.mapFromDb = mapFromDb;
