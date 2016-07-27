@@ -1,18 +1,17 @@
 package org.reactome.addlinks.dataretrieval;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,7 +26,8 @@ import org.apache.logging.log4j.Logger;
 public class EnsemblFileRetriever extends FileRetriever
 {
 	private static final Logger logger = LogManager.getLogger();
-
+	// Let's assume that initially we can make 10 requests. This will be reset once we get the first actual response from the server.
+	private static AtomicInteger numRequestsRemaining = new AtomicInteger(10);
 	private String mapFromDb="";
 	private String mapToDb="";
 	private String species;
@@ -153,6 +153,7 @@ public class EnsemblFileRetriever extends FileRetriever
 			{
 				Path path = Paths.get(new URI("file://" + this.destination));
 				String responseContent = "";
+				logger.info("");
 				for (String identifier : identifiers)
 				{
 					URIBuilder builder = new URIBuilder();
@@ -166,23 +167,62 @@ public class EnsemblFileRetriever extends FileRetriever
 							.addParameter("external_db", this.getMapToDb());
 					HttpGet get = new HttpGet(builder.build());
 					logger.debug("URI: "+get.getURI());
-					try (CloseableHttpClient getClient = HttpClients.createDefault();
-							CloseableHttpResponse getResponse = getClient.execute(get);)
+					
+					boolean done = false;
+					boolean okToQuery = true;
+					logger.info("Query quota is: "+EnsemblFileRetriever.numRequestsRemaining.get());
+					while (!done && okToQuery)
 					{
-						if (getResponse.getStatusLine().getStatusCode() == 500)
+						try (CloseableHttpClient getClient = HttpClients.createDefault();
+								CloseableHttpResponse getResponse = getClient.execute(get);)
 						{
-							logger.error("Error 500 detected! Message: {}",getResponse.getStatusLine().getReasonPhrase());
-						}
-						else
-						{
-							String content = EntityUtils.toString(getResponse.getEntity());
-							//We'll store everything in an XML and then use a FileProcessor to sort out the details later.
-							responseContent += "<identifier id=\""+identifier+"\">\n"+content+"</identifier>\n";
-						}
+							if (getResponse.getStatusLine().getStatusCode() == 500)
+							{
+								logger.error("Error 500 detected! Message: {}",getResponse.getStatusLine().getReasonPhrase());
+								// If we get 500 error then we should just get  out of here. Maybe throw an exception?
+								okToQuery = false;
+							}
+							else
+							{
+								// If the server sends back a "Retry-After" header, we must wait until that time passes before retrying.
+								if ( getResponse.containsHeader("Retry-After") )
+								{
+									logger.debug("Response code: {}", getResponse.getStatusLine().getStatusCode());
+									Duration waitTime = Duration.ofSeconds(Integer.valueOf(getResponse.getHeaders("Retry-After")[0].getValue().toString()));
+									logger.info("The server told us to wait, so we will wait for {} before trying again.",waitTime);
+									Thread.sleep(waitTime.toMillis());
+								}
+								else if ( getResponse.getStatusLine().getStatusCode() == 200)
+								{
+									String content = EntityUtils.toString(getResponse.getEntity());
+									//We'll store everything in an XML and then use a FileProcessor to sort out the details later.
+									// ... or maybe we should process the XML response here? In that case, you will need this xpath expression:
+									// - to get all primary IDs: //data/@primary_id
+									// - to get all synonyms: //data/synonyms/text() (though I'm not so sure the synonyms should be included in the results...)
+									responseContent += "<identifier id=\""+identifier+"\">\n"+content+"</identifier>\n";
+									done = true;
+								}
+								//If we didn't get a Retry-After header AND we didn't get an OK 200 response code AND we didn't get an ERR 500 response code,
+								//then I have no idea what happened, so just log it and exit.
+								else
+								{
+									logger.info("Got the following response code: {} with this status: {} ; Not sure how to handle this, so giving up!",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().getReasonPhrase());
+									okToQuery = false;
+								}
+								int numRequestsRemaining = Integer.valueOf(getResponse.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
+								EnsemblFileRetriever.numRequestsRemaining.set(numRequestsRemaining);
+								// int rateLimitResetTime = Integer.valueOf(getResponse.getHeaders("X-RateLimit-Reset")[0].getValue().toString());
+							}
+						} 
 					}
 				}
 				Files.createDirectories(path.getParent());
 				Files.write(path, responseContent.getBytes(), StandardOpenOption.CREATE);
+			}
+			catch (InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			catch (URISyntaxException e)
 			{
