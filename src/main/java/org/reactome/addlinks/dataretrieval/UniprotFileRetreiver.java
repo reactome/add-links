@@ -123,60 +123,63 @@ public class UniprotFileRetreiver extends FileRetriever
 				{
 					logger.error("Error 500 detected! Message: {}",postResponse.getStatusLine().getReasonPhrase());
 				}
-				//The uniprot response will contain the actual URL for the data in the "Location" header.
-				String location = postResponse.getHeaders("Location")[0].getValue();
-				logger.debug("Location of data: {}",location);
-				URIBuilder builder = new URIBuilder();
-				
-				String[] parts = location.split("\\?");
-				String[] schemeAndHost = parts[0].split("://");
-				builder.setScheme(schemeAndHost[0]);
-				builder.setHost(schemeAndHost[1]);
-				
-				if (parts.length>1)
-				{
-					// If the Location header string contains query information, we need to properly reformat that before requesting it. 
-					String[] params = parts[1].split("&");
-					for(String s : params)
-					{
-						String[] nameAndValue = s.split("=");
-						builder.addParameter(nameAndValue[0], nameAndValue[1]);
-					}
-				}
 				else
 				{
-					//Add .tab to get table.
-					builder.setHost(builder.getHost() + ".tab");
-				}
-				
-				HttpGet get = new HttpGet(builder.build());
-				try (CloseableHttpClient getClient = HttpClients.createDefault();
-						CloseableHttpResponse getResponse = postClient.execute(get);)
-				{
-					Path path = Paths.get(new URI("file://" + this.destination));
-					Files.createDirectories(path.getParent());
-					Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
-				}
-				
-				//If the Location returned by the service was a simple URL with no query string, it means 
-				//that we had to append .tab to the URL. That means we also need to get the "not" file
-				//which contains everything which was not mapped successfully.
-				if (parts.length == 1)
-				{
-					builder = new URIBuilder();
+					//The uniprot response will contain the actual URL for the data in the "Location" header.
+					String location = postResponse.getHeaders("Location")[0].getValue();
+					logger.debug("Location of data: {}",location);
+					URIBuilder builder = new URIBuilder();
+					
+					String[] parts = location.split("\\?");
+					String[] schemeAndHost = parts[0].split("://");
 					builder.setScheme(schemeAndHost[0]);
 					builder.setHost(schemeAndHost[1]);
-					builder.setHost(builder.getHost() + ".not");
-					HttpGet getUnmappedIdentifiers = new HttpGet(builder.build());
-					try (CloseableHttpClient getClient = HttpClients.createDefault();
-							CloseableHttpResponse getResponse = postClient.execute(getUnmappedIdentifiers);)
+					
+					if (parts.length>1)
 					{
-						String unmappedIdentifierDestination;
-						String[] filenameParts = this.destination.split("\\.");
-						unmappedIdentifierDestination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
-						Path path = Paths.get(new URI("file://" + unmappedIdentifierDestination));
+						// If the Location header string contains query information, we need to properly reformat that before requesting it. 
+						String[] params = parts[1].split("&");
+						for(String s : params)
+						{
+							String[] nameAndValue = s.split("=");
+							builder.addParameter(nameAndValue[0], nameAndValue[1]);
+						}
+					}
+					else
+					{
+						//Add .tab to get table.
+						builder.setHost(builder.getHost() + ".tab");
+					}
+					
+					HttpGet get = new HttpGet(builder.build());
+					try (CloseableHttpClient getClient = HttpClients.createDefault();
+							CloseableHttpResponse getResponse = getClient.execute(get);)
+					{
+						Path path = Paths.get(new URI("file://" + this.destination));
 						Files.createDirectories(path.getParent());
 						Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+					}
+					
+					//If the Location returned by the service was a simple URL with no query string, it means 
+					//that we had to append .tab to the URL. That means we also need to get the "not" file
+					//which contains everything which was not mapped successfully.
+					if (parts.length == 1)
+					{
+						builder = new URIBuilder();
+						builder.setScheme(schemeAndHost[0]);
+						builder.setHost(schemeAndHost[1]);
+						builder.setHost(builder.getHost() + ".not");
+						HttpGet getUnmappedIdentifiers = new HttpGet(builder.build());
+						try (CloseableHttpClient getClient = HttpClients.createDefault();
+								CloseableHttpResponse getResponse = postClient.execute(getUnmappedIdentifiers);)
+						{
+							String unmappedIdentifierDestination;
+							String[] filenameParts = this.destination.split("\\.");
+							unmappedIdentifierDestination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
+							Path path = Paths.get(new URI("file://" + unmappedIdentifierDestination));
+							Files.createDirectories(path.getParent());
+							Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+						}
 					}
 				}
 			}
