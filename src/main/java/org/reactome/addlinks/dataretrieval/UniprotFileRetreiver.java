@@ -118,7 +118,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					CloseableHttpResponse postResponse = postClient.execute(post);)
 			{
 
-				logger.info("Status: {}", postResponse.getStatusLine());
+				logger.debug("Status: {}", postResponse.getStatusLine());
 				if (postResponse.getStatusLine().getStatusCode() == 500)
 				{
 					logger.error("Error 500 detected! Message: {}",postResponse.getStatusLine().getReasonPhrase());
@@ -157,7 +157,28 @@ public class UniprotFileRetreiver extends FileRetriever
 					Files.createDirectories(path.getParent());
 					Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
 				}
-
+				
+				//If the Location returned by the service was a simple URL with no query string, it means 
+				//that we had to append .tab to the URL. That means we also need to get the "not" file
+				//which contains everything which was not mapped successfully.
+				if (parts.length == 1)
+				{
+					builder = new URIBuilder();
+					builder.setScheme(schemeAndHost[0]);
+					builder.setHost(schemeAndHost[1]);
+					builder.setHost(builder.getHost() + ".not");
+					HttpGet getUnmappedIdentifiers = new HttpGet(builder.build());
+					try (CloseableHttpClient getClient = HttpClients.createDefault();
+							CloseableHttpResponse getResponse = postClient.execute(getUnmappedIdentifiers);)
+					{
+						String unmappedIdentifierDestination;
+						String[] filenameParts = this.destination.split("\\.");
+						unmappedIdentifierDestination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
+						Path path = Paths.get(new URI("file://" + unmappedIdentifierDestination));
+						Files.createDirectories(path.getParent());
+						Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+					}
+				}
 			}
 		}
 		catch (URISyntaxException e)
