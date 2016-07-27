@@ -44,7 +44,7 @@ public class TestUniprotFileRetriever
 		retriever.setDataURL(new URI("http://www.uniprot.org/uploadlists/"));
 		FileInputStream inStream = new FileInputStream(new File("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt"));
 		retriever.setDataInputStream(inStream);
-		String mapFrom=UniprotFileRetreiver.UniprotDB.UniProt.getUniprotName();//"ACC+ID";
+		String mapFrom=UniprotFileRetreiver.UniprotDB.GeneName.getUniprotName();//"ACC+ID";
 		String mapTo=UniprotFileRetreiver.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
 		String pathToFile = "/tmp/uniprot_mapping_service/uniprot_xrefs_"+mapFrom+"_to_"+mapTo+".txt";
 		retriever.setFetchDestination(pathToFile);
@@ -55,6 +55,13 @@ public class TestUniprotFileRetriever
 		
 		System.out.println("Contents of "+pathToFile);
 		List<String> lines = Files.readAllLines(Paths.get(pathToFile));
+		for (String line : lines)
+		{
+			System.out.println(line);
+		}
+		
+		System.out.println("Contents of "+pathToFile.replace(".txt", ".notMapped.txt"));
+		lines = Files.readAllLines(Paths.get(pathToFile.replace(".txt", ".notMapped.txt")));
 		for (String line : lines)
 		{
 			System.out.println(line);
