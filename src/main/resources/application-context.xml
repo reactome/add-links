@@ -10,9 +10,12 @@
 	<context:property-placeholder location="classpath:addlinks.properties" />
 
 	<import resource="basic-file-retrievers.xml"/>
-
 	<import resource="uniprot-file-retrievers.xml"/>
-	
 	<import resource="ensembl-file-retrievers.xml"/>
-	
+
+	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>UniProtToEntrez_Gene</value>
+		<value>EnemblToEntrezGene</value>
+	</util:list>
+
 </beans>
