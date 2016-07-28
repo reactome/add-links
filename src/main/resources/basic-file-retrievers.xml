@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<context:property-placeholder location="classpath:addlinks.properties" />
+	<context:property-placeholder location="classpath:auth.properties" />
 
 	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
 		<constructor-arg index="0">
