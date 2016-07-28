@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		
+	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">48</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+	
+	<util:map id="EnsemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
+		<entry key="EnemblToEntrezGene">
+			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnemblToEntrezGene">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="EnsemblDB_Ensembl"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB">EntrezGene</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="EnemblToWormbase">
+			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnemblToWormbase">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_Wormbase.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="EnsemblDB_Ensembl"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB">Wormbase</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+	</util:map>
+	
+</beans>
