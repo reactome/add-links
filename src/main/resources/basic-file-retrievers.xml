@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<context:property-placeholder location="classpath:auth.properties" />
+
+	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">48</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+
+	<util:map id="FileRetrievers"
+		value-type="org.reactome.addlinks.dataretrieval.FileRetriever"
+		key-type="java.lang.String">
+		<entry key="OrphanetToUniprotReferenceDNASequence">
+			<bean id="OrphanetToUniprotReferenceDNASequence"
+				class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever">
+				<property name="dataURL" value="http://www.orphadata.org/data/BDD_partners/genes_diseases_external_references.xml" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/genes_diseases_external_references.xml" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+				<property name="userName" value="${orphanet.user}" />
+				<property name="password" value="${orphanet.password}" />
+			</bean>
+		</entry>
+
+		<entry key="PROToReferencePeptideSequence">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
+				<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprotmapping.txt" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="IntActDatabaseIdentifierToComplexOrReactionlikeEvent">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntActDatabaseIdentifierToComplexOrReactionlikeEvent">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/current/various/reactome.dat" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/reactome.dat" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="RHEAIdentifierToReactionlikeEvent">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RHEAIdentifierToReactionlikeEvent">
+				<property name="dataURL" value="http://www.ebi.ac.uk/rhea/rest/1.0/ws/reaction?q=REACT*" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/RHEAReactome.xml" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+				<property name="timeout">
+					<bean class="java.time.Duration" factory-method="of">
+						<constructor-arg index="0">
+							<value type="java.lang.Long">20</value>
+						</constructor-arg>
+						<constructor-arg index="1">
+							<value type="java.time.temporal.ChronoUnit">SECONDS</value>
+						</constructor-arg>
+					</bean>
+				</property>
+				<property name="numRetries" value="2" />
+			</bean>
+		</entry>
+
+		<entry key="DOCKBlasterToUniprotDatabaseIdentifier">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="DOCKBlasterToUniprotDatabaseIdentifier">
+				<property name="dataURL" value="http://data.docking.org/2010/knd/knd/forMatt.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlasterToUniprot.txt" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="FlyBaseToUniprotReferenceDNASequence">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_03.tsv.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="HmdbMolecules">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbMolecules">
+				<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_metabolites.zip" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="HmdbProteins">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbProteins">
+				<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_proteins.zip" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="OrthologsFromZinc">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsFromZinc">
+				<property name="dataURL" value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot_ortholog.txt" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="Zinc">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="Zinc">
+				<property name="dataURL" value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_chebi_purch.xls" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+	</util:map>
+	
+</beans>
