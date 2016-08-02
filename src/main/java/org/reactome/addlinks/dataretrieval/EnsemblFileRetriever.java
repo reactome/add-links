@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,6 +33,8 @@ public class EnsemblFileRetriever extends FileRetriever
 	private String mapToDb="";
 	private String species;
 	private List<String> identifiers;
+	private int retryCount = 0;
+	private static final int MAX_RETRIES = 5;
 	//private InputStream inStream;
 
 	public enum EnsemblDB
@@ -68,7 +71,7 @@ public class EnsemblFileRetriever extends FileRetriever
 			return this.ensemblName;
 		}
 		
-		public static EnsemblDB ensemblDBFromUniprotName(String ensemblName)
+		public static EnsemblDB ensemblDBFromEnsemblName(String ensemblName)
 		{
 			return mapToEnum.get(ensemblName);
 		}
@@ -176,43 +179,53 @@ public class EnsemblFileRetriever extends FileRetriever
 					try (CloseableHttpClient getClient = HttpClients.createDefault();
 							CloseableHttpResponse getResponse = getClient.execute(get);)
 					{
-						if (getResponse.getStatusLine().getStatusCode() == 500)
+						if ( getResponse.containsHeader("Retry-After") )
 						{
-							logger.error("Error 500 detected! Message: {}",getResponse.getStatusLine().getReasonPhrase());
-							// If we get 500 error then we should just get  out of here. Maybe throw an exception?
-							okToQuery = false;
+							logger.debug("Response code: {}", getResponse.getStatusLine().getStatusCode());
+							Duration waitTime = Duration.ofSeconds(Integer.valueOf(getResponse.getHeaders("Retry-After")[0].getValue().toString()));
+							logger.info("The server told us to wait, so we will wait for {} before trying again.",waitTime);
+							Thread.sleep(waitTime.toMillis());
 						}
 						else
 						{
-							// If the server sends back a "Retry-After" header, we must wait until that time passes before retrying.
-							if ( getResponse.containsHeader("Retry-After") )
+							switch (getResponse.getStatusLine().getStatusCode())
 							{
-								logger.debug("Response code: {}", getResponse.getStatusLine().getStatusCode());
-								Duration waitTime = Duration.ofSeconds(Integer.valueOf(getResponse.getHeaders("Retry-After")[0].getValue().toString()));
-								logger.info("The server told us to wait, so we will wait for {} before trying again.",waitTime);
-								Thread.sleep(waitTime.toMillis());
+								case HttpStatus.SC_OK:
+									String content = EntityUtils.toString(getResponse.getEntity());
+									//We'll store everything in an XML and then use a FileProcessor to sort out the details later.
+									// ... or maybe we should process the XML response here? In that case, you will need this xpath expression:
+									// - to get all primary IDs: //data/@primary_id
+									// - to get all synonyms: //data/synonyms/text() (though I'm not so sure the synonyms should be included in the results...)
+									responseContent += "<identifier id=\""+identifier+"\">\n"+content+"</identifier>\n";
+									done = true;
+									break;
+								case HttpStatus.SC_NOT_FOUND:
+									logger.error("Response code 404 received, check that your URL is correct: {}", get.getURI().toString());
+									okToQuery = false;
+									break;
+								case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+									logger.error("Error 500 detected! Message: {}",getResponse.getStatusLine().getReasonPhrase());
+									// If we get 500 error then we should just get  out of here. Maybe throw an exception?
+									okToQuery = false;
+									break;
+								case HttpStatus.SC_BAD_REQUEST:
+									// Wait a little bit and then retry a few times.
+									if (this.retryCount<=MAX_RETRIES)
+									{
+										logger.error("Response code was 400. Will wait a minute and retry (sometimes that seems to work for ENSEMBL).");
+										Thread.sleep(Duration.ofSeconds(5).toMillis());
+										this.retryCount++;
+									}
+									else
+									{
+										logger.error("Maximum number of retries reached, giving up.");
+										okToQuery = false;
+									}
+									break;
 							}
-							else if ( getResponse.getStatusLine().getStatusCode() == 200)
-							{
-								String content = EntityUtils.toString(getResponse.getEntity());
-								//We'll store everything in an XML and then use a FileProcessor to sort out the details later.
-								// ... or maybe we should process the XML response here? In that case, you will need this xpath expression:
-								// - to get all primary IDs: //data/@primary_id
-								// - to get all synonyms: //data/synonyms/text() (though I'm not so sure the synonyms should be included in the results...)
-								responseContent += "<identifier id=\""+identifier+"\">\n"+content+"</identifier>\n";
-								done = true;
-							}
-							//If we didn't get a Retry-After header AND we didn't get an OK 200 response code AND we didn't get an ERR 500 response code,
-							//then I have no idea what happened, so just log it and exit.
-							else
-							{
-								logger.info("Got the following response code: {} with this status: {} ; Not sure how to handle this, so giving up!",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().getReasonPhrase());
-								okToQuery = false;
-							}
-							int numRequestsRemaining = Integer.valueOf(getResponse.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
-							EnsemblFileRetriever.numRequestsRemaining.set(numRequestsRemaining);
-							// int rateLimitResetTime = Integer.valueOf(getResponse.getHeaders("X-RateLimit-Reset")[0].getValue().toString());
 						}
+						int numRequestsRemaining = Integer.valueOf(getResponse.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
+						EnsemblFileRetriever.numRequestsRemaining.set(numRequestsRemaining);
 					} 
 				}
 			}
