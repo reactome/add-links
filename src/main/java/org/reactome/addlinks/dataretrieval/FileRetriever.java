@@ -39,8 +39,16 @@ public class FileRetriever implements DataRetriever {
 	
 	
 	@Override
-	public void fetchData() throws Exception  {
-		
+	public void fetchData() throws Exception 
+	{
+		if (this.uri == null)
+		{
+			throw new RuntimeException("You must provide a URI from which the file will be downloaded!");
+		}
+		else if (this.destination.trim().length() == 0)
+		{
+			throw new RuntimeException("You must provide a destination to which the file will be downloaded!");
+		}
 		//Before fetching anything, we need to check to see if the file already exists.
 		Path pathToFile = Paths.get(this.destination);
 		if (Files.exists(pathToFile))
