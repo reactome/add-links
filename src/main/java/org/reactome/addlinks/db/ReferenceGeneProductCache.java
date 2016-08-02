@@ -75,7 +75,7 @@ public final class ReferenceGeneProductCache
 	
 	private static final String refdbMappingQuery = " select distinct name, db_id from ReferenceDatabase_2_name order by name asc; ";
 	
-	private static final String speciesMappingQuery = " select distinct name, db_id from Taxon_2_name order by name asc; ";
+	private static final String speciesMappingQuery = " select distinct name, db_id, name_rank from Taxon_2_name where name_rank = 0 order by db_id asc, name_rank asc, name asc; ";
 	
 	private static String host;
 	private static String database;
@@ -264,7 +264,7 @@ public final class ReferenceGeneProductCache
 	 */
 	public List<ReferenceGeneProductShell> getByRefDb(String refDb)
 	{
-		return ReferenceGeneProductCache.cacheByRefDb.get(refDb);
+		return ReferenceGeneProductCache.cacheByRefDb.containsKey(refDb) ? ReferenceGeneProductCache.cacheByRefDb.get(refDb) : new ArrayList<ReferenceGeneProductShell>(0);
 	}
 	
 	/**
