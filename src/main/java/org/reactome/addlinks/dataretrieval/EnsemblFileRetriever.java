@@ -33,19 +33,22 @@ public class EnsemblFileRetriever extends FileRetriever
 	private String mapToDb="";
 	private String species;
 	private List<String> identifiers;
-	private int retryCount = 0;
-	private static final int MAX_RETRIES = 5;
+	//private int retryCount = 0;
+	//private static final int MAX_RETRIES = 5;
 	//private InputStream inStream;
 
 	public enum EnsemblDB
 	{
 		ENSEMBL("ENSEMBL"),
+		EnsemblGene("ENSG"),
 		EMBL("EMBL"),
 		OMIM("MIM_GENE"),
-		Wormbase("Wormbase"),
+		Wormbase("wormbase_id"),
 		EntrezGene("EntrezGene"),
 		RefSeqPeptide("RefSeq_peptide"),
 		RefSeqRNA("RefSeq_mRNA"),
+		KEGG("KEGG"),
+		IntAct("IntAct"),
 		UniProt("Uniprot/SWISSPROT");
 		
 		private String ensemblName;
@@ -209,18 +212,8 @@ public class EnsemblFileRetriever extends FileRetriever
 									okToQuery = false;
 									break;
 								case HttpStatus.SC_BAD_REQUEST:
-									// Wait a little bit and then retry a few times.
-									if (this.retryCount<=MAX_RETRIES)
-									{
-										logger.error("Response code was 400. Will wait a minute and retry (sometimes that seems to work for ENSEMBL).");
-										Thread.sleep(Duration.ofSeconds(5).toMillis());
-										this.retryCount++;
-									}
-									else
-									{
-										logger.error("Maximum number of retries reached, giving up.");
-										okToQuery = false;
-									}
+									logger.error("Response code was 400. Message from server: {}", EntityUtils.toString(getResponse.getEntity()));
+									okToQuery = false;
 									break;
 							}
 						}
