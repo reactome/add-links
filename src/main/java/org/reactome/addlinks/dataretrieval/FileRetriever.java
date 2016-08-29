@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,13 +98,13 @@ public class FileRetriever implements DataRetriever {
 			
 			int retries = this.numRetries;
 			boolean done = retries + 1 <= 0;
+			Path path = Paths.get(new URI("file://"+this.destination));
+			Files.createDirectories(path.getParent());
 			while(!done)
 			{
 				try( CloseableHttpClient client = HttpClients.createDefault();
 					CloseableHttpResponse response = client.execute(get) )
 				{
-					Path path = Paths.get(new URI("file://"+this.destination));
-					Files.createDirectories(path.getParent());
 					Files.write(path, EntityUtils.toByteArray(response.getEntity()));
 					done = true;
 				}
@@ -129,7 +128,7 @@ public class FileRetriever implements DataRetriever {
 					e.printStackTrace();
 					throw e;
 				}
-				catch (IOException | URISyntaxException e) {
+				catch (IOException e) {
 					logger.error("Exception caught: {}",e.getMessage());
 					throw e;
 				}
