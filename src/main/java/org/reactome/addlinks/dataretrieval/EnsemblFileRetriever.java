@@ -203,7 +203,7 @@ public class EnsemblFileRetriever extends FileRetriever
 									done = true;
 									break;
 								case HttpStatus.SC_NOT_FOUND:
-									logger.error("Response code 404 received, check that your URL is correct: {}", get.getURI().toString());
+									logger.error("Response code 404 (\"Not found\") received, check that your URL is correct: {}", get.getURI().toString());
 									okToQuery = false;
 									break;
 								case HttpStatus.SC_INTERNAL_SERVER_ERROR:
@@ -212,7 +212,7 @@ public class EnsemblFileRetriever extends FileRetriever
 									okToQuery = false;
 									break;
 								case HttpStatus.SC_BAD_REQUEST:
-									logger.error("Response code was 400. Message from server: {}", EntityUtils.toString(getResponse.getEntity()));
+									logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", EntityUtils.toString(getResponse.getEntity()));
 									okToQuery = false;
 									break;
 							}
