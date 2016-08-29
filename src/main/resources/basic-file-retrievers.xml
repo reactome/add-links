@@ -53,7 +53,17 @@
 				</property>
 			</bean>
 		</entry>
-
+		<!-- 
+		<entry key="EntrezGeneToUniprotReference">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="EntrezGeneToUniprotReference">
+				<property name="dataURL" value="ftp://ftp.ncbi.nih.gov/gene/DATA/gene2accession.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/gene2accession.gz" />
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+		 -->
 		<entry key="RHEAIdentifierToReactionlikeEvent">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RHEAIdentifierToReactionlikeEvent">
 				<property name="dataURL" value="http://www.ebi.ac.uk/rhea/rest/1.0/ws/reaction?q=REACT*" />
