@@ -84,6 +84,8 @@ public class FileRetriever implements DataRetriever {
 
 	protected void downloadData() throws Exception {
 		logger.debug("Scheme is: "+this.uri.getScheme());
+		Path path = Paths.get(new URI("file://"+this.destination));
+		Files.createDirectories(path.getParent());
 		if (this.uri.getScheme().equals("http"))
 		{
 			
@@ -98,8 +100,6 @@ public class FileRetriever implements DataRetriever {
 			
 			int retries = this.numRetries;
 			boolean done = retries + 1 <= 0;
-			Path path = Paths.get(new URI("file://"+this.destination));
-			Files.createDirectories(path.getParent());
 			while(!done)
 			{
 				try( CloseableHttpClient client = HttpClients.createDefault();
