@@ -170,7 +170,7 @@ public class AddLinks {
 						
 						if (refGenes != null && refGenes.size() > 0)
 						{
-							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {} ) is: {}",toDb.toString(),refDb, speciesId,refGenes.size());
+							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}", toDb.toString(), refDb, speciesId, speciesName, refGenes.size());
 							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.toList());
 							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
 							
@@ -180,7 +180,7 @@ public class AddLinks {
 						}
 						else
 						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}", refDb, speciesId);
+							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
 						}
 					}
 				}
