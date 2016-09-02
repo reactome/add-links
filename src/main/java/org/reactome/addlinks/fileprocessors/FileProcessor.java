@@ -28,8 +28,19 @@ public abstract class FileProcessor
 		this.pathToFile = p;
 	}
 	
+	/**
+	 * Returns a mapping based on what is in the file.
+	 * This assumes that the file contains a mapping, and in this context, it probably does.
+	 * @return
+	 */
 	public abstract Map<String,String> getIdMappingsFromFile();
-	
+
+	/**
+	 * Unzips a file.
+	 * @param p - The path to the file.
+	 * @return The name of the unzipped file.
+	 * @throws Exception
+	 */
 	public String unzipFile(Path p) throws Exception 
 	{
 		String fileName = null ;
