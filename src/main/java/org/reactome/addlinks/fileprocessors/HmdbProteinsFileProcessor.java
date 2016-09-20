@@ -45,7 +45,8 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 	private static final String XML_DEC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	
 	@Override
-	public Map<String, String> getIdMappingsFromFile()
+	//HMDB Proteins (and probably metabolites too) could return a 1:n mapping from the file...
+	public Map<String, List<String>> getIdMappingsFromFile()
 	{
 		try
 		{
@@ -103,9 +104,9 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 					String uniprotIdText = XPathFactory.newInstance().newXPath().evaluate("text()", uniprotIds.item(j));
 					uniprots.add(uniprotIdText);
 				}
+				//no, should be mapping uniprot -> accession - and it might NOT be 1:1.
 				accesionToUniprots.put(accession, uniprots);
 			}
-			
 			
 			
 		}

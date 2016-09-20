@@ -95,16 +95,16 @@
 			</bean>
 		</entry>
 
-		<entry key="DOCKBlasterToUniprotDatabaseIdentifier">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="DOCKBlasterToUniprotDatabaseIdentifier">
-				<property name="dataURL" value="http://data.docking.org/2010/knd/knd/forMatt.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlasterToUniprot.txt" />
+		<entry key="DOCKBlaster">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="DOCKBlaster">
+				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
 				</property>
 			</bean>
 		</entry>
-
+		
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_03.tsv.gz" />
