@@ -33,7 +33,7 @@ public abstract class FileProcessor
 	 * This assumes that the file contains a mapping, and in this context, it probably does.
 	 * @return
 	 */
-	public abstract Map<String,String> getIdMappingsFromFile();
+	public abstract Map<String,?> getIdMappingsFromFile();
 
 	/**
 	 * Unzips a file.

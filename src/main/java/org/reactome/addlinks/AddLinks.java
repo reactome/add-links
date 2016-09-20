@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.db.ReferenceGeneProductCache;
 import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
+import org.reactome.addlinks.fileprocessors.DOCKBlasterFileProcessor;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
 import org.reactome.addlinks.fileprocessors.IntActFileProcessor;
@@ -194,8 +196,14 @@ public class AddLinks {
 		logger.info("Finished downloading files.");
 		
 		logger.info("Now processing the files...");
-
-		Map<String,Map<String,String>> dbMappings = new HashMap<String, Map<String,String>>();
+		// TODO: Link the file processors to the file retrievers so that if
+		// any are filtered, only the appropriate processors will execute.
+		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
+		
+		DOCKBlasterFileProcessor dockblasterFileProcessor = new DOCKBlasterFileProcessor();
+		dockblasterFileProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt"));
+		Map<String, ArrayList<String>> dockblasterMappings = dockblasterFileProcessor.getIdMappingsFromFile();
+		dbMappings.put("orphanet", dockblasterMappings);
 		
 		PROFileProcessor proFileProcessor = new PROFileProcessor();
 		proFileProcessor.setPath(Paths.get("/tmp/uniprotmapping.txt"));

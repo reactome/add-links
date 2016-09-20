@@ -15,8 +15,11 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<!-- <value>UniProtToEntrez_Gene</value> -->
-		<value>EnemblToEntrezGene</value>
+		<!-- <value>EnemblToEntrezGene</value> -->
 		<!-- <value>PROToReferencePeptideSequence</value> -->
+		<!-- <value>EntrezGeneToUniprotReference</value> -->
+		<!-- <value>HmdbProteins</value> -->
+		<value>DOCKBlaster</value>
 	</util:list>
 
 </beans>
