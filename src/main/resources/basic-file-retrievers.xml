@@ -37,7 +37,7 @@
 		<entry key="PROToReferencePeptideSequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
 				<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprotmapping.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
 				</property>
@@ -54,7 +54,9 @@
 			</bean>
 		</entry>
 		
-		<entry key="EntrezGeneToUniprotReference">
+		<!-- Not sure this one is needed. The old code references gene2accession.gz, but it looks like that reference is in dead code, 
+		see: EntrezGeneToUniprotReferenceDNASequence.pm, old_buildPart -->
+		<!-- <entry key="EntrezGeneToUniprotReference">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="EntrezGeneToUniprotReference">
 				<property name="dataURL" value="ftp://ftp.ncbi.nih.gov/gene/DATA/gene2accession.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/gene2accession.gz" />
@@ -62,7 +64,7 @@
 					<ref bean="maxFileAge" />
 				</property>
 			</bean>
-		</entry>
+		</entry> -->
 		
 		<entry key="RHEAIdentifierToReactionlikeEvent">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RHEAIdentifierToReactionlikeEvent">

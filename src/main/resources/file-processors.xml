@@ -28,7 +28,7 @@
 				class="org.reactome.addlinks.fileprocessors.PROFileProcessor">
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprotmapping.txt"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt"/>
 					</bean>
 				</property>
 			</bean>
