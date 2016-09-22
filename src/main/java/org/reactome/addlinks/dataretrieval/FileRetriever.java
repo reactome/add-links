@@ -77,9 +77,7 @@ public class FileRetriever implements DataRetriever {
 			logger.debug("Download is complete.");
 		}
 		BasicFileAttributes attribs = Files.readAttributes(Paths.get(this.destination), BasicFileAttributes.class);
-		logger.debug("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
-
-		
+		logger.info("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
 	}
 
 	protected void downloadData() throws Exception {
@@ -145,9 +143,9 @@ public class FileRetriever implements DataRetriever {
 			InputStream inStream = client.retrieveFileStream(this.uri.getPath());
 			//Should probably have more/better reply-code checks.
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
-			if (client.getReplyString().matches("^5\\d\\d.*"))
+			if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
 			{
-				throw new Exception("5xx reply code detected, reply string is: "+client.getReplyString());
+				throw new Exception("5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString());
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int b = inStream.read();
