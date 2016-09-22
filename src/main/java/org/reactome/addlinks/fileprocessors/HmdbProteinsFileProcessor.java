@@ -68,7 +68,7 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 				//filter for XML files, though we only expect 1 in this case of HMDB Proteins. 
 				.filter(p -> p.getFileName().toString().endsWith(".xml"))
 				.forEach(p -> {
-								logger.debug("Input XML file: {}", p.getFileName().toString());
+								//logger.debug("Input XML file: {}", p.getFileName().toString());
 								try(Stream<String> lineStream = Files.lines(p).sequential())
 								{
 									StringBuilder sb = new StringBuilder();

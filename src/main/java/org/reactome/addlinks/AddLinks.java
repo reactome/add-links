@@ -2,9 +2,7 @@ package org.reactome.addlinks;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +19,7 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.db.ReferenceGeneProductCache;
 import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
-import org.reactome.addlinks.fileprocessors.DOCKBlasterFileProcessor;
-import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
-import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
-import org.reactome.addlinks.fileprocessors.IntActFileProcessor;
-import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
-import org.reactome.addlinks.fileprocessors.PROFileProcessor;
-import org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor;
+import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -79,7 +71,7 @@ public class AddLinks {
 		});
 		
 		//Now download mapping data from Uniprot.
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3307);
 		//TODO: Add the ability to filter so that only certain beans are selected and run.
 		@SuppressWarnings("unchecked")
 		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
@@ -199,48 +191,14 @@ public class AddLinks {
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
-		
-		DOCKBlasterFileProcessor dockblasterFileProcessor = new DOCKBlasterFileProcessor();
-		dockblasterFileProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt"));
-		Map<String, ArrayList<String>> dockblasterMappings = dockblasterFileProcessor.getIdMappingsFromFile();
-		dbMappings.put("orphanet", dockblasterMappings);
-		
-		PROFileProcessor proFileProcessor = new PROFileProcessor();
-		proFileProcessor.setPath(Paths.get("/tmp/uniprotmapping.txt"));
-		Map<String,String> proMappings = proFileProcessor.getIdMappingsFromFile();
-		dbMappings.put("PRO", proMappings);
-
-		FlyBaseFileProcessor flyBaseFileProcessor = new FlyBaseFileProcessor();
-		flyBaseFileProcessor.setPath(Paths.get("/tmp/FlyBase.tsv.gz"));
-		Map<String,String> flyBaseMappings = flyBaseFileProcessor.getIdMappingsFromFile();
-		dbMappings.put("flyBase", flyBaseMappings);
-		
-		HmdbMetabolitesFileProcessor hmdbMetabolitesProcessor = new HmdbMetabolitesFileProcessor();
-		hmdbMetabolitesProcessor.setPath(Paths.get("/tmp/hmdb_metabolites.zip"));
-		Map<String,String> hmdbMetabolitesMappings = hmdbMetabolitesProcessor.getIdMappingsFromFile();
-		dbMappings.put("hmdbMetabolites", hmdbMetabolitesMappings);
-		
-		//...because it's the same code, just a different input file. right?
-//		HmdbMetabolitesFileProcessor hmdbProteinsProcessor = new HmdbMetabolitesFileProcessor();
-//		hmdbProteinsProcessor.setPath(Paths.get("/tmp/hmdb_proteins.zip"));
-//		Map<String,String> hmdbProteinsMappings = hmdbProteinsProcessor.getIdMappingsFromFile();
-//		dbMappings.put("hmdbProteins", hmdbProteinsMappings);
-		
-		OrphanetFileProcessor orphanetFileProcessor = new OrphanetFileProcessor();
-		orphanetFileProcessor.setPath(Paths.get("/tmp/genes_diseases_external_references.xml"));
-		Map<String,String> orphanetMappings = orphanetFileProcessor.getIdMappingsFromFile();
-		dbMappings.put("orphanet", orphanetMappings);
-		
-		IntActFileProcessor intactFileProcessor = new IntActFileProcessor();
-		intactFileProcessor.setPath(Paths.get("/tmp/reactome.dat"));
-		Map<String,String> intactFileMappings = intactFileProcessor.getIdMappingsFromFile();
-		dbMappings.put("intact", intactFileMappings);
-
-		//Only ZincMolecules needs a file processor. ZincProteins can be read straight from the file because it just a listing of IDs, one per line.
-		ZincMoleculesFileProcessor zincMoleculesFileProcessor = new ZincMoleculesFileProcessor();
-		zincMoleculesFileProcessor.setPath(Paths.get("/tmp/zinc_chebi_purch.xls"));
-		Map<String,String> zincMappings = zincMoleculesFileProcessor.getIdMappingsFromFile();
-		dbMappings.put("zinc", zincMappings);
+		List<String> processorsToExecute = context.getBean("fileProcessorFilter",List.class);
+		Map<String,FileProcessor> fileProcessors = context.getBean("FileProcessors", Map.class);
+//		for (String k : fileProcessors.keySet().stream().filter(p -> processorsToExecute.contains(k) ).collect(Collectors.toList()) )
+		fileProcessors.keySet().stream().forEach( k -> 
+			{
+				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
+			}
+		);
 
 		logger.info("Process complete.");
 		context.close();

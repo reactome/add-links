@@ -54,16 +54,6 @@
 			</bean>
 		</entry>
 		
-		<entry key="DOCKBLASTERUniprotToPDB">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="DOCKBLASTERUniprotToPDB">
-				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBLASTER_Uniprot2PDB.txt" />
-				<property name="maxAge">
-					<ref bean="maxFileAge" />
-				</property>
-			</bean>
-		</entry>
-		
 		<entry key="EntrezGeneToUniprotReference">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="EntrezGeneToUniprotReference">
 				<property name="dataURL" value="ftp://ftp.ncbi.nih.gov/gene/DATA/gene2accession.gz" />
@@ -107,7 +97,7 @@
 		
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_03.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_04.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
