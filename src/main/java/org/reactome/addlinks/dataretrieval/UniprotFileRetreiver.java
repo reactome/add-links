@@ -148,10 +148,12 @@ public class UniprotFileRetreiver extends FileRetriever
 					else
 					{
 						//Add .tab to get table.
-						builder.setHost(builder.getHost() + ".tab");
+						if (!builder.getHost().endsWith(".tab"))
+							builder.setHost(builder.getHost() + ".tab");
 					}
 					
 					HttpGet get = new HttpGet(builder.build());
+					logger.debug("request: {}",get.toString());
 					try (CloseableHttpClient getClient = HttpClients.createDefault();
 							CloseableHttpResponse getResponse = getClient.execute(get);)
 					{
@@ -168,8 +170,9 @@ public class UniprotFileRetreiver extends FileRetriever
 						builder = new URIBuilder();
 						builder.setScheme(schemeAndHost[0]);
 						builder.setHost(schemeAndHost[1]);
-						builder.setHost(builder.getHost() + ".not");
+						builder.setHost(builder.getHost().replace(".tab", ".not"));
 						HttpGet getUnmappedIdentifiers = new HttpGet(builder.build());
+						logger.debug("request: {}",getUnmappedIdentifiers.toString());
 						try (CloseableHttpClient getClient = HttpClients.createDefault();
 								CloseableHttpResponse getResponse = postClient.execute(getUnmappedIdentifiers);)
 						{

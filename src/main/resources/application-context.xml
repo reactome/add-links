@@ -12,11 +12,33 @@
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
 	<import resource="ensembl-file-retrievers.xml"/>
+	<import resource="file-processors.xml"/>
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<!-- <value>UniProtToEntrez_Gene</value> -->
+		<value>UniProtToEntrez_Gene</value>
 		<value>EnemblToEntrezGene</value>
-		<!-- <value>PROToReferencePeptideSequence</value> -->
+		<value>PROToReferencePeptideSequence</value>
+		<value>EntrezGeneToUniprotReference</value>
+		<value>HmdbProteins</value>
+		<value>HmdbMolecules</value>
+		<value>DOCKBlaster</value>
+		<value>OrphanetToUniprotReferenceDNASequence</value>
+		<value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value>
+		<value>RHEAIdentifierToReactionlikeEvent</value>
+		<value>OrthologsFromZinc</value>
+		<value>Zinc</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+	</util:list>
+
+	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>DockblasterFileProcessor</value>
+		<value>HmdbProteinsFileProcessor</value>
+		<value>HmdbMetabolitesFileProcessor</value>
+		<value>PROFileProcessor</value>
+		<value>FlyBaseFileProcessor</value>
+		<value>OrphanetFileProcessor</value>
+		<value>IntActFileProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
 	</util:list>
 
 </beans>
