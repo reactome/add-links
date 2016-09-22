@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,13 +77,13 @@ public class FileRetriever implements DataRetriever {
 			logger.debug("Download is complete.");
 		}
 		BasicFileAttributes attribs = Files.readAttributes(Paths.get(this.destination), BasicFileAttributes.class);
-		logger.debug("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
-
-		
+		logger.info("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
 	}
 
 	protected void downloadData() throws Exception {
 		logger.debug("Scheme is: "+this.uri.getScheme());
+		Path path = Paths.get(new URI("file://"+this.destination));
+		Files.createDirectories(path.getParent());
 		if (this.uri.getScheme().equals("http"))
 		{
 			
@@ -104,8 +103,6 @@ public class FileRetriever implements DataRetriever {
 				try( CloseableHttpClient client = HttpClients.createDefault();
 					CloseableHttpResponse response = client.execute(get) )
 				{
-					Path path = Paths.get(new URI("file://"+this.destination));
-					Files.createDirectories(path.getParent());
 					Files.write(path, EntityUtils.toByteArray(response.getEntity()));
 					done = true;
 				}
@@ -129,7 +126,7 @@ public class FileRetriever implements DataRetriever {
 					e.printStackTrace();
 					throw e;
 				}
-				catch (IOException | URISyntaxException e) {
+				catch (IOException e) {
 					logger.error("Exception caught: {}",e.getMessage());
 					throw e;
 				}
@@ -146,9 +143,9 @@ public class FileRetriever implements DataRetriever {
 			InputStream inStream = client.retrieveFileStream(this.uri.getPath());
 			//Should probably have more/better reply-code checks.
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
-			if (client.getReplyString().matches("^5\\d\\d.*"))
+			if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
 			{
-				throw new Exception("5xx reply code detected, reply string is: "+client.getReplyString());
+				throw new Exception("5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString());
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int b = inStream.read();
