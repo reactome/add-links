@@ -193,8 +193,7 @@ public class AddLinks {
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
 		List<String> processorsToExecute = context.getBean("fileProcessorFilter",List.class);
 		Map<String,FileProcessor> fileProcessors = context.getBean("FileProcessors", Map.class);
-//		for (String k : fileProcessors.keySet().stream().filter(p -> processorsToExecute.contains(k) ).collect(Collectors.toList()) )
-		fileProcessors.keySet().stream().forEach( k -> 
+		fileProcessors.keySet().stream().filter(k -> processorsToExecute.contains(k)).forEach( k -> 
 			{
 				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
 			}
