@@ -52,6 +52,7 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 	//HMDB Proteins (and probably metabolites too) could return a 1:n mapping from the file...
 	public Map<String, List<String>> getIdMappingsFromFile()
 	{
+		Map<String,List<String>> accesionToUniprots = new HashMap<String,List<String>>();
 		try
 		{
 			String dirToHmdbFiles = this.unzipFile(this.pathToFile);
@@ -67,7 +68,7 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 				//filter for XML files, though we only expect 1 in this case of HMDB Proteins. 
 				.filter(p -> p.getFileName().toString().endsWith(".xml"))
 				.forEach(p -> {
-								
+								logger.debug("Input XML file: {}", p.getFileName().toString());
 								try(Stream<String> lineStream = Files.lines(p).sequential())
 								{
 									StringBuilder sb = new StringBuilder();
@@ -117,10 +118,10 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 					InputSource source = new InputSource(is);
 					NodeList root = (NodeList) HmdbProteinsFileProcessor.pathToProteinsList.evaluate(source,XPathConstants.NODESET);
 					
-					logger.debug("file: {}", fileName);
+					//logger.debug("file: {}", fileName);
 					for (int i = 0; i < root.getLength(); i++)
 					{
-						Map<String,ArrayList<String>> accesionToUniprots = new HashMap<String,ArrayList<String>>();
+						
 						Node n = root.item(i);
 						String accession = HmdbProteinsFileProcessor.pathToAccession.evaluate(n,XPathConstants.STRING).toString();
 						NodeList uniprotIds = (NodeList) HmdbProteinsFileProcessor.pathToUniprot.evaluate(n,XPathConstants.NODESET);
@@ -129,9 +130,9 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 						{
 							if (uniprotIds != null && uniprotIds.item(j).hasChildNodes())
 							{
-								logger.debug("{}",uniprotIds.item(j).toString());
+								//logger.debug("{}",uniprotIds.item(j).toString());
 								String uniprotIdText = (String) XPathFactory.newInstance().newXPath().evaluate("text()", uniprotIds.item(j),XPathConstants.STRING);
-								logger.debug("uniprotId: {}",uniprotIdText);
+								//logger.debug("uniprotId: {}",uniprotIdText);
 								uniprots.add(uniprotIdText);
 							}
 						}
@@ -157,7 +158,8 @@ public class HmdbProteinsFileProcessor extends FileProcessor
 			e.printStackTrace();
 		}
 
-		return null;
+		logger.info("Number of accessions: {}", accesionToUniprots.keySet().size());
+		return accesionToUniprots;
 	}
 
 }

@@ -38,7 +38,7 @@ public abstract class FileProcessor
 	/**
 	 * Unzips a file.
 	 * @param p - The path to the file.
-	 * @return The name of the unzipped file.
+	 * @return The directory where the files are unzipped.
 	 * @throws Exception
 	 */
 	public String unzipFile(Path p) throws Exception 
@@ -114,6 +114,7 @@ public abstract class FileProcessor
 		}
 
 		logger.debug("File was unzipped to {}", outFileName);
+		//TODO: Re-write to return a list of the full paths of all unzipped files, instead of just the directory where they were unzipped to.
 		return fileName;
 	}
 }
