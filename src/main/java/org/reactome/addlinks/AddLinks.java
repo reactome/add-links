@@ -3,6 +3,7 @@ package org.reactome.addlinks;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,25 @@ public class AddLinks {
 			UniprotDB fromDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapFromDb());
 			//String toDb = retriever.getMapToDb();
 			String originalFileDestinationName = retriever.getFetchDestination();
-			List<String> refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+			
+			List<String> refDbIds = new ArrayList<String>();
+			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
+			if (fromDb == UniprotDB.ENSEMBLProtein)
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
+			}
+			else if (fromDb == UniprotDB.ENSEMBLGene)
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
+			}
+			else if (fromDb == UniprotDB.ENSEMBLTranscript)
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
+			}
+			else
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+			}
 			int downloadCounter = 0;
 			if (refDbIds != null && refDbIds.size() > 0 )
 			{
@@ -99,9 +118,12 @@ public class AddLinks {
 						
 						List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
 						
+						String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
+						
 						if (refGenes != null && refGenes.size() > 0)
 						{
-							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {} ) is: {}",toDb.toString(),refDb, speciesId,refGenes.size());
+							
+							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
 							String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
 							InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
 							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
@@ -120,7 +142,7 @@ public class AddLinks {
 						}
 						else
 						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}", refDb, speciesId);
+							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
 						}
 					}
 				}
