@@ -40,6 +40,7 @@ public class EnsemblFileRetriever extends FileRetriever
 	public enum EnsemblDB
 	{
 		ENSEMBL("ENSEMBL"),
+		ENSP("ENSP_ident"),
 		EnsemblGene("ENSG"),
 		EMBL("EMBL"),
 		OMIM("MIM_GENE"),
