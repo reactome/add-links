@@ -71,8 +71,9 @@ public class AddLinks {
 		});
 		
 		//Now download mapping data from Uniprot.
+		//TODO: Get DB parameters from config file.
 		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3307);
-		//TODO: Add the ability to filter so that only certain beans are selected and run.
+
 		@SuppressWarnings("unchecked")
 		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
 		for (String key : uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).collect(Collectors.toList()))
@@ -129,7 +130,7 @@ public class AddLinks {
 				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
 			}
 		}
-		
+		@SuppressWarnings("unchecked")
 		Map<String,EnsemblFileRetriever> ensemblFileRetrievers = context.getBean("EnsemblFileRetrievers", Map.class);
 		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).collect(Collectors.toList()))
 		{
@@ -191,10 +192,13 @@ public class AddLinks {
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
+		@SuppressWarnings("unchecked")
 		List<String> processorsToExecute = context.getBean("fileProcessorFilter",List.class);
+		@SuppressWarnings("unchecked")
 		Map<String,FileProcessor> fileProcessors = context.getBean("FileProcessors", Map.class);
 		fileProcessors.keySet().stream().filter(k -> processorsToExecute.contains(k)).forEach( k -> 
 			{
+				logger.info("Executing file processor: {}", k);
 				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
 			}
 		);
