@@ -47,6 +47,9 @@ public class UniprotFileRetreiver extends FileRetriever
 		RefSeqPeptide("P_REFSEQ_AC"),
 		RefSeqRNA("REFSEQ_NT_ID"), 
 		ENSEMBL("ENSEMBL_ID"),
+		ENSEMBLProtein("ENSEMBL_PRO_ID"),
+		ENSEMBLGene("ENSEMBLGENOME_ID"),
+		ENSEMBLTranscript("ENSEMBL_TRS_ID"),
 		Ensembl("ENSEMBL_ID"), 
 		Wormbase("WORMBASE_ID"), 
 		Entrez_Gene("P_ENTREZGENEID"),
@@ -113,7 +116,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
 					.build();
 			post.setEntity(attachment);
-
+			
 			try (CloseableHttpClient postClient = HttpClients.createDefault();
 					CloseableHttpResponse postResponse = postClient.execute(post);)
 			{
