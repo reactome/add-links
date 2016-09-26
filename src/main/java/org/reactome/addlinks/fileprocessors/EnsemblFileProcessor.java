@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -31,17 +34,21 @@ public class EnsemblFileProcessor extends FileProcessor
 	public Map<String, ?> getIdMappingsFromFile()
 	{
 		TransformerFactory factory = TransformerFactory.newInstance();
-		Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("ensembl_transform.xsl"));
+		
+		Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
 		for (String dbName : dbs)
 		{
-			logger.info("Extracting data for \"dbname\" from ENSEMBL-downloaded data.");
+			AtomicInteger counter = new AtomicInteger(0);
+			Map<String,List<String>> ensemblToOther = new HashMap<String, List<String>>();
+			logger.info("Extracting data for \"" + dbName + "\" from ENSEMBL-downloaded data.");
 			try
 			{
 				//Transform the generated Ensembl output XML into a more usable CSV file.
+				Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("ensembl_transform.xsl"));
 				Transformer transformer = factory.newTransformer(source);
 				transformer.setParameter("db", dbName);
 				Source xmlSource = new StreamSource(this.pathToFile.toFile());
-				String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + ".transformed.csv";
+				String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + "." + dbName + ".transformed.csv";
 				Result outputTarget =  new StreamResult(new File(outfileName));
 				transformer.transform(xmlSource, outputTarget);
 				
@@ -50,22 +57,41 @@ public class EnsemblFileProcessor extends FileProcessor
 					String parts[] = line.split(",");
 					String ensemblId = parts[0];
 					String otherDbId = parts[1];
+					counter.getAndIncrement();
+					if (ensemblToOther.containsKey(ensemblId))
+					{
+						List<String> idList = (ensemblToOther.get(ensemblId));
+						idList.add(otherDbId);
+						ensemblToOther.put(ensemblId, idList );
+					}
+					else
+					{
+						List<String> idList = new ArrayList<String>();
+						idList.add(otherDbId);
+						ensemblToOther.put(ensemblId, idList);
+					}
 				});
+				
 			}
 			catch (TransformerConfigurationException e)
 			{
 				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 			catch (TransformerException e)
 			{
 				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 			catch (IOException e)
 			{
 				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
+			logger.info("Processed {} records.",counter.get());
+			mappings.put(dbName, ensemblToOther);
 		}
-		return null;
+		return mappings;
 	}
 
 	public void setDbs(List<String> dbs)
