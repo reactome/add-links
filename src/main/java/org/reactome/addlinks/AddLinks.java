@@ -162,7 +162,24 @@ public class AddLinks {
 			EnsemblDB toDb = EnsemblDB.ensemblDBFromEnsemblName(retriever.getMapToDb());
 			EnsemblDB fromDb = EnsemblDB.ensemblDBFromEnsemblName(retriever.getMapFromDb());
 			String originalFileDestinationName = retriever.getFetchDestination();
-			List<String> refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+			List<String> refDbIds = new ArrayList<String>();
+			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
+			if (fromDb == EnsemblDB.ENSEMBLProtein)
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
+			}
+			else if (fromDb == EnsemblDB.ENSEMBLGene)
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
+			}
+			else if (fromDb == EnsemblDB.ENSEMBLTranscript)
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
+			}
+			else
+			{
+				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+			}
 			if (refDbIds != null && refDbIds.size() > 0 )
 			{
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
@@ -187,7 +204,7 @@ public class AddLinks {
 						
 						if (refGenes != null && refGenes.size() > 0)
 						{
-							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}", toDb.toString(), refDb, speciesId, speciesName, refGenes.size());
+							logger.info("Number of identifiers that we will attempt to map TO {} FROM db_id: {}/{} (species: {}/{} ) is: {}", toDb.toString(), refDb,fromDb.toString() , speciesId, speciesName, refGenes.size());
 							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.toList());
 							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
 							
@@ -197,7 +214,7 @@ public class AddLinks {
 						}
 						else
 						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
+							logger.info("Could not find any RefefenceGeneProducts for reference database ID {}/{} for species {}/{}", refDb, fromDb.toString(), speciesId, speciesName);
 						}
 					}
 				}
