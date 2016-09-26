@@ -22,6 +22,31 @@
 		</constructor-arg>
 	</bean>
 	
+	<bean id="UniprotDB_ENSEMBL_PRO" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLProtein</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="UniprotDB_ENSEMBL_GENE" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLGene</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="UniprotDB_ENSEMBL_TRANSCRIPT" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLTranscript</value>
+		</constructor-arg>
+	</bean>
+
+<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+
+	
 	<util:map id="UniProtFileRetrievers"
 		value-type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver"
 		key-type="java.lang.String">
@@ -131,5 +156,132 @@
 				</property>
 			</bean>
 		</entry>
+
+
+		<entry key="ENSEMBLToWormbase">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLProToWormbase">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBL_To_Wormbase.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+		<entry key="ENSEMBLProToEntrez_Gene">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLProToEntrez_Gene">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBLPro_To_Entrez_Gene.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+<!-- 		
+		<entry key="ENSEMBLToWormbase">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLProToWormbase">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBL_To_Wormbase.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL_PRO"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+		<entry key="ENSEMBLProToEntrez_Gene">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLProToEntrez_Gene">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBLPro_To_Entrez_Gene.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL_PRO"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+
+		<entry key="ENSEMBLGeneToWormbase">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLGeneToWormbase">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBLGene_To_Wormbase.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL_GENE"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+		<entry key="ENSEMBLGeneToEntrez_Gene">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLGeneToEntrez_Gene">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBLGene_To_Entrez_Gene.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL_GENE"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="ENSEMBLTranscriptToWormbase">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLTranscriptToWormbase">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBLGene_To_Wormbase.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL_TRANSCRIPT"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+		<entry key="ENSEMBLTranscriptToEntrez_Gene">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLTranscriptToEntrez_Gene">
+				<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBLTranscript_To_Entrez_Gene.txt" />
+				<property name="mapFromDbEnum">
+					<ref bean="UniprotDB_ENSEMBL_TRANSCRIPT"/>
+				</property>
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+				</property>
+				<property name="maxAge">
+					<ref bean="maxFileAge" />
+				</property>
+			</bean>
+		</entry>
+ -->
 	</util:map>
 </beans>
