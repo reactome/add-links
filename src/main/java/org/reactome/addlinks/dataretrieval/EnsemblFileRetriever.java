@@ -3,6 +3,7 @@ package org.reactome.addlinks.dataretrieval;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -204,7 +205,7 @@ public class EnsemblFileRetriever extends FileRetriever
 									// ... or maybe we should process the XML response here? In that case, you will need this xpath expression:
 									// - to get all primary IDs: //data/@primary_id
 									// - to get all synonyms: //data/synonyms/text() (though I'm not so sure the synonyms should be included in the results...)
-									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + get.getURI() + "\">\n"+content+"</ensemblResponse>\n");
+									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
 									done = true;
 									break;
 								case HttpStatus.SC_NOT_FOUND:
@@ -219,7 +220,7 @@ public class EnsemblFileRetriever extends FileRetriever
 								case HttpStatus.SC_BAD_REQUEST:
 									String s = EntityUtils.toString(getResponse.getEntity());
 									logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
-									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + get.getURI() + "\">\n"+ s +"</ensemblResponse>\n");
+									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8") + "\">\n"+ s +"</ensemblResponse>\n");
 									okToQuery = false;
 									break;
 							}
