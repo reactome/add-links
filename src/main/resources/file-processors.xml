@@ -100,6 +100,22 @@
 			</bean>
 		</entry>
 
+		<entry key="ENSEMBLFileProcessor">
+			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.EnsemblFileProcessor">
+			<property name="path">
+				<bean class="java.nio.file.Paths" factory-method="get">
+					<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ALL.xml"/>
+				</bean>
+			</property>
+			<property name="dbs">
+				<util:list value-type="java.lang.String">
+					<value>Wormbase</value>
+					<value>EntrezGene</value>
+				</util:list>
+			</property>
+			</bean>
+		</entry>
+
 	</util:map>
 
 </beans>
