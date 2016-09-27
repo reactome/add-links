@@ -52,53 +52,7 @@
 	<!-- See IdentifierMapper/ENSEMBLMart.pm in the old add_links system. -->
 	
 	<util:map id="EnsemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
-		<!-- <entry key="EnsemblToEntrezGene">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblToEntrezGene">
-				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.xml" />
-				<property name="mapFromDbEnum">
-					<ref bean="EnsemblDB_Ensembl"/>
-				</property>
-				<property name="mapToDbEnum">
-					<value type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB">EntrezGene</value>
-				</property>
-				<property name="maxAge">
-					<ref bean="maxFileAge" />
-				</property>
-			</bean>
-		</entry>
-		
-		<entry key="EnsemblToENSP">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblToENSP">
-				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ENSP_ident.xml" />
-				<property name="mapFromDbEnum">
-					<ref bean="EnsemblDB_Ensembl"/>
-				</property>
-				<property name="mapToDbEnum">
-					<value type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB">ENSP</value>
-				</property>
-				<property name="maxAge">
-					<ref bean="maxFileAge" />
-				</property>
-			</bean>
-		</entry>
 
-		<entry key="EnsemblToWormbase">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblToWormbase">
-				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_Wormbase.xml" />
-				<property name="mapFromDbEnum">
-					<ref bean="EnsemblDB_Ensembl"/>
-				</property>
-				<property name="mapToDbEnum">
-					<value type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB">Wormbase</value>
-				</property>
-				<property name="maxAge">
-					<ref bean="maxFileAge" />
-				</property>
-			</bean>
-		</entry> -->
 		<entry key="EnsemblToALL">
 			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblToALL">
 				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />

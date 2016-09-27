@@ -20,22 +20,7 @@
 		<value>EnsemblGeneToALL</value>
 		<value>EnsemblProteinToALL</value>
 		<value>EnsemblTranscriptToALL</value>
-<!-- 		<value>EnemblToEntrezGene</value>
-		<value>EnsemblToENSP</value>
-		<value>EnsemblToWormbase</value>
- -->
-<!-- 		<value>ENSEMBLProToWormbase</value>
-		<value>ENSEMBLProToEntrez_Gene</value>
-		
-		<value>ENSEMBLGeneToWormbase</value>
-		<value>ENSEMBLGeneToEntrez_Gene</value>
-		
-		
-		<value>ENSEMBLTransacriptToWormbase</value>
-		<value>ENSEMBLTransacriptToEntrez_Gene</value>
- -->		
-		
-		<!-- <value>UniProtToEntrez_Gene</value>
+		<value>UniProtToEntrez_Gene</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>
@@ -46,19 +31,19 @@
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>OrthologsFromZinc</value>
 		<value>Zinc</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value> -->
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
 		<value>ENSEMBLFileProcessor</value>
-		<!-- <value>DockblasterFileProcessor</value>
+		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>PROFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>IntActFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value> -->
+		<value>ZincMoleculesFileProcessor</value>
 	</util:list>
 
 </beans>
