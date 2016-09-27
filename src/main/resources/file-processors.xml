@@ -102,20 +102,97 @@
 
 		<entry key="ENSEMBLFileProcessor">
 			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.EnsemblFileProcessor">
-			<property name="path">
-				<bean class="java.nio.file.Paths" factory-method="get">
-					<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ALL.xml"/>
-				</bean>
-			</property>
-			<property name="dbs">
-				<util:list value-type="java.lang.String">
-					<value>Wormbase</value>
-					<value>EntrezGene</value>
-				</util:list>
-			</property>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ALL.xml"/>
+					</bean>
+				</property>
+				<property name="dbs">
+					<util:list value-type="java.lang.String">
+						<value>Wormbase</value>
+						<value>EntrezGene</value>
+					</util:list>
+				</property>
 			</bean>
 		</entry>
 
+		<entry key="UniprotToEnsemblFileProcessor">
+			<bean id="UniprotToEnsemblFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBL."/>
+			</bean>
+		</entry>
+
+		<entry key="UniprotToPDBFileProcessor">
+			<bean id="UniprotToPDBFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB." />
+			</bean>
+		</entry>
+
+		<entry key="UniprotToRefSeqPeptideFileProcessor">
+			<bean id="UniprotToRefSeqPeptideFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide." />
+			</bean>
+		</entry>
+
+		<entry key="UniprotToRefSeqRNAFileProcessor">
+			<bean id="UniprotToRefSeqRNAFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA." />
+			</bean>
+		</entry>
+
+		<entry key="UniprotToEntrezGeneFileProcessor">
+			<bean id="UniprotToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene." />
+			</bean>
+		</entry>
+
+
+		<entry key="UniprotToOMIMFileProcessor">
+			<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM." />
+			</bean>
+		</entry>
+		
+		<entry key="UniprotToWormbaseFileProcessor">
+			<bean id="UniprotToWormbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase." />
+			</bean>
+		</entry>
 	</util:map>
 
 </beans>

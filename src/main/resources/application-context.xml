@@ -16,11 +16,17 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 	
-		<value>EnsemblToALL</value>
+		<!-- <value>EnsemblToALL</value>
 		<value>EnsemblGeneToALL</value>
 		<value>EnsemblProteinToALL</value>
 		<value>EnsemblTranscriptToALL</value>
 		<value>UniProtToEntrez_Gene</value>
+		<value>UniProtToOMIM</value>
+		<value>UniProtToPDB</value>
+		<value>UniProtToRefSeqPeptide</value>
+		<value>UniProtToRefSeqRNA</value>
+		<value>UniProtToENSEMBL</value>
+		<value>UniProtToWormbase</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>
@@ -31,11 +37,11 @@
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>OrthologsFromZinc</value>
 		<value>Zinc</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>ENSEMBLFileProcessor</value>
+		<!-- <value>ENSEMBLFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -43,7 +49,14 @@
 		<value>FlyBaseFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>IntActFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
+		<value>ZincMoleculesFileProcessor</value> -->
+		<value>UniprotToEnsemblFileProcessor</value>
+		<value>UniprotToPDBFileProcessor</value>
+		<value>UniprotToRefSeqPeptideFileProcessor</value>
+		<value>UniprotToRNAFileProcessor</value>
+		<value>UniprotOMIMFileProcessor</value>
+		<value>UniprotToEntrezGeneFileProcessor</value>
+		<value>UniprotToWormbaseFileProcessor</value>
 	</util:list>
 
 </beans>
