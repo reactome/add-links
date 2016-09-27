@@ -3,6 +3,7 @@ package org.reactome.addlinks.dataretrieval;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +42,10 @@ public class EnsemblFileRetriever extends FileRetriever
 	{
 		ENSEMBL("ENSEMBL"),
 		ENSP("ENSP_ident"),
+		ENSEMBLProtein("ENSEMBL_PRO_ID"),
+		ENSEMBLGene("ENSEMBLGENOME_ID"),
+		ENSEMBLTranscript("ENSEMBL_TRS_ID"),
+		ALL_DATABASES("%"),
 		EnsemblGene("ENSG"),
 		EMBL("EMBL"),
 		OMIM("MIM_GENE"),
@@ -159,7 +164,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
-			String responseContent = "";
+			StringBuilder sb = new StringBuilder("<ensemblResponses>\n");
 			logger.info("");
 			for (String identifier : identifiers)
 			{
@@ -200,7 +205,7 @@ public class EnsemblFileRetriever extends FileRetriever
 									// ... or maybe we should process the XML response here? In that case, you will need this xpath expression:
 									// - to get all primary IDs: //data/@primary_id
 									// - to get all synonyms: //data/synonyms/text() (though I'm not so sure the synonyms should be included in the results...)
-									responseContent += "<identifier id=\""+identifier+"\">\n"+content+"</identifier>\n";
+									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
 									done = true;
 									break;
 								case HttpStatus.SC_NOT_FOUND:
@@ -213,7 +218,9 @@ public class EnsemblFileRetriever extends FileRetriever
 									okToQuery = false;
 									break;
 								case HttpStatus.SC_BAD_REQUEST:
-									logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", EntityUtils.toString(getResponse.getEntity()));
+									String s = EntityUtils.toString(getResponse.getEntity());
+									logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
+									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8") + "\">\n"+ s +"</ensemblResponse>\n");
 									okToQuery = false;
 									break;
 							}
@@ -224,7 +231,8 @@ public class EnsemblFileRetriever extends FileRetriever
 				}
 			}
 			Files.createDirectories(path.getParent());
-			Files.write(path, responseContent.getBytes(), StandardOpenOption.CREATE);
+			sb.append("</ensemblResponses>");
+			Files.write(path, sb.toString().getBytes(), StandardOpenOption.CREATE);
 		}
 		catch (InterruptedException e)
 		{
