@@ -15,8 +15,12 @@
 	<import resource="file-processors.xml"/>
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+	
+		<value>EnsemblToALL</value>
+		<value>EnsemblGeneToALL</value>
+		<value>EnsemblProteinToALL</value>
+		<value>EnsemblTranscriptToALL</value>
 		<value>UniProtToEntrez_Gene</value>
-		<value>EnemblToEntrezGene</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>
@@ -31,6 +35,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>ENSEMBLFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
