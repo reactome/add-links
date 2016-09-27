@@ -135,7 +135,7 @@ public class AddLinks {
 							//Let's sleep a bit after 5 downloads, so we don't get blocked! In the future this could all be parameterized.
 							if (downloadCounter % 5 ==0)
 							{
-								Duration sleepDelay = Duration.ofSeconds(15);
+								Duration sleepDelay = Duration.ofSeconds(5);
 								logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
 								Thread.sleep(sleepDelay.toMillis());
 							}
