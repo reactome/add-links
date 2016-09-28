@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -122,71 +123,118 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 
 				logger.debug("Status: {}", postResponse.getStatusLine());
-				if (postResponse.getStatusLine().getStatusCode() == 500)
+				// TODO: Clean up the status response handling!!! Too much redundancy in this class.
+				switch (postResponse.getStatusLine().getStatusCode())
 				{
-					logger.error("Error 500 detected! Message: {}",postResponse.getStatusLine().getReasonPhrase());
-				}
-				else
-				{
-					//The uniprot response will contain the actual URL for the data in the "Location" header.
-					String location = postResponse.getHeaders("Location")[0].getValue();
-					logger.debug("Location of data: {}",location);
-					URIBuilder builder = new URIBuilder();
+					case HttpStatus.SC_SERVICE_UNAVAILABLE:
+					case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+						logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
+						break;
 					
-					String[] parts = location.split("\\?");
-					String[] schemeAndHost = parts[0].split("://");
-					builder.setScheme(schemeAndHost[0]);
-					builder.setHost(schemeAndHost[1]);
-					
-					if (parts.length>1)
-					{
-						// If the Location header string contains query information, we need to properly reformat that before requesting it. 
-						String[] params = parts[1].split("&");
-						for(String s : params)
-						{
-							String[] nameAndValue = s.split("=");
-							builder.addParameter(nameAndValue[0], nameAndValue[1]);
-						}
-					}
-					else
-					{
-						//Add .tab to get table.
-						if (!builder.getHost().endsWith(".tab"))
-							builder.setHost(builder.getHost() + ".tab");
-					}
-					
-					HttpGet get = new HttpGet(builder.build());
-					logger.debug("request: {}",get.toString());
-					try (CloseableHttpClient getClient = HttpClients.createDefault();
-							CloseableHttpResponse getResponse = getClient.execute(get);)
-					{
-						Path path = Paths.get(new URI("file://" + this.destination));
-						Files.createDirectories(path.getParent());
-						Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
-					}
-					
-					//If the Location returned by the service was a simple URL with no query string, it means 
-					//that we had to append .tab to the URL. That means we also need to get the "not" file
-					//which contains everything which was not mapped successfully.
-					if (parts.length == 1)
-					{
-						builder = new URIBuilder();
+					case HttpStatus.SC_OK:
+					case HttpStatus.SC_MOVED_PERMANENTLY:
+					case HttpStatus.SC_MOVED_TEMPORARILY:
+						//The uniprot response will contain the actual URL for the data in the "Location" header.
+						String location = postResponse.getHeaders("Location")[0].getValue();
+						logger.debug("Location of data: {}",location);
+						URIBuilder builder = new URIBuilder();
+						
+						String[] parts = location.split("\\?");
+						String[] schemeAndHost = parts[0].split("://");
 						builder.setScheme(schemeAndHost[0]);
 						builder.setHost(schemeAndHost[1]);
-						builder.setHost(builder.getHost().replace(".tab", ".not"));
-						HttpGet getUnmappedIdentifiers = new HttpGet(builder.build());
-						logger.debug("request: {}",getUnmappedIdentifiers.toString());
-						try (CloseableHttpClient getClient = HttpClients.createDefault();
-								CloseableHttpResponse getResponse = postClient.execute(getUnmappedIdentifiers);)
+						
+						if (parts.length>1)
 						{
-							String unmappedIdentifierDestination;
-							String[] filenameParts = this.destination.split("\\.");
-							unmappedIdentifierDestination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
-							Path path = Paths.get(new URI("file://" + unmappedIdentifierDestination));
-							Files.createDirectories(path.getParent());
-							Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+							// If the Location header string contains query information, we need to properly reformat that before requesting it. 
+							String[] params = parts[1].split("&");
+							for(String s : params)
+							{
+								String[] nameAndValue = s.split("=");
+								builder.addParameter(nameAndValue[0], nameAndValue[1]);
+							}
 						}
-					}
+						else
+						{
+							//Add .tab to get table.
+							if (!builder.getHost().endsWith(".tab"))
+								builder.setHost(builder.getHost() + ".tab");
+						}
+						
+						HttpGet get = new HttpGet(builder.build());
+						logger.debug("request: {}",get.toString());
+						try (CloseableHttpClient getClient = HttpClients.createDefault();
+								CloseableHttpResponse getResponse = getClient.execute(get);)
+						{
+							switch (getResponse.getStatusLine().getStatusCode())
+							{
+								case HttpStatus.SC_SERVICE_UNAVAILABLE:
+								case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+									logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
+									logger.error("File: \"{}\" was not written! Re-execute the File Retriever to try again.", this.destination);
+									break;
+
+								case HttpStatus.SC_OK:
+								case HttpStatus.SC_MOVED_PERMANENTLY:
+								case HttpStatus.SC_MOVED_TEMPORARILY:
+									Path path = Paths.get(new URI("file://" + this.destination));
+									Files.createDirectories(path.getParent());
+									Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+									break;
+
+								default:
+									logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
+									break;
+
+							}
+						}
+						
+						//If the Location returned by the service was a simple URL with no query string, it means 
+						//that we had to append .tab to the URL. That means we also need to get the "not" file
+						//which contains everything which was not mapped successfully.
+						if (parts.length == 1)
+						{
+							builder = new URIBuilder();
+							builder.setScheme(schemeAndHost[0]);
+							builder.setHost(schemeAndHost[1]);
+							builder.setHost(builder.getHost().replace(".tab", ".not"));
+							HttpGet getUnmappedIdentifiers = new HttpGet(builder.build());
+							logger.debug("request: {}",getUnmappedIdentifiers.toString());
+							try (CloseableHttpClient getClient = HttpClients.createDefault();
+									CloseableHttpResponse getResponse = postClient.execute(getUnmappedIdentifiers);)
+							{
+								switch (getResponse.getStatusLine().getStatusCode())
+								{
+									case HttpStatus.SC_SERVICE_UNAVAILABLE:
+									case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+										logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
+										logger.error("File: \"{}\" was not written! Re-execute the File Retriever to try again.", this.destination);
+										break;
+
+									case HttpStatus.SC_OK:
+									case HttpStatus.SC_MOVED_PERMANENTLY:
+									case HttpStatus.SC_MOVED_TEMPORARILY:
+										String unmappedIdentifierDestination;
+										String[] filenameParts = this.destination.split("\\.");
+										unmappedIdentifierDestination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
+										Path path = Paths.get(new URI("file://" + unmappedIdentifierDestination));
+										Files.createDirectories(path.getParent());
+										Files.write(path, EntityUtils.toByteArray(getResponse.getEntity()));
+										break;
+
+									default:
+										logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
+										break;
+								}
+							}
+						}
+						break;
+					
+					default:
+						logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",postResponse.getStatusLine().getStatusCode(), postResponse.getStatusLine());
+						break;
+					
+
 				}
 			}
 		}
