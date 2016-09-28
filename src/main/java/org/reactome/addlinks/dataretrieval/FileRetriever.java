@@ -76,8 +76,18 @@ public class FileRetriever implements DataRetriever {
 			downloadData();
 			logger.debug("Download is complete.");
 		}
-		BasicFileAttributes attribs = Files.readAttributes(Paths.get(this.destination), BasicFileAttributes.class);
-		logger.info("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
+		
+		// Print some basic file stats.
+		if (Files.exists(pathToFile))
+		{
+			BasicFileAttributes attribs = Files.readAttributes(Paths.get(this.destination), BasicFileAttributes.class);
+			logger.info("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
+		}
+		else
+		{
+			// If something failed during the data retrieval, the file might not exist. If that happens, let the user know.
+			logger.error("File \"{}\" still does not exist after executing the file retriever!", pathToFile);
+		}
 	}
 
 	protected void downloadData() throws Exception {
