@@ -77,63 +77,69 @@ public class UniprotFileProcessor extends FileProcessor
 		
 		try
 		{
-			Files.walkFileTree(this.pathToFile, new SimpleFileVisitor<Path>(){
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
-				{
-					// Extract the species ID from the file name.
-					// If the file name is uniprot_mapping_Uniprot_To_Wormbase.68323.2.txt
-					// then we want "68323". Regexp: [^.]*\.(\d)*\.\d*\.txt
-					Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
-					if (patternMatcher.matches())
+			if (Files.exists(this.pathToFile)){
+				Files.walkFileTree(this.pathToFile, new SimpleFileVisitor<Path>(){
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
 					{
-						if (!matcherNotMapped.matches(file) && matcher.matches(file))
+						// Extract the species ID from the file name.
+						// If the file name is uniprot_mapping_Uniprot_To_Wormbase.68323.2.txt
+						// then we want "68323". Regexp: [^.]*\.(\d)*\.\d*\.txt
+						Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
+						if (patternMatcher.matches())
 						{
-							String speciesId = patternMatcher.group(1);
-							if (mappings.containsKey(speciesId))
+							if (!matcherNotMapped.matches(file) && matcher.matches(file))
 							{
-								logger.warn("You already have an entry for {}. You should only have ONE file for each species for each refDB. If you have more, something may have gone wrong...", speciesId);
-							}
-							else
-							{
-								Map<String,List<String>> submappings = new HashMap<String, List<String>>();
-								mappings.put(speciesId, submappings);
-							}
-							logger.info("Processing file: {}",file.getFileName());
-							//Process the file.
-							Files.readAllLines(file).stream().filter(p -> !p.equals("From\tTo")).forEach( line ->
-							{
-								String[] parts = line.split("\\t");
-								String uniProtId = parts[0];
-								String otherId = parts[1];
-								if (mappings.containsKey(uniProtId))
+								String speciesId = patternMatcher.group(1);
+								if (mappings.containsKey(speciesId))
 								{
-									List<String> otherIds = mappings.get(speciesId).get(uniProtId);
-									otherIds.add(otherId);
-									mappings.get(speciesId).put(uniProtId, otherIds);
+									logger.warn("You already have an entry for {}. You should only have ONE file for each species for each refDB. If you have more, something may have gone wrong...", speciesId);
 								}
 								else
 								{
-									List<String> otherIds = new ArrayList<String>();
-									otherIds.add(otherId);
-									mappings.get(speciesId).put(otherId, otherIds);
+									Map<String,List<String>> submappings = new HashMap<String, List<String>>();
+									mappings.put(speciesId, submappings);
 								}
-							});
-							//mappings.put(speciesId, submappings);
-							logger.info("# Uniprot ID for species {} is: {}", speciesId,mappings.get(speciesId).keySet().size());
+								logger.info("Processing file: {}",file.getFileName());
+								//Process the file.
+								Files.readAllLines(file).stream().filter(p -> !p.equals("From\tTo")).forEach( line ->
+								{
+									String[] parts = line.split("\\t");
+									String uniProtId = parts[0];
+									String otherId = parts[1];
+									if (mappings.containsKey(uniProtId))
+									{
+										List<String> otherIds = mappings.get(speciesId).get(uniProtId);
+										otherIds.add(otherId);
+										mappings.get(speciesId).put(uniProtId, otherIds);
+									}
+									else
+									{
+										List<String> otherIds = new ArrayList<String>();
+										otherIds.add(otherId);
+										mappings.get(speciesId).put(otherId, otherIds);
+									}
+								});
+								//mappings.put(speciesId, submappings);
+								logger.info("# Uniprot ID for species {} is: {}", speciesId,mappings.get(speciesId).keySet().size());
+							}
+							
 						}
-						
+						return FileVisitResult.CONTINUE;
 					}
-					return FileVisitResult.CONTINUE;
-				}
-				
-				@Override
-				public FileVisitResult visitFileFailed(Path file, IOException e) throws IOException
-				{
-					e.printStackTrace();
-					return FileVisitResult.CONTINUE;
-				}
-			});
+					
+					@Override
+					public FileVisitResult visitFileFailed(Path file, IOException e) throws IOException
+					{
+						e.printStackTrace();
+						return FileVisitResult.CONTINUE;
+					}
+				});
+			}
+			else
+			{
+				logger.warn("The path \"{}\" does not exist.", this.pathToFile);
+			}
 			
 		} catch (IOException e1)
 		{
