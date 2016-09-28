@@ -47,31 +47,38 @@ public class EnsemblFileProcessor extends FileProcessor
 				Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("ensembl_transform.xsl"));
 				Transformer transformer = factory.newTransformer(source);
 				transformer.setParameter("db", dbName);
-				Source xmlSource = new StreamSource(this.pathToFile.toFile());
-				String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + "." + dbName + ".transformed.csv";
-				Result outputTarget =  new StreamResult(new File(outfileName));
-				transformer.transform(xmlSource, outputTarget);
 				
-				//Now we read the file we just created.
-				Files.readAllLines(Paths.get(outfileName)).forEach( line -> {
-					String parts[] = line.split(",");
-					String ensemblId = parts[0];
-					String otherDbId = parts[1];
-					counter.getAndIncrement();
-					if (ensemblToOther.containsKey(ensemblId))
-					{
-						List<String> idList = (ensemblToOther.get(ensemblId));
-						idList.add(otherDbId);
-						ensemblToOther.put(ensemblId, idList );
-					}
-					else
-					{
-						List<String> idList = new ArrayList<String>();
-						idList.add(otherDbId);
-						ensemblToOther.put(ensemblId, idList);
-					}
-				});
-				
+				if (Files.exists(this.pathToFile))
+				{
+					Source xmlSource = new StreamSource(this.pathToFile.toFile());
+					String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + "." + dbName + ".transformed.csv";
+					Result outputTarget =  new StreamResult(new File(outfileName));
+					transformer.transform(xmlSource, outputTarget);
+					
+					//Now we read the file we just created.
+					Files.readAllLines(Paths.get(outfileName)).forEach( line -> {
+						String parts[] = line.split(",");
+						String ensemblId = parts[0];
+						String otherDbId = parts[1];
+						counter.getAndIncrement();
+						if (ensemblToOther.containsKey(ensemblId))
+						{
+							List<String> idList = (ensemblToOther.get(ensemblId));
+							idList.add(otherDbId);
+							ensemblToOther.put(ensemblId, idList );
+						}
+						else
+						{
+							List<String> idList = new ArrayList<String>();
+							idList.add(otherDbId);
+							ensemblToOther.put(ensemblId, idList);
+						}
+					});
+				}
+				else
+				{
+					logger.warn("File {} does not actually exist.", this.pathToFile);
+				}
 			}
 			catch (TransformerConfigurationException e)
 			{
