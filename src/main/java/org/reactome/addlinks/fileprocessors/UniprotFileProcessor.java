@@ -121,7 +121,7 @@ public class UniprotFileProcessor extends FileProcessor
 									}
 								});
 								//mappings.put(speciesId, submappings);
-								logger.info("# Uniprot ID for species {} is: {}", speciesId,mappings.get(speciesId).keySet().size());
+								// logger.info("# Uniprot ID for species {} is: {}", speciesId,mappings.get(speciesId).keySet().size());
 							}
 							
 						}
@@ -146,7 +146,11 @@ public class UniprotFileProcessor extends FileProcessor
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+		logger.info("File processor summary for files matching {}",this.fileGlob);
+		mappings.keySet().stream().forEach( key -> 
+		{
+			logger.info("\tspecies {} has {} mappings",key, mappings.get(key).size());
+		});
 		return mappings;
 	}
 
