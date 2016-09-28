@@ -100,7 +100,7 @@ public class UniprotFileProcessor extends FileProcessor
 									Map<String,List<String>> submappings = new HashMap<String, List<String>>();
 									mappings.put(speciesId, submappings);
 								}
-								logger.info("Processing file: {}",file.getFileName());
+								logger.debug("Processing file: {}",file.getFileName());
 								//Process the file.
 								Files.readAllLines(file).stream().filter(p -> !p.equals("From\tTo")).forEach( line ->
 								{

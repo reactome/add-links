@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -75,9 +76,11 @@ public class AddLinks {
 		//TODO: Get DB parameters from config file.
 		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3307);
 
+		AtomicInteger uniprotRequestcounter = new AtomicInteger(0);
 		@SuppressWarnings("unchecked")
 		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
-		for (String key : uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).collect(Collectors.toList()))
+		//for (String key : uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).collect(Collectors.toList()))
+		uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).parallel().forEach(key -> 
 		{
 			logger.info("Executing Downloader: {}", key);
 			UniprotFileRetreiver retriever = uniprotFileRetrievers.get(key);
@@ -105,7 +108,7 @@ public class AddLinks {
 			{
 				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
 			}
-			int downloadCounter = 0;
+			
 			if (refDbIds != null && refDbIds.size() > 0 )
 			{
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
@@ -119,30 +122,41 @@ public class AddLinks {
 						List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
 						
 						String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
-						
-						if (refGenes != null && refGenes.size() > 0)
+						try
 						{
-							
-							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
-							String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
-							InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
-							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
-							
-							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
-							retriever.setDataInputStream(inStream);
-							retriever.fetchData();
-							downloadCounter ++ ;
-							//Let's sleep a bit after 5 downloads, so we don't get blocked! In the future this could all be parameterized.
-							if (downloadCounter % 5 ==0)
+							if (refGenes != null && refGenes.size() > 0)
 							{
-								Duration sleepDelay = Duration.ofSeconds(5);
-								logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
-								Thread.sleep(sleepDelay.toMillis());
+								
+								logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
+								String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
+								InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
+								//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
+								
+								retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
+								retriever.setDataInputStream(inStream);
+								retriever.fetchData();
+								int downloadCounter = uniprotRequestcounter.incrementAndGet();
+								
+								//Let's sleep a bit after 5 downloads, so we don't get blocked! In the future this could all be parameterized.
+								if (downloadCounter % 25 ==0)
+								{
+									Duration sleepDelay = Duration.ofSeconds(5);
+									logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
+									Thread.sleep(sleepDelay.toMillis());
+								}
+							}
+							else
+							{
+								logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
 							}
 						}
-						else
+						catch (InterruptedException e)
 						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
+							e.printStackTrace();
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
 						}
 					}
 				}
@@ -151,7 +165,7 @@ public class AddLinks {
 			{
 				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
 			}
-		}
+		});
 		@SuppressWarnings("unchecked")
 		Map<String,EnsemblFileRetriever> ensemblFileRetrievers = context.getBean("EnsemblFileRetrievers", Map.class);
 		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).collect(Collectors.toList()))
@@ -241,7 +255,7 @@ public class AddLinks {
 				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
 			}
 		);
-
+		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		logger.info("Process complete.");
 		context.close();
 	}
