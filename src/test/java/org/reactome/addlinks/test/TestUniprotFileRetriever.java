@@ -1,5 +1,6 @@
 package org.reactome.addlinks.test;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,7 +44,8 @@ public class TestUniprotFileRetriever
 		UniprotFileRetreiver retriever = new UniprotFileRetreiver();
 		retriever.setDataURL(new URI("http://www.uniprot.org/uploadlists/"));
 		FileInputStream inStream = new FileInputStream(new File("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt"));
-		retriever.setDataInputStream(inStream);
+		BufferedInputStream bis = new BufferedInputStream(inStream);
+		retriever.setDataInputStream(bis);
 		String mapFrom=UniprotFileRetreiver.UniprotDB.GeneName.getUniprotName();//"ACC+ID";
 		String mapTo=UniprotFileRetreiver.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
 		String pathToFile = "/tmp/uniprot_mapping_service/uniprot_xrefs_"+mapFrom+"_to_"+mapTo+".txt";
