@@ -124,7 +124,7 @@ public class AddLinks {
 					List<String> speciesList = new ArrayList<String>( ReferenceGeneProductCache.getInstance().getListOfSpecies() );
 					//for (String speciesId : speciesList)
 					logger.debug("Degree of parallelism in the Common Pool: {}", ForkJoinPool.getCommonPoolParallelism());
-					int numRequestedThreads = 20;
+					int numRequestedThreads = 10;
 					ForkJoinPool pool = new ForkJoinPool(numRequestedThreads);
 					int stepSize = pool.getParallelism();
 					logger.debug("Degree of parallelism in the pool: {}", stepSize);
@@ -195,64 +195,13 @@ public class AddLinks {
 						}
 						
 						
-						//logger.info("Number of species IDs to process: {}", speciesList.size() );
 						pool.invokeAll(tasks);
-						
-//						pool.execute( () -> {
-//							int speciesIndex = uniprotRequestcounter.getAndIncrement();
-//							if (speciesIndex < speciesList.size())
-//							{
-//								String speciesId = speciesList.get(speciesIndex);
-//								List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
-//								
-//								String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
-//								
-//								if (refGenes != null && refGenes.size() > 0)
-//								{
-//									
-//									logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
-//									String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
-//									InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
-//									//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
-//									
-//									retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
-//									retriever.setDataInputStream(inStream);
-//									try
-//									{
-//										retriever.fetchData();
-//									}
-//									catch (Exception e)
-//									{
-//										logger.error("Error getting data for speciesId {}: {}", speciesId,e.getMessage());
-//										e.printStackTrace();
-//									}
-//								}
-//								else
-//								{
-//									logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
-//								}
-//							}
-//						} ) ;
 						try
 						{
 							Duration sleepDelay = Duration.ofSeconds(5);
 							logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
 							Thread.sleep(sleepDelay.toMillis());
 						}
-//						try
-//						{
-//								int downloadCounter = uniprotRequestcounter.incrementAndGet();
-//								
-//								//Let's sleep a bit after 5 downloads, so we don't get blocked! In the future this could all be parameterized.
-//								if (downloadCounter % 25 ==0)
-//								{
-//								}
-//							}
-//							else
-//							{
-//								logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
-//							}
-//						}
 						catch (InterruptedException e)
 						{
 							e.printStackTrace();
