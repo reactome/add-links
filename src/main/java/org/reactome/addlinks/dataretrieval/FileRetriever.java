@@ -71,13 +71,29 @@ public class FileRetriever implements DataRetriever {
 		}
 		else
 		{
-			logger.debug("File {} does not exist and must be downloaded.",this.destination);
+			logger.debug("File {} does not exist and must be downloaded.", pathToFile);
 			//if file does not exist, get it from the URL.
 			downloadData();
-			logger.debug("Download is complete.");
 		}
-		BasicFileAttributes attribs = Files.readAttributes(Paths.get(this.destination), BasicFileAttributes.class);
-		logger.info("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
+		
+		// Print some basic file stats.
+		if (Files.exists(pathToFile))
+		{
+			if (Files.isReadable(pathToFile))
+			{
+				BasicFileAttributes attribs = Files.readAttributes(pathToFile, BasicFileAttributes.class);
+				logger.info("File Info: Name: {}, Size: {}, Created: {}, Modified: {}",this.destination,attribs.size(), attribs.creationTime(), attribs.lastModifiedTime());
+			}
+			else
+			{
+				logger.error("File {} is not readable!", pathToFile);
+			}
+		}
+		else
+		{
+			// If something failed during the data retrieval, the file might not exist. If that happens, let the user know.
+			logger.error("File \"{}\" still does not exist after executing the file retriever!", pathToFile);
+		}
 	}
 
 	protected void downloadData() throws Exception {
@@ -170,6 +186,16 @@ public class FileRetriever implements DataRetriever {
 		}
 	}
 
+	public Duration getMaxAge()
+	{
+		return this.maxAge;
+	}
+	
+	public URI getDataURL()
+	{
+		return this.uri;
+	}
+	
 	@Override
 	public void setDataURL(URI uri) {
 		this.uri = uri;

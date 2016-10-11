@@ -43,7 +43,7 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="EnsemblDB_Transcript" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ALL_DATABASES</value>
 		</constructor-arg>
@@ -61,7 +61,7 @@
 					<ref bean="EnsemblDB_Ensembl"/>
 				</property>
 				<property name="mapToDbEnum">
-					<ref bean="ALL_DATABASES"/>
+					<ref bean="EnsemblDB_ALL"/>
 				</property>
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
@@ -77,7 +77,7 @@
 					<ref bean="EnsemblDB_Gene"/>
 				</property>
 				<property name="mapToDbEnum">
-					<ref bean="ALL_DATABASES"/>
+					<ref bean="EnsemblDB_ALL"/>
 				</property>
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
@@ -93,7 +93,7 @@
 					<ref bean="EnsemblDB_Transcript"/>
 				</property>
 				<property name="mapToDbEnum">
-					<ref bean="ALL_DATABASES"/>
+					<ref bean="EnsemblDB_ALL"/>
 				</property>
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
@@ -109,7 +109,7 @@
 					<ref bean="EnsemblDB_Protein"/>
 				</property>
 				<property name="mapToDbEnum">
-					<ref bean="ALL_DATABASES"/>
+					<ref bean="EnsemblDB_ALL"/>
 				</property>
 				<property name="maxAge">
 					<ref bean="maxFileAge" />
