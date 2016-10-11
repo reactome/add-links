@@ -1,5 +1,6 @@
 package org.reactome.addlinks;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.Duration;
@@ -9,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -75,10 +79,13 @@ public class AddLinks {
 		//TODO: Get DB parameters from config file.
 		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3307);
 
+		
 		@SuppressWarnings("unchecked")
 		Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
 		for (String key : uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).collect(Collectors.toList()))
+		//uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).parallel().forEach(key -> 
 		{
+			
 			logger.info("Executing Downloader: {}", key);
 			UniprotFileRetreiver retriever = uniprotFileRetrievers.get(key);
 			
@@ -105,44 +112,103 @@ public class AddLinks {
 			{
 				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
 			}
-			int downloadCounter = 0;
+			
 			if (refDbIds != null && refDbIds.size() > 0 )
 			{
+				AtomicInteger uniprotRequestcounter = new AtomicInteger(0);
+				
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
 				for (String refDb : refDbIds)
 				{
-					Set<String> speciesList = ReferenceGeneProductCache.getInstance().getListOfSpecies();
-					for (String speciesId : speciesList)
+					//Set<String> speciesList = ReferenceGeneProductCache.getInstance().getListOfSpecies();
+					List<String> speciesList = new ArrayList<String>( ReferenceGeneProductCache.getInstance().getListOfSpecies() );
+					//for (String speciesId : speciesList)
+					logger.debug("Degree of parallelism in the Common Pool: {}", ForkJoinPool.getCommonPoolParallelism());
+					int numRequestedThreads = 10;
+					ForkJoinPool pool = new ForkJoinPool(numRequestedThreads);
+					int stepSize = pool.getParallelism();
+					logger.debug("Degree of parallelism in the pool: {}", stepSize);
+					
+					
+					for (int i = 0; i < speciesList.size(); i+= stepSize)
 					{
-						logger.info("Number of species IDs to process: {}", speciesList.size() );
+						List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 						
-						List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
-						
-						String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
-						
-						if (refGenes != null && refGenes.size() > 0)
+						//do n tasks at a time, where n is the degree of parallelism.
+						for (int j = 0; j < stepSize; j++)
 						{
-							
-							logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
-							String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
-							InputStream inStream = new ByteArrayInputStream(identifiersList.getBytes());
-							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
-							
-							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
-							retriever.setDataInputStream(inStream);
-							retriever.fetchData();
-							downloadCounter ++ ;
-							//Let's sleep a bit after 5 downloads, so we don't get blocked! In the future this could all be parameterized.
-							if (downloadCounter % 5 ==0)
+							int speciesIndex = uniprotRequestcounter.getAndIncrement();
+							if (speciesIndex < speciesList.size())
 							{
-								Duration sleepDelay = Duration.ofSeconds(15);
-								logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
-								Thread.sleep(sleepDelay.toMillis());
+								String speciesId = speciesList.get(speciesIndex);
+								List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+								
+								String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
+								
+								Callable<Boolean> task = new Callable<Boolean>()
+								{
+									@Override
+									public Boolean call()
+									{
+										//if (speciesIndex < speciesList.size())
+//										{
+											if (refGenes != null && refGenes.size() > 0)
+											{
+												
+												logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
+												String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
+												
+												BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiersList.getBytes()));
+												// if we want to execute multiple retrievers in parallel, we need to create a 
+												// NEW retriever and pass in the relevant values from the retriever that came from the original Uniprot file retriever
+												// defined in the spring config file.
+												UniprotFileRetreiver innerRetriever = new UniprotFileRetreiver();
+												innerRetriever.setMapFromDb(retriever.getMapFromDb());
+												innerRetriever.setMapToDb(retriever.getMapToDb());
+												innerRetriever.setDataURL(retriever.getDataURL());
+												innerRetriever.setMaxAge(retriever.getMaxAge());
+												//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
+												innerRetriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
+												innerRetriever.setDataInputStream(inStream);
+												try
+												{
+													innerRetriever.fetchData();
+													return true;
+												}
+												catch (Exception e)
+												{
+													logger.error("Error getting data for speciesId {}: {}", speciesId, e.getMessage());
+													e.printStackTrace();
+												}
+											}
+											else
+											{
+												logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
+											}
+//										}
+	
+										return false;
+									}
+								};
+								tasks.add(task);
 							}
 						}
-						else
+						
+						
+						pool.invokeAll(tasks);
+						try
 						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
+							Duration sleepDelay = Duration.ofSeconds(5);
+							logger.info("Sleeping for {} to be nice. We don't want to flood their service!", sleepDelay);
+							Thread.sleep(sleepDelay.toMillis());
+						}
+						catch (InterruptedException e)
+						{
+							e.printStackTrace();
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
 						}
 					}
 				}
@@ -151,6 +217,7 @@ public class AddLinks {
 			{
 				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
 			}
+//		});
 		}
 		@SuppressWarnings("unchecked")
 		Map<String,EnsemblFileRetriever> ensemblFileRetrievers = context.getBean("EnsemblFileRetrievers", Map.class);
@@ -241,7 +308,7 @@ public class AddLinks {
 				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
 			}
 		);
-
+		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		logger.info("Process complete.");
 		context.close();
 	}
