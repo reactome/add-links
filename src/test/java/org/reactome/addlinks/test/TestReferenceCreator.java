@@ -8,6 +8,8 @@ import java.util.Collection;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.GKSchemaAttribute;
+import org.gk.schema.SchemaAttribute;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -37,10 +39,50 @@ public class TestReferenceCreator
 			
 			
 			// Now assert that the object was created properly.
-			Collection<GKInstance> instances = adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceGeneProduct, ReactomeJavaConstants.identifier, "=", identifier);
+			@SuppressWarnings("unchecked")
+			Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceGeneProduct, ReactomeJavaConstants.identifier, "=", identifier);
 			System.out.println(instances.size());
 			assertTrue(instances.size() == 1);
-			System.out.println(instances.iterator().next());
+			GKInstance createdInstance = instances.iterator().next(); 
+			System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.identifier));
+			
+			String createdInstanceIdentifier = (String) createdInstance.getAttributeValue(ReactomeJavaConstants.identifier); 
+			
+			assertTrue(createdInstanceIdentifier.equals( identifier ));
+			
+			System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase));
+			
+			assertTrue( (((GKInstance)createdInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getAttributeValue(ReactomeJavaConstants.name)).toString().toLowerCase().equals("flybase") );
+			
+			System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.referenceGene));
+
+			System.out.println("Attributes: ");
+			
+			((Collection<GKSchemaAttribute>)createdInstance.getSchemaAttributes()).stream().forEach( x -> {
+				try
+				{
+					System.out.println( ((GKSchemaAttribute)x).getName() +": "+ createdInstance.getAttributeValue((SchemaAttribute)x));
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			} );
+			
+			System.out.println("Referrers:");
+			
+			createdInstance.getReferers().keySet().forEach( x -> {
+				try
+				{
+					System.out.println( x );
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			} );
+			
+			System.out.println("Instance: " + createdInstance);
 		}
 		catch (Exception e)
 		{
