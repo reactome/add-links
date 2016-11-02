@@ -9,13 +9,9 @@ import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.persistence.PersistenceManager;
-import org.gk.persistence.XMLFileAdaptor;
 import org.gk.schema.GKSchemaAttribute;
-import org.gk.schema.GKSchemaClass;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidAttributeValueException;
-import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.gk.util.GKApplicationUtilities;
 
@@ -80,83 +76,59 @@ public class ReferenceCreator
 
 		if (this.identifiers != null && this.identifiers.size() > 0)
 		{
-//			GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
-//			if (instanceEdit != null)
+			// If the identifiers already exist, they should be deleted and
+			// then re-added.
+			for (GKInstance identifier : this.identifiers)
 			{
-				// If the identifiers already exist, they should be deleted and
-				// then re-added.
-				for (GKInstance identifier : this.identifiers)
+				try
 				{
-					try
-					{
-						logger.debug( "Identifier {} already existed, but it shouldn't have. We will delete it so it can be added fresh.", identifier.getDisplayName());
-						this.dbAdapter.deleteInstance(identifier);
-
-//						identifier.addAttributeValue(attribute, identifierValue);
-						// TODO: Also need to create an InstanceEdit to track
-						// the modifications.
-
-//						identifier.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
-
-//						this.dbAdapter.updateInstance(identifier);
-
-					} catch (InvalidAttributeException e)
-					{
-						logger.error("The attribte {} is invalid.", attribute);
-						e.printStackTrace();
-					} catch (InvalidAttributeValueException e)
-					{
-						logger.error("The value \"{}\" given for the attribute \"{}\" is not a valid value.", attribute,
-								identifierValue);
-						e.printStackTrace();
-					} catch (Exception e)
-					{
-						e.printStackTrace();
-					}
+					logger.warn( "Identifier {} already existed, but it shouldn't have. We will delete it so it can be added fresh.", identifier.getDisplayName());
+					this.dbAdapter.deleteInstance(identifier);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
 				}
 			}
-//			else
-//			{
-//				logger.error("InstanceEdit was null. Cannot create/update Identifiers without a valid InstanceEdit!");
-//				// throw a runtime exception - this type of error should
-//				// terminate the program.
-//				throw new RuntimeException("Could not create an InstanceEdit. Aborting execution.");
-//			}
 		}
-		// Else, the identifier does not yet exist in the database so just
-		// create it as new.
-		//else
+		
+		// Create a new instance of the necessary type.
+		GKInstance identifierInstance = new GKInstance(this.schemaClass,null,this.dbAdapter);
+		
+		//logger.debug("Available attributes: {}", this.schemaClass.getAttributes());
+		
+		try
 		{
-			// Create a new instance of the necessary type.
-			GKInstance identifierInstance = new GKInstance(this.schemaClass,null,this.dbAdapter);
+			GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
+			//identifierInstance.addAttributeValue(attribute, identifierValue);
+			// Need to create an InstanceEdit to track
+			// the modifications.
+			identifierInstance.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
+			//this.dbAdapter.updateInstance(identifierInstance);
 			
-			logger.debug("Available attributes: {}", this.schemaClass.getAttributes());
+			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
+			GKSchemaAttribute nameAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.name);
+			GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
+			identifierInstance.addAttributeValue(nameAttribute,referenceToValue);
+			identifierInstance.addAttributeValue(identifierAttribute, identifierValue);
+			GKInstance refDBInstance = getReferenceDatabase(refDB);
+			identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
 			
-			try
-			{
-				GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
-				GKSchemaAttribute nameAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.name);
-				GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
-				identifierInstance.addAttributeValue(nameAttribute,referenceToValue);
-				identifierInstance.addAttributeValue(identifierAttribute, identifierValue);
-				GKInstance refDBInstance = getReferenceDatabase(refDB);
-				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
-				
-				this.dbAdapter.storeInstance(identifierInstance);
-			}
-			catch (InvalidAttributeException e)
-			{
-				e.printStackTrace();
-			}
-			catch (InvalidAttributeValueException e)
-			{
-				e.printStackTrace();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
+			this.dbAdapter.storeInstance(identifierInstance);
 		}
+		/*catch (InvalidAttributeException e)
+		{
+			e.printStackTrace();
+		}
+		catch (InvalidAttributeValueException e)
+		{
+			e.printStackTrace();
+		}*/
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	
 	}
 
 	/**
@@ -189,14 +161,18 @@ public class ReferenceCreator
 			instanceEdit.getDBID();
 			instanceEdit.setAttributeValue(ReactomeJavaConstants.note, "crossReference inserted by " + creatorName);
 			this.dbAdapter.updateInstance(instanceEdit);
-		} catch (InvalidAttributeException e)
+		}
+		catch (InvalidAttributeException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidAttributeValueException e)
+		}
+		catch (InvalidAttributeValueException e)
 		{
+			
 			e.printStackTrace();
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,19 +181,25 @@ public class ReferenceCreator
 		return instanceEdit;
 	}
 
-	private static GKInstance createDefaultIE(MySQLAdaptor dba, Long defaultPersonId, boolean needStore)
-			throws Exception
+	private static GKInstance createDefaultIE(MySQLAdaptor dba, Long defaultPersonId, boolean needStore) throws Exception
 	{
 		GKInstance defaultPerson = dba.fetchInstance(defaultPersonId);
-		DefaultInstanceEditHelper ieHelper = new DefaultInstanceEditHelper();
-		GKInstance newIE = ieHelper.createDefaultInstanceEdit(defaultPerson);
-		newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
-		InstanceDisplayNameGenerator.setDisplayName(newIE);
-		if (needStore)
+		if (defaultPerson != null)
 		{
-			dba.storeInstance(newIE);
+			DefaultInstanceEditHelper ieHelper = new DefaultInstanceEditHelper();
+			GKInstance newIE = ieHelper.createDefaultInstanceEdit(defaultPerson);
+			newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
+			InstanceDisplayNameGenerator.setDisplayName(newIE);
+			if (needStore)
+			{
+				dba.storeInstance(newIE);
+			}
+			return newIE;
 		}
-		return newIE;
+		else
+		{
+			throw new Exception("Could not fetch Person entity with ID " + defaultPersonId + ". Please check that a Person entity exists in the database with this ID.");
+		}
 	}
 
 	public void setSchemaClass(SchemaClass schemaClass)
