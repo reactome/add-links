@@ -10,6 +10,7 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.gk.schema.SchemaAttribute;
+import org.gk.schema.SchemaClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -34,13 +35,14 @@ public class TestReferenceCreator
 		{
 			String identifier = "NEWIDENTIFIER";
 			MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
-			ReferenceCreator creator = new ReferenceCreator(identifier, adapter);
-			creator.createIdentifier("attribute", identifier, "", "FlyBase", 8863762, this.getClass().getName());
+			SchemaClass refDNASeqClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence);
+			ReferenceCreator creator = new ReferenceCreator(identifier, refDNASeqClass, adapter);
+			creator.createIdentifier(identifier, "9604116", "FlyBase", 8863762, this.getClass().getName());
 			
 			
 			// Now assert that the object was created properly.
 			@SuppressWarnings("unchecked")
-			Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceGeneProduct, ReactomeJavaConstants.identifier, "=", identifier);
+			Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.identifier, "=", identifier);
 			System.out.println(instances.size());
 			assertTrue(instances.size() == 1);
 			GKInstance createdInstance = instances.iterator().next(); 
@@ -50,11 +52,14 @@ public class TestReferenceCreator
 			
 			assertTrue(createdInstanceIdentifier.equals( identifier ));
 			
-			System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase));
+			Object createdRefDB = createdInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
+			System.out.println(createdRefDB);
 			
-			assertTrue( (((GKInstance)createdInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getAttributeValue(ReactomeJavaConstants.name)).toString().toLowerCase().equals("flybase") );
+			String createdRefDBName = (((GKInstance)createdRefDB).getAttributeValue(ReactomeJavaConstants.name)).toString();
 			
-			System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.referenceGene));
+			assertTrue( createdRefDBName.toLowerCase().equals("flybase") );
+			
+			//System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.referenceGene));
 
 			System.out.println("Attributes: ");
 			
