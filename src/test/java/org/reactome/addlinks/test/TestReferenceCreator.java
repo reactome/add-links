@@ -35,7 +35,7 @@ public class TestReferenceCreator
 			String identifier = "NEWIDENTIFIER";
 			MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 			ReferenceCreator creator = new ReferenceCreator(identifier, adapter);
-			creator.createIdentifier("attribute", identifier, "", "FlyBase", 12345, this.getClass().getName());
+			creator.createIdentifier("attribute", identifier, "", "FlyBase", 8863762, this.getClass().getName());
 			
 			
 			// Now assert that the object was created properly.
