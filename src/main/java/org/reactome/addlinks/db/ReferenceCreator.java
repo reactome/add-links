@@ -44,21 +44,23 @@ public class ReferenceCreator
 	 * @param schemaClass - The Reactome Schema Class of the thing we will create, such as ReferenceDNASequence.
 	 * @param adapter - an existing database adapter.
 	 */
-	public ReferenceCreator(String identifier, SchemaClass schemaClass, MySQLAdaptor adapter)
+	public ReferenceCreator(String identifier, SchemaClass schemaClass, SchemaClass referringSchemaClass, GKSchemaAttribute referringAttribute, MySQLAdaptor adapter)
 	{
 		this.dbAdapter = adapter;
 		this.schemaClass = schemaClass;
-		try
-		{
-			GKSchemaAttribute attribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
-			// Try to see if this Identifier is already in the database.
-			// Ideally, this will not return anything.
-			this.identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(attribute, "=", identifier);
-		} catch (Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.referringToSchemaClass = referringSchemaClass;
+		this.referringAttribute = referringAttribute;
+//		try
+//		{
+//			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
+//			// Try to see if this Identifier is already in the database.
+//			// Ideally, this will not return anything.
+//			this.identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifier);
+//		} catch (Exception e)
+//		{
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 	}
 
@@ -69,8 +71,9 @@ public class ReferenceCreator
 	 * @param refDB - The reference database that this Identifier comes from, such as FlyBase, HMDB, etc...
 	 * @param personID - The ID of the Person who is creating this Identifier.
 	 * @param creatorName - A string which identifiers the code that created this Identifier. 
+	 * @throws Exception if anything goes wrong. 
 	 */
-	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName)
+	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName) throws Exception
 	{
 		
 		// TODO: Need to rethink this: Attempt to create a cross reference. If
@@ -95,31 +98,37 @@ public class ReferenceCreator
 		// exists and matches given ref val, do nothing.
 		// other wise, create it.
 
-		if (this.identifiers != null && this.identifiers.size() > 0)
-		{
-			// If the identifiers already exist, they should be deleted and
-			// then re-added.
-			for (GKInstance identifier : this.identifiers)
-			{
-				try
-				{
-					logger.warn( "Identifier {} already existed, but it shouldn't have. We will delete it so it can be added fresh.", identifier.getDisplayName());
-					this.dbAdapter.deleteInstance(identifier);
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		// Create a new instance of the necessary type.
-		GKInstance identifierInstance = new GKInstance(this.schemaClass,null,this.dbAdapter);
-		
-		//logger.debug("Available attributes: {}", this.schemaClass.getAttributes());
-		
 		try
 		{
+			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
+			// Try to see if this Identifier is already in the database.
+			// Ideally, this will not return anything.
+			this.identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
+		
+			if (this.identifiers != null && this.identifiers.size() > 0)
+			{
+				// If the identifiers already exist, they should be deleted and
+				// then re-added.
+				for (GKInstance identifier : this.identifiers)
+				{
+					try
+					{
+						logger.warn( "Identifier {} already existed, but it shouldn't have. We will delete it so it can be added fresh.", identifier.getDisplayName());
+						this.dbAdapter.deleteInstance(identifier);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+						throw e;
+					}
+				}
+			}
+			
+			// Create a new instance of the necessary type.
+			GKInstance identifierInstance = new GKInstance(this.schemaClass,null,this.dbAdapter);
+			
+			//logger.debug("Available attributes: {}", this.schemaClass.getAttributes());
+
 			GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
 			//identifierInstance.addAttributeValue(attribute, identifierValue);
 			// Need to create an InstanceEdit to track
@@ -127,7 +136,7 @@ public class ReferenceCreator
 			identifierInstance.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
 			//this.dbAdapter.updateInstance(identifierInstance);
 			
-			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
+			//GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
 			
 			GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
 			identifierInstance.addAttributeValue(identifierAttribute, identifierValue);
@@ -143,14 +152,15 @@ public class ReferenceCreator
 			//Set up references between original RefGeneProduc and new RefDNASeq.
 			GKInstance instanceReferredToByIdentifier = this.dbAdapter.fetchInstance(new Long(referenceToValue));
 			//I think ReferenceGeneProduct should probably be parameterized here. Also, referenceGene.
-			SchemaClass refGeneProdClass = this.dbAdapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
-			GKSchemaAttribute xrefAttrib = (GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
+			//SchemaClass refGeneProdClass = this.referringToSchemaClass; //this.dbAdapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
+			GKSchemaAttribute xrefAttrib = this.referringAttribute; //(GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
 			instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
 			this.dbAdapter.updateInstance(instanceReferredToByIdentifier);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
+			throw e;
 		}
 	
 	}
@@ -229,5 +239,15 @@ public class ReferenceCreator
 	public void setSchemaClass(SchemaClass schemaClass)
 	{
 		this.schemaClass = schemaClass;
+	}
+
+	public void setReferringToSchemaClass(SchemaClass referringToSchemaClass)
+	{
+		this.referringToSchemaClass = referringToSchemaClass;
+	}
+
+	public void setReferringAttribute(GKSchemaAttribute referringAttribute)
+	{
+		this.referringAttribute = referringAttribute;
 	}
 }

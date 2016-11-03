@@ -36,8 +36,12 @@ public class TestReferenceCreator
 			String identifier = "NEWIDENTIFIER";
 			MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 			SchemaClass refDNASeqClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence);
-			ReferenceCreator creator = new ReferenceCreator(identifier, refDNASeqClass, adapter);
-			creator.createIdentifier(identifier, "9604116", "FlyBase", 8863762, this.getClass().getName());
+			SchemaClass refGeneProdClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
+			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
+			ReferenceCreator creator = new ReferenceCreator(identifier, refDNASeqClass, refGeneProdClass, refAttrib, adapter);
+			int personID = 8863762;
+			String referenceGeneProductID = "9604116";
+			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName());
 			
 			
 			// Now assert that the object was created properly.
@@ -88,6 +92,14 @@ public class TestReferenceCreator
 			} );
 			
 			System.out.println("Instance: " + createdInstance);
+			
+			//Ok, now that we've verified that the new data is ok, let's make sure the relationship between it and the RefGeneProd exists.
+			
+			GKInstance referenceGeneProduct = adapter.fetchInstance(Long.valueOf(referenceGeneProductID));
+			
+			System.out.println("ReferenceGene on the RefGeneProd: ");
+			assertNotNull(referenceGeneProduct.getAttributeValue(ReactomeJavaConstants.referenceGene));
+			System.out.println( referenceGeneProduct.getAttributeValue(ReactomeJavaConstants.referenceGene) );
 		}
 		catch (Exception e)
 		{
