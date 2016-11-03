@@ -38,7 +38,7 @@ public class TestReferenceCreator
 			SchemaClass refDNASeqClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence);
 			SchemaClass refGeneProdClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
 			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
-			ReferenceCreator creator = new ReferenceCreator(identifier, refDNASeqClass, refGeneProdClass, refAttrib, adapter);
+			ReferenceCreator creator = new ReferenceCreator(refDNASeqClass, refGeneProdClass, refAttrib, adapter);
 			int personID = 8863762;
 			String referenceGeneProductID = "9604116";
 			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName());
