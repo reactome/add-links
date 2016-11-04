@@ -29,6 +29,30 @@ public class TestReferenceCreator
 
 	
 	@Test
+	public void testCreateNewRefMolecule()
+	{
+		try
+		{
+			String identifier = "NewMoleculeIdentifier";
+			MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
+			SchemaClass refMoleculeClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceMolecule);
+			SchemaClass refEntityClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceEntity);
+			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refEntityClass.getAttribute(ReactomeJavaConstants.identifier);
+			
+			ReferenceCreator creator = new ReferenceCreator(refMoleculeClass, refEntityClass, refAttrib, adapter);
+			int personID = 8863762;
+			
+			String referenceEntityID = "5252032";
+			creator.createIdentifier(identifier, referenceEntityID, "CheBI", personID, this.getClass().getName());
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@Test
 	public void testCreateNewIdentifier() throws SQLException
 	{
 		try
