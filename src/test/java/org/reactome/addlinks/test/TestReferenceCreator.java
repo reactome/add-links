@@ -29,36 +29,58 @@ public class TestReferenceCreator
 
 	
 	@Test
-	public void testCreateNewRefMolecule()
+	public void testCreateNewRefMolecule() throws SQLException, Exception
 	{
+		MySQLAdaptor adapter = null;
 		try
 		{
-			String identifier = "NewMoleculeIdentifier";
-			MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
+			String identifier = "NEWMOLECULE";
+			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
+			adapter.debug = true;
+			if (adapter.supportsTransactions())
+			{
+				adapter.startTransaction();
+			}
+			SchemaClass dbIdentifierClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.DatabaseIdentifier);
 			SchemaClass refMoleculeClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceMolecule);
-			SchemaClass refEntityClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceEntity);
-			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refEntityClass.getAttribute(ReactomeJavaConstants.identifier);
+			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refMoleculeClass.getAttribute(ReactomeJavaConstants.crossReference);
 			
-			ReferenceCreator creator = new ReferenceCreator(refMoleculeClass, refEntityClass, refAttrib, adapter);
+			ReferenceCreator creator = new ReferenceCreator(dbIdentifierClass, refMoleculeClass,  refAttrib, adapter);
 			int personID = 8863762;
 			
-			String referenceEntityID = "5252032";
-			creator.createIdentifier(identifier, referenceEntityID, "CheBI", personID, this.getClass().getName());
+			String referenceMoleculeID = "5252032";
+			creator.createIdentifier(identifier, referenceMoleculeID,  "CheBI", personID, this.getClass().getName());
+			
+			if (adapter.supportsTransactions())
+			{
+				adapter.commit();
+			}
 		}
 		catch (Exception e)
 		{
+			if (adapter.supportsTransactions())
+			{
+				adapter.rollback();
+			}
 			e.printStackTrace();
+			fail();
+		}
+		finally
+		{
+			adapter.cleanUp();
 		}
 	}
 	
 	
 	@Test
-	public void testCreateNewIdentifier() throws SQLException
+	public void testCreateNewIdentifier() throws SQLException, Exception
 	{
+		MySQLAdaptor adapter = null;
 		try
 		{
 			String identifier = "NEWIDENTIFIER";
-			MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
+			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
+			adapter.startTransaction();
 			SchemaClass refDNASeqClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence);
 			SchemaClass refGeneProdClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
 			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
@@ -67,7 +89,7 @@ public class TestReferenceCreator
 			String referenceGeneProductID = "9604116";
 			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName());
 			
-			
+			adapter.commit();
 			// Now assert that the object was created properly.
 			@SuppressWarnings("unchecked")
 			Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.identifier, "=", identifier);
@@ -128,9 +150,14 @@ public class TestReferenceCreator
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			assert(false);	
+			adapter.rollback();
+			fail();
+		}
+		finally
+		{
+			adapter.cleanUp();
 		}
 			
-		assert(true);
+		//assert(true);
 	}
 }
