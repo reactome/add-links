@@ -33,7 +33,7 @@ public class ReferenceCreator
 	/**
 	 * 
 	 * @param schemaClass - References that are created by this object will be of type <i>schemaClass</i>.
-	 * @param referringSchemaClass - References that are created by this object will be referred by existing objects of type <i>referringSchemaClass</i>
+	 * @param referringSchemaClass - References that are created by this object will be referred to by existing objects of type <i>referringSchemaClass</i>
 	 * @param referringAttribute - References that are created by this object will be referred to by the <i>referringAttribute</i> of <i>referringSchemaClass</i>
 	 * @param adapter - A database adapter.
 	 */
@@ -69,9 +69,9 @@ public class ReferenceCreator
 				// then re-added.
 				for (GKInstance identifier : identifiers)
 				{
+					logger.warn( "Identifier {} already existed (and has DB_ID {}), but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID));
 					try
 					{
-						logger.warn( "Identifier {} already existed, but it shouldn't have. We will delete it so it can be added fresh.", identifier.getDisplayName());
 						this.dbAdapter.deleteInstance(identifier);
 					}
 					catch (Exception e)
@@ -103,7 +103,9 @@ public class ReferenceCreator
 				GKInstance refDBInstance = getReferenceDatabase(refDB);
 				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
 				//Save changes to the new Identifier.
+				InstanceDisplayNameGenerator.setDisplayName(identifierInstance);
 				long newInstanceID = this.dbAdapter.storeInstance(identifierInstance);
+				logger.debug("Just created new {} with DB_ID: {}", identifierInstance.getSchemClass().getName(), newInstanceID);
 				//...and then immediately grab it.
 				GKInstance createdIdentifier = this.dbAdapter.fetchInstance(newInstanceID);
 				this.dbAdapter.loadInstanceAttributeValues(createdIdentifier);
@@ -111,11 +113,16 @@ public class ReferenceCreator
 	
 				//Set up references between original RefGeneProduc and new RefDNASeq.
 				GKInstance instanceReferredToByIdentifier = this.dbAdapter.fetchInstance(this.referringToSchemaClass.getName(), new Long(referenceToValue));
+				if (instanceReferredToByIdentifier == null)
+				{
+					throw new Exception("Could not find the instance of type " + this.referringToSchemaClass.getName() + " with ID "+referenceToValue );
+				}
 				//I think ReferenceGeneProduct should probably be parameterized here. Also, referenceGene.
 				//SchemaClass refGeneProdClass = this.referringToSchemaClass; //this.dbAdapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
 				GKSchemaAttribute xrefAttrib = this.referringAttribute; //(GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
 				//instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
 				//this.dbAdapter.updateInstance(instanceReferredToByIdentifier);
+				//logger.debug("referringToSchemaClass Available attributes: {}", this.referringToSchemaClass.getAttributes());
 				instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
 				// Only update the relevant attribute, better than updating the entire instance.
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
