@@ -114,8 +114,11 @@ public class ReferenceCreator
 				//I think ReferenceGeneProduct should probably be parameterized here. Also, referenceGene.
 				//SchemaClass refGeneProdClass = this.referringToSchemaClass; //this.dbAdapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
 				GKSchemaAttribute xrefAttrib = this.referringAttribute; //(GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
+				//instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
+				//this.dbAdapter.updateInstance(instanceReferredToByIdentifier);
 				instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
-				this.dbAdapter.updateInstance(instanceReferredToByIdentifier);
+				// Only update the relevant attribute, better than updating the entire instance.
+				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
 			}
 			else
 			{
