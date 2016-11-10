@@ -36,7 +36,7 @@ public class TestReferenceCreator
 		{
 			String identifier = "NEWMOLECULE";
 			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
-			adapter.debug = true;
+			//adapter.debug = true;
 			if (adapter.supportsTransactions())
 			{
 				adapter.startTransaction();
@@ -49,12 +49,68 @@ public class TestReferenceCreator
 			int personID = 8863762;
 			
 			String referenceMoleculeID = "5252032";
-			creator.createIdentifier(identifier, referenceMoleculeID,  "CheBI", personID, this.getClass().getName());
+			String refDBName = "ChEBI";
+			creator.createIdentifier(identifier, referenceMoleculeID,  refDBName, personID, this.getClass().getName());
 			
 			if (adapter.supportsTransactions())
 			{
 				adapter.commit();
 			}
+			
+			//Ok now we have to verify that the thing we pulled out of the database is what we wanted.
+			@SuppressWarnings("unchecked")
+			Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseIdentifier, ReactomeJavaConstants.identifier, "=", identifier);
+			System.out.println(instances.size());
+			assertTrue(instances.size() == 1);
+			GKInstance createdInstance = instances.iterator().next(); 
+			System.out.println(createdInstance.getAttributeValue(ReactomeJavaConstants.identifier));
+			
+			String createdInstanceIdentifier = (String) createdInstance.getAttributeValue(ReactomeJavaConstants.identifier); 
+			
+			assertTrue(createdInstanceIdentifier.equals( identifier ));
+			
+			Object createdRefDB = createdInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
+			System.out.println(createdRefDB);
+			
+			String createdRefDBName = (((GKInstance)createdRefDB).getAttributeValue(ReactomeJavaConstants.name)).toString();
+			
+			assertTrue( createdRefDBName.toLowerCase().equals(refDBName.toLowerCase()) );
+			
+			System.out.println("Attributes: ");
+			
+			((Collection<GKSchemaAttribute>)createdInstance.getSchemaAttributes()).stream().forEach( x -> {
+				try
+				{
+					System.out.println( ((GKSchemaAttribute)x).getName() +": "+ createdInstance.getAttributeValue((SchemaAttribute)x));
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			} );
+			
+			System.out.println("Referrers:");
+			
+			createdInstance.getReferers().keySet().forEach( x -> {
+				try
+				{
+					System.out.println( x );
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			} );
+			
+			System.out.println("Instance: " + createdInstance);
+			
+			//Ok, now that we've verified that the new data is ok, let's make sure the relationship between it and the RefGeneProd exists.
+			
+			GKInstance referenceMolecule = adapter.fetchInstance(Long.valueOf(referenceMoleculeID));
+			
+			System.out.println("ReferenceGene on the RefGeneProd: ");
+			assertNotNull(referenceMolecule.getAttributeValue(ReactomeJavaConstants.crossReference));
+			System.out.println( referenceMolecule.getAttributeValue(ReactomeJavaConstants.crossReference) );
 		}
 		catch (Exception e)
 		{
@@ -80,7 +136,11 @@ public class TestReferenceCreator
 		{
 			String identifier = "NEWIDENTIFIER";
 			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
-			adapter.startTransaction();
+			
+			if (adapter.supportsTransactions())
+			{
+				adapter.startTransaction();
+			}
 			SchemaClass refDNASeqClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence);
 			SchemaClass refGeneProdClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
 			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
@@ -88,8 +148,10 @@ public class TestReferenceCreator
 			int personID = 8863762;
 			String referenceGeneProductID = "9604116";
 			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName());
-			
-			adapter.commit();
+			if (adapter.supportsTransactions())
+			{
+				adapter.commit();
+			}
 			// Now assert that the object was created properly.
 			@SuppressWarnings("unchecked")
 			Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.identifier, "=", identifier);
@@ -150,7 +212,10 @@ public class TestReferenceCreator
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			adapter.rollback();
+			if (adapter.supportsTransactions())
+			{
+				adapter.rollback();
+			}
 			fail();
 		}
 		finally
@@ -158,6 +223,5 @@ public class TestReferenceCreator
 			adapter.cleanUp();
 		}
 			
-		//assert(true);
 	}
 }
