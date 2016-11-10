@@ -12,43 +12,25 @@
 
 		<entry key="BioGPS Gene">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry key="Name">
-					<value type="java.lang.String">BioGPS Gene</value>
-				</entry>
-				<entry key="URL">
-					<value type="java.lang.String">http://biogps.org/</value>
-				</entry>
-				<entry key="AccessURL">
-					<value type="java.lang.String">http://biogps.org/gene/###ID###</value>
-				</entry>
+				<entry key="Name" value="BioGPS Gene" />
+				<entry key="URL" value="http://biogps.org/"/>
+				<entry key="AccessURL" value="http://biogps.org/gene/###ID###"/>
 			</map>
 		</entry>
 
 		<entry key="BioModels">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry key="Name">
-					<value type="java.lang.String">BioModels</value>
-				</entry>
-				<entry key="URL">
-					<value type="java.lang.String">http://www.ebi.ac.uk/biomodels/</value>
-				</entry>
-				<entry key="AccessURL">
-					<value type="java.lang.String">http://www.ebi.ac.uk/biomodels-main/publ-model.do?mid=###ID###</value>
-				</entry>
+				<entry key="Name" value="BioModels" />
+				<entry key="URL" value="http://www.ebi.ac.uk/biomodels/"/>
+				<entry key="AccessURL" value="http://www.ebi.ac.uk/biomodels-main/publ-model.do?mid=###ID###"/>
 			</map>
 		</entry>
 		
 		<entry key="Brenda">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry key="Name">
-					<value type="java.lang.String">Brenda</value>
-				</entry>
-				<entry key="URL">
-					<value type="java.lang.String">http://www.brenda-enzymes.info/index.php4</value>
-				</entry>
-				<entry key="AccessURL">
-					<value type="java.lang.String">http://www.brenda-enzymes.info/php/result_flat.php4?ecno=###ID###</value>
-				</entry>
+				<entry key="Name" value="Brenda" />
+				<entry key="URL" value="http://www.brenda-enzymes.info/index.php4"/>
+				<entry key="AccessURL" value="http://www.brenda-enzymes.info/php/result_flat.php4?ecno=###ID###"/>
 			</map>
 		</entry>
 		
@@ -56,16 +38,12 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name" value-type="java.util.List">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">CTD Gene</value>
-						<value type="java.lang.String">Comparative Toxicogenomics Database Gene</value>
+						<value>CTD Gene</value>
+						<value>Comparative Toxicogenomics Database Gene</value>
 					</list>
 				</entry>
-				<entry key="URL">
-					<value type="java.lang.String">http://ctd.mdibl.org/</value>
-				</entry>
-				<entry key="AccessURL">
-					<value type="java.lang.String">http://ctd.mdibl.org/detail.go?type=gene&amp;db=GENE&amp;acc=###ID###</value>
-				</entry>
+				<entry key="URL" value="http://ctd.mdibl.org/"/>
+				<entry key="AccessURL" value="http://ctd.mdibl.org/detail.go?type=gene&amp;db=GENE&amp;acc=###ID###"/>
 			</map>
 		</entry>
 		
@@ -73,16 +51,12 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name" value-type="java.util.List">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">dbSNP Gene</value>
-						<value type="java.lang.String">NCBI dbSNP</value>
+						<value>dbSNP Gene</value>
+						<value>NCBI dbSNP</value>
 					</list>
 				</entry>
-				<entry key="URL">
-					<value type="java.lang.String">http://www.ncbi.nlm.nih.gov/projects/SNP/</value>
-				</entry>
-				<entry key="AccessURL">
-					<value type="java.lang.String">http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?locusId=###ID###</value>
-				</entry>
+				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/projects/SNP/"/>
+				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?locusId=###ID###"/>
 			</map>
 		</entry>
 		
@@ -114,11 +88,12 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">Gene Ontology</value>
-						<value type="java.lang.String">GO</value>
+						<value>Gene Ontology</value>
+						<value>GO</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.geneontology.org" />
+				<!-- It looks like the old Relase code doesn't have an accessURL for GO. -->
 			</map>
 		</entry>
 		
@@ -150,8 +125,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">KEGG Gene</value>
-						<value type="java.lang.String">KEGG</value>
+						<value>KEGG Gene</value>
+						<value>KEGG</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.genome.jp/" />
@@ -163,8 +138,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">OMIM</value>
-						<value type="java.lang.String">MIM</value>
+						<value>OMIM</value>
+						<value>MIM</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=OMIM" />
@@ -184,8 +159,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">PDB</value>
-						<value type="java.lang.String">Protein Data Bank</value>
+						<value>PDB</value>
+						<value>Protein Data Bank</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.pdb.org" />
@@ -197,8 +172,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">PRO</value>
-						<value type="java.lang.String">Protein Ontology</value>
+						<value>PRO</value>
+						<value>Protein Ontology</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://pir.georgetown.edu/pro" />
@@ -226,8 +201,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">UniProt</value>
-						<value type="java.lang.String">SwissProt</value>
+						<value>UniProt</value>
+						<value>SwissProt</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.uniprot.org" />
@@ -239,8 +214,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="Name">
 					<list value-type="java.lang.String">
-						<value type="java.lang.String">UCSC human</value>
-						<value type="java.lang.String">UCSC</value>
+						<value>UCSC human</value>
+						<value>UCSC</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://genome.ucsc.edu/" />
@@ -275,7 +250,7 @@
 		<!--
 		TODO: ZINC has some additional URLs that we can add, for example:
 		http://zinc15.docking.org/orthologs/OPRM_HUMAN/substances/subsets/fda
-		where OPRM_HUMAN is the secondary identifier ("OPRM") with species ("_HUMAN") as suffix.
+		where "OPRM_HUMAN" is the Secondary Identifier ("OPRM") with the species ("_HUMAN") as suffix.
 		-->
 		
 		<entry key="HMDB_protein">
