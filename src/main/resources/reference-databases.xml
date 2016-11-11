@@ -7,8 +7,9 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<util:map key-type="java.lang.String" value-type="java.util.map"
-		id="referenceDatabases">
+	<util:map id="referenceDatabases"
+				key-type="java.lang.String"
+				value-type="java.util.map">
 
 		<entry key="BioGPS Gene">
 			<map key-type="java.lang.String" value-type="java.lang.String">
@@ -36,7 +37,7 @@
 		
 		<entry key="CTD Gene">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="Name" value-type="java.util.List">
+				<entry key="Name">
 					<list value-type="java.lang.String">
 						<value>CTD Gene</value>
 						<value>Comparative Toxicogenomics Database Gene</value>
@@ -46,10 +47,10 @@
 				<entry key="AccessURL" value="http://ctd.mdibl.org/detail.go?type=gene&amp;db=GENE&amp;acc=###ID###"/>
 			</map>
 		</entry>
-		
+
 		<entry key="dbSNP Gene">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="Name" value-type="java.util.List">
+				<entry key="Name">
 					<list value-type="java.lang.String">
 						<value>dbSNP Gene</value>
 						<value>NCBI dbSNP</value>
@@ -93,7 +94,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.geneontology.org" />
-				<!-- It looks like the old Relase code doesn't have an accessURL for GO. -->
+				<!-- It looks like the old Release code doesn't have an accessURL for GO... -->
 			</map>
 		</entry>
 		
@@ -246,13 +247,11 @@
 				<entry key="AccessURL" value="http://zinc15.docking.org/substances/###ID###" />
 			</map>
 		</entry>
-		
 		<!--
 		TODO: ZINC has some additional URLs that we can add, for example:
 		http://zinc15.docking.org/orthologs/OPRM_HUMAN/substances/subsets/fda
 		where "OPRM_HUMAN" is the Secondary Identifier ("OPRM") with the species ("_HUMAN") as suffix.
 		-->
-		
 		<entry key="HMDB_protein">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="Name" value="HMDB_protein" />
