@@ -39,7 +39,8 @@ public class TestReferenceDatabaseCreator
 		String refDBAccessUrl = "http://test.reference.database/?##ID##";
 		
 		SchemaAttribute refDBNameAttrib = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase).getAttribute(ReactomeJavaConstants.name);
-		Collection<GKInstance> instances = adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
 		
 		//This test should clean itself up, but in case it doesn't work, delete the instances if they DO exist.
 		if (instances != null)
@@ -62,7 +63,8 @@ public class TestReferenceDatabaseCreator
 			{
 				assertEquals(instance.getAttributeValue(ReactomeJavaConstants.url),refDBUrl);
 				assertEquals(instance.getAttributeValue(ReactomeJavaConstants.accessUrl),refDBAccessUrl);
-				Collection<String> names = instance.getAttributeValuesList(ReactomeJavaConstants.name);
+				@SuppressWarnings("unchecked")
+				Collection<String> names = (Collection<String>)instance.getAttributeValuesList(ReactomeJavaConstants.name);
 				assertTrue(names.size() == 2);
 				for (String name : names)
 				{
@@ -100,7 +102,8 @@ public class TestReferenceDatabaseCreator
 		String refDBUrl = "http://test.reference.database/";
 		String refDBAccessUrl = "http://test.reference.database/?##ID##";
 		SchemaAttribute refDBNameAttrib = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase).getAttribute(ReactomeJavaConstants.name);
-		Collection<GKInstance> instances = adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
 		
 		//This test should clean itself up, but in case it doesn't work, delete the instances if they DO exist.
 		if (instances != null)
@@ -119,7 +122,7 @@ public class TestReferenceDatabaseCreator
 		String refDBAlias2 = "Test_Ref_DB_2";
 		creator.createReferenceDatabase(refDBUrl, refDBAccessUrl, refDBName, refDBAlias2);
 		
-		instances = adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
+		instances = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
 		assertTrue(instances.size() == 1);
 		instances.forEach( instance -> {
 			System.out.println("Checking instance: "+instance.getDBID()+" "+instance.getDisplayName());
@@ -127,7 +130,8 @@ public class TestReferenceDatabaseCreator
 			{
 				assertEquals(instance.getAttributeValue(ReactomeJavaConstants.url),refDBUrl);
 				assertEquals(instance.getAttributeValue(ReactomeJavaConstants.accessUrl),refDBAccessUrl);
-				Collection<String> names = instance.getAttributeValuesList(ReactomeJavaConstants.name);
+				@SuppressWarnings("unchecked")
+				Collection<String> names = (Collection<String>)instance.getAttributeValuesList(ReactomeJavaConstants.name);
 				assertTrue(names.size() == 3);
 				for (String name : names)
 				{
