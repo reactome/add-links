@@ -84,6 +84,7 @@ public final class ReferenceGeneProductCache
 	private static int port;
 	
 	private static boolean cacheInitializedMessageHasBeenPrinted = false;
+	private static MySQLAdaptor adapter;
 	
 	public static synchronized ReferenceGeneProductCache getInstance() 
 	{
@@ -99,6 +100,11 @@ public final class ReferenceGeneProductCache
 		}
 		
 		return ReferenceGeneProductCache.cache;
+	}
+	
+	public static void setAdapter(MySQLAdaptor adapter)
+	{
+		ReferenceGeneProductCache.adapter = adapter;
 	}
 	
 	public static void setDbParams(String host, String database, String username, String password, int port)

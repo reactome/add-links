@@ -2,7 +2,6 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +44,9 @@ public class AddLinks {
 		// Before we do anything else, we need to set up the ReferenceDatabases, since these won't actually exist in the database slice
 		// after orthoinference.
 		Map<String,Map<String,?>> referenceDatabases = (Map<String, Map<String,?>>) context.getBean("referenceDatabases");
-		MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58", "root", "",3306);
+		
+		//MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58", "root", "",3306);
+		MySQLAdaptor adapter = (MySQLAdaptor) context.getBean("dbAdapter",MySQLAdaptor.class);
 		ReferenceDatabaseCreator refDBCreator = new ReferenceDatabaseCreator(adapter);
 		for (String key : referenceDatabases.keySet())
 		{
@@ -63,7 +64,7 @@ public class AddLinks {
 				refDBCreator.createReferenceDatabase((String)referenceDatabase.get("URL"), (String)referenceDatabase.get("AccessURL"), names);
 			}
 		}
-		
+		System.exit(0);
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
 		if (filterRetrievers)
 		{
@@ -98,7 +99,8 @@ public class AddLinks {
 		
 		//Now download mapping data from Uniprot.
 		//TODO: Get DB parameters from config file.
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3306);
+		//ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3306);
+		ReferenceGeneProductCache.setAdapter(adapter);
 
 		
 		@SuppressWarnings("unchecked")
