@@ -2,7 +2,6 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,11 +16,13 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gk.persistence.MySQLAdaptor;
 import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
+import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceGeneProductCache;
 import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
@@ -38,12 +39,33 @@ public class AddLinks {
 		Properties applicationProps = new Properties();
 		applicationProps.load(AddLinks.class.getClassLoader().getResourceAsStream("addlinks.properties"));
 		
-		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;
-		
 		ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
-		//TODO: Add the ability to filter so that only certain beans are selected and run.
 		
+		// Before we do anything else, we need to set up the ReferenceDatabases, since these won't actually exist in the database slice
+		// after orthoinference.
+		Map<String,Map<String,?>> referenceDatabases = (Map<String, Map<String,?>>) context.getBean("referenceDatabases");
 		
+		//MySQLAdaptor adapter = new MySQLAdaptor("localhost", "test_reactome_58", "root", "",3306);
+		MySQLAdaptor adapter = (MySQLAdaptor) context.getBean("dbAdapter",MySQLAdaptor.class);
+		ReferenceDatabaseCreator refDBCreator = new ReferenceDatabaseCreator(adapter);
+		for (String key : referenceDatabases.keySet())
+		{
+			logger.info("referenceDatabase setup, key: {}", key);
+			Map<String,?> referenceDatabase = referenceDatabases.get(key);
+			// "name" could be a single value or a list of values.
+			if (referenceDatabase.get("Name") instanceof String)
+			{
+				refDBCreator.createReferenceDatabase((String)referenceDatabase.get("URL"), (String)referenceDatabase.get("AccessURL"), (String) referenceDatabase.get("Name") );
+			}
+			else if (referenceDatabase.get("Name") instanceof List)
+			{
+				@SuppressWarnings("unchecked")
+				String[] names = ((List<String>) referenceDatabase.get("Name")).stream().toArray(String[]::new);
+				refDBCreator.createReferenceDatabase((String)referenceDatabase.get("URL"), (String)referenceDatabase.get("AccessURL"), names);
+			}
+		}
+		
+		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
 		if (filterRetrievers)
 		{
 			retrieversToExecute = context.getBean("fileRetrieverFilter",List.class);
@@ -77,7 +99,8 @@ public class AddLinks {
 		
 		//Now download mapping data from Uniprot.
 		//TODO: Get DB parameters from config file.
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3307);
+		//ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3306);
+		ReferenceGeneProductCache.setAdapter(adapter);
 
 		
 		@SuppressWarnings("unchecked")
@@ -309,6 +332,9 @@ public class AddLinks {
 			}
 		);
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
+		
+		//Before each set of IDs is updated in the database, maybe take a database backup?
+		
 		logger.info("Process complete.");
 		context.close();
 	}
