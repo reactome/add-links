@@ -75,9 +75,10 @@ public class ReferenceDatabaseCreator
 				}
 
 				newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
-				newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, url);
+				newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
+				newReferenceDB.setDbAdaptor(this.adapter);
 				InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
-				adapter.storeInstance(newReferenceDB);
+				this.adapter.storeInstance(newReferenceDB);
 			}
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
 			else
