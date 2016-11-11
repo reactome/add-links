@@ -9,14 +9,14 @@
 
 	<context:property-placeholder location="classpath:auth.properties" />
 
+	<import resource="reference-databases.xml"/>
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
 	<import resource="ensembl-file-retrievers.xml"/>
 	<import resource="file-processors.xml"/>
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-	
-		<!-- <value>EnsemblToALL</value>
+		<value>EnsemblToALL</value>
 		<value>EnsemblGeneToALL</value>
 		<value>EnsemblProteinToALL</value>
 		<value>EnsemblTranscriptToALL</value>
@@ -27,21 +27,22 @@
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToENSEMBL</value>
 		<value>UniProtToWormbase</value>
-		<value>PROToReferencePeptideSequence</value>
+ 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
 		<value>OrphanetToUniprotReferenceDNASequence</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>OrthologsFromZinc</value>
 		<value>Zinc</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<!-- <value>ENSEMBLFileProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
+ 		<value>ENSEMBLFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -49,11 +50,10 @@
 		<value>FlyBaseFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>IntActFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value> -->
-		<value>UniprotToEnsemblFileProcessor</value>
+ 		<value>UniprotToEnsemblFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
-		<value>UniprotToRNAFileProcessor</value>
+		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>UniprotOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
