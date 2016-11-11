@@ -64,7 +64,7 @@ public class AddLinks {
 				refDBCreator.createReferenceDatabase((String)referenceDatabase.get("URL"), (String)referenceDatabase.get("AccessURL"), names);
 			}
 		}
-		System.exit(0);
+		
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
 		if (filterRetrievers)
 		{
