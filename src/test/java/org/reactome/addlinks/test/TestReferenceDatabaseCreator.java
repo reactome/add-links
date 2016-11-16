@@ -16,13 +16,12 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
+import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 
-@PowerMockIgnore({"javax.management.*","javax.net.ssl.*"})
+@PowerMockIgnore({"javax.management.*","javax.net.ssl.*","javax.security.*"})
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ java.net.URI.class,
-				org.apache.commons.net.ftp.FTPClient.class,
-				org.reactome.addlinks.db.ReferenceDatabaseCreator.class,
-				org.apache.http.impl.client.HttpClients.class })
+@PrepareForTest({ org.reactome.addlinks.db.ReferenceDatabaseCreator.class,
+				org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator.class })
 public class TestReferenceDatabaseCreator
 {
 
@@ -154,6 +153,33 @@ public class TestReferenceDatabaseCreator
 		{
 			// If everything was OK, let's delete the instance (don't want to clutter up the database.
 			adapter.deleteInstance(instance);
+		}
+	}
+	
+	@Test
+	public void testEnsemblRefDBCreator() throws SQLException, InvalidAttributeException, Exception
+	{
+		MySQLAdaptor adapter = null;
+		adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
+		
+//		String refDBName = "TestReferenceDatabase";
+//		String refDBAlias = "TestRefDB";
+//		String refDBUrl = "http://test.reference.database/";
+//		String refDBAccessUrl = "http://test.reference.database/?##ID##";
+//		SchemaAttribute refDBNameAttrib = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase).getAttribute(ReactomeJavaConstants.name);
+//		@SuppressWarnings("unchecked")
+//		Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
+		
+		try{
+			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+		
+			EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
 		}
 	}
 }
