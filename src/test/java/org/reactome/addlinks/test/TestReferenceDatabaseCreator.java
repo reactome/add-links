@@ -160,19 +160,10 @@ public class TestReferenceDatabaseCreator
 	public void testEnsemblRefDBCreator() throws SQLException, InvalidAttributeException, Exception
 	{
 		MySQLAdaptor adapter = null;
-		adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
-		
-//		String refDBName = "TestReferenceDatabase";
-//		String refDBAlias = "TestRefDB";
-//		String refDBUrl = "http://test.reference.database/";
-//		String refDBAccessUrl = "http://test.reference.database/?##ID##";
-//		SchemaAttribute refDBNameAttrib = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase).getAttribute(ReactomeJavaConstants.name);
-//		@SuppressWarnings("unchecked")
-//		Collection<GKInstance> instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
-		
-		try{
+		try
+		{
+			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
-		
 			EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases();
 		}
