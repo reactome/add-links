@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * This class will query ENSEMBL to get a list of supported species,
@@ -37,11 +38,8 @@ public final class EnsemblReferenceDatabaseGenerator
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
 	private static final String xpathForSpeciesNames = "/opt/data/species/@name";
 	private static XPathExpression pathToSpeciesNames;
-	
-	public enum EnsemblRefDBType{
-		PROTEIN, GENE, TRANSCRIPT
-	}
-	
+
+
 	static
 	{
 		try
@@ -78,8 +76,8 @@ public final class EnsemblReferenceDatabaseGenerator
 			//The response will be a big XML string, we need to extract all /opt/data/species/@name from it.
 			String s = EntityUtils.toString(response.getEntity());
 			InputStream inStream = new ByteArrayInputStream(s.getBytes());
-			//InputSource source = new InputSource(inStream);
-			NodeList nodeList = (NodeList) EnsemblReferenceDatabaseGenerator.pathToSpeciesNames.evaluate(inStream, XPathConstants.NODESET);
+			InputSource source = new InputSource(inStream);
+			NodeList nodeList = (NodeList) EnsemblReferenceDatabaseGenerator.pathToSpeciesNames.evaluate(source, XPathConstants.NODESET);
 			if (nodeList.getLength() > 0)
 			{
 				for (int i = 0 ; i < nodeList.getLength() ; i ++)
@@ -91,12 +89,12 @@ public final class EnsemblReferenceDatabaseGenerator
 					{
 						String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
 						logger.debug("Adding an ENSEMBL ReferenceDatabase for species: {} with accessURL: {}", speciesName, speciesURL);
-						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, speciesName, speciesName.replaceAll("_", " "));
+						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, speciesName, speciesName.replaceAll(" ", "_"));
 					} catch (Exception e)
 					{
 						logger.error("An error occurred while trying to create an Ensembl species-specific URL: {}",e.getMessage());
 						e.printStackTrace();
-						// Throw this back up the stack: there's probably no good way to recover from this. 
+						// Throw this back up the stack: there's probably no good way to recover from this without more information.
 						throw e;
 					}
 				}
