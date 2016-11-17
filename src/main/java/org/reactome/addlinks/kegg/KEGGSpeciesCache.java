@@ -16,7 +16,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class KEGGReferenceDatabaseGenerator
+public final class KEGGSpeciesCache
 {
 	private static final String COMMON_NAME = "CommonName";
 	private static final String KEGG_CODE = "KEGGCode";
@@ -77,7 +77,7 @@ public final class KEGGReferenceDatabaseGenerator
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
-	private KEGGReferenceDatabaseGenerator()
+	private KEGGSpeciesCache()
 	{
 		
 	}
@@ -88,7 +88,7 @@ public final class KEGGReferenceDatabaseGenerator
 		// in the life of the program, so probably better to move it to  a static initializer
 		// (or something like that).
 		
-		URI uri = new URI(KEGGReferenceDatabaseGenerator.speciesURL);
+		URI uri = new URI(KEGGSpeciesCache.speciesURL);
 		HttpGet get = new HttpGet(uri );
 		//Need to multiply by 1000 because timeouts are in milliseconds.
 		//RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT).build();
@@ -133,7 +133,7 @@ public final class KEGGReferenceDatabaseGenerator
 				}
 				
 			}
-			logger.info("{} keys added to the KEGG species map.",KEGGReferenceDatabaseGenerator.speciesMap.keySet().size());
+			logger.info("{} keys added to the KEGG species map.",KEGGSpeciesCache.speciesMap.keySet().size());
 		}
 	}
 	
@@ -144,7 +144,7 @@ public final class KEGGReferenceDatabaseGenerator
 	 */
 	public static String getKEGGCode(String name)
 	{
-		Map<String,String> m = KEGGReferenceDatabaseGenerator.speciesMap.get(name);
+		Map<String,String> m = KEGGSpeciesCache.speciesMap.get(name);
 		String code = null;
 		if (m != null)
 		{
@@ -161,7 +161,7 @@ public final class KEGGReferenceDatabaseGenerator
 	 */
 	public static String getKEGGCommonName(String name)
 	{
-		Map<String,String> m = KEGGReferenceDatabaseGenerator.speciesMap.get(name);
+		Map<String,String> m = KEGGSpeciesCache.speciesMap.get(name);
 		String commonName = null;
 		if (m != null)
 		{
