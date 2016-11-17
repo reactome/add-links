@@ -87,6 +87,8 @@ public final class EnsemblReferenceDatabaseGenerator
 					//Now that we have a species name, we can create a species-specific ReferenceDatabase.
 					try
 					{
+						//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
+						//and only create a ReferenceDatbase object when it's discovered that one is needed.
 						String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
 						logger.debug("Adding an ENSEMBL ReferenceDatabase for species: {} with accessURL: {}", speciesName, speciesURL);
 						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, speciesName, speciesName.replaceAll(" ", "_"));
