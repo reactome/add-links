@@ -2,6 +2,7 @@ package org.reactome.addlinks.test;
 
 import static org.junit.Assert.*;
 
+
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -17,6 +18,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
+
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*","javax.security.*"})
 @RunWith(PowerMockRunner.class)
