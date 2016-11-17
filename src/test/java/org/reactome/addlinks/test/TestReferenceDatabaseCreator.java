@@ -2,6 +2,8 @@ package org.reactome.addlinks.test;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -17,6 +19,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*","javax.security.*"})
 @RunWith(PowerMockRunner.class)
@@ -172,5 +175,23 @@ public class TestReferenceDatabaseCreator
 			e.printStackTrace();
 			fail();
 		}
+	}
+	
+	@Test
+	public void testKEGGSpeciesMapping()
+	{
+		try
+		{
+			KEGGReferenceDatabaseGenerator.generateSpeciesMapping();
+			System.out.println(KEGGReferenceDatabaseGenerator.getKEGGCode("Homo sapiens"));
+			assertEquals("hsa",KEGGReferenceDatabaseGenerator.getKEGGCode("Homo sapiens"));
+			assertEquals("human",KEGGReferenceDatabaseGenerator.getKEGGCommonName("Homo sapiens"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+		
 	}
 }
