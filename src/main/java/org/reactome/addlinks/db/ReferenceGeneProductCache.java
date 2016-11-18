@@ -2,6 +2,7 @@ package org.reactome.addlinks.db;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,11 +12,14 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 
 public final class ReferenceGeneProductCache 
 {
-	
+	//TODO: Update this class so that it can cache other ReferenceEntities: ReferenceMolecules, ReferenceIsoForm and ReferenceDNASequences, for example.
 	public class ReferenceGeneProductShell
 	{
 		private String displayName;
@@ -121,48 +125,59 @@ public final class ReferenceGeneProductCache
 		try
 		{
 			MySQLAdaptor adapter = new MySQLAdaptor(ReferenceGeneProductCache.host, ReferenceGeneProductCache.database, ReferenceGeneProductCache.username, ReferenceGeneProductCache.password, ReferenceGeneProductCache.port);
-			ResultSet rs = adapter.executeQuery(ReferenceGeneProductCache.query, null);
-			
-			while (rs.next())
+			//ResultSet rs = adapter.executeQuery(ReferenceGeneProductCache.query, null);
+			Collection<GKInstance> referenceGeneProducts = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceGeneProduct);
+			//while (rs.next())
+			for (GKInstance refGeneProduct : referenceGeneProducts)
 			{
-				ReferenceGeneProductShell shell = new ReferenceGeneProductShell();
-				shell.setDbId(rs.getString("object_db_id"));
-				shell.setDisplayName(rs.getString("_displayName"));
-				shell.setIdentifier(rs.getString("identifier"));
-				shell.setReactomeClass(rs.getString("_class"));
-				shell.setReferenceDatabase(rs.getString("refent_refdb"));
-				shell.setSpecies(rs.getString("species"));
+				//Get all the other values.
+				//(
+				// I still don't like doing this... I think doing it all in one query would run faster, but I'm starting to think 
+				// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
+				//)
+				adapter.loadInstanceAttributeValues(refGeneProduct);
+				
+//				ReferenceGeneProductShell shell = new ReferenceGeneProductShell();
+//				shell.setDbId(rs.getString("object_db_id"));
+//				shell.setDisplayName(rs.getString("_displayName"));
+//				shell.setIdentifier(rs.getString("identifier"));
+//				shell.setReactomeClass(rs.getString("_class"));
+//				shell.setReferenceDatabase(rs.getString("refent_refdb"));
+//				shell.setSpecies(rs.getString("species"));
 				
 				//Now, insert into the caches.
 				//
 				//Species Cache
 				//If this species is not yet cached...
-				if (! ReferenceGeneProductCache.cacheBySpecies.containsKey(shell.getSpecies()))
+				
+				String species = (String) refGeneProduct.getAttributeValue(ReactomeJavaConstants.species);
+				if (! ReferenceGeneProductCache.cacheBySpecies.containsKey(species))
 				{
-					List<ReferenceGeneProductShell> bySpecies = new LinkedList<ReferenceGeneProductShell>();
-					bySpecies.add(shell);
-					ReferenceGeneProductCache.cacheBySpecies.put(shell.getSpecies(), bySpecies);
+					List<GKInstance> bySpecies = new LinkedList<GKInstance>();
+					bySpecies.add(refGeneProduct);
+					ReferenceGeneProductCache.cacheBySpecies.put(species, bySpecies);
 				}
 				else
 				{
-					ReferenceGeneProductCache.cacheBySpecies.get(shell.getSpecies()).add(shell);
+					ReferenceGeneProductCache.cacheBySpecies.get(species).add(refGeneProduct);
 				}
 				//ReferenceDatabase Cache
 				//If this species is not yet cached...
-				if (! ReferenceGeneProductCache.cacheByRefDb.containsKey(shell.getReferenceDatabase()))
+				String refDB = (String) refGeneProduct.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
+				if (! ReferenceGeneProductCache.cacheByRefDb.containsKey(refDB))
 				{
-					List<ReferenceGeneProductShell> byRefDb = new LinkedList<ReferenceGeneProductShell>();
-					byRefDb.add(shell);
-					ReferenceGeneProductCache.cacheByRefDb.put(shell.getReferenceDatabase(), byRefDb);
+					List<GKInstance> byRefDb = new LinkedList<GKInstance>();
+					byRefDb.add(refGeneProduct);
+					ReferenceGeneProductCache.cacheByRefDb.put(refDB, byRefDb);
 				}
 				else
 				{
-					ReferenceGeneProductCache.cacheByRefDb.get(shell.getReferenceDatabase()).add(shell);
+					ReferenceGeneProductCache.cacheByRefDb.get(refDB).add(refGeneProduct);
 				}
 				// ID Cache
-				ReferenceGeneProductCache.cacheById.put(shell.getDbId(), shell);
+				ReferenceGeneProductCache.cacheById.put(Long.toString(refGeneProduct.getDBID()), refGeneProduct);
 			}
-			rs.close();
+			//rs.close();
 			
 			// Build up the Reference Database caches.
 			ResultSet refDbResultSet = adapter.executeQuery(ReferenceGeneProductCache.refdbMappingQuery,null);
@@ -251,9 +266,9 @@ public final class ReferenceGeneProductCache
 		}
 	}
 	
-	private static Map<String,List<ReferenceGeneProductShell>> cacheBySpecies = new HashMap<String,List<ReferenceGeneProductShell>>();
-	private static Map<String,List<ReferenceGeneProductShell>> cacheByRefDb = new HashMap<String,List<ReferenceGeneProductShell>>();
-	private static Map<String,ReferenceGeneProductShell> cacheById = new HashMap<String,ReferenceGeneProductShell>();
+	private static Map<String,List<GKInstance>> cacheBySpecies = new HashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> cacheByRefDb = new HashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> cacheById = new HashMap<String,GKInstance>();
 	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	//These really should be 1:n mappings...
@@ -268,9 +283,9 @@ public final class ReferenceGeneProductCache
 	 * @param refDb
 	 * @return
 	 */
-	public List<ReferenceGeneProductShell> getByRefDb(String refDb)
+	public List<GKInstance> getByRefDb(String refDb)
 	{
-		return ReferenceGeneProductCache.cacheByRefDb.containsKey(refDb) ? ReferenceGeneProductCache.cacheByRefDb.get(refDb) : new ArrayList<ReferenceGeneProductShell>(0);
+		return ReferenceGeneProductCache.cacheByRefDb.containsKey(refDb) ? ReferenceGeneProductCache.cacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
 	}
 	
 	/**
@@ -278,7 +293,7 @@ public final class ReferenceGeneProductCache
 	 * @param species
 	 * @return
 	 */
-	public List<ReferenceGeneProductShell> getBySpecies(String species)
+	public List<GKInstance> getBySpecies(String species)
 	{
 		return ReferenceGeneProductCache.cacheBySpecies.get(species);
 	}
@@ -288,7 +303,7 @@ public final class ReferenceGeneProductCache
 	 * @param id
 	 * @return
 	 */
-	public ReferenceGeneProductShell getById(String id)
+	public GKInstance getById(String id)
 	{
 		return ReferenceGeneProductCache.cacheById.get(id);
 	}
@@ -299,12 +314,27 @@ public final class ReferenceGeneProductCache
 	 * @param species
 	 * @return
 	 */
-	public List<ReferenceGeneProductShell> getByRefDbAndSpecies(String refDb, String species)
+	public List<GKInstance> getByRefDbAndSpecies(String refDb, String species)
 	{
 		//Get a list by referenceDatabase
-		List<ReferenceGeneProductShell> byRefDb = this.getByRefDb(refDb);
+		List<GKInstance> byRefDb = this.getByRefDb(refDb);
 		//Now filter the items in that list by species.
-		List<ReferenceGeneProductShell> objectsByRefDbAndSpecies = byRefDb.stream().filter(p -> p.getSpecies().equals(species)).collect(Collectors.toList());
+		List<GKInstance> objectsByRefDbAndSpecies = byRefDb.stream().filter(p -> {
+			try
+			{
+				return p.getAttributeValue(ReactomeJavaConstants.species).equals(species);
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}).collect(Collectors.toList());
 		
 		return objectsByRefDbAndSpecies;
 	}
