@@ -5,6 +5,9 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
+import org.gk.schema.InvalidAttributeException;
 import org.junit.Test;
 import org.reactome.addlinks.db.ReferenceGeneProductCache;
 import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
@@ -20,7 +23,7 @@ public class TestReferenceGeneProductCache {
 		
 		cache = ReferenceGeneProductCache.getInstance();
 		
-		List <ReferenceGeneProductShell> items = cache.getBySpecies("48887");
+		List <GKInstance> items = cache.getBySpecies("48887");
 		
 		assertNotNull(items);
 		assertTrue(items.size()>0);
@@ -29,7 +32,7 @@ public class TestReferenceGeneProductCache {
 	
 	
 	@Test
-	public void testCacheById()
+	public void testCacheById() throws InvalidAttributeException, Exception
 	{
 		ReferenceGeneProductCache cache;
 		
@@ -37,13 +40,13 @@ public class TestReferenceGeneProductCache {
 		
 		cache = ReferenceGeneProductCache.getInstance();
 		
-		ReferenceGeneProductShell shell = cache.getById("5618411");
+		GKInstance shell = cache.getById("5618411");
 		
 		assertNotNull(shell);
-		assertTrue("5618411".equals(shell.getDbId()));
-		assertTrue("2".equals(shell.getReferenceDatabase()));
-		assertTrue("48887".equals(shell.getSpecies()));
-		assertTrue("P0DML2".equals(shell.getIdentifier()));
+		assertTrue("5618411".equals(shell.getDBID()));
+		assertTrue("2".equals(shell.getAttributeValue(ReactomeJavaConstants.referenceDatabase)));
+		assertTrue("48887".equals(shell.getAttributeValue(ReactomeJavaConstants.species)));
+		assertTrue("P0DML2".equals(shell.getAttributeValue(ReactomeJavaConstants.identifier)));
 		assertTrue("UniProt:P0DML2 CSH1".equals(shell.getDisplayName()));
 	}
 	
@@ -53,7 +56,7 @@ public class TestReferenceGeneProductCache {
 		ReferenceGeneProductCache cache;
 		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
 		cache = ReferenceGeneProductCache.getInstance();
-		List <ReferenceGeneProductShell> items = cache.getByRefDb("427877");
+		List <GKInstance> items = cache.getByRefDb("427877");
 		
 		assertNotNull(items);
 		assertTrue(items.size()>0);
@@ -67,7 +70,7 @@ public class TestReferenceGeneProductCache {
 		ReferenceGeneProductCache cache;
 		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
 		cache = ReferenceGeneProductCache.getInstance();
-		List <ReferenceGeneProductShell> items = cache.getByRefDbAndSpecies("2", "48898");
+		List <GKInstance> items = cache.getByRefDbAndSpecies("2", "48898");
 		
 		assertNotNull(items);
 		assertTrue(items.size()>0);

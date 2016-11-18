@@ -16,7 +16,10 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -164,7 +167,7 @@ public class AddLinks {
 							if (speciesIndex < speciesList.size())
 							{
 								String speciesId = speciesList.get(speciesIndex);
-								List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+								List<GKInstance> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
 								
 								String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
 								
@@ -179,7 +182,21 @@ public class AddLinks {
 											{
 												
 												logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
-												String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
+												String identifiersList = refGenes.stream().map(refGeneProduct -> {
+													try
+													{
+														return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
+													}
+													catch (InvalidAttributeException e1)
+													{
+														e1.printStackTrace();
+														throw new RuntimeException(e1);
+													} catch (Exception e1)
+													{
+														e1.printStackTrace();
+														throw new RuntimeException(e1);
+													}
+												}).collect(Collectors.joining("\n"));
 												
 												BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiersList.getBytes()));
 												// if we want to execute multiple retrievers in parallel, we need to create a 
@@ -290,12 +307,27 @@ public class AddLinks {
 						String speciesName = possibleSpecies.get(0).replace(" ", "_");
 						retriever.setSpecies(speciesName);
 						
-						List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+						List<GKInstance> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
 						
 						if (refGenes != null && refGenes.size() > 0)
 						{
 							logger.info("Number of identifiers that we will attempt to map TO {} FROM db_id: {}/{} (species: {}/{} ) is: {}", toDb.toString(), refDb,fromDb.toString() , speciesId, speciesName, refGenes.size());
-							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.toList());
+							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> {
+								try
+								{
+									return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
+								}
+								catch (InvalidAttributeException e)
+								{
+									e.printStackTrace();
+									throw new RuntimeException(e);
+								}
+								catch (Exception e)
+								{
+									e.printStackTrace();
+									throw new RuntimeException(e);
+								}
+							}).collect(Collectors.toList());
 							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
 							
 							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
