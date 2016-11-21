@@ -1,7 +1,8 @@
 package org.reactome.addlinks.test;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -9,19 +10,19 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.schema.InvalidAttributeException;
 import org.junit.Test;
-import org.reactome.addlinks.db.ReferenceGeneProductCache;
-import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 
 public class TestReferenceGeneProductCache {
 	
 	@Test
 	public void testCacheBySpecies()
 	{
-		ReferenceGeneProductCache cache;
+		ReferenceObjectCache cache;
 		
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		//TODO: all test classes really should get their adapter froma spring file or something.
+		ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
 		
-		cache = ReferenceGeneProductCache.getInstance();
+		cache = ReferenceObjectCache.getInstance();
 		
 		List <GKInstance> items = cache.getBySpecies("48887");
 		
@@ -34,11 +35,11 @@ public class TestReferenceGeneProductCache {
 	@Test
 	public void testCacheById() throws InvalidAttributeException, Exception
 	{
-		ReferenceGeneProductCache cache;
+		ReferenceObjectCache cache;
 		
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
 		
-		cache = ReferenceGeneProductCache.getInstance();
+		cache = ReferenceObjectCache.getInstance();
 		
 		GKInstance shell = cache.getById("5618411");
 		
@@ -53,9 +54,9 @@ public class TestReferenceGeneProductCache {
 	@Test
 	public void testCacheByRefDbId()
 	{
-		ReferenceGeneProductCache cache;
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
-		cache = ReferenceGeneProductCache.getInstance();
+		ReferenceObjectCache cache;
+		ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		cache = ReferenceObjectCache.getInstance();
 		List <GKInstance> items = cache.getByRefDb("427877");
 		
 		assertNotNull(items);
@@ -67,9 +68,9 @@ public class TestReferenceGeneProductCache {
 	@Test
 	public void testCacheByRefDbAndId()
 	{
-		ReferenceGeneProductCache cache;
-		ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
-		cache = ReferenceGeneProductCache.getInstance();
+		ReferenceObjectCache cache;
+		ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
+		cache = ReferenceObjectCache.getInstance();
 		List <GKInstance> items = cache.getByRefDbAndSpecies("2", "48898");
 		
 		assertNotNull(items);
