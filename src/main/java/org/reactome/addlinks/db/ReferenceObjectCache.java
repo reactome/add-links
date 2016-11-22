@@ -128,7 +128,7 @@ public final class ReferenceObjectCache
 	private ReferenceObjectCache()
 	{
 		if (ReferenceObjectCache.adapter!=null)
-			{
+		{
 			try
 			{
 				//MySQLAdaptor adapter = new MySQLAdaptor(ReferenceObjectCache.host, ReferenceObjectCache.database, ReferenceObjectCache.username, ReferenceObjectCache.password, ReferenceObjectCache.port);
@@ -184,14 +184,20 @@ public final class ReferenceObjectCache
 					// ID Cache
 					ReferenceObjectCache.cacheById.put(String.valueOf(refGeneProduct.getDBID()), refGeneProduct);
 				}
+				logger.debug("Built cacheById, cacheByRefDb, and cacheBySpecies caches.");
 				//rs.close();
 				
 				// Build up the Reference Database caches.
-				ResultSet refDbResultSet = adapter.executeQuery(ReferenceObjectCache.refdbMappingQuery,null);
-				while (refDbResultSet.next())
+				//ResultSet refDbResultSet = adapter.executeQuery(ReferenceObjectCache.refdbMappingQuery,null);
+				Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
+				
+				//while (refDbResultSet.next())
+				for (GKInstance refDB : refDBs)
 				{
-					String db_id = refDbResultSet.getString("db_id");
-					String name = refDbResultSet.getString("name");
+					//String db_id = refDbResultSet.getString("db_id");
+					//String name = refDbResultSet.getString("name");
+					String db_id = refDB.getDBID().toString();
+					String name = (String) refDB.getAttributeValue(ReactomeJavaConstants.name);
 					List<String> listOfIds;
 					// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
 					if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
@@ -219,14 +225,19 @@ public final class ReferenceObjectCache
 					listOfNames.add(name);
 					ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
 				}
-				refDbResultSet.close();
+				//refDbResultSet.close();
+				logger.debug("Built refdbMapping cache.");
 				
 				// Build up the species caches.
-				ResultSet speciesResultSet = adapter.executeQuery(ReferenceObjectCache.speciesMappingQuery,null);
-				while (speciesResultSet.next())
+				//ResultSet speciesResultSet = adapter.executeQuery(ReferenceObjectCache.speciesMappingQuery,null);
+				Collection<GKInstance> species = adapter.fetchInstancesByClass(ReactomeJavaConstants.Species);
+				//while (speciesResultSet.next())
+				for (GKInstance singleSpecies : species)
 				{
-					String db_id = speciesResultSet.getString("db_id");
-					String name = speciesResultSet.getString("name");
+					//String db_id = speciesResultSet.getString("db_id");
+					//String name = speciesResultSet.getString("name");
+					String db_id = singleSpecies.getDBID().toString();
+					String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
 					List<String> listOfIds;
 					if (ReferenceObjectCache.speciesNamesToIds.containsKey(name))
 					{
@@ -251,7 +262,8 @@ public final class ReferenceObjectCache
 					listOfNames.add(name);
 					ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
 				}
-				speciesResultSet.close();
+				logger.debug("Built speciesMapping cache.");
+				//speciesResultSet.close();
 				
 				//adapter.cleanUp();
 				logger.info("Caches initialized."
