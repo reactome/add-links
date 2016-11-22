@@ -61,6 +61,59 @@ public final class ReferenceObjectCache
 		ReferenceObjectCache.adapter = adapter;
 	}
 	
+	private static void buildReferenceSequenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
+	{
+		Collection<GKInstance> referenceObjects = ReferenceObjectCache.adapter.fetchInstancesByClass(className);
+		for (GKInstance referenceObject : referenceObjects)
+		{
+			//Get all the other values.
+			//(
+			// I still don't like doing this... I think doing it all in one query would run faster, but I'm starting to think 
+			// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
+			//)
+			//adapter.fastLoadInstanceAttributeValues(refGeneProduct);
+			
+			//Now, insert into the caches.
+			//
+			//Species Cache
+			//If this species is not yet cached...
+
+			String species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
+			if (! cacheBySpecies.containsKey(species))
+			{
+				List<GKInstance> bySpecies = new LinkedList<GKInstance>();
+				bySpecies.add(referenceObject);
+				cacheBySpecies.put(species, bySpecies);
+			}
+			else
+			{
+				cacheBySpecies.get(species).add(referenceObject);
+			}
+			//ReferenceDatabase Cache
+			//If this species is not yet cached...
+			String refDB = String.valueOf(((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
+			if (! cacheByRefDB.containsKey(refDB))
+			{
+				List<GKInstance> byRefDb = new LinkedList<GKInstance>();
+				byRefDb.add(referenceObject);
+				cacheByRefDB.put(refDB, byRefDb);
+			}
+			else
+			{
+				cacheByRefDB.get(refDB).add(referenceObject);
+			}
+			// ID Cache
+			cacheByID.put(String.valueOf(referenceObject.getDBID()), referenceObject);
+		}
+		logger.debug("Built {} caches: cacheById, cacheByRefDb, and cacheBySpecies caches.",className);
+		logger.info("\n\tKeys in cache-by-refdb: {};"
+				+ "\n\tkeys in cache-by-species: {};"
+				+ "\n\tkeys in cache-by-id: {};",
+					cacheByRefDB.size(),
+					cacheBySpecies.size(),
+					cacheByID.size()
+				);
+	}
 
 	private ReferenceObjectCache()
 	{
@@ -69,49 +122,9 @@ public final class ReferenceObjectCache
 			try
 			{
 				logger.info("Building ReferenceObject caches...");
-				Collection<GKInstance> referenceGeneProducts = ReferenceObjectCache.adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceGeneProduct);
-				for (GKInstance refGeneProduct : referenceGeneProducts)
-				{
-					//Get all the other values.
-					//(
-					// I still don't like doing this... I think doing it all in one query would run faster, but I'm starting to think 
-					// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
-					//)
-					//adapter.fastLoadInstanceAttributeValues(refGeneProduct);
-					
-					//Now, insert into the caches.
-					//
-					//Species Cache
-					//If this species is not yet cached...
-
-					String species = String.valueOf( ((GKInstance) refGeneProduct.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
-					if (! ReferenceObjectCache.cacheBySpecies.containsKey(species))
-					{
-						List<GKInstance> bySpecies = new LinkedList<GKInstance>();
-						bySpecies.add(refGeneProduct);
-						ReferenceObjectCache.cacheBySpecies.put(species, bySpecies);
-					}
-					else
-					{
-						ReferenceObjectCache.cacheBySpecies.get(species).add(refGeneProduct);
-					}
-					//ReferenceDatabase Cache
-					//If this species is not yet cached...
-					String refDB = String.valueOf(((GKInstance) refGeneProduct.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
-					if (! ReferenceObjectCache.cacheByRefDb.containsKey(refDB))
-					{
-						List<GKInstance> byRefDb = new LinkedList<GKInstance>();
-						byRefDb.add(refGeneProduct);
-						ReferenceObjectCache.cacheByRefDb.put(refDB, byRefDb);
-					}
-					else
-					{
-						ReferenceObjectCache.cacheByRefDb.get(refDB).add(refGeneProduct);
-					}
-					// ID Cache
-					ReferenceObjectCache.cacheById.put(String.valueOf(refGeneProduct.getDBID()), refGeneProduct);
-				}
-				logger.debug("Built cacheById, cacheByRefDb, and cacheBySpecies caches.");
+				ReferenceObjectCache.buildReferenceSequenceCaches(ReactomeJavaConstants.ReferenceGeneProduct, refGeneProdCacheBySpecies, refGeneProdCacheById, refGeneProdCacheByRefDb);
+				
+				ReferenceObjectCache.buildReferenceSequenceCaches(ReactomeJavaConstants.ReferenceDNASequence, refDNASeqCacheBySpecies, refDNASeqCacheById, refDNASeqCacheByRefDb);
 				
 				// Build up the Reference Database caches.
 				Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
@@ -181,15 +194,9 @@ public final class ReferenceObjectCache
 				}
 				logger.debug("Built speciesMapping cache.");
 
-				logger.info("Caches initialized."
-						+ "\n\tKeys in cache-by-refdb: {};"
-						+ "\n\tkeys in cache-by-species: {};"
-						+ "\n\tkeys in cache-by-id: {};"
+				logger.info("All caches initialized."
 						+ "\n\tkeys in refDbMapping: {};"
 						+ "\n\tkeys in speciesMapping: {}",
-								ReferenceObjectCache.cacheByRefDb.size(),
-								ReferenceObjectCache.cacheBySpecies.size(),
-								ReferenceObjectCache.cacheById.size(),
 								ReferenceObjectCache.refdbMapping.size(),
 								ReferenceObjectCache.speciesMapping.size());
 			}
@@ -208,9 +215,19 @@ public final class ReferenceObjectCache
 		}
 	}
 	
-	private static Map<String,List<GKInstance>> cacheBySpecies = new HashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> cacheByRefDb = new HashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> cacheById = new HashMap<String,GKInstance>();
+	// ReferenceMolecule caches
+	private static Map<String, List<GKInstance>> moleculeCacheByID = new HashMap<String, List<GKInstance>>();
+	private static Map<String, List<GKInstance>> moleculeCacheByRefDB = new HashMap<String, List<GKInstance>>();
+	
+	// ReferenceDNASequence caches
+	private static Map<String,List<GKInstance>> refDNASeqCacheBySpecies = new HashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refDNASeqCacheByRefDb = new HashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> refDNASeqCacheById = new HashMap<String,GKInstance>();
+	
+	// ReferenceGeneProduct caches
+	private static Map<String,List<GKInstance>> refGeneProdCacheBySpecies = new HashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refGeneProdCacheByRefDb = new HashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> refGeneProdCacheById = new HashMap<String,GKInstance>();
 	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	//These really should be 1:n mappings...
@@ -227,7 +244,7 @@ public final class ReferenceObjectCache
 	 */
 	public List<GKInstance> getByRefDb(String refDb)
 	{
-		return ReferenceObjectCache.cacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.cacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+		return ReferenceObjectCache.refGeneProdCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refGeneProdCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
 	}
 	
 	/**
@@ -237,7 +254,7 @@ public final class ReferenceObjectCache
 	 */
 	public List<GKInstance> getBySpecies(String species)
 	{
-		return ReferenceObjectCache.cacheBySpecies.get(species);
+		return ReferenceObjectCache.refGeneProdCacheBySpecies.get(species);
 	}
 	
 	/**
@@ -247,7 +264,7 @@ public final class ReferenceObjectCache
 	 */
 	public GKInstance getById(String id)
 	{
-		return ReferenceObjectCache.cacheById.get(id);
+		return ReferenceObjectCache.refGeneProdCacheById.get(id);
 	}
 	
 	/**
@@ -282,7 +299,7 @@ public final class ReferenceObjectCache
 	 */
 	public Set<String> getListOfRefDbs()
 	{
-		return ReferenceObjectCache.cacheByRefDb.keySet();
+		return ReferenceObjectCache.refGeneProdCacheByRefDb.keySet();
 	}
 
 	/**
@@ -318,7 +335,7 @@ public final class ReferenceObjectCache
 	 */
 	public Set<String> getListOfSpecies()
 	{
-		return ReferenceObjectCache.cacheBySpecies.keySet();
+		return ReferenceObjectCache.refGeneProdCacheBySpecies.keySet();
 	}
 	
 	/**
