@@ -16,56 +16,57 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public final class ReferenceObjectCache 
 {
 	//TODO: Update this class so that it can cache other ReferenceEntities: ReferenceMolecules, ReferenceIsoForm and ReferenceDNASequences, for example.
-	public class ReferenceGeneProductShell
-	{
-		private String displayName;
-		private String reactomeClass;
-		private String dbId;
-		private String identifier;
-		private String referenceDatabase;
-		private String species;
-		
-		public String getDisplayName() {
-			return this.displayName;
-		}
-		public void setDisplayName(String displayName) {
-			this.displayName = displayName;
-		}
-		public String getReactomeClass() {
-			return this.reactomeClass;
-		}
-		public void setReactomeClass(String reactomeClass) {
-			this.reactomeClass = reactomeClass;
-		}
-		public String getDbId() {
-			return this.dbId;
-		}
-		public void setDbId(String dbId) {
-			this.dbId = dbId;
-		}
-		public String getIdentifier() {
-			return this.identifier;
-		}
-		public void setIdentifier(String identifier) {
-			this.identifier = identifier;
-		}
-		public String getReferenceDatabase() {
-			return this.referenceDatabase;
-		}
-		public void setReferenceDatabase(String referenceDatabase) {
-			this.referenceDatabase = referenceDatabase;
-		}
-		public String getSpecies() {
-			return this.species;
-		}
-		public void setSpecies(String species) {
-			this.species = species;
-		}
-	}
+//	public class ReferenceGeneProductShell
+//	{
+//		private String displayName;
+//		private String reactomeClass;
+//		private String dbId;
+//		private String identifier;
+//		private String referenceDatabase;
+//		private String species;
+//		
+//		public String getDisplayName() {
+//			return this.displayName;
+//		}
+//		public void setDisplayName(String displayName) {
+//			this.displayName = displayName;
+//		}
+//		public String getReactomeClass() {
+//			return this.reactomeClass;
+//		}
+//		public void setReactomeClass(String reactomeClass) {
+//			this.reactomeClass = reactomeClass;
+//		}
+//		public String getDbId() {
+//			return this.dbId;
+//		}
+//		public void setDbId(String dbId) {
+//			this.dbId = dbId;
+//		}
+//		public String getIdentifier() {
+//			return this.identifier;
+//		}
+//		public void setIdentifier(String identifier) {
+//			this.identifier = identifier;
+//		}
+//		public String getReferenceDatabase() {
+//			return this.referenceDatabase;
+//		}
+//		public void setReferenceDatabase(String referenceDatabase) {
+//			this.referenceDatabase = referenceDatabase;
+//		}
+//		public String getSpecies() {
+//			return this.species;
+//		}
+//		public void setSpecies(String species) {
+//			this.species = species;
+//		}
+//	}
 	
 	private static final Logger logger = LogManager.getLogger();
 	private static ReferenceObjectCache cache;
@@ -81,13 +82,14 @@ public final class ReferenceObjectCache
 	
 	private static final String speciesMappingQuery = " select distinct name, db_id, name_rank from Taxon_2_name where name_rank = 0 order by db_id asc, name_rank asc, name asc; ";
 	
-	private static String host;
-	private static String database;
-	private static String username;
-	private static String password;
-	private static int port;
+//	private static String host;
+//	private static String database;
+//	private static String username;
+//	private static String password;
+//	private static int port;
 	
 	private static boolean cacheInitializedMessageHasBeenPrinted = false;
+	
 	private static MySQLAdaptor adapter;
 	
 	public static synchronized ReferenceObjectCache getInstance() 
@@ -97,10 +99,13 @@ public final class ReferenceObjectCache
 			logger.info("Cache is not initialized. Will initialize now.");
 			ReferenceObjectCache.cache = new ReferenceObjectCache();
 		}
-		else if (!cacheInitializedMessageHasBeenPrinted)
+		else
 		{
-			logger.info("Cache is already initialized.");
-			cacheInitializedMessageHasBeenPrinted = true;
+			if (!cacheInitializedMessageHasBeenPrinted)
+			{
+				logger.info("Cache is already initialized.");
+				cacheInitializedMessageHasBeenPrinted = true;
+			}
 		}
 		
 		return ReferenceObjectCache.cache;
@@ -111,158 +116,166 @@ public final class ReferenceObjectCache
 		ReferenceObjectCache.adapter = adapter;
 	}
 	
-	public static void setDbParams(String host, String database, String username, String password, int port)
-	{
-		ReferenceObjectCache.host = host;
-		ReferenceObjectCache.database = database;
-		ReferenceObjectCache.username = username;
-		ReferenceObjectCache.password = password;
-		ReferenceObjectCache.port = port;
-	}
+//	public static void setDbParams(String host, String database, String username, String password, int port)
+//	{
+//		ReferenceObjectCache.host = host;
+//		ReferenceObjectCache.database = database;
+//		ReferenceObjectCache.username = username;
+//		ReferenceObjectCache.password = password;
+//		ReferenceObjectCache.port = port;
+//	}
 	
 	private ReferenceObjectCache()
 	{
-		try
-		{
-			MySQLAdaptor adapter = new MySQLAdaptor(ReferenceObjectCache.host, ReferenceObjectCache.database, ReferenceObjectCache.username, ReferenceObjectCache.password, ReferenceObjectCache.port);
-			//ResultSet rs = adapter.executeQuery(ReferenceGeneProductCache.query, null);
-			Collection<GKInstance> referenceGeneProducts = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceGeneProduct);
-			//while (rs.next())
-			for (GKInstance refGeneProduct : referenceGeneProducts)
+		if (ReferenceObjectCache.adapter!=null)
 			{
-				//Get all the other values.
-				//(
-				// I still don't like doing this... I think doing it all in one query would run faster, but I'm starting to think 
-				// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
-				//)
-				adapter.loadInstanceAttributeValues(refGeneProduct);
-				
-//				ReferenceGeneProductShell shell = new ReferenceGeneProductShell();
-//				shell.setDbId(rs.getString("object_db_id"));
-//				shell.setDisplayName(rs.getString("_displayName"));
-//				shell.setIdentifier(rs.getString("identifier"));
-//				shell.setReactomeClass(rs.getString("_class"));
-//				shell.setReferenceDatabase(rs.getString("refent_refdb"));
-//				shell.setSpecies(rs.getString("species"));
-				
-				//Now, insert into the caches.
-				//
-				//Species Cache
-				//If this species is not yet cached...
-				
-				String species = (String) refGeneProduct.getAttributeValue(ReactomeJavaConstants.species);
-				if (! ReferenceObjectCache.cacheBySpecies.containsKey(species))
-				{
-					List<GKInstance> bySpecies = new LinkedList<GKInstance>();
-					bySpecies.add(refGeneProduct);
-					ReferenceObjectCache.cacheBySpecies.put(species, bySpecies);
-				}
-				else
-				{
-					ReferenceObjectCache.cacheBySpecies.get(species).add(refGeneProduct);
-				}
-				//ReferenceDatabase Cache
-				//If this species is not yet cached...
-				String refDB = (String) refGeneProduct.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
-				if (! ReferenceObjectCache.cacheByRefDb.containsKey(refDB))
-				{
-					List<GKInstance> byRefDb = new LinkedList<GKInstance>();
-					byRefDb.add(refGeneProduct);
-					ReferenceObjectCache.cacheByRefDb.put(refDB, byRefDb);
-				}
-				else
-				{
-					ReferenceObjectCache.cacheByRefDb.get(refDB).add(refGeneProduct);
-				}
-				// ID Cache
-				ReferenceObjectCache.cacheById.put(Long.toString(refGeneProduct.getDBID()), refGeneProduct);
-			}
-			//rs.close();
-			
-			// Build up the Reference Database caches.
-			ResultSet refDbResultSet = adapter.executeQuery(ReferenceObjectCache.refdbMappingQuery,null);
-			while (refDbResultSet.next())
+			try
 			{
-				String db_id = refDbResultSet.getString("db_id");
-				String name = refDbResultSet.getString("name");
-				List<String> listOfIds;
-				// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
-				if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
+				//MySQLAdaptor adapter = new MySQLAdaptor(ReferenceObjectCache.host, ReferenceObjectCache.database, ReferenceObjectCache.username, ReferenceObjectCache.password, ReferenceObjectCache.port);
+				//ResultSet rs = adapter.executeQuery(ReferenceGeneProductCache.query, null);
+				Collection<GKInstance> referenceGeneProducts = ReferenceObjectCache.adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceGeneProduct);
+				//while (rs.next())
+				for (GKInstance refGeneProduct : referenceGeneProducts)
 				{
-					listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
-				}
-				else
-				{
-					listOfIds = new ArrayList<String>(1);
-				}
-				listOfIds.add(db_id);
+					//Get all the other values.
+					//(
+					// I still don't like doing this... I think doing it all in one query would run faster, but I'm starting to think 
+					// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
+					//)
+					//adapter.fastLoadInstanceAttributeValues(refGeneProduct);
+					
+	//				ReferenceGeneProductShell shell = new ReferenceGeneProductShell();
+	//				shell.setDbId(rs.getString("object_db_id"));
+	//				shell.setDisplayName(rs.getString("_displayName"));
+	//				shell.setIdentifier(rs.getString("identifier"));
+	//				shell.setReactomeClass(rs.getString("_class"));
+	//				shell.setReferenceDatabase(rs.getString("refent_refdb"));
+	//				shell.setSpecies(rs.getString("species"));
+					
+					//Now, insert into the caches.
+					//
+					//Species Cache
+					//If this species is not yet cached...
 
-				ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
-
-				// refdbMapping is a 1:n from db_ids to names.
-				List<String> listOfNames;
-				if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
-				{
-					listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
+					String species = String.valueOf( ((GKInstance) refGeneProduct.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
+					if (! ReferenceObjectCache.cacheBySpecies.containsKey(species))
+					{
+						List<GKInstance> bySpecies = new LinkedList<GKInstance>();
+						bySpecies.add(refGeneProduct);
+						ReferenceObjectCache.cacheBySpecies.put(species, bySpecies);
+					}
+					else
+					{
+						ReferenceObjectCache.cacheBySpecies.get(species).add(refGeneProduct);
+					}
+					//ReferenceDatabase Cache
+					//If this species is not yet cached...
+					String refDB = String.valueOf(((GKInstance) refGeneProduct.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
+					if (! ReferenceObjectCache.cacheByRefDb.containsKey(refDB))
+					{
+						List<GKInstance> byRefDb = new LinkedList<GKInstance>();
+						byRefDb.add(refGeneProduct);
+						ReferenceObjectCache.cacheByRefDb.put(refDB, byRefDb);
+					}
+					else
+					{
+						ReferenceObjectCache.cacheByRefDb.get(refDB).add(refGeneProduct);
+					}
+					// ID Cache
+					ReferenceObjectCache.cacheById.put(String.valueOf(refGeneProduct.getDBID()), refGeneProduct);
 				}
-				else
-				{
-					listOfNames = new ArrayList<String>(1);
-				}
-				listOfNames.add(name);
-				ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
-			}
-			refDbResultSet.close();
-			
-			// Build up the species caches.
-			ResultSet speciesResultSet = adapter.executeQuery(ReferenceObjectCache.speciesMappingQuery,null);
-			while (speciesResultSet.next())
-			{
-				String db_id = speciesResultSet.getString("db_id");
-				String name = speciesResultSet.getString("name");
-				List<String> listOfIds;
-				if (ReferenceObjectCache.speciesNamesToIds.containsKey(name))
-				{
-					listOfIds = ReferenceObjectCache.speciesNamesToIds.get(name);
-				}
-				else
-				{
-					listOfIds = new ArrayList<String>(1);
-				}
-				listOfIds.add(db_id);
-				ReferenceObjectCache.speciesNamesToIds.put(name, listOfIds);
+				//rs.close();
 				
-				List<String> listOfNames;
-				if (ReferenceObjectCache.speciesMapping.containsKey(db_id))
+				// Build up the Reference Database caches.
+				ResultSet refDbResultSet = adapter.executeQuery(ReferenceObjectCache.refdbMappingQuery,null);
+				while (refDbResultSet.next())
 				{
-					listOfNames = ReferenceObjectCache.speciesMapping.get(db_id);
+					String db_id = refDbResultSet.getString("db_id");
+					String name = refDbResultSet.getString("name");
+					List<String> listOfIds;
+					// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
+					if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
+					{
+						listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
+					}
+					else
+					{
+						listOfIds = new ArrayList<String>(1);
+					}
+					listOfIds.add(db_id);
+	
+					ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
+	
+					// refdbMapping is a 1:n from db_ids to names.
+					List<String> listOfNames;
+					if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
+					{
+						listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
+					}
+					else
+					{
+						listOfNames = new ArrayList<String>(1);
+					}
+					listOfNames.add(name);
+					ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
 				}
-				else
+				refDbResultSet.close();
+				
+				// Build up the species caches.
+				ResultSet speciesResultSet = adapter.executeQuery(ReferenceObjectCache.speciesMappingQuery,null);
+				while (speciesResultSet.next())
 				{
-					listOfNames = new ArrayList<String>(1);
+					String db_id = speciesResultSet.getString("db_id");
+					String name = speciesResultSet.getString("name");
+					List<String> listOfIds;
+					if (ReferenceObjectCache.speciesNamesToIds.containsKey(name))
+					{
+						listOfIds = ReferenceObjectCache.speciesNamesToIds.get(name);
+					}
+					else
+					{
+						listOfIds = new ArrayList<String>(1);
+					}
+					listOfIds.add(db_id);
+					ReferenceObjectCache.speciesNamesToIds.put(name, listOfIds);
+					
+					List<String> listOfNames;
+					if (ReferenceObjectCache.speciesMapping.containsKey(db_id))
+					{
+						listOfNames = ReferenceObjectCache.speciesMapping.get(db_id);
+					}
+					else
+					{
+						listOfNames = new ArrayList<String>(1);
+					}
+					listOfNames.add(name);
+					ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
 				}
-				listOfNames.add(name);
-				ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
+				speciesResultSet.close();
+				
+				//adapter.cleanUp();
+				logger.info("Caches initialized."
+						+ " Keys in cache-by-refdb: {};"
+						+ " keys in cache-by-species: {};"
+						+ " keys in cache-by-id: {};"
+						+ " keys in refDbMapping: {};"
+						+ " keys in speciesMapping: {}",
+								ReferenceObjectCache.cacheByRefDb.size(),
+								ReferenceObjectCache.cacheBySpecies.size(),
+								ReferenceObjectCache.cacheById.size(),
+								ReferenceObjectCache.refdbMapping.size(),
+								ReferenceObjectCache.speciesMapping.size());
 			}
-			speciesResultSet.close();
-			
-			adapter.cleanUp();
-			logger.info("Caches initialized."
-					+ " Keys in cache-by-refdb: {};"
-					+ " keys in cache-by-species: {};"
-					+ " keys in cache-by-id: {};"
-					+ " keys in refDbMapping: {};"
-					+ " keys in speciesMapping: {}",
-							ReferenceObjectCache.cacheByRefDb.size(),
-							ReferenceObjectCache.cacheBySpecies.size(),
-							ReferenceObjectCache.cacheById.size(),
-							ReferenceObjectCache.refdbMapping.size(),
-							ReferenceObjectCache.speciesMapping.size());
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		catch (Exception e)
+		else
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("The adapter is null. Please set the adapter before attempting to initialize the cache.");
+			
 		}
 	}
 	
@@ -322,17 +335,12 @@ public final class ReferenceObjectCache
 		List<GKInstance> objectsByRefDbAndSpecies = byRefDb.stream().filter(p -> {
 			try
 			{
-				return p.getAttributeValue(ReactomeJavaConstants.species).equals(species);
-			}
-			catch (InvalidAttributeException e)
-			{
-				e.printStackTrace();
-				throw new RuntimeException(e);
+				return (((GKInstance)p.getAttributeValue(ReactomeJavaConstants.species)).getDBID().longValue()) == Long.valueOf(species); 
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
-				throw new RuntimeException(e);
+				return false;
 			}
 		}).collect(Collectors.toList());
 		
