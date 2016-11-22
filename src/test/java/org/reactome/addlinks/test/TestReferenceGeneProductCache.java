@@ -9,6 +9,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.db.ReferenceObjectCache;
@@ -20,11 +21,14 @@ import org.springframework.test.context.ContextConfiguration;
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
 public class TestReferenceGeneProductCache {
 	
+	static MySQLAdaptor adapter;
+
 	// This adapter will be populated with the adapter in the Spring config file.
 	@Autowired
-	MySQLAdaptor adapter;
-	
-
+	public void setAdapter(MySQLAdaptor a)
+	{
+		TestReferenceGeneProductCache.adapter = a;
+	}
 	
 	@Test
 	public void testCacheBySpecies()
@@ -92,5 +96,11 @@ public class TestReferenceGeneProductCache {
 		assertNotNull(items);
 		assertTrue(items.size()>0);
 		System.out.println("# Items for refdb/species 2/48898: "+items.size());
+	}
+	
+	@AfterClass
+	public static void finished() throws Exception
+	{
+		TestReferenceGeneProductCache.adapter.cleanUp();
 	}
 }
