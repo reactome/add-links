@@ -1,6 +1,5 @@
 package org.reactome.addlinks.db;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,79 +14,25 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.schema.InvalidAttributeException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public final class ReferenceObjectCache 
 {
-	//TODO: Update this class so that it can cache other ReferenceEntities: ReferenceMolecules, ReferenceIsoForm and ReferenceDNASequences, for example.
-//	public class ReferenceGeneProductShell
-//	{
-//		private String displayName;
-//		private String reactomeClass;
-//		private String dbId;
-//		private String identifier;
-//		private String referenceDatabase;
-//		private String species;
-//		
-//		public String getDisplayName() {
-//			return this.displayName;
-//		}
-//		public void setDisplayName(String displayName) {
-//			this.displayName = displayName;
-//		}
-//		public String getReactomeClass() {
-//			return this.reactomeClass;
-//		}
-//		public void setReactomeClass(String reactomeClass) {
-//			this.reactomeClass = reactomeClass;
-//		}
-//		public String getDbId() {
-//			return this.dbId;
-//		}
-//		public void setDbId(String dbId) {
-//			this.dbId = dbId;
-//		}
-//		public String getIdentifier() {
-//			return this.identifier;
-//		}
-//		public void setIdentifier(String identifier) {
-//			this.identifier = identifier;
-//		}
-//		public String getReferenceDatabase() {
-//			return this.referenceDatabase;
-//		}
-//		public void setReferenceDatabase(String referenceDatabase) {
-//			this.referenceDatabase = referenceDatabase;
-//		}
-//		public String getSpecies() {
-//			return this.species;
-//		}
-//		public void setSpecies(String species) {
-//			this.species = species;
-//		}
-//	}
-	
+
 	private static final Logger logger = LogManager.getLogger();
 	private static ReferenceObjectCache cache;
 	
-	private static final String query = "select _displayName, _class, DatabaseObject.db_id as object_db_id, ReferenceEntity.identifier, ReferenceEntity.referenceDatabase as refent_refdb, ReferenceSequence.species " +
-										" from DatabaseObject "+
-										" inner join ReferenceGeneProduct on ReferenceGeneProduct.db_id = DatabaseObject.db_id "+ 
-										" inner join ReferenceEntity on ReferenceEntity.db_id = ReferenceGeneProduct.db_id "+
-										" inner join ReferenceSequence on ReferenceSequence.db_id = ReferenceEntity.db_id "+
-										" where _class  = \'ReferenceGeneProduct\'; ";
+//	private static final String query = "select _displayName, _class, DatabaseObject.db_id as object_db_id, ReferenceEntity.identifier, ReferenceEntity.referenceDatabase as refent_refdb, ReferenceSequence.species " +
+//										" from DatabaseObject "+
+//										" inner join ReferenceGeneProduct on ReferenceGeneProduct.db_id = DatabaseObject.db_id "+ 
+//										" inner join ReferenceEntity on ReferenceEntity.db_id = ReferenceGeneProduct.db_id "+
+//										" inner join ReferenceSequence on ReferenceSequence.db_id = ReferenceEntity.db_id "+
+//										" where _class  = \'ReferenceGeneProduct\'; ";
+//	
+//	private static final String refdbMappingQuery = " select distinct name, db_id from ReferenceDatabase_2_name order by name asc; ";
+//	
+//	private static final String speciesMappingQuery = " select distinct name, db_id, name_rank from Taxon_2_name where name_rank = 0 order by db_id asc, name_rank asc, name asc; ";
 	
-	private static final String refdbMappingQuery = " select distinct name, db_id from ReferenceDatabase_2_name order by name asc; ";
-	
-	private static final String speciesMappingQuery = " select distinct name, db_id, name_rank from Taxon_2_name where name_rank = 0 order by db_id asc, name_rank asc, name asc; ";
-	
-//	private static String host;
-//	private static String database;
-//	private static String username;
-//	private static String password;
-//	private static int port;
-	
+
 	private static boolean cacheInitializedMessageHasBeenPrinted = false;
 	
 	private static MySQLAdaptor adapter;
@@ -116,25 +61,15 @@ public final class ReferenceObjectCache
 		ReferenceObjectCache.adapter = adapter;
 	}
 	
-//	public static void setDbParams(String host, String database, String username, String password, int port)
-//	{
-//		ReferenceObjectCache.host = host;
-//		ReferenceObjectCache.database = database;
-//		ReferenceObjectCache.username = username;
-//		ReferenceObjectCache.password = password;
-//		ReferenceObjectCache.port = port;
-//	}
-	
+
 	private ReferenceObjectCache()
 	{
 		if (ReferenceObjectCache.adapter!=null)
 		{
 			try
 			{
-				//MySQLAdaptor adapter = new MySQLAdaptor(ReferenceObjectCache.host, ReferenceObjectCache.database, ReferenceObjectCache.username, ReferenceObjectCache.password, ReferenceObjectCache.port);
-				//ResultSet rs = adapter.executeQuery(ReferenceGeneProductCache.query, null);
+				logger.info("Building ReferenceObject caches...");
 				Collection<GKInstance> referenceGeneProducts = ReferenceObjectCache.adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceGeneProduct);
-				//while (rs.next())
 				for (GKInstance refGeneProduct : referenceGeneProducts)
 				{
 					//Get all the other values.
@@ -143,14 +78,6 @@ public final class ReferenceObjectCache
 					// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
 					//)
 					//adapter.fastLoadInstanceAttributeValues(refGeneProduct);
-					
-	//				ReferenceGeneProductShell shell = new ReferenceGeneProductShell();
-	//				shell.setDbId(rs.getString("object_db_id"));
-	//				shell.setDisplayName(rs.getString("_displayName"));
-	//				shell.setIdentifier(rs.getString("identifier"));
-	//				shell.setReactomeClass(rs.getString("_class"));
-	//				shell.setReferenceDatabase(rs.getString("refent_refdb"));
-	//				shell.setSpecies(rs.getString("species"));
 					
 					//Now, insert into the caches.
 					//
@@ -185,17 +112,12 @@ public final class ReferenceObjectCache
 					ReferenceObjectCache.cacheById.put(String.valueOf(refGeneProduct.getDBID()), refGeneProduct);
 				}
 				logger.debug("Built cacheById, cacheByRefDb, and cacheBySpecies caches.");
-				//rs.close();
 				
 				// Build up the Reference Database caches.
-				//ResultSet refDbResultSet = adapter.executeQuery(ReferenceObjectCache.refdbMappingQuery,null);
 				Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
 				
-				//while (refDbResultSet.next())
 				for (GKInstance refDB : refDBs)
 				{
-					//String db_id = refDbResultSet.getString("db_id");
-					//String name = refDbResultSet.getString("name");
 					String db_id = refDB.getDBID().toString();
 					String name = (String) refDB.getAttributeValue(ReactomeJavaConstants.name);
 					List<String> listOfIds;
@@ -225,17 +147,12 @@ public final class ReferenceObjectCache
 					listOfNames.add(name);
 					ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
 				}
-				//refDbResultSet.close();
 				logger.debug("Built refdbMapping cache.");
 				
 				// Build up the species caches.
-				//ResultSet speciesResultSet = adapter.executeQuery(ReferenceObjectCache.speciesMappingQuery,null);
 				Collection<GKInstance> species = adapter.fetchInstancesByClass(ReactomeJavaConstants.Species);
-				//while (speciesResultSet.next())
 				for (GKInstance singleSpecies : species)
 				{
-					//String db_id = speciesResultSet.getString("db_id");
-					//String name = speciesResultSet.getString("name");
 					String db_id = singleSpecies.getDBID().toString();
 					String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
 					List<String> listOfIds;
@@ -263,15 +180,13 @@ public final class ReferenceObjectCache
 					ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
 				}
 				logger.debug("Built speciesMapping cache.");
-				//speciesResultSet.close();
-				
-				//adapter.cleanUp();
+
 				logger.info("Caches initialized."
-						+ " Keys in cache-by-refdb: {};"
-						+ " keys in cache-by-species: {};"
-						+ " keys in cache-by-id: {};"
-						+ " keys in refDbMapping: {};"
-						+ " keys in speciesMapping: {}",
+						+ "\n\tKeys in cache-by-refdb: {};"
+						+ "\n\tkeys in cache-by-species: {};"
+						+ "\n\tkeys in cache-by-id: {};"
+						+ "\n\tkeys in refDbMapping: {};"
+						+ "\n\tkeys in speciesMapping: {}",
 								ReferenceObjectCache.cacheByRefDb.size(),
 								ReferenceObjectCache.cacheBySpecies.size(),
 								ReferenceObjectCache.cacheById.size(),
@@ -280,8 +195,10 @@ public final class ReferenceObjectCache
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
+				logger.error("Error ocurred while building the caches: {}",e.getMessage());
 				e.printStackTrace();
+				// If we can't even build the caches, something's gone very wrong. Throw an exception up the stack.
+				throw new RuntimeException(e);
 			}
 		}
 		else
