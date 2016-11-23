@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<context:property-placeholder location="classpath:*.properties" />
+
+
+	<!-- DB Adapter 
+	public MySQLAdaptor(String host,String database,String username,String password,int port)
+	-->
+	<bean id="dbAdapter" class="org.gk.persistence.MySQLAdaptor">
+		<constructor-arg name="host" index="0" value="${database.host}"/>
+		<constructor-arg name="database" index="1" value="${database.name}"/>
+		<constructor-arg name="username" index="2" value="${database.user}"/>
+		<constructor-arg name="password" index="3" value="${database.password}"/>
+		<constructor-arg name="port" index="4" value="${database.port}"/>
+	</bean>
+	
+</beans>
