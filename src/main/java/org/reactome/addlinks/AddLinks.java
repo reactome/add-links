@@ -166,7 +166,7 @@ public class AddLinks {
 							if (speciesIndex < speciesList.size())
 							{
 								String speciesId = speciesList.get(speciesIndex);
-								List<GKInstance> refGenes = ReferenceObjectCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+								List<GKInstance> refGenes = ReferenceObjectCache.getInstance().getByRefDbAndSpecies(refDb,speciesId,ReactomeJavaConstants.ReferenceGeneProduct);
 								
 								String speciesName = ReferenceObjectCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
 								
@@ -306,7 +306,7 @@ public class AddLinks {
 						String speciesName = possibleSpecies.get(0).replace(" ", "_");
 						retriever.setSpecies(speciesName);
 						
-						List<GKInstance> refGenes = ReferenceObjectCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+						List<GKInstance> refGenes = ReferenceObjectCache.getInstance().getByRefDbAndSpecies(refDb,speciesId,ReactomeJavaConstants.ReferenceGeneProduct);
 						
 						if (refGenes != null && refGenes.size() > 0)
 						{
