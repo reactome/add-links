@@ -16,15 +16,17 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
-import org.reactome.addlinks.db.ReferenceGeneProductCache;
-import org.reactome.addlinks.db.ReferenceGeneProductCache.ReferenceGeneProductShell;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -99,8 +101,8 @@ public class AddLinks {
 		
 		//Now download mapping data from Uniprot.
 		//TODO: Get DB parameters from config file.
-		//ReferenceGeneProductCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3306);
-		ReferenceGeneProductCache.setAdapter(adapter);
+		//ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_58", "curator", "",3306);
+		ReferenceObjectCache.setAdapter(adapter);
 
 		
 		@SuppressWarnings("unchecked")
@@ -121,19 +123,19 @@ public class AddLinks {
 			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
 			if (fromDb == UniprotDB.ENSEMBLProtein)
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
 			}
 			else if (fromDb == UniprotDB.ENSEMBLGene)
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
 			}
 			else if (fromDb == UniprotDB.ENSEMBLTranscript)
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
 			}
 			else
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
 			}
 			
 			if (refDbIds != null && refDbIds.size() > 0 )
@@ -143,8 +145,8 @@ public class AddLinks {
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
 				for (String refDb : refDbIds)
 				{
-					//Set<String> speciesList = ReferenceGeneProductCache.getInstance().getListOfSpecies();
-					List<String> speciesList = new ArrayList<String>( ReferenceGeneProductCache.getInstance().getListOfSpecies() );
+					//Set<String> speciesList = ReferenceObjectCache.getInstance().getListOfSpecies();
+					List<String> speciesList = new ArrayList<String>( ReferenceObjectCache.getInstance().getListOfSpecies() );
 					//for (String speciesId : speciesList)
 					logger.debug("Degree of parallelism in the Common Pool: {}", ForkJoinPool.getCommonPoolParallelism());
 					int numRequestedThreads = 10;
@@ -164,9 +166,9 @@ public class AddLinks {
 							if (speciesIndex < speciesList.size())
 							{
 								String speciesId = speciesList.get(speciesIndex);
-								List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+								List<GKInstance> refGenes = ReferenceObjectCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
 								
-								String speciesName = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
+								String speciesName = ReferenceObjectCache.getInstance().getSpeciesMappings().get(speciesId).get(0);
 								
 								Callable<Boolean> task = new Callable<Boolean>()
 								{
@@ -179,7 +181,21 @@ public class AddLinks {
 											{
 												
 												logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
-												String identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.joining("\n"));
+												String identifiersList = refGenes.stream().map(refGeneProduct -> {
+													try
+													{
+														return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
+													}
+													catch (InvalidAttributeException e1)
+													{
+														e1.printStackTrace();
+														throw new RuntimeException(e1);
+													} catch (Exception e1)
+													{
+														e1.printStackTrace();
+														throw new RuntimeException(e1);
+													}
+												}).collect(Collectors.joining("\n"));
 												
 												BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiersList.getBytes()));
 												// if we want to execute multiple retrievers in parallel, we need to create a 
@@ -256,31 +272,31 @@ public class AddLinks {
 			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
 			if (fromDb == EnsemblDB.ENSEMBLProtein)
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
 			}
 			else if (fromDb == EnsemblDB.ENSEMBLGene)
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
 			}
 			else if (fromDb == EnsemblDB.ENSEMBLTranscript)
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
 			}
 			else
 			{
-				refDbIds = ReferenceGeneProductCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
+				refDbIds = ReferenceObjectCache.getInstance().getRefDbNamesToIds().get(fromDb.toString() );
 			}
 			if (refDbIds != null && refDbIds.size() > 0 )
 			{
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
 				for (String refDb : refDbIds)
 				{
-					Set<String> speciesList = ReferenceGeneProductCache.getInstance().getListOfSpecies();
+					Set<String> speciesList = ReferenceObjectCache.getInstance().getListOfSpecies();
 					for (String speciesId : speciesList)
 					{
 						logger.info("Number of species IDs to process: {}", speciesList.size() );
 						
-						List<String> possibleSpecies = ReferenceGeneProductCache.getInstance().getSpeciesMappings().get(speciesId);
+						List<String> possibleSpecies = ReferenceObjectCache.getInstance().getSpeciesMappings().get(speciesId);
 						
 						if (possibleSpecies.size() > 1)
 						{
@@ -290,12 +306,27 @@ public class AddLinks {
 						String speciesName = possibleSpecies.get(0).replace(" ", "_");
 						retriever.setSpecies(speciesName);
 						
-						List<ReferenceGeneProductShell> refGenes = ReferenceGeneProductCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
+						List<GKInstance> refGenes = ReferenceObjectCache.getInstance().getByRefDbAndSpecies(refDb,speciesId);
 						
 						if (refGenes != null && refGenes.size() > 0)
 						{
 							logger.info("Number of identifiers that we will attempt to map TO {} FROM db_id: {}/{} (species: {}/{} ) is: {}", toDb.toString(), refDb,fromDb.toString() , speciesId, speciesName, refGenes.size());
-							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> refGeneProduct.getIdentifier()).collect(Collectors.toList());
+							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> {
+								try
+								{
+									return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
+								}
+								catch (InvalidAttributeException e)
+								{
+									e.printStackTrace();
+									throw new RuntimeException(e);
+								}
+								catch (Exception e)
+								{
+									e.printStackTrace();
+									throw new RuntimeException(e);
+								}
+							}).collect(Collectors.toList());
 							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
 							
 							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
