@@ -249,9 +249,20 @@ public final class ReferenceObjectCache
 	 * @param refDb
 	 * @return
 	 */
-	public List<GKInstance> getByRefDb(String refDb)
+	public List<GKInstance> getByRefDb(String refDb, String className)
 	{
-		return ReferenceObjectCache.refGeneProdCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refGeneProdCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+		switch (className)
+		{
+			case ReactomeJavaConstants.ReferenceGeneProduct:
+				return ReferenceObjectCache.refGeneProdCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refGeneProdCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			case ReactomeJavaConstants.ReferenceDNASequence:
+				return ReferenceObjectCache.refDNASeqCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refDNASeqCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			case ReactomeJavaConstants.ReferenceMolecule:
+				return ReferenceObjectCache.moleculeCacheByRefDB.containsKey(refDb) ? ReferenceObjectCache.moleculeCacheByRefDB.get(refDb) : new ArrayList<GKInstance>(0);
+			default:
+				logger.error("Invalid className: {} Nothing will be returned.", className);
+				return null;
+		}
 	}
 	
 	/**
@@ -259,9 +270,18 @@ public final class ReferenceObjectCache
 	 * @param species
 	 * @return
 	 */
-	public List<GKInstance> getBySpecies(String species)
+	public List<GKInstance> getBySpecies(String species, String className)
 	{
-		return ReferenceObjectCache.refGeneProdCacheBySpecies.get(species);
+		switch (className)
+		{
+			case ReactomeJavaConstants.ReferenceGeneProduct:
+				return ReferenceObjectCache.refGeneProdCacheBySpecies.get(species);
+			case ReactomeJavaConstants.ReferenceDNASequence:
+				return ReferenceObjectCache.refDNASeqCacheBySpecies.get(species);
+			default:
+				logger.error("Invalid className: {} Nothing will be returned.", className);
+				return null;
+		}
 	}
 	
 	/**
@@ -280,10 +300,10 @@ public final class ReferenceObjectCache
 	 * @param species
 	 * @return
 	 */
-	public List<GKInstance> getByRefDbAndSpecies(String refDb, String species)
+	public List<GKInstance> getByRefDbAndSpecies(String refDb, String species, String className)
 	{
 		//Get a list by referenceDatabase
-		List<GKInstance> byRefDb = this.getByRefDb(refDb);
+		List<GKInstance> byRefDb = this.getByRefDb(refDb, className);
 		//Now filter the items in that list by species.
 		List<GKInstance> objectsByRefDbAndSpecies = byRefDb.stream().filter(p -> {
 			try
@@ -304,7 +324,7 @@ public final class ReferenceObjectCache
 	 * Returns a set of the keys used to cache by Reference Database.
 	 * @return
 	 */
-	public Set<String> getListOfRefDbs()
+	public Set<String> getListOfRefGeneProdRefDbs()
 	{
 		return ReferenceObjectCache.refGeneProdCacheByRefDb.keySet();
 	}
