@@ -41,7 +41,7 @@ public class TestReferenceGeneProductCache {
 		
 		ReferenceObjectCache cache = ReferenceObjectCache.getInstance();
 		
-		List <GKInstance> items = cache.getBySpecies("48887");
+		List <GKInstance> items = cache.getBySpecies("48887",ReactomeJavaConstants.ReferenceGeneProduct);
 		
 		assertNotNull(items);
 		assertTrue(items.size()>0);
@@ -76,7 +76,7 @@ public class TestReferenceGeneProductCache {
 		//ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
 		ReferenceObjectCache.setAdapter(adapter);
 		ReferenceObjectCache cache = ReferenceObjectCache.getInstance();
-		List <GKInstance> items = cache.getByRefDb("427877");
+		List <GKInstance> items = cache.getByRefDb("427877",ReactomeJavaConstants.ReferenceGeneProduct);
 		
 		assertNotNull(items);
 		assertTrue(items.size()>0);
@@ -91,11 +91,17 @@ public class TestReferenceGeneProductCache {
 		//ReferenceObjectCache.setDbParams("127.0.0.1", "test_reactome_57", "curator", "",3307);
 		ReferenceObjectCache.setAdapter(adapter);
 		ReferenceObjectCache cache = ReferenceObjectCache.getInstance();
-		List <GKInstance> items = cache.getByRefDbAndSpecies("2", "48898");
+		List <GKInstance> items = cache.getByRefDbAndSpecies("2", "48898",ReactomeJavaConstants.ReferenceGeneProduct);
 		
 		assertNotNull(items);
 		assertTrue(items.size()>0);
 		System.out.println("# Items for refdb/species 2/48898: "+items.size());
+		
+		items = cache.getByRefDbAndSpecies("9214213", "48895" ,ReactomeJavaConstants.ReferenceDNASequence);
+		
+		assertNotNull(items);
+		assertTrue(items.size()>0);
+		System.out.println("# Items for refdb/species 9214213/48895: "+items.size());
 	}
 	
 	@AfterClass
