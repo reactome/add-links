@@ -61,7 +61,7 @@ public final class ReferenceObjectCache
 		ReferenceObjectCache.adapter = adapter;
 	}
 	
-	private static void buildReferenceSequenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
+	private static void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
 	{
 		Collection<GKInstance> referenceObjects = ReferenceObjectCache.adapter.fetchInstancesByClass(className);
 		for (GKInstance referenceObject : referenceObjects)
@@ -75,19 +75,24 @@ public final class ReferenceObjectCache
 			
 			//Now, insert into the caches.
 			//
-			//Species Cache
-			//If this species is not yet cached...
+			
 
-			String species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
-			if (! cacheBySpecies.containsKey(species))
+			// ReferenceMolecules do not have associated species.
+			if (! className.equals(ReactomeJavaConstants.ReferenceMolecule))
 			{
-				List<GKInstance> bySpecies = new LinkedList<GKInstance>();
-				bySpecies.add(referenceObject);
-				cacheBySpecies.put(species, bySpecies);
-			}
-			else
-			{
-				cacheBySpecies.get(species).add(referenceObject);
+				//Species Cache
+				//If this species is not yet cached...
+				String species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
+				if (! cacheBySpecies.containsKey(species))
+				{
+					List<GKInstance> bySpecies = new LinkedList<GKInstance>();
+					bySpecies.add(referenceObject);
+					cacheBySpecies.put(species, bySpecies);
+				}
+				else
+				{
+					cacheBySpecies.get(species).add(referenceObject);
+				}
 			}
 			//ReferenceDatabase Cache
 			//If this species is not yet cached...
@@ -110,7 +115,7 @@ public final class ReferenceObjectCache
 				+ "\n\tkeys in cache-by-species: {};"
 				+ "\n\tkeys in cache-by-id: {};",
 					cacheByRefDB.size(),
-					cacheBySpecies.size(),
+					(!className.equals(ReactomeJavaConstants.ReferenceMolecule) ? cacheBySpecies.size() : "N/A"),
 					cacheByID.size()
 				);
 	}
@@ -122,9 +127,11 @@ public final class ReferenceObjectCache
 			try
 			{
 				logger.info("Building ReferenceObject caches...");
-				ReferenceObjectCache.buildReferenceSequenceCaches(ReactomeJavaConstants.ReferenceGeneProduct, refGeneProdCacheBySpecies, refGeneProdCacheById, refGeneProdCacheByRefDb);
+				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceGeneProduct, refGeneProdCacheBySpecies, refGeneProdCacheById, refGeneProdCacheByRefDb);
 				
-				ReferenceObjectCache.buildReferenceSequenceCaches(ReactomeJavaConstants.ReferenceDNASequence, refDNASeqCacheBySpecies, refDNASeqCacheById, refDNASeqCacheByRefDb);
+				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceDNASequence, refDNASeqCacheBySpecies, refDNASeqCacheById, refDNASeqCacheByRefDb);
+				
+				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceMolecule, null, moleculeCacheByID, moleculeCacheByRefDB);
 				
 				// Build up the Reference Database caches.
 				Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
@@ -216,7 +223,7 @@ public final class ReferenceObjectCache
 	}
 	
 	// ReferenceMolecule caches
-	private static Map<String, List<GKInstance>> moleculeCacheByID = new HashMap<String, List<GKInstance>>();
+	private static Map<String, GKInstance> moleculeCacheByID = new HashMap<String, GKInstance>();
 	private static Map<String, List<GKInstance>> moleculeCacheByRefDB = new HashMap<String, List<GKInstance>>();
 	
 	// ReferenceDNASequence caches
