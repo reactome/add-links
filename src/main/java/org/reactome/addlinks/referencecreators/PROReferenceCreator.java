@@ -66,25 +66,29 @@ public class PROReferenceCreator
 		for (GKInstance uniprotReference : uniprotReferences)
 		{
 			String uniprotID = (String) uniprotReference.getAttributeValue(ReactomeJavaConstants.identifier);
-			//logger.debug("UniProt ID: {}",uniprotID);
 			if (mapping.containsKey(uniprotID))
 			{
 				String proIdentifier = (String)mapping.get(uniprotID);
+				logger.trace("UniProt ID: {}, PRO ID: {}",uniprotID, proIdentifier);
 				// Look for cross-references.
 				Collection<GKInstance> xrefs = uniprotReference.getAttributeValuesList(referringAttributeName);
-				boolean createNewXref = true;
+				boolean xrefAlreadyExists = false;
 				for (GKInstance xref : xrefs)
 				{
-					//logger.debug("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+					logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
 					// We won't add a cross-reference if it already exists
-					if (!xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( mapping.get(uniprotID) ))
+					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( mapping.get(uniprotID) ))
 					{
-						createNewXref = false;
+						xrefAlreadyExists = true;
+						// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+						// in letting the loop run longer.
+						// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+						break;
 					}
 				}
-				if (createNewXref)
+				if (!xrefAlreadyExists)
 				{
-					//logger.debug("Need to create a new identifier!");
+					logger.trace("Need to create a new identifier!");
 					uniprotsWithNewIdentifier ++;
 					if (!this.testMode)
 					{
@@ -99,13 +103,13 @@ public class PROReferenceCreator
 			else
 			{
 				uniprotsWithNoMapping ++;
-				//logger.debug("UniProt ID {} is NOT in the database.", uniprotID);
+				//logger.trace("UniProt ID {} is NOT in the database.", uniprotID);
 			}
 		}
 		logger.info("PRO reference creation summary: \n"
-				+ "\t# UniProt IDs with a new PRO identifier which had a new mapping created: {};\n"
-				+ "\t# UniProt identifiers which already had the same PRO mapping: {};\n"
-				+ "\t# UniProt identifiers not in the PRO mapping file (no new PRO mapping was created for them): {} ",uniprotsWithNewIdentifier, uniprotsWithExistingIdentifier, uniprotsWithNoMapping);
+				+ "\t# UniProt IDs with a new PRO identifier (a new PRO reference was created): {};\n"
+				+ "\t# UniProt identifiers which already had the same PRO reference (nothing new was created): {};\n"
+				+ "\t# UniProt identifiers not in the PRO mapping file (no new PRO reference was created for them): {} ",uniprotsWithNewIdentifier, uniprotsWithExistingIdentifier, uniprotsWithNoMapping);
 	}
 	
 	public boolean getTestMode()
