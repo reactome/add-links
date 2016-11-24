@@ -2,13 +2,14 @@
 <Configuration status="WARN">
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} %method - %msg%n" />
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}#%M - %msg%n" />
 		</Console>
 	</Appenders>
 	<Loggers>
 		<Logger level="warn" name="org.springframework" />
-	
-		<Root level="trace">
+		<Logger level="info" name="org.reactome.addlinks.referencecreators.OrphanetReferenceCreator" />
+		<Logger level="info" name="org.reactome.addlinks.referencecreators.PROReferenceCreator" />
+		<Root level="debug">
 			<AppenderRef ref="Console" />
 		</Root>
 	</Loggers>
