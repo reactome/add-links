@@ -71,7 +71,7 @@ public class OrphanetReferenceCreator
 			{
 				String orphanetIdentifier = (String)mapping.get(uniprotID);
 				// Look for cross-references.
-				Collection<GKInstance> xrefs = uniprotReference.getAttributeValuesList(ReactomeJavaConstants.crossReference);
+				Collection<GKInstance> xrefs = uniprotReference.getAttributeValuesList(referringAttributeName);
 				boolean createNewXref = true;
 				for (GKInstance xref : xrefs)
 				{
