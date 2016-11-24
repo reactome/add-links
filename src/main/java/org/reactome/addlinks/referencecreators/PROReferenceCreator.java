@@ -17,6 +17,8 @@ import org.reactome.addlinks.db.ReferenceCreator;
 public class PROReferenceCreator
 {
 
+	private boolean testMode = true;
+	
 	private MySQLAdaptor adapter;
 	private ReferenceCreator refCreator;
 	private static final Logger logger = LogManager.getLogger();
@@ -67,7 +69,7 @@ public class PROReferenceCreator
 			//logger.debug("UniProt ID: {}",uniprotID);
 			if (mapping.containsKey(uniprotID))
 			{
-			
+				String proIdentifier = (String)mapping.get(uniprotID);
 				// Look for cross-references.
 				Collection<GKInstance> xrefs = uniprotReference.getAttributeValuesList(ReactomeJavaConstants.crossReference);
 				boolean createNewXref = true;
@@ -84,7 +86,10 @@ public class PROReferenceCreator
 				{
 					//logger.debug("Need to create a new identifier!");
 					uniprotsWithNewIdentifier ++;
-					//refCreator.createIdentifier(mapping.get(uniprotID), String.valueOf(inst.getDBID()), REF_DB, personID, this.getClass().getName());
+					if (!this.testMode)
+					{
+						refCreator.createIdentifier(proIdentifier, String.valueOf(uniprotReference.getDBID()), REF_DB, personID, this.getClass().getName());
+					}
 				}
 				else
 				{
@@ -95,13 +100,21 @@ public class PROReferenceCreator
 			{
 				uniprotsWithNoMapping ++;
 				//logger.debug("UniProt ID {} is NOT in the database.", uniprotID);
-				//refCreator.createIdentifier(mapping.get(uniprotID), String.valueOf(inst.getDBID()), REF_DB, personID, this.getClass().getName());
 			}
-//				//refCreator.createIdentifier(identifierValue, referenceToValue, REF_DB, personID, this.getClass().getName());
 		}
 		logger.info("PRO reference creation summary: \n"
 				+ "\t# UniProt IDs with a new PRO identifier which had a new mapping created: {};\n"
 				+ "\t# UniProt identifiers which already had the same PRO mapping: {};\n"
 				+ "\t# UniProt identifiers not in the PRO mapping file (no new PRO mapping was created for them): {} ",uniprotsWithNewIdentifier, uniprotsWithExistingIdentifier, uniprotsWithNoMapping);
+	}
+	
+	public boolean getTestMode()
+	{
+		return this.testMode;
+	}
+	
+	public void setTestMode(boolean testMode)
+	{
+		this.testMode = testMode;
 	}
 }

@@ -90,12 +90,7 @@ public class ReferenceCreator
 			GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
 			if (instanceEdit != null)
 			{
-				//identifierInstance.addAttributeValue(attribute, identifierValue);
-				// Need to create an InstanceEdit to track
-				// the modifications.
 				identifierInstance.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
-				//this.dbAdapter.updateInstance(identifierInstance);
-				
 				//GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
 				
 				GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
@@ -117,11 +112,7 @@ public class ReferenceCreator
 				{
 					throw new Exception("Could not find the instance of type " + this.referringToSchemaClass.getName() + " with ID "+referenceToValue );
 				}
-				//I think ReferenceGeneProduct should probably be parameterized here. Also, referenceGene.
-				//SchemaClass refGeneProdClass = this.referringToSchemaClass; //this.dbAdapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
-				GKSchemaAttribute xrefAttrib = this.referringAttribute; //(GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
-				//instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
-				//this.dbAdapter.updateInstance(instanceReferredToByIdentifier);
+				GKSchemaAttribute xrefAttrib = this.referringAttribute;
 				//logger.debug("referringToSchemaClass Available attributes: {}", this.referringToSchemaClass.getAttributes());
 				instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
 				// Only update the relevant attribute, better than updating the entire instance.
