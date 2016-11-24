@@ -45,7 +45,7 @@ public class TestOrphanetReferenceCreator
 	OrphanetFileProcessor orphanetFileProcessor; 
 	
 	@Test
-	public void testPROReferenceCreator() throws Exception
+	public void testOrphanetReferenceCreator() throws Exception
 	{
 		OrphanetToUniprotReferenceDNASequence.fetchData();
 		
@@ -57,8 +57,8 @@ public class TestOrphanetReferenceCreator
 		OrphanetReferenceCreator orphanetRefCreator = new OrphanetReferenceCreator(adapter);
 		orphanetRefCreator.setTestMode(true);
 		// 2 == UniProt
-		List<GKInstance> orphanetReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
-		orphanetRefCreator.createIdentifiers(123456, uniprotToOrphanetMap, orphanetReferences);
+		List<GKInstance> uniProtReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
+		orphanetRefCreator.createIdentifiers(123456, uniprotToOrphanetMap, uniProtReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
