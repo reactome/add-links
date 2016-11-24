@@ -28,6 +28,7 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
+import org.reactome.addlinks.referencecreators.OrphanetReferenceCreator;
 import org.reactome.addlinks.referencecreators.PROReferenceCreator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -373,7 +374,10 @@ public class AddLinks {
 		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("UniProt", ReactomeJavaConstants.ReferenceGeneProduct);
 		PROReferenceCreator proRefCreator = new PROReferenceCreator(adapter);
 		proRefCreator.createIdentifiers(personID, dbMappings.get("PROFileProcessor"), uniprotReferences );
-		
+
+		OrphanetReferenceCreator orphanetRefCreator = new OrphanetReferenceCreator(adapter);
+		orphanetRefCreator.createIdentifiers(personID, dbMappings.get("OrphanetFileProcessor"), uniprotReferences );
+
 		logger.info("Process complete.");
 		context.close();
 	}
