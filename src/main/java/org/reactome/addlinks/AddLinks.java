@@ -28,6 +28,7 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
+import org.reactome.addlinks.referencecreators.PROReferenceCreator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -37,6 +38,8 @@ public class AddLinks {
 	private static List<String> retrieversToExecute;
 	
 	public static void main(String[] args) throws Exception {
+		//TODO: Move personID to a config file.
+		long personID = 123456789;
 		
 		Properties applicationProps = new Properties();
 		applicationProps.load(AddLinks.class.getClassLoader().getResourceAsStream("addlinks.properties"));
@@ -365,6 +368,11 @@ public class AddLinks {
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		
 		//Before each set of IDs is updated in the database, maybe take a database backup?
+		
+		//Now we create references.
+		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("UniProt", ReactomeJavaConstants.ReferenceGeneProduct);
+		PROReferenceCreator proRefCreator = new PROReferenceCreator(adapter);
+		proRefCreator.createIdentifiers(personID, dbMappings.get("PROFileProcessor"), uniprotReferences );
 		
 		logger.info("Process complete.");
 		context.close();

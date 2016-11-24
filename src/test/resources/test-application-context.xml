@@ -21,4 +21,30 @@
 		<constructor-arg name="port" index="4" value="${database.port}"/>
 	</bean>
 	
+	
+	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">48</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
+		<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+
+
+	<bean id="PROFileProcessor" class="org.reactome.addlinks.fileprocessors.PROFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt"/>
+			</bean>
+		</property>
+	</bean>
 </beans>
