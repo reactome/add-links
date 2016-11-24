@@ -9,6 +9,23 @@
 
 	<context:property-placeholder location="classpath:*.properties" />
 
+	<bean id="DatabaseIdentifierBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.DatabaseIdentifier"/>
+		</constructor-arg>
+	</bean>
+
+	<bean id="ReferenceGeneProductBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceGeneProduct"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="crossReferenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.crossReference"/>
+		</constructor-arg>
+	</bean>
 
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
@@ -45,6 +62,16 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt"/>
 			</bean>
 		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="PROReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="PRO"/>
+		<property name="testMode" value="true"/>
 	</bean>
 
 	<!-- Beans for Orphanet testing. -->
