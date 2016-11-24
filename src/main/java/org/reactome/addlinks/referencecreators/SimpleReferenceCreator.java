@@ -32,9 +32,15 @@ public class SimpleReferenceCreator
 	private String referringAttributeName ;
 	private String targetRefDB ;
 	private String sourceRefDB ;
-
-	public SimpleReferenceCreator(MySQLAdaptor adapter)
+	
+	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
+		this.setClassReferringToRefName(classReferring);
+		this.setClassToCreateName(classToCreate);
+		this.setReferringAttributeName(referringAttribute);
+		this.setSourceRefDB(sourceDB);
+		this.setTargetRefDB(targetDB);
+		
 		// Y'know, this code was lifted straight from OrphanetReferenceCreator and is pretty much unchanged. Perhaps these two (and others to follow) could pull
 		// this code up into a common parent class/interface...
 		this.adapter = adapter;
@@ -42,23 +48,23 @@ public class SimpleReferenceCreator
 
 		SchemaClass referringSchemaClass = adapter.getSchema().getClassByName(classReferringToRefName);
 		
-		GKSchemaAttribute referringAttribute = null;
+		GKSchemaAttribute referringSchemaAttribute = null;
 		try
 		{
 			// This should never fail, but we still need to handle the exception.
-			referringAttribute = (GKSchemaAttribute) referringSchemaClass.getAttribute(referringAttributeName);
+			referringSchemaAttribute = (GKSchemaAttribute) referringSchemaClass.getAttribute(referringAttributeName);
 		}
 		catch (InvalidAttributeException e)
 		{
 			logger.error("Failed to get GKSchemaAttribute with name {} from class {}. This shouldn't have happened, but somehow it did."
 						+ " Check that the classes/attributes you have chosen match the data model in the database.",
-						referringAttribute, referringSchemaClass );
+						referringSchemaAttribute, referringSchemaClass );
 			e.printStackTrace();
 			// Can't recover if there is no valid attribute object, throw it up the stack. 
 			throw new RuntimeException (e);
 		}
 		 
-		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringAttribute, this.adapter);
+		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
 	}
 	
 	public void createIdentifiers(long personID, Map<String, ?> mapping, List<GKInstance> sourceReferences) throws Exception

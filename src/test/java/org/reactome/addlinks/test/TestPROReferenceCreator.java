@@ -1,6 +1,7 @@
 package org.reactome.addlinks.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
-import org.reactome.addlinks.referencecreators.PROReferenceCreator;
+import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -53,7 +54,9 @@ public class TestPROReferenceCreator
 		assertNotNull(uniprotToProMap);
 		assertTrue(uniprotToProMap.size() > 0);
 		ReferenceObjectCache.setAdapter(adapter);
-		PROReferenceCreator proRefCreator = new PROReferenceCreator(adapter);
+		SimpleReferenceCreator proRefCreator = new SimpleReferenceCreator(adapter, ReactomeJavaConstants.DatabaseIdentifier, ReactomeJavaConstants.ReferenceGeneProduct,
+																					ReactomeJavaConstants.crossReference,
+																					"UniProt", "PRO");
 		proRefCreator.setTestMode(true);
 		// 2 == UniProt
 		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
