@@ -31,6 +31,7 @@
 		</constructor-arg>
 	</bean>
 	
+	<!-- Beans for PRO testing. -->
 	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
 		<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
@@ -38,12 +39,30 @@
 			<ref bean="maxFileAge" />
 		</property>
 	</bean>
-
-
 	<bean id="PROFileProcessor" class="org.reactome.addlinks.fileprocessors.PROFileProcessor">
 		<property name="path">
 			<bean class="java.nio.file.Paths" factory-method="get">
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt"/>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Beans for Orphanet testing. -->
+	<bean id="OrphanetToUniprotReferenceDNASequence"
+		class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever">
+		<property name="dataURL" value="http://www.orphadata.org/data/BDD_partners/genes_diseases_external_references.xml" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/genes_diseases_external_references.xml" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+		<property name="userName" value="${orphanet.user}" />
+		<property name="password" value="${orphanet.password}" />
+	</bean>
+	<bean id="OrphanetFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.OrphanetFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/genes_diseases_external_references.xml"/>
 			</bean>
 		</property>
 	</bean>
