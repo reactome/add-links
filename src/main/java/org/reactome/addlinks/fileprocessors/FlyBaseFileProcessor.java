@@ -39,6 +39,8 @@ public class FlyBaseFileProcessor extends FileProcessor
 						else
 						{
 							logger.warn("Could not extract the UniProt ID from line #{}", lineCount.get());
+							// Only print the bad line in TRACE logging mode.
+							logger.trace("{}",line);
 						}
 					}
 				});

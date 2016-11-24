@@ -66,4 +66,21 @@
 			</bean>
 		</property>
 	</bean>
+	
+	<!--  flybase testing -->
+	<bean id="FlyBaseFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/FlyBase.tsv.gz"/>
+			</bean>
+		</property>
+	</bean>
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
+		<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_05.tsv.gz" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
 </beans>
