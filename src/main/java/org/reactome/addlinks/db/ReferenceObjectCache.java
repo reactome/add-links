@@ -18,6 +18,9 @@ import org.gk.persistence.MySQLAdaptor;
 public final class ReferenceObjectCache 
 {
 
+	//TODO: Find a way to store the caches on disk. For *testing* purposes - only!
+	// ...it would probably be faster to load this from a file than from database queries.
+	
 	private static final Logger logger = LogManager.getLogger();
 	private static ReferenceObjectCache cache;
 	
