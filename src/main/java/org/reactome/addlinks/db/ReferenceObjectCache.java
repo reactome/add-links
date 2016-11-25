@@ -45,7 +45,7 @@ public final class ReferenceObjectCache
 		if (ReferenceObjectCache.cache == null)
 		{
 			logger.info("Cache is not initialized. Will initialize now.");
-			ReferenceObjectCache.cache = new ReferenceObjectCache();
+			ReferenceObjectCache.cache = new ReferenceObjectCache(ReferenceObjectCache.adapter);
 		}
 		else
 		{
@@ -66,6 +66,7 @@ public final class ReferenceObjectCache
 	
 	private static void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
 	{
+		@SuppressWarnings("unchecked")
 		Collection<GKInstance> referenceObjects = ReferenceObjectCache.adapter.fetchInstancesByClass(className);
 		for (GKInstance referenceObject : referenceObjects)
 		{
@@ -123,8 +124,9 @@ public final class ReferenceObjectCache
 				);
 	}
 
-	private ReferenceObjectCache()
+	private ReferenceObjectCache(MySQLAdaptor adapter)
 	{
+		ReferenceObjectCache.setAdapter(adapter);
 		if (ReferenceObjectCache.adapter!=null)
 		{
 			try
@@ -137,6 +139,7 @@ public final class ReferenceObjectCache
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceMolecule, null, moleculeCacheByID, moleculeCacheByRefDB);
 				
 				// Build up the Reference Database caches.
+				@SuppressWarnings("unchecked")
 				Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
 				
 				for (GKInstance refDB : refDBs)
@@ -173,6 +176,7 @@ public final class ReferenceObjectCache
 				logger.debug("Built refdbMapping cache.");
 				
 				// Build up the species caches.
+				@SuppressWarnings("unchecked")
 				Collection<GKInstance> species = adapter.fetchInstancesByClass(ReactomeJavaConstants.Species);
 				for (GKInstance singleSpecies : species)
 				{

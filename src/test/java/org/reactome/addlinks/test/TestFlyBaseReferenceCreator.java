@@ -58,8 +58,6 @@ public class TestFlyBaseReferenceCreator
 		assertNotNull(uniprotToFlyBaseMap);
 		assertTrue(uniprotToFlyBaseMap.size() > 0);
 		ReferenceObjectCache.setAdapter(adapter);
-		//FlyBaseReferenceCreator flyBaseRefCreator = new FlyBaseReferenceCreator(adapter);
-		//flyBaseRefCreator.setTestMode(true);
 		// 2 == UniProt
 		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		FlyBaseReferenceCreator.createIdentifiers(123456, uniprotToFlyBaseMap, uniprotReferences);
