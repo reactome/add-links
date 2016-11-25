@@ -8,14 +8,11 @@ import java.util.Map;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
-import org.gk.persistence.MySQLAdaptor;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
-import org.reactome.addlinks.referencecreators.FlyBaseReferenceCreator;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,15 +27,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 public class TestFlyBaseReferenceCreator
 {
-	static MySQLAdaptor adapter;
-
-	// This adapter will be populated with the adapter in the Spring config file.
-	@Autowired
-	public void setAdapter(MySQLAdaptor a)
-	{
-		TestFlyBaseReferenceCreator.adapter = a;
-	}
-
 	@Autowired
 	FileRetriever FlyBaseToUniprotReferenceDNASequence;
 	
@@ -47,6 +35,9 @@ public class TestFlyBaseReferenceCreator
 	
 	@Autowired
 	SimpleReferenceCreator FlyBaseReferenceCreator;
+	
+	@Autowired
+	ReferenceObjectCache objectCache;
 	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
@@ -57,16 +48,12 @@ public class TestFlyBaseReferenceCreator
 		
 		assertNotNull(uniprotToFlyBaseMap);
 		assertTrue(uniprotToFlyBaseMap.size() > 0);
-		ReferenceObjectCache.setAdapter(adapter);
+		//ReferenceObjectCache.setAdapter(adapter);
 		// 2 == UniProt
-		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
+		List<GKInstance> uniprotReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		FlyBaseReferenceCreator.createIdentifiers(123456, uniprotToFlyBaseMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
-	@AfterClass
-	public static void finished() throws Exception
-	{
-		TestFlyBaseReferenceCreator.adapter.cleanUp();
-	}
+
 }

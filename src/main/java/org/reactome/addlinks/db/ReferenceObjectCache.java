@@ -22,7 +22,8 @@ public final class ReferenceObjectCache
 	// ...it would probably be faster to load this from a file than from database queries.
 	
 	private static final Logger logger = LogManager.getLogger();
-	private static ReferenceObjectCache cache;
+	//private static ReferenceObjectCache cache;
+	private static boolean cachesArePopulated = false;
 	
 //	private static final String query = "select _displayName, _class, DatabaseObject.db_id as object_db_id, ReferenceEntity.identifier, ReferenceEntity.referenceDatabase as refent_refdb, ReferenceSequence.species " +
 //										" from DatabaseObject "+
@@ -40,29 +41,32 @@ public final class ReferenceObjectCache
 	
 	private static MySQLAdaptor adapter;
 	
-	public static synchronized ReferenceObjectCache getInstance() 
+	public ReferenceObjectCache(MySQLAdaptor adapter) 
 	{
-		if (ReferenceObjectCache.cache == null)
+		//if (ReferenceObjectCache.cache == null)
+		if (!ReferenceObjectCache.cachesArePopulated)
 		{
+			ReferenceObjectCache.adapter = adapter;
 			logger.info("Cache is not initialized. Will initialize now.");
-			ReferenceObjectCache.cache = new ReferenceObjectCache(ReferenceObjectCache.adapter);
+			//ReferenceObjectCache.cache = ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
+			ReferenceObjectCache.populateCaches(adapter);
 		}
 		else
 		{
 			if (!cacheInitializedMessageHasBeenPrinted)
 			{
 				logger.info("Cache is already initialized.");
-				cacheInitializedMessageHasBeenPrinted = true;
+				ReferenceObjectCache.cacheInitializedMessageHasBeenPrinted = true;
 			}
 		}
 		
-		return ReferenceObjectCache.cache;
+		//return ReferenceObjectCache.cache;
 	}
 	
-	public static void setAdapter(MySQLAdaptor adapter)
-	{
-		ReferenceObjectCache.adapter = adapter;
-	}
+//	public static void setAdapter(MySQLAdaptor adapter)
+//	{
+//		ReferenceObjectCache.adapter = adapter;
+//	}
 	
 	private static void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
 	{
@@ -124,9 +128,10 @@ public final class ReferenceObjectCache
 				);
 	}
 
-	private ReferenceObjectCache(MySQLAdaptor adapter)
+	private static synchronized void populateCaches(MySQLAdaptor adapter)
 	{
-		ReferenceObjectCache.setAdapter(adapter);
+		//ReferenceObjectCache.setAdapter(adapter);
+		ReferenceObjectCache.adapter = adapter;
 		if (ReferenceObjectCache.adapter!=null)
 		{
 			try
@@ -213,6 +218,7 @@ public final class ReferenceObjectCache
 						+ "\n\tkeys in speciesMapping: {}",
 								ReferenceObjectCache.refdbMapping.size(),
 								ReferenceObjectCache.speciesMapping.size());
+				ReferenceObjectCache.cachesArePopulated = true;
 			}
 			catch (Exception e)
 			{
