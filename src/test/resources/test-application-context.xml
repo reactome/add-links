@@ -26,6 +26,12 @@
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.crossReference"/>
 		</constructor-arg>
 	</bean>
+	
+	<bean id="referenceGeneBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceGene"/>
+		</constructor-arg>
+	</bean>
 
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
@@ -92,6 +98,15 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/genes_diseases_external_references.xml"/>
 			</bean>
 		</property>
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="OrphanetReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Orphanet"/>
+		<property name="testMode" value="true"/>
 	</bean>
 	
 	<!--  flybase testing -->

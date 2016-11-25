@@ -16,8 +16,9 @@ import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
 import org.reactome.addlinks.referencecreators.OrphanetReferenceCreator;
-
+import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -44,6 +45,9 @@ public class TestOrphanetReferenceCreator
 	@Autowired
 	OrphanetFileProcessor orphanetFileProcessor; 
 	
+	@Autowired
+	SimpleReferenceCreator OrphanetReferenceCreator;
+	
 	@Test
 	public void testOrphanetReferenceCreator() throws Exception
 	{
@@ -54,11 +58,11 @@ public class TestOrphanetReferenceCreator
 		assertNotNull(uniprotToOrphanetMap);
 		assertTrue(uniprotToOrphanetMap.size() > 0);
 		ReferenceObjectCache.setAdapter(adapter);
-		OrphanetReferenceCreator orphanetRefCreator = new OrphanetReferenceCreator(adapter);
-		orphanetRefCreator.setTestMode(true);
+		//OrphanetReferenceCreator orphanetRefCreator = new OrphanetReferenceCreator(adapter);
+		//orphanetRefCreator.setTestMode(true);
 		// 2 == UniProt
 		List<GKInstance> uniProtReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
-		orphanetRefCreator.createIdentifiers(123456, uniprotToOrphanetMap, uniProtReferences);
+		OrphanetReferenceCreator.createIdentifiers(123456, uniprotToOrphanetMap, uniProtReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
