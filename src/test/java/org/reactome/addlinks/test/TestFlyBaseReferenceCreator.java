@@ -16,6 +16,7 @@ import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.referencecreators.FlyBaseReferenceCreator;
+import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -44,6 +45,9 @@ public class TestFlyBaseReferenceCreator
 	@Autowired
 	FlyBaseFileProcessor flyBaseFileProcessor; 
 	
+	@Autowired
+	SimpleReferenceCreator FlyBaseReferenceCreator;
+	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
 	{
@@ -54,11 +58,11 @@ public class TestFlyBaseReferenceCreator
 		assertNotNull(uniprotToFlyBaseMap);
 		assertTrue(uniprotToFlyBaseMap.size() > 0);
 		ReferenceObjectCache.setAdapter(adapter);
-		FlyBaseReferenceCreator flyBaseRefCreator = new FlyBaseReferenceCreator(adapter);
-		flyBaseRefCreator.setTestMode(true);
+		//FlyBaseReferenceCreator flyBaseRefCreator = new FlyBaseReferenceCreator(adapter);
+		//flyBaseRefCreator.setTestMode(true);
 		// 2 == UniProt
 		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
-		flyBaseRefCreator.createIdentifiers(123456, uniprotToFlyBaseMap, uniprotReferences);
+		FlyBaseReferenceCreator.createIdentifiers(123456, uniprotToFlyBaseMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
