@@ -48,6 +48,9 @@ public class TestOrphanetReferenceCreator
 	@Autowired
 	SimpleReferenceCreator OrphanetReferenceCreator;
 	
+	@Autowired
+	ReferenceObjectCache objectCache;
+	
 	@Test
 	public void testOrphanetReferenceCreator() throws Exception
 	{
@@ -57,11 +60,9 @@ public class TestOrphanetReferenceCreator
 		
 		assertNotNull(uniprotToOrphanetMap);
 		assertTrue(uniprotToOrphanetMap.size() > 0);
-		ReferenceObjectCache.setAdapter(adapter);
-		//OrphanetReferenceCreator orphanetRefCreator = new OrphanetReferenceCreator(adapter);
-		//orphanetRefCreator.setTestMode(true);
+		//ReferenceObjectCache.setAdapter(adapter);
 		// 2 == UniProt
-		List<GKInstance> uniProtReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
+		List<GKInstance> uniProtReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		OrphanetReferenceCreator.createIdentifiers(123456, uniprotToOrphanetMap, uniProtReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};

@@ -57,10 +57,6 @@ public class TestPROReferenceCreator
 		assertNotNull(uniprotToProMap);
 		assertTrue(uniprotToProMap.size() > 0);
 		ReferenceObjectCache.setAdapter(adapter);
-//		SimpleReferenceCreator proRefCreator = new SimpleReferenceCreator(adapter, ReactomeJavaConstants.DatabaseIdentifier, ReactomeJavaConstants.ReferenceGeneProduct,
-//																					ReactomeJavaConstants.crossReference,
-//																					"UniProt", "PRO");
-//		proRefCreator.setTestMode(true);
 		// 2 == UniProt
 		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		proRefCreator.createIdentifiers(123456, uniprotToProMap, uniprotReferences);

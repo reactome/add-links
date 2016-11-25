@@ -45,6 +45,10 @@
 	</bean>
 	
 	
+	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" >
+		<constructor-arg name="adapter" ref="dbAdapter" />
+	</bean>
+	
 	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
 		<constructor-arg index="0">
 			<value type="java.lang.Long">48</value>
