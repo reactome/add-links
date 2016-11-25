@@ -8,8 +8,6 @@ import java.util.Map;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
-import org.gk.persistence.MySQLAdaptor;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -29,14 +27,6 @@ import org.springframework.test.context.ContextConfiguration;
 public class TestPROReferenceCreator
 {
 
-	static MySQLAdaptor adapter;
-
-	// This adapter will be populated with the adapter in the Spring config file.
-	@Autowired
-	public void setAdapter(MySQLAdaptor a)
-	{
-		TestPROReferenceCreator.adapter = a;
-	}
 
 	@Autowired
 	FileRetriever PROToReferencePeptideSequence;
@@ -47,6 +37,10 @@ public class TestPROReferenceCreator
 	@Autowired
 	SimpleReferenceCreator proRefCreator;
 	
+	@Autowired
+	ReferenceObjectCache objectCache;
+	
+	
 	@Test
 	public void testPROReferenceCreator() throws Exception
 	{
@@ -56,16 +50,12 @@ public class TestPROReferenceCreator
 		
 		assertNotNull(uniprotToProMap);
 		assertTrue(uniprotToProMap.size() > 0);
-		ReferenceObjectCache.setAdapter(adapter);
+		//ReferenceObjectCache.setAdapter(adapter);
 		// 2 == UniProt
-		List<GKInstance> uniprotReferences = ReferenceObjectCache.getInstance().getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
+		List<GKInstance> uniprotReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		proRefCreator.createIdentifiers(123456, uniprotToProMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
-	@AfterClass
-	public static void finished() throws Exception
-	{
-		TestPROReferenceCreator.adapter.cleanUp();
-	}
+
 }

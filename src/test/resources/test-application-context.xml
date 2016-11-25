@@ -36,7 +36,7 @@
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
-	<bean id="dbAdapter" class="org.gk.persistence.MySQLAdaptor">
+	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
 		<constructor-arg name="host" index="0" value="${database.host}"/>
 		<constructor-arg name="database" index="1" value="${database.name}"/>
 		<constructor-arg name="username" index="2" value="${database.user}"/>
@@ -45,8 +45,8 @@
 	</bean>
 	
 	
-	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" >
-		<constructor-arg name="adapter" ref="dbAdapter" />
+	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
+		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
 	</bean>
 	
 	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
@@ -74,7 +74,7 @@
 		</property>
 	</bean>
 	
-	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="PROReferenceCreator">
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="proRefCreator">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>

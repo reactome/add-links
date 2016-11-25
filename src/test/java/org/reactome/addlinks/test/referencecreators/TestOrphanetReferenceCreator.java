@@ -9,16 +9,13 @@ import java.util.Map;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
-import org.reactome.addlinks.referencecreators.OrphanetReferenceCreator;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -32,12 +29,6 @@ public class TestOrphanetReferenceCreator
 {
 	static MySQLAdaptor adapter;
 
-	// This adapter will be populated with the adapter in the Spring config file.
-	@Autowired
-	public void setAdapter(MySQLAdaptor a)
-	{
-		TestOrphanetReferenceCreator.adapter = a;
-	}
 
 	@Autowired
 	FileRetriever OrphanetToUniprotReferenceDNASequence;
@@ -67,9 +58,5 @@ public class TestOrphanetReferenceCreator
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
-	@AfterClass
-	public static void finished() throws Exception
-	{
-		TestOrphanetReferenceCreator.adapter.cleanUp();
-	}
+
 }
