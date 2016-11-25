@@ -13,19 +13,21 @@ import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
+import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
+import org.reactome.addlinks.fileprocessors.PROFileProcessor;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
- * INTEGRATION test of FlyBase functionality: file retreival, file processing, reference creation.
+ * INTEGRATION tests of file retrieval, file processing, reference creation.
  * @author sshorser
  *
  */
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
 
-public class TestFlyBaseReferenceCreator
+public class TestSimpleReferenceCreator
 {
 	@Autowired
 	FileRetriever FlyBaseToUniprotReferenceDNASequence;
@@ -38,6 +40,24 @@ public class TestFlyBaseReferenceCreator
 	
 	@Autowired
 	ReferenceObjectCache objectCache;
+	
+	@Autowired
+	FileRetriever OrphanetToUniprotReferenceDNASequence;
+	
+	@Autowired
+	OrphanetFileProcessor orphanetFileProcessor; 
+	
+	@Autowired
+	SimpleReferenceCreator OrphanetReferenceCreator;
+
+	@Autowired
+	FileRetriever PROToReferencePeptideSequence;
+	
+	@Autowired
+	PROFileProcessor proFileProcessor; 
+	
+	@Autowired
+	SimpleReferenceCreator proRefCreator;
 	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
@@ -55,5 +75,36 @@ public class TestFlyBaseReferenceCreator
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	};
 	
+	@Test
+	public void testOrphanetReferenceCreator() throws Exception
+	{
+		OrphanetToUniprotReferenceDNASequence.fetchData();
+		
+		Map<String, String> uniprotToOrphanetMap = orphanetFileProcessor.getIdMappingsFromFile();
+		
+		assertNotNull(uniprotToOrphanetMap);
+		assertTrue(uniprotToOrphanetMap.size() > 0);
+		//ReferenceObjectCache.setAdapter(adapter);
+		// 2 == UniProt
+		List<GKInstance> uniProtReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
+		OrphanetReferenceCreator.createIdentifiers(123456, uniprotToOrphanetMap, uniProtReferences);
+		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
+	};
 
+	@Test
+	public void testPROReferenceCreator() throws Exception
+	{
+		PROToReferencePeptideSequence.fetchData();
+		
+		Map<String, String> uniprotToProMap = proFileProcessor.getIdMappingsFromFile();
+		
+		assertNotNull(uniprotToProMap);
+		assertTrue(uniprotToProMap.size() > 0);
+		//ReferenceObjectCache.setAdapter(adapter);
+		// 2 == UniProt
+		List<GKInstance> uniprotReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
+		proRefCreator.createIdentifiers(123456, uniprotToProMap, uniprotReferences);
+		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
+	};
+	
 }
