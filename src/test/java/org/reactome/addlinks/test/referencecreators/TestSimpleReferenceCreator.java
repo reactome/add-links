@@ -16,6 +16,7 @@ import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
+import org.reactome.addlinks.referencecreators.UCSCReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -59,6 +60,9 @@ public class TestSimpleReferenceCreator
 	@Autowired
 	SimpleReferenceCreator proRefCreator;
 	
+	@Autowired
+	UCSCReferenceCreator ucscRefCreator;
+	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
 	{
@@ -73,7 +77,7 @@ public class TestSimpleReferenceCreator
 		List<GKInstance> uniprotReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		FlyBaseReferenceCreator.createIdentifiers(123456, uniprotToFlyBaseMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
-	};
+	}
 	
 	@Test
 	public void testOrphanetReferenceCreator() throws Exception
@@ -89,7 +93,7 @@ public class TestSimpleReferenceCreator
 		List<GKInstance> uniProtReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		OrphanetReferenceCreator.createIdentifiers(123456, uniprotToOrphanetMap, uniProtReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
-	};
+	}
 
 	@Test
 	public void testPROReferenceCreator() throws Exception
@@ -105,6 +109,12 @@ public class TestSimpleReferenceCreator
 		List<GKInstance> uniprotReferences = objectCache.getByRefDb("2", ReactomeJavaConstants.ReferenceGeneProduct);
 		proRefCreator.createIdentifiers(123456, uniprotToProMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
-	};
+	}
 	
+	@Test
+	public void testUCSCReferenceCreator() throws Exception
+	{
+		List<GKInstance> uniprotReferences = objectCache.getByRefDbAndSpecies("2", "48887", ReactomeJavaConstants.ReferenceGeneProduct);
+		ucscRefCreator.createIdentifiers(123456, uniprotReferences);
+	}
 }
