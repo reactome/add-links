@@ -21,17 +21,17 @@ import org.reactome.addlinks.db.ReferenceCreator;
  */
 public class SimpleReferenceCreator
 {
-	private boolean testMode = true;
+	protected boolean testMode = true;
 	
-	private MySQLAdaptor adapter;
-	private ReferenceCreator refCreator;
+	protected MySQLAdaptor adapter;
+	protected ReferenceCreator refCreator;
 	private static final Logger logger = LogManager.getLogger();
 	
-	private String classToCreateName ;
-	private String classReferringToRefName ;
-	private String referringAttributeName ;
-	private String targetRefDB ;
-	private String sourceRefDB ;
+	protected String classToCreateName ;
+	protected String classReferringToRefName ;
+	protected String referringAttributeName ;
+	protected String targetRefDB ;
+	protected String sourceRefDB ;
 	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
