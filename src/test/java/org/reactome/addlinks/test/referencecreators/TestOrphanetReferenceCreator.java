@@ -1,4 +1,4 @@
-package org.reactome.addlinks.test;
+package org.reactome.addlinks.test.referencecreators;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
