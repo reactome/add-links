@@ -239,6 +239,38 @@
 		<constructor-arg index="5" name="targetDB" value="OMIM"/>
 		<property name="testMode" value="true"/>
 	</bean>
+
+	<!-- Protein Data Bank (PDB) -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToPDB">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">PDB</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
 	
+	<bean id="UniprotToPDBFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB" />
+	</bean>
 	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedPDBRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="PDB"/>
+		<property name="testMode" value="true"/>
+	</bean>
 </beans>
