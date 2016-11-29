@@ -75,11 +75,11 @@ public class SimpleReferenceCreator
 		logger.traceEntry();
 		for (GKInstance sourceReference : sourceReferences)
 		{
-			String sourceRefDBIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
-			if (mapping.containsKey(sourceRefDBIdentifier))
+			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
+			if (mapping.containsKey(sourceReferenceIdentifier))
 			{
-				String targetRefDBIdentifier = (String)mapping.get(sourceRefDBIdentifier);
-				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceRefDBIdentifier, this.targetRefDB, targetRefDBIdentifier);
+				String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
+				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
 				// Look for cross-references.
 				Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
 				boolean xrefAlreadyExists = false;
@@ -87,7 +87,7 @@ public class SimpleReferenceCreator
 				{
 					logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
 					// We won't add a cross-reference if it already exists
-					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( mapping.get(sourceRefDBIdentifier) ))
+					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( mapping.get(sourceReferenceIdentifier) ))
 					{
 						xrefAlreadyExists = true;
 						// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 

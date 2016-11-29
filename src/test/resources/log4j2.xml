@@ -8,6 +8,7 @@
 	<Loggers>
 		<Logger level="warn" name="org.springframework" />
 		<Logger level="info" name="org.reactome.addlinks.referencecreators.OrphanetReferenceCreator" />
+		<Logger level="debug" name="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" />
 		<Logger level="info" name="org.reactome.addlinks.referencecreators.PROReferenceCreator" />
 		<Root level="debug">
 			<AppenderRef ref="Console" />
