@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import org.gk.model.ReactomeJavaConstants;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +61,16 @@ public class TestUniProtMappedRefCreator
 	@Autowired
 	UniprotFileProcessor UniprotToPDBFileProcessor;
 	
+	// For RefSeqPeptide
+	@Autowired
+	UPMappedIdentifiersReferenceCreator upMappedRefSeqPeptideRefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver UniProtToRefSeqPeptide;
+	
+	@Autowired
+	UniprotFileProcessor UniprotToRefSeqPeptideFileProcessor;
+	
 	@BeforeClass
 	public static void setup()
 	{
@@ -76,9 +87,7 @@ public class TestUniProtMappedRefCreator
 	@Test
 	public void testUPRefCreatorWormbase() throws Exception
 	{
-
 		// Need a list of identifiers.
-		
 		String refDb = "UniProt";
 		String species = "Caenorhabditis elegans";
 		String className = "ReferenceGeneProduct";
@@ -87,14 +96,21 @@ public class TestUniProtMappedRefCreator
 		
 		System.out.println(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
 		StringBuilder identifiersList = new StringBuilder();
-		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(dbid -> {
-			identifiersList.append( dbid + "\n" );
+		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(instance -> {
+			try
+			{
+				identifiersList.append( instance.getAttributeValue(ReactomeJavaConstants.identifier) + "\n" );
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
 		});
 		
-		UniProtToWormbase.setFetchDestination(UniProtToWormbase.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		UniProtToWormbase.setFetchDestination(UniProtToRefSeqPeptide.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
 		
 		assertTrue(identifiersList.length()>0);
-		String identifiers = identifiersList.toString().replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+		String identifiers = identifiersList.toString();//.replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
 		System.out.print(identifiers);
 		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
 		UniProtToWormbase.setDataInputStream(inStream);
@@ -112,9 +128,7 @@ public class TestUniProtMappedRefCreator
 	@Test
 	public void testUPRefCreatorOMIM() throws Exception
 	{
-
 		// Need a list of identifiers.
-		
 		String refDb = "UniProt";
 		String species = "Homo sapiens";
 		String className = "ReferenceGeneProduct";
@@ -123,14 +137,22 @@ public class TestUniProtMappedRefCreator
 		
 		System.out.println(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
 		StringBuilder identifiersList = new StringBuilder();
-		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(dbid -> {
-			identifiersList.append( dbid + "\n" );
+		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(instance -> {
+			try
+			{
+				identifiersList.append( instance.getAttributeValue(ReactomeJavaConstants.identifier) + "\n" );
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
 		});
 		
-		UniProtToOMIM.setFetchDestination(UniProtToOMIM.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		UniProtToOMIM.setFetchDestination(UniProtToRefSeqPeptide.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
 		
 		assertTrue(identifiersList.length()>0);
-		String identifiers = identifiersList.toString().replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+		String identifiers = identifiersList.toString();//.replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+
 		System.out.print(identifiers);
 		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
 		UniProtToOMIM.setDataInputStream(inStream);
@@ -148,9 +170,7 @@ public class TestUniProtMappedRefCreator
 	@Test
 	public void testUPRefCreatorPDB() throws Exception
 	{
-
 		// Need a list of identifiers.
-		
 		String refDb = "UniProt";
 		String species = "Canis familiaris";
 		String className = "ReferenceGeneProduct";
@@ -159,14 +179,22 @@ public class TestUniProtMappedRefCreator
 		
 		System.out.println(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
 		StringBuilder identifiersList = new StringBuilder();
-		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(dbid -> {
-			identifiersList.append( dbid + "\n" );
+		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(instance -> {
+			try
+			{
+				identifiersList.append( instance.getAttributeValue(ReactomeJavaConstants.identifier) + "\n" );
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
 		});
 		
-		UniProtToPDB.setFetchDestination(UniProtToPDB.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		UniProtToPDB.setFetchDestination(UniProtToRefSeqPeptide.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
 		
 		assertTrue(identifiersList.length()>0);
-		String identifiers = identifiersList.toString().replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+		String identifiers = identifiersList.toString();//.replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+
 		System.out.print(identifiers);
 		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
 		UniProtToPDB.setDataInputStream(inStream);
@@ -178,5 +206,45 @@ public class TestUniProtMappedRefCreator
 		
 		upMappedPDBRefCreator.setTestMode(true);
 		upMappedPDBRefCreator.createIdentifiers(123456, Paths.get(UniProtToPDB.getFetchDestination()));
+	}
+	
+	@Test
+	public void testUPRefCreatorRefSeqPeptide() throws Exception
+	{
+		// Need a list of identifiers.
+		String refDb = "UniProt";
+		String species = "Homo sapiens";
+		String className = "ReferenceGeneProduct";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		
+		System.out.println(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
+		StringBuilder identifiersList = new StringBuilder();
+		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(instance -> {
+			try
+			{
+				identifiersList.append( instance.getAttributeValue(ReactomeJavaConstants.identifier) + "\n" );
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		});
+		
+		UniProtToRefSeqPeptide.setFetchDestination(UniProtToRefSeqPeptide.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		
+		assertTrue(identifiersList.length()>0);
+		String identifiers = identifiersList.toString();//.replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+		System.out.print(identifiers);
+		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+		UniProtToRefSeqPeptide.setDataInputStream(inStream);
+		
+		UniProtToRefSeqPeptide.fetchData();
+		
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToRefSeqPeptideFileProcessor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		
+		upMappedRefSeqPeptideRefCreator.setTestMode(true);
+		upMappedRefSeqPeptideRefCreator.createIdentifiers(123456, Paths.get(UniProtToRefSeqPeptide.getFetchDestination()));
 	}
 }
