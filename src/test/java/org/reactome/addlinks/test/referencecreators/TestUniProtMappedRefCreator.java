@@ -30,14 +30,25 @@ public class TestUniProtMappedRefCreator
 	@Autowired
 	ReferenceObjectCache objectCache;
 	
+	// For Wormbase
 	@Autowired
-	UPMappedIdentifiersReferenceCreator upMappedRefCreator;
+	UPMappedIdentifiersReferenceCreator upMappedWormbaseRefCreator;
 	
 	@Autowired
 	UniprotFileRetreiver UniProtToWormbase;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToWormbaseFileProcessor;
+
+	// For OMIM
+	@Autowired
+	UPMappedIdentifiersReferenceCreator upMappedOMIMRefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver UniProtToOMIM;
+	
+	@Autowired
+	UniprotFileProcessor UniprotToOMIMFileProcessor;
 	
 	@BeforeClass
 	public static void setup()
@@ -53,7 +64,7 @@ public class TestUniProtMappedRefCreator
 	}
 	
 	@Test
-	public void testUPRefCreator() throws Exception
+	public void testUPRefCreatorWormbase() throws Exception
 	{
 
 		// Need a list of identifiers.
@@ -73,7 +84,7 @@ public class TestUniProtMappedRefCreator
 		UniProtToWormbase.setFetchDestination(UniProtToWormbase.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
 		
 		assertTrue(identifiersList.length()>0);
-		String identifiers = identifiersList.toString().replace("UniProt:", "");
+		String identifiers = identifiersList.toString().replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
 		System.out.print(identifiers);
 		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
 		UniProtToWormbase.setDataInputStream(inStream);
@@ -84,7 +95,43 @@ public class TestUniProtMappedRefCreator
 		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToWormbaseFileProcessor.getIdMappingsFromFile();
 		assertTrue(mappings.keySet().size() > 0);
 		
-		upMappedRefCreator.setTestMode(true);
-		upMappedRefCreator.createIdentifiers(123456, Paths.get(UniProtToWormbase.getFetchDestination()));
+		upMappedWormbaseRefCreator.setTestMode(true);
+		upMappedWormbaseRefCreator.createIdentifiers(123456, Paths.get(UniProtToWormbase.getFetchDestination()));
+	}
+	
+	@Test
+	public void testUPRefCreatorOMIM() throws Exception
+	{
+
+		// Need a list of identifiers.
+		
+		String refDb = "UniProt";
+		String species = "Homo sapiens";
+		String className = "ReferenceGeneProduct";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		
+		System.out.println(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
+		StringBuilder identifiersList = new StringBuilder();
+		objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className).stream().forEach(dbid -> {
+			identifiersList.append( dbid + "\n" );
+		});
+		
+		UniProtToOMIM.setFetchDestination(UniProtToOMIM.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		
+		assertTrue(identifiersList.length()>0);
+		String identifiers = identifiersList.toString().replace("UniProt:", "").replaceAll("\\[[a-zA-Z0-9\\:]*\\] ", "");
+		System.out.print(identifiers);
+		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+		UniProtToOMIM.setDataInputStream(inStream);
+		
+		
+		UniProtToOMIM.fetchData();
+		
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToOMIMFileProcessor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		
+		upMappedOMIMRefCreator.setTestMode(true);
+		upMappedOMIMRefCreator.createIdentifiers(123456, Paths.get(UniProtToOMIM.getFetchDestination()));
 	}
 }

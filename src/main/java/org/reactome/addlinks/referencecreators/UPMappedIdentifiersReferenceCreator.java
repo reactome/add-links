@@ -133,11 +133,17 @@ public class UPMappedIdentifiersReferenceCreator
 				{
 					if (sourceInstances.size() > 1)
 					{
-						logger.warn("Got {} elements, but only 1 was expected when fetching instances by attribute value: {}.{} {} \"{}\"",sourceInstances.size(),this.classReferringToRefName, this.referringAttributeName, "=", sourceIdentifier);
+						//Actually, it's OK to have > 1 instances. This just means that the SOURCE ID has multiple entities that will be references, such as a ReferenceGeneProduct and a ReferenceIsoform.
+						logger.info("Got {} elements when fetching instances by attribute value: {}.{} {} \"{}\"",sourceInstances.size(),this.classReferringToRefName, this.referringAttributeName, "=", sourceIdentifier);
 					}
 
 					for (GKInstance inst : sourceInstances)
 					{
+						if (sourceInstances.size() > 1)
+						{
+							logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
+						}
+						
 						logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 						// check and make sure the cross refernces don't already exist.
 						Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
@@ -159,12 +165,9 @@ public class UPMappedIdentifiersReferenceCreator
 						}
 						if (!xrefAlreadyExists)
 						{
-//							logger.trace("Creating new identifier {} for {}, from file {}", targetIdentifier, sourceIdentifier, mappingFile.toString());
 							if (!this.testMode)
 							{
-								// this.refCreator.createIdentifier(targetIdentifier, String.valueOf(inst.getDBID()), this.targetRefDB, personID, this.getClass().getName());
 								thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID()));
-								
 							}
 							createdCounter.getAndIncrement();
 							
@@ -192,9 +195,9 @@ public class UPMappedIdentifiersReferenceCreator
 			}
 		});
 		
-		thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-			if (!this.testMode)
-			{
+		if (!this.testMode)
+		{
+			thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 				String[] parts = newIdentifier.split(":");
 				logger.trace("Creating new identifier {} , from file {}", parts[0], mappingFile.toString());
 				try
@@ -205,8 +208,8 @@ public class UPMappedIdentifiersReferenceCreator
 				{
 					throw new RuntimeException(e);
 				}
-			}
-		} );
+			} );
+		}
 		
 		logger.info("{} Reference creation summary, based on the file {} :\n"
 				+ "\t# Identifiers created: {}\n"
