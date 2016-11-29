@@ -171,6 +171,8 @@
 			<value>UniProt</value>
 		</constructor-arg>
 	</bean>
+	
+	<!-- Wormbase -->
 	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToWormbase">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase.txt" />
@@ -184,21 +186,57 @@
 			<ref bean="uniprotTestAge" />
 		</property>
 	</bean>
+	
 	<bean id="UniprotToWormbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
 		<property name="path">
 			<bean class="java.nio.file.Paths" factory-method="get">
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-	<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase" />
 	</bean>
-	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefCreator">
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedWormbaseRefCreator">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 		<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- OMIM -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToOMIM">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">OMIM</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
+	
+	<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedOMIMRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="OMIM"/>
 		<property name="testMode" value="true"/>
 	</bean>
 	
