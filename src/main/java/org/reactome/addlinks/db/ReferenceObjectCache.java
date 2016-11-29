@@ -20,6 +20,7 @@ public final class ReferenceObjectCache
 
 	//TODO: Find a way to store the caches on disk. For *testing* purposes - only!
 	// ...it would probably be faster to load this from a file than from database queries.
+	//TODO: Add filtering abilities. Will be useful for testing to speed things up.
 	
 	private static final Logger logger = LogManager.getLogger();
 	//private static ReferenceObjectCache cache;
@@ -70,6 +71,8 @@ public final class ReferenceObjectCache
 	
 	private static void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
 	{
+		logger.debug("Building caches of {}", className);
+		
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> referenceObjects = ReferenceObjectCache.adapter.fetchInstancesByClass(className);
 		for (GKInstance referenceObject : referenceObjects)

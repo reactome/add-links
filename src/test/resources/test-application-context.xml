@@ -21,6 +21,12 @@
 		</constructor-arg>
 	</bean>
 	
+	<bean id="ReferenceDNASequenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceDNASequence"/>
+		</constructor-arg>
+	</bean>
+	
 	<bean id="crossReferenceBean" class="java.lang.String">
 		<constructor-arg>
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.crossReference"/>
@@ -149,4 +155,52 @@
 		<constructor-arg index="5" name="targetDB" value="UCSC"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<!-- UniProt mapped identifier testing -->
+	<bean id="uniprotTestAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">0</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="UniprotDB_Uniprot" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>UniProt</value>
+		</constructor-arg>
+	</bean>
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToWormbase">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
+	<bean id="UniprotToWormbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+	<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase" />
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	
 </beans>

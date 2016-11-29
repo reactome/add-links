@@ -40,7 +40,7 @@
 		</constructor-arg>
 	</bean>
 
-<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+	<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBL</value>
 		</constructor-arg>
