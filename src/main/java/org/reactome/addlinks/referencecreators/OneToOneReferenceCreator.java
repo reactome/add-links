@@ -10,10 +10,10 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
-public class UCSCReferenceCreator extends SimpleReferenceCreator
+public class OneToOneReferenceCreator extends SimpleReferenceCreator
 {
 	private static final Logger logger = LogManager.getLogger();
-	public UCSCReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
+	public OneToOneReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
@@ -27,7 +27,7 @@ public class UCSCReferenceCreator extends SimpleReferenceCreator
 	
 	
 	/**
-	 * UCSC createIdentifiers creates a 1:1 mapping from UniProt identifiers to UCSC references so there is no input mapping, just the list of UniProt IDs.
+	 * createIdentifiers creates a 1:1 mapping from UniProt identifiers to OTHER references so there is no input mapping, just the list of UniProt IDs.
 	 * @param personID
 	 * @param sourceReferences
 	 * @throws Exception
@@ -36,7 +36,7 @@ public class UCSCReferenceCreator extends SimpleReferenceCreator
 	{
 		int createdRefCount = 0;
 		int preexistingRefCount = 0;
-		// UCSC references are easy: Just create 1:1 mappings with the Uniprot ID. 		
+		// these references are easy: Just create 1:1 mappings with the Uniprot ID.
 		logger.traceEntry();
 		for (GKInstance sourceReference : sourceReferences)
 		{
@@ -45,7 +45,8 @@ public class UCSCReferenceCreator extends SimpleReferenceCreator
 				String targetRefDBIdentifier = sourceRefDBIdentifier;
 				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceRefDBIdentifier, this.targetRefDB, targetRefDBIdentifier);
 				// Look for cross-references.
-				Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
 				boolean xrefAlreadyExists = false;
 				for (GKInstance xref : xrefs)
 				{
@@ -63,10 +64,11 @@ public class UCSCReferenceCreator extends SimpleReferenceCreator
 				if (!xrefAlreadyExists)
 				{
 					logger.trace("\tNeed to create a new identifier!");
+					createdRefCount ++ ;
 					if (!this.testMode)
 					{
 						refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName());
-						createdRefCount ++ ;
+						
 					}
 				}
 				else
@@ -77,6 +79,6 @@ public class UCSCReferenceCreator extends SimpleReferenceCreator
 		}
 		logger.info("{} reference creation summary: \n" +
 					"\t# {} references created: {}\n" + 
-					"\t# references that already existed (and were not touched): {}\n", this.targetRefDB, this.targetRefDB, createdRefCount, this.targetRefDB, preexistingRefCount);
+					"\t# {} references that already existed (and were not touched): {} \n", this.targetRefDB, this.targetRefDB, createdRefCount, this.targetRefDB, preexistingRefCount);
 	}
 }

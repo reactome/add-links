@@ -16,7 +16,7 @@ import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
-import org.reactome.addlinks.referencecreators.UCSCReferenceCreator;
+import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -61,7 +61,7 @@ public class TestSimpleReferenceCreator
 	SimpleReferenceCreator proRefCreator;
 	
 	@Autowired
-	UCSCReferenceCreator ucscRefCreator;
+	OneToOneReferenceCreator geneCardsRefCreator;
 	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
@@ -112,9 +112,10 @@ public class TestSimpleReferenceCreator
 	}
 	
 	@Test
-	public void testUCSCReferenceCreator() throws Exception
+	public void testGeneCardsReferenceCreator() throws Exception
 	{
 		List<GKInstance> uniprotReferences = objectCache.getByRefDbAndSpecies("2", "48887", ReactomeJavaConstants.ReferenceGeneProduct);
-		ucscRefCreator.createIdentifiers(123456, uniprotReferences);
+		assertTrue(uniprotReferences.size() > 0);
+		geneCardsRefCreator.createIdentifiers(123456, uniprotReferences);
 	}
 }
