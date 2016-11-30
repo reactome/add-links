@@ -113,7 +113,8 @@ public class UniprotFileRetreiver extends FileRetriever
 		}
 		else
 		{
-			logger.debug("schemeAndHost had length < 2: {}",schemeAndHost);
+			logger.debug("schemeAndHost had length < 2: {} ; will use try to host from original URI: {}", schemeAndHost, this.uri.getHost());
+			builder.setHost(this.uri.getHost());
 		}
 		
 		if (parts.length>1)
