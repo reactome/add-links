@@ -38,6 +38,18 @@
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceGene"/>
 		</constructor-arg>
 	</bean>
+	
+	<bean id="referenceTranscriptBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceTranscript"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceRNASequenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceRNASequence"/>
+		</constructor-arg>
+	</bean>
 
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
@@ -304,7 +316,110 @@
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-		<constructor-arg index="5" name="targetDB" value="RefSeqPeptide"/>
+		<constructor-arg index="5" name="targetDB" value="RefSeq"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- RefSeqRNA database -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqRNA">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqRNA</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
+	
+	<bean id="UniprotToRefSeqRNAFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqRNARefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceRNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceTranscriptBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="RefSeq"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- ENSEMBL -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToENSEMBLGene">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">ENSEMBLGene</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
+	
+	<bean id="UniprotToENSEMBLGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedENSEMBLGeneRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	
+	<!-- EntrezGene -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToEntrezGene">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
+	
+	<bean id="UniprotToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedEntrezGeneRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
 		<property name="testMode" value="true"/>
 	</bean>
 </beans>

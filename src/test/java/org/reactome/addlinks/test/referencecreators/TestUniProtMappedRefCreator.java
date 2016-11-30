@@ -71,6 +71,36 @@ public class TestUniProtMappedRefCreator
 	@Autowired
 	UniprotFileProcessor UniprotToRefSeqPeptideFileProcessor;
 	
+	// For RefSeqRNA
+	@Autowired
+	UPMappedIdentifiersReferenceCreator upMappedRefSeqRNARefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver UniProtToRefSeqRNA;
+	
+	@Autowired
+	UniprotFileProcessor UniprotToRefSeqRNAFileProcessor;
+	
+	// For ENSEMBLGene
+	@Autowired
+	UPMappedIdentifiersReferenceCreator upMappedENSEMBLGeneRefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver UniProtToENSEMBLGene;
+	
+	@Autowired
+	UniprotFileProcessor UniprotToENSEMBLGeneFileProcessor;
+	
+	// For EntrezGene
+	@Autowired
+	UPMappedIdentifiersReferenceCreator upMappedEntrezGeneRefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver UniProtToEntrezGene;
+	
+	@Autowired
+	UniprotFileProcessor UniprotToEntrezGeneFileProcessor;
+	
 	@BeforeClass
 	public static void setup()
 	{
@@ -191,5 +221,71 @@ public class TestUniProtMappedRefCreator
 		assertTrue(mappings.keySet().size() > 0);
 		upMappedRefSeqPeptideRefCreator.setTestMode(true);
 		upMappedRefSeqPeptideRefCreator.createIdentifiers(123456, Paths.get(UniProtToRefSeqPeptide.getFetchDestination()));
+	}
+	
+	@Test
+	public void testUPRefCreatorRefSeqRNA() throws Exception
+	{
+		String refDb = "UniProt";
+		String species = "Homo sapiens";
+		String className = "ReferenceGeneProduct";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		String identifiers = getIdentifiersList(refDb, species, className);
+		assertTrue(identifiers.length()>0);
+		System.out.print(identifiers);
+		UniProtToRefSeqRNA.setFetchDestination(UniProtToRefSeqRNA.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+		UniProtToRefSeqRNA.setDataInputStream(inStream);
+		UniProtToRefSeqRNA.fetchData();
+		@SuppressWarnings("unchecked")
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToRefSeqRNAFileProcessor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		upMappedRefSeqRNARefCreator.setTestMode(true);
+		upMappedRefSeqRNARefCreator.createIdentifiers(123456, Paths.get(UniProtToRefSeqRNA.getFetchDestination()));
+	}
+	
+	@Test
+	public void testUPRefCreatorENSEMBLGene() throws Exception
+	{
+		String refDb = "UniProt";
+		String species = "Homo sapiens";
+		String className = "ReferenceGeneProduct";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		String identifiers = getIdentifiersList(refDb, species, className);
+		assertTrue(identifiers.length()>0);
+		System.out.print(identifiers);
+		UniProtToENSEMBLGene.setFetchDestination(UniProtToENSEMBLGene.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+		UniProtToENSEMBLGene.setDataInputStream(inStream);
+		UniProtToENSEMBLGene.fetchData();
+		@SuppressWarnings("unchecked")
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToENSEMBLGeneFileProcessor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		upMappedENSEMBLGeneRefCreator.setTestMode(true);
+		upMappedENSEMBLGeneRefCreator.createIdentifiers(123456, Paths.get(UniProtToENSEMBLGene.getFetchDestination()));
+	}
+	
+	@Test
+	public void testUPRefCreatorEntrezGene() throws Exception
+	{
+		String refDb = "UniProt";
+		String species = "Homo sapiens";
+		String className = "ReferenceGeneProduct";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		String identifiers = getIdentifiersList(refDb, species, className);
+		assertTrue(identifiers.length()>0);
+		System.out.print(identifiers);
+		UniProtToEntrezGene.setFetchDestination(UniProtToEntrezGene.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+		UniProtToEntrezGene.setDataInputStream(inStream);
+		UniProtToEntrezGene.fetchData();
+		@SuppressWarnings("unchecked")
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToEntrezGeneFileProcessor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		upMappedEntrezGeneRefCreator.setTestMode(true);
+		upMappedEntrezGeneRefCreator.createIdentifiers(123456, Paths.get(UniProtToEntrezGene.getFetchDestination()));
 	}
 }
