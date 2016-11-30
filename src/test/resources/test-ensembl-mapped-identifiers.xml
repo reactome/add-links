@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+	<import resource="testing-common.xml"/>
+	
+	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ALL_DATABASES</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Wormbase" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>Wormbase</value>
+		</constructor-arg>
+	</bean>
+	
+	
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+	
+	<!-- Wormbase -->
+	<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="ENSEMBLToWormbase">
+		<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_wormbase.xml" />
+		<property name="mapFromDbEnum">
+			<ref bean="EnsemblDB_Ensembl"/>
+		</property>
+		<property name="mapToDbEnum">
+			<ref bean="EnsemblDB_Wormbase"/>
+		</property>
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
+	<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.EnsemblFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_wormbase.xml"/>
+			</bean>
+		</property>
+		<property name="dbs">
+			<util:list value-type="java.lang.String">
+				<value>Wormbase</value>
+				<value>ENSEMBL</value>
+			</util:list>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ensMappedWormbaseRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+		<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+		<property name="testMode" value="true"/>
+	</bean>
+</beans>
