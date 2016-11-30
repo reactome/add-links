@@ -107,16 +107,16 @@ public final class ReferenceObjectCache
 			}
 			//ReferenceDatabase Cache
 			//If this species is not yet cached...
-			String refDB = String.valueOf(((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
-			if (! cacheByRefDB.containsKey(refDB))
+			String refDBID = String.valueOf(((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
+			if (! cacheByRefDB.containsKey(refDBID))
 			{
 				List<GKInstance> byRefDb = new LinkedList<GKInstance>();
 				byRefDb.add(referenceObject);
-				cacheByRefDB.put(refDB, byRefDb);
+				cacheByRefDB.put(refDBID, byRefDb);
 			}
 			else
 			{
-				cacheByRefDB.get(refDB).add(referenceObject);
+				cacheByRefDB.get(refDBID).add(referenceObject);
 			}
 			// ID Cache
 			cacheByID.put(String.valueOf(referenceObject.getDBID()), referenceObject);
@@ -155,33 +155,39 @@ public final class ReferenceObjectCache
 				for (GKInstance refDB : refDBs)
 				{
 					String db_id = refDB.getDBID().toString();
-					String name = (String) refDB.getAttributeValue(ReactomeJavaConstants.name);
+					@SuppressWarnings("unchecked")
+					List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
 					List<String> listOfIds;
-					// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
-					if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
+					// Because in some cases (I'm mostly thinking of Ensembl here), there could be a number of ReferenceDatabase
+					// objects all sharing the same name (WHERE name_rank = 0). We want ALL names, not just the first one.
+					for (String name : names)
 					{
-						listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
+						// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
+						if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
+						{
+							listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
+						}
+						else
+						{
+							listOfIds = new ArrayList<String>(1);
+						}
+						listOfIds.add(db_id);
+		
+						ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
+					
+						// refdbMapping is a 1:n from db_ids to names.
+						List<String> listOfNames;
+						if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
+						{
+							listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
+						}
+						else
+						{
+							listOfNames = new ArrayList<String>(1);
+						}
+						listOfNames.add(name);
+						ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
 					}
-					else
-					{
-						listOfIds = new ArrayList<String>(1);
-					}
-					listOfIds.add(db_id);
-	
-					ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
-	
-					// refdbMapping is a 1:n from db_ids to names.
-					List<String> listOfNames;
-					if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
-					{
-						listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
-					}
-					else
-					{
-						listOfNames = new ArrayList<String>(1);
-					}
-					listOfNames.add(name);
-					ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
 				}
 				logger.debug("Built refdbMapping cache.");
 				
