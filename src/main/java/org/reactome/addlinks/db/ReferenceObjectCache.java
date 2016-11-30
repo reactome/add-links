@@ -144,6 +144,8 @@ public final class ReferenceObjectCache
 				
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceDNASequence, refDNASeqCacheBySpecies, refDNASeqCacheById, refDNASeqCacheByRefDb);
 				
+				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceRNASequence, refRNASeqCacheBySpecies, refRNASeqCacheById, refRNASeqCacheByRefDb);
+				
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceMolecule, null, moleculeCacheByID, moleculeCacheByRefDB);
 				
 				// Build up the Reference Database caches.
@@ -246,6 +248,11 @@ public final class ReferenceObjectCache
 	private static Map<String,List<GKInstance>> refDNASeqCacheBySpecies = new HashMap<String,List<GKInstance>>();
 	private static Map<String,List<GKInstance>> refDNASeqCacheByRefDb = new HashMap<String,List<GKInstance>>();
 	private static Map<String,GKInstance> refDNASeqCacheById = new HashMap<String,GKInstance>();
+
+	// ReferenceRNASequence caches
+	private static Map<String,List<GKInstance>> refRNASeqCacheBySpecies = new HashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refRNASeqCacheByRefDb = new HashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> refRNASeqCacheById = new HashMap<String,GKInstance>();
 	
 	// ReferenceGeneProduct caches
 	private static Map<String,List<GKInstance>> refGeneProdCacheBySpecies = new HashMap<String,List<GKInstance>>();
@@ -273,6 +280,8 @@ public final class ReferenceObjectCache
 				return ReferenceObjectCache.refGeneProdCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refGeneProdCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
 			case ReactomeJavaConstants.ReferenceDNASequence:
 				return ReferenceObjectCache.refDNASeqCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refDNASeqCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			case ReactomeJavaConstants.ReferenceRNASequence:
+				return ReferenceObjectCache.refRNASeqCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refRNASeqCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
 			case ReactomeJavaConstants.ReferenceMolecule:
 				return ReferenceObjectCache.moleculeCacheByRefDB.containsKey(refDb) ? ReferenceObjectCache.moleculeCacheByRefDB.get(refDb) : new ArrayList<GKInstance>(0);
 			default:
@@ -294,6 +303,8 @@ public final class ReferenceObjectCache
 				return ReferenceObjectCache.refGeneProdCacheBySpecies.get(species);
 			case ReactomeJavaConstants.ReferenceDNASequence:
 				return ReferenceObjectCache.refDNASeqCacheBySpecies.get(species);
+			case ReactomeJavaConstants.ReferenceRNASequence:
+				return ReferenceObjectCache.refRNASeqCacheBySpecies.get(species);
 			default:
 				logger.error("Invalid className: {} Nothing will be returned.", className);
 				return null;
