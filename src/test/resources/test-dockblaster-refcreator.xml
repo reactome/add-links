@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+	<import resource="testing-common.xml"/>
+
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="UniProtToPDBRetriever">
+		<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
+	<bean id="DOCKBlasterFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.DOCKBlasterFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	
+</beans>
