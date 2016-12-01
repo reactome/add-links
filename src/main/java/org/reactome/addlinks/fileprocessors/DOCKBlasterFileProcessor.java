@@ -24,18 +24,18 @@ public class DOCKBlasterFileProcessor extends FileProcessor
 			{
 				lineCount.incrementAndGet();
 				String[] parts = line.split("\\t");
-				String key = parts[0];
-				String value = parts[1];
-				// The mappings are not 1:1. 
-				if (uniprotsToPdbs.containsKey(key))
+				String pdbID = parts[0];
+				String uniProtID = parts[1];
+				// The mappings are not 1:1. The left column is PDB ID, the right column is UniProt ID. 
+				if (uniprotsToPdbs.containsKey(pdbID))
 				{
-					uniprotsToPdbs.get(key).add(value);
+					uniprotsToPdbs.get(pdbID).add(uniProtID);
 				}
 				else
 				{
 					ArrayList<String> values = new ArrayList<String>(); 
-					values.add(value);
-					uniprotsToPdbs.put(key, values);
+					values.add(uniProtID);
+					uniprotsToPdbs.put(pdbID, values);
 				}
 			});
 			logger.info("Processed {} lines.", lineCount.get());
