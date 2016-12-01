@@ -27,13 +27,13 @@ public class TestENSEMBLMappedRefCreator
 	
 	// For Wormbase
 	@Autowired
-	ENSMappedIdentifiersReferenceCreator ensMappedWormbaseRefCreator;
+	ENSMappedIdentifiersReferenceCreator ensMappedEntrezGeneRefCreator;
 	
 	@Autowired
-	EnsemblFileRetriever ENSEMBLToWormbase;
+	EnsemblFileRetriever ENSEMBLToEntrezGene;
 	
 	@Autowired
-	EnsemblFileProcessor ENSEMBLToWormbaseFileProcessor;
+	EnsemblFileProcessor ENSEMBLToEntrezGeneFileProcessor;
 
 	@BeforeClass
 	public static void setup()
@@ -73,30 +73,28 @@ public class TestENSEMBLMappedRefCreator
 	public void testENSRefCreatorWormbase() throws Exception
 	{
 		//String refDb = "ENSEMBL";
-		String refDb = "ENSEMBL_Caenorhabditis elegans_PROTEIN";
-		String species = "Caenorhabditis elegans";
+		String refDb = "ENSEMBL_Canis familiaris_PROTEIN";
+		String species = "Canis familiaris";
 		String className = "ReferenceGeneProduct";
 		List<String> refDBID = objectCache.getRefDbNamesToIds().get(refDb);
 		//String refDBID = "8925713";
 		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
 		for (String ensemblDBID : refDBID)
 		{
-			// The DB ID for worms in ENSEMBL ("ENSEMBL_Caenorhabditis elegans_GENE")
-			if (ensemblDBID.equals("8925712"))
-			{
-				List<String> identifiers = getIdentifiersList(ensemblDBID, species, className);
-				assertTrue(identifiers.size()>0);
-				System.out.println(identifiers);
-				ENSEMBLToWormbase.setFetchDestination(ENSEMBLToWormbase.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
-				ENSEMBLToWormbase.setIdentifiers(identifiers);
-				ENSEMBLToWormbase.setSpecies(species.toLowerCase().replace(" ", "_"));
-				ENSEMBLToWormbase.fetchData();
-				@SuppressWarnings("unchecked")
-				Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) ENSEMBLToWormbaseFileProcessor.getIdMappingsFromFile();
-				assertTrue(mappings.keySet().size() > 0);
-				ensMappedWormbaseRefCreator.setTestMode(true);
-				ensMappedWormbaseRefCreator.createIdentifiers(123456, Paths.get(ENSEMBLToWormbase.getFetchDestination()));
-			}
+			List<String> identifiers = getIdentifiersList(ensemblDBID, species, className);
+			System.out.println("# identifiers: " + identifiers.size());
+			assertTrue(identifiers.size()>0);
+			System.out.println(identifiers);
+			ENSEMBLToEntrezGene.setFetchDestination(ENSEMBLToEntrezGene.getFetchDestination().replace(".xml","." + speciesDBID + "." + refDBID + ".xml").replace("]","").replace("[", ""));
+			ENSEMBLToEntrezGene.setIdentifiers(identifiers);
+			ENSEMBLToEntrezGene.setSpecies(species.toLowerCase().replace(" ", "_"));
+			ENSEMBLToEntrezGene.fetchData();
+			ENSEMBLToEntrezGeneFileProcessor.setPath(Paths.get(ENSEMBLToEntrezGene.getFetchDestination()));
+			@SuppressWarnings("unchecked")
+			Map<String,Map<String,List<String>>> mappings = (Map<String,Map<String,List<String>>>) ENSEMBLToEntrezGeneFileProcessor.getIdMappingsFromFile();
+			assertTrue(mappings.keySet().size() > 0);
+			ensMappedEntrezGeneRefCreator.setTestMode(true);
+			ensMappedEntrezGeneRefCreator.createIdentifiers(123456, mappings);
 		}
 	}
 }

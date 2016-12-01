@@ -11,7 +11,7 @@
 	<!-- create a comma-separated line of the form: <Ensembl ID in Reactome>,<ID from other database> -->
 	<xsl:template match="/ensemblResponses/ensemblResponse/opt/data[@dbname=$db]">
 		<xsl:value-of select="../../@id" />
-		<xsl:text>,</xsl:text>
+		<xsl:text>&#x9;</xsl:text>
 		<xsl:value-of select="./@primary_id" />
 		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
