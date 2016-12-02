@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,9 +68,9 @@ public class DOCKBlasterReferenceCreator
 
 	public void createIdentifiers(long personID, Map<String, ArrayList<String>> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
-		int uniprotsWithNoMapping = 0;
-		int uniprotsWithNewIdentifier = 0;
-		int uniprotsWithExistingIdentifier = 0;
+		AtomicInteger uniprotsWithNoMapping = new AtomicInteger(0);
+		AtomicInteger uniprotsWithNewIdentifier = new AtomicInteger(0);
+		AtomicInteger uniprotsWithExistingIdentifier = new AtomicInteger(0);
 		logger.traceEntry();
 		
 		Map<String, GKInstance> sourceMap = new HashMap<>(sourceReferences.size());
@@ -79,12 +81,75 @@ public class DOCKBlasterReferenceCreator
 			//Pretty sure that identifier is always a single-valued attribute.
 			sourceMap.put(sourceInstance.getAttributeValue(ReactomeJavaConstants.identifier).toString(), sourceInstance);
 		}
-		
+//		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 		// one PDB ID could map to several UniProt IDs
-		for (String pdbID : mapping.keySet())
-		{
-			//mapping.get(pdbID).stream().filter(p -> sourceMap.containsKey(p)).
-		}
+		//for (String pdbID : mapping.keySet())
+		mapping.keySet().stream().sequential().forEach(pdbID -> {
+			try
+			{
+//				MySQLAdaptor localAdapter ;
+//				long threadID = Thread.currentThread().getId();
+//				//logger.debug("Thread ID: {}",threadID);
+//				if (adapterPool.containsKey(threadID))
+//				{
+//					localAdapter = adapterPool.get(threadID);
+//				}
+//				else
+//				{
+//					logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+//					localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
+//					adapterPool.put(threadID, localAdapter);
+//				}
+//				
+				// For each UniProt ID that is in the source and also mapped from PDB (via DOCKBlaster)...
+				List<String> uniProtIDs = mapping.get(pdbID).stream().parallel().filter(uniprotID -> sourceMap.containsKey(uniprotID)).collect(Collectors.toList());
+				logger.trace("{}",uniProtIDs);
+				for (String uniProtID : uniProtIDs)
+				{
+					// Check that this cross-reference doesn't already exist
+					logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, uniProtID, this.targetRefDB, pdbID);
+					GKInstance sourceReference = sourceMap.get(uniProtID);
+					// Look for cross-references.
+
+					Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
+					boolean xrefAlreadyExists = false;
+					for (GKInstance xref : xrefs)
+					{
+						logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+						// We won't add a cross-reference if it already exists
+						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( uniProtID ))
+						{
+							xrefAlreadyExists = true;
+							// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+							// in letting the loop run longer.
+							// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+							break;
+						}
+					}
+					if (!xrefAlreadyExists)
+					{
+						logger.trace("\tNeed to create a new identifier!");
+						uniprotsWithNewIdentifier.incrementAndGet();
+						if (!this.testMode)
+						{
+							refCreator.createIdentifier(pdbID, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName());
+						}
+					}
+					else
+					{
+						uniprotsWithExistingIdentifier.incrementAndGet();
+					}			
+				}
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
 		
 //		for (GKInstance sourceReference : sourceReferences)
 //		{
