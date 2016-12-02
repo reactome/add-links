@@ -27,5 +27,13 @@
 		</property>
 	</bean>
 	
-	
+	<bean class="org.reactome.addlinks.referencecreators.DOCKBlasterReferenceCreator" id="pdbRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Protein Data Bank"/>
+		<property name="testMode" value="true"/>
+	</bean>
 </beans>
