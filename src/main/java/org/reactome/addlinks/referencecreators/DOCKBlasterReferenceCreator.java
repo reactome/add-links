@@ -81,26 +81,9 @@ public class DOCKBlasterReferenceCreator
 			//Pretty sure that identifier is always a single-valued attribute.
 			sourceMap.put(sourceInstance.getAttributeValue(ReactomeJavaConstants.identifier).toString(), sourceInstance);
 		}
-//		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
-		// one PDB ID could map to several UniProt IDs
-		//for (String pdbID : mapping.keySet())
 		mapping.keySet().stream().sequential().forEach(pdbID -> {
 			try
 			{
-//				MySQLAdaptor localAdapter ;
-//				long threadID = Thread.currentThread().getId();
-//				//logger.debug("Thread ID: {}",threadID);
-//				if (adapterPool.containsKey(threadID))
-//				{
-//					localAdapter = adapterPool.get(threadID);
-//				}
-//				else
-//				{
-//					logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
-//					localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
-//					adapterPool.put(threadID, localAdapter);
-//				}
-//				
 				// For each UniProt ID that is in the source and also mapped from PDB (via DOCKBlaster)...
 				List<String> uniProtIDs = mapping.get(pdbID).stream().parallel().filter(uniprotID -> sourceMap.containsKey(uniprotID)).collect(Collectors.toList());
 				logger.trace("{}",uniProtIDs);
@@ -150,50 +133,7 @@ public class DOCKBlasterReferenceCreator
 				e.printStackTrace();
 			}
 		});
-		
-//		for (GKInstance sourceReference : sourceReferences)
-//		{
-//			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
-//			if (mapping.containsKey(sourceReferenceIdentifier))
-//			{
-//				String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
-//				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
-//				// Look for cross-references.
-//				Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
-//				boolean xrefAlreadyExists = false;
-//				for (GKInstance xref : xrefs)
-//				{
-//					logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-//					// We won't add a cross-reference if it already exists
-//					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( mapping.get(sourceReferenceIdentifier) ))
-//					{
-//						xrefAlreadyExists = true;
-//						// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-//						// in letting the loop run longer.
-//						// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-//						break;
-//					}
-//				}
-//				if (!xrefAlreadyExists)
-//				{
-//					logger.trace("\tNeed to create a new identifier!");
-//					uniprotsWithNewIdentifier ++;
-//					if (!this.testMode)
-//					{
-//						refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName());
-//					}
-//				}
-//				else
-//				{
-//					uniprotsWithExistingIdentifier ++;
-//				}
-//			}
-//			else
-//			{
-//				uniprotsWithNoMapping ++;
-//				//logger.debug("UniProt ID {} is NOT in the database.", uniprotID);
-//			}
-//		}
+
 		logger.info("{} reference creation summary: \n"
 				+ "\t# {} IDs with a new {} identifier (a new {} reference was created): {};\n"
 				+ "\t# {} identifiers which already had the same {} reference (nothing new was created): {};\n"
