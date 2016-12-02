@@ -147,7 +147,7 @@ public class TestReferenceCreator
 			ReferenceCreator creator = new ReferenceCreator(refDNASeqClass, refGeneProdClass, refAttrib, adapter);
 			int personID = 8863762;
 			String referenceGeneProductID = "9604116";
-			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName());
+			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName(),new Long(48887));
 			if (adapter.supportsTransactions())
 			{
 				adapter.commit();

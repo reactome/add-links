@@ -139,6 +139,22 @@ public class UPMappedIdentifiersReferenceCreator
 								logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 							}
 							
+							// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
+							// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
+							// if we want new identifiers to have the same species of the thing which they refer to.
+							Long speciesID = null;
+							for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>)inst.getSchemaAttributes())
+							{
+								if (attrib.getName().equals(ReactomeJavaConstants.species) )
+								{
+									GKInstance speciesInst = (GKInstance) inst.getAttributeValue(ReactomeJavaConstants.species);
+									if (speciesInst != null)
+									{
+										speciesID = new Long(speciesInst.getDBID());
+									}
+								}
+							}
+							
 							logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 							// check and make sure the cross refernces don't already exist.
 							Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
@@ -163,7 +179,7 @@ public class UPMappedIdentifiersReferenceCreator
 								if (!this.testMode)
 								{
 									// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>
-									thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID()));
+									thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
 								}
 								createdCounter.getAndIncrement();
 								
@@ -198,7 +214,14 @@ public class UPMappedIdentifiersReferenceCreator
 					logger.trace("Creating new identifier {} , from file {}", parts[0], mappingFile.toString());
 					try
 					{
-						this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+						if (parts[2] != null && !parts[2].trim().equals(""))
+						{
+							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+						}
+						else
+						{
+							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+						}
 					}
 					catch (Exception e)
 					{

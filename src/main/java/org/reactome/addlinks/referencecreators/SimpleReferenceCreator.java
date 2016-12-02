@@ -3,6 +3,7 @@ package org.reactome.addlinks.referencecreators;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,6 +68,14 @@ public class SimpleReferenceCreator
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
 	}
 	
+	/**
+	 * Creates identifiers.
+	 * @param personID - Newly created Identifiers will be associated with an InstanceEdit. That InstanceEdit will be associated with the Person entity whose ID == personID
+	 * @param mapping - The mapping of Identifiers to create. This is a map of existing source identifiers to new identifiers. The Values in this case should be single-valued.
+	 * @param sourceReferences - A list of GKInstance objects that were in the database. References will be created if they are in the keys of mapping and also in sourceReferences.
+	 * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome. 
+	 * @throws Exception
+	 */
 	public void createIdentifiers(long personID, Map<String, ?> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		int uniprotsWithNoMapping = 0;
@@ -76,6 +85,23 @@ public class SimpleReferenceCreator
 		for (GKInstance sourceReference : sourceReferences)
 		{
 			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
+			
+			// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
+			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
+			// if we want new identifiers to have the same species of the thing which they refer to.
+			Long speciesID = null;
+			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>)sourceReference.getSchemaAttributes())
+			{
+				if (attrib.getName().equals(ReactomeJavaConstants.species) )
+				{
+					GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+					if (speciesInst != null)
+					{
+						speciesID = new Long(speciesInst.getDBID());
+					}
+				}
+			}
+			 
 			if (mapping.containsKey(sourceReferenceIdentifier))
 			{
 				String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
@@ -102,7 +128,7 @@ public class SimpleReferenceCreator
 					uniprotsWithNewIdentifier ++;
 					if (!this.testMode)
 					{
-						refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName());
+						refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID);
 					}
 				}
 				else
