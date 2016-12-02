@@ -46,21 +46,23 @@ public class ReferenceCreator
 	}
 
 	/**
-	 * Creates an external Identifier in the database. 
+	 * This overload allows a species to be added to the identifier, if that is an allowed attribute.
 	 * @param identifierValue - The Identifying string.
 	 * @param referenceToValue - The DB ID of the pre-existing thing this Identifier identifiers. 
 	 * @param refDB - The reference database that this Identifier comes from, such as FlyBase, HMDB, etc...
 	 * @param personID - The ID of the Person who is creating this Identifier.
 	 * @param creatorName - A string which identifiers the code that created this Identifier. 
+	 * @param speciesID - The ID of the species. If the Reference being created does not allow the "species" attribute, a warning message will be printed.
 	 * @throws Exception if anything goes wrong. 
 	 */
-	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName) throws Exception
+	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName, Long speciesID) throws Exception
 	{
 		try
 		{
 			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
 			// Try to see if this Identifier is already in the database.
 			// Ideally, this will not return anything.
+			@SuppressWarnings("unchecked")
 			Collection<GKInstance> identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
 		
 			if (identifiers != null && identifiers.size() > 0)
@@ -95,6 +97,20 @@ public class ReferenceCreator
 				
 				GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
 				identifierInstance.addAttributeValue(identifierAttribute, identifierValue);
+
+				// Now we add the species, if it's allowed.
+				@SuppressWarnings("unchecked")
+				Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>)identifierInstance.getSchemClass().getAttributes();
+				for (GKSchemaAttribute attrib : attributes)
+				{
+					if (attrib.getName().equals(ReactomeJavaConstants.species))
+					{
+						GKInstance species = this.dbAdapter.fetchInstance(ReactomeJavaConstants.Species,speciesID.longValue());
+						identifierInstance.addAttributeValue(ReactomeJavaConstants.species, species);
+					}
+				}
+				
+				// Get the refDB and add it as an attribute.
 				GKInstance refDBInstance = getReferenceDatabase(refDB);
 				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
 				//Save changes to the new Identifier.
@@ -115,6 +131,7 @@ public class ReferenceCreator
 				GKSchemaAttribute xrefAttrib = this.referringAttribute;
 				//logger.debug("referringToSchemaClass Available attributes: {}", this.referringToSchemaClass.getAttributes());
 				instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
+				
 				// Only update the relevant attribute, better than updating the entire instance.
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
 			}
@@ -128,7 +145,21 @@ public class ReferenceCreator
 			e.printStackTrace();
 			throw e;
 		}
+
+	}
 	
+	/**
+	 * Creates an external Identifier in the database. 
+	 * @param identifierValue - The Identifying string.
+	 * @param referenceToValue - The DB ID of the pre-existing thing this Identifier identifiers. 
+	 * @param refDB - The reference database that this Identifier comes from, such as FlyBase, HMDB, etc...
+	 * @param personID - The ID of the Person who is creating this Identifier.
+	 * @param creatorName - A string which identifiers the code that created this Identifier. 
+	 * @throws Exception if anything goes wrong. 
+	 */
+	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName) throws Exception
+	{
+		this.createIdentifier(identifierValue, referenceToValue, refDB, personID, creatorName, null);
 	}
 
 	/**
