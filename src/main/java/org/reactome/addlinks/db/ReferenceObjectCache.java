@@ -85,24 +85,49 @@ public final class ReferenceObjectCache
 			//adapter.fastLoadInstanceAttributeValues(refGeneProduct);
 			
 			//Now, insert into the caches.
-			//
-			
 
 			// ReferenceMolecules do not have associated species.
-			if (! className.equals(ReactomeJavaConstants.ReferenceMolecule))
+			if ( !className.equals(ReactomeJavaConstants.ReferenceMolecule) )
 			{
-				//Species Cache
-				//If this species is not yet cached...
-				String species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
-				if (! cacheBySpecies.containsKey(species))
+				//String species = null;
+				List<String> allSpecies = null;
+				//ReferenceRNASequence objects don't always have Species info, for some reason, so we need to get that from the associated ReferenceGeneProduct
+				if (className.equals(ReactomeJavaConstants.ReferenceRNASequence))
 				{
-					List<GKInstance> bySpecies = new LinkedList<GKInstance>();
-					bySpecies.add(referenceObject);
-					cacheBySpecies.put(species, bySpecies);
+					if (null == referenceObject.getAttributeValue(ReactomeJavaConstants.species))
+					{
+						Collection<GKInstance> referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
+						allSpecies = new ArrayList<>(referringRefTranscripts.size());
+						// Populate a list of species that this ReferenceRNASequence could be cached by.
+						for (GKInstance refTranscript : referringRefTranscripts)
+						{
+							allSpecies.add(  ((GKInstance)refTranscript.getAttributeValue(ReactomeJavaConstants.species)).getDBID().toString() );
+						}
+					}
 				}
-				else
+
+				// If the list wasn't initialized yet, it means that we are probably dealing with a ReferenceGeneProduct or a ReferenceDNASequence which should
+				// have its own species.
+				if (allSpecies == null)
 				{
-					cacheBySpecies.get(species).add(referenceObject);
+					allSpecies = new ArrayList<String>(1);
+					String species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
+					allSpecies.add(species);
+				}
+				
+				for (String species : allSpecies)
+				{
+					//Add to the Species Cache
+					if (! cacheBySpecies.containsKey(species))
+					{
+						List<GKInstance> bySpecies = new LinkedList<GKInstance>();
+						bySpecies.add(referenceObject);
+						cacheBySpecies.put(species, bySpecies);
+					}
+					else
+					{
+						cacheBySpecies.get(species).add(referenceObject);
+					}
 				}
 			}
 			//ReferenceDatabase Cache
