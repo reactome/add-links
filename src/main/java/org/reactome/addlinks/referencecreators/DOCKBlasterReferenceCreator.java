@@ -18,7 +18,7 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.db.ReferenceCreator;
 
-public class DOCKBlasterReferenceCreator
+public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayList<String>>
 {
 	protected boolean testMode = true;
 	
@@ -34,7 +34,8 @@ public class DOCKBlasterReferenceCreator
 
 	public DOCKBlasterReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
-		this.setClassReferringToRefName(classReferring);
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+		/*this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);
 		this.setReferringAttributeName(referringAttribute);
 		this.setSourceRefDB(sourceDB);
@@ -63,9 +64,10 @@ public class DOCKBlasterReferenceCreator
 			throw new RuntimeException (e);
 		}
 		 
-		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
+		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);*/
 	}
 
+	@Override
 	public void createIdentifiers(long personID, Map<String, ArrayList<String>> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		AtomicInteger uniprotsWithNoMapping = new AtomicInteger(0);
