@@ -17,10 +17,13 @@ import org.reactome.addlinks.db.ReferenceCreator;
 
 /**
  * Creates references from one database to another.
+ * @param T - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
+ * but subclasses may have more complex mappings, such as List&lt;String&gt; - this will also require those subclasses
+ * to override the createIdentifiers method.
  * @author sshorser
  *
  */
-public class SimpleReferenceCreator
+public class SimpleReferenceCreator <T>
 {
 	protected boolean testMode = true;
 	
@@ -76,7 +79,7 @@ public class SimpleReferenceCreator
 	 * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome. 
 	 * @throws Exception
 	 */
-	public void createIdentifiers(long personID, Map<String, ?> mapping, List<GKInstance> sourceReferences) throws Exception
+	public void createIdentifiers(long personID, Map<String, T> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		int uniprotsWithNoMapping = 0;
 		int uniprotsWithNewIdentifier = 0;

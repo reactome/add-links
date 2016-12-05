@@ -10,7 +10,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
-public class OneToOneReferenceCreator extends SimpleReferenceCreator
+public class OneToOneReferenceCreator extends SimpleReferenceCreator<Object>
 {
 	private static final Logger logger = LogManager.getLogger();
 	public OneToOneReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
@@ -19,7 +19,7 @@ public class OneToOneReferenceCreator extends SimpleReferenceCreator
 	}
 
 	@Override
-	public void createIdentifiers(long personID, Map<String, ?> mapping, List<GKInstance> sourceReferences) throws Exception
+	public void createIdentifiers(long personID, Map<String, Object> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		logger.warn("This override does not make use of the \"mapping\" parameter. Just so you know...");
 		this.createIdentifiers(personID, sourceReferences);
