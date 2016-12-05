@@ -143,7 +143,7 @@ public class UPMappedIdentifiersReferenceCreator
 							// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
 							// if we want new identifiers to have the same species of the thing which they refer to.
 							Long speciesID = null;
-							for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>)inst.getSchemaAttributes())
+							for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>) inst.getSchemaAttributes())
 							{
 								if (attrib.getName().equals(ReactomeJavaConstants.species) )
 								{
@@ -216,10 +216,12 @@ public class UPMappedIdentifiersReferenceCreator
 					{
 						if (parts[2] != null && !parts[2].trim().equals(""))
 						{
+							// The string had a species-part.
 							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 						}
 						else
 						{
+							// The string did NOT have a species-part.
 							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
 						}
 					}
