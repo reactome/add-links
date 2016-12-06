@@ -1,10 +1,7 @@
 package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -18,61 +15,14 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
-import org.gk.schema.InvalidAttributeException;
-import org.gk.schema.SchemaClass;
-import org.reactome.addlinks.db.ReferenceCreator;
 
 public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,Map<String,List<String>>>>
 {
-//	private MySQLAdaptor adapter;
-//	
-//	protected String classToCreateName ;
-//	protected String classReferringToRefName ;
-//	protected String referringAttributeName ;
-//	protected String targetRefDB ;
-//	protected String sourceRefDB ;
-//	protected boolean testMode;
-//	
 	private static final Logger logger = LogManager.getLogger();
-//	protected ReferenceCreator refCreator;
 
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
-		/*
-		this.adapter = adapter;
-		
-		this.classToCreateName = classToCreate;
-		this.classReferringToRefName = classReferring;
-		this.referringAttributeName = referringAttribute;
-		this.sourceRefDB = sourceDB;
-		this.targetRefDB = targetDB;
-		
-		// Y'know, this code was lifted straight from OrphanetReferenceCreator and is pretty much unchanged. Perhaps these two (and others to follow) could pull
-		// this code up into a common parent class/interface...
-		this.adapter = adapter;
-		SchemaClass schemaClass = this.adapter.getSchema().getClassByName(this.classToCreateName);
-
-		SchemaClass referringSchemaClass = adapter.getSchema().getClassByName(this.classReferringToRefName);
-		
-		GKSchemaAttribute referringSchemaAttribute = null;
-		try
-		{
-			// This should never fail, but we still need to handle the exception.
-			referringSchemaAttribute = (GKSchemaAttribute) referringSchemaClass.getAttribute(referringAttributeName);
-		}
-		catch (InvalidAttributeException e)
-		{
-			logger.error("Failed to get GKSchemaAttribute with name {} from class {}. This shouldn't have happened, but somehow it did."
-						+ " Check that the classes/attributes you have chosen match the data model in the database.",
-						referringSchemaAttribute, referringSchemaClass );
-			e.printStackTrace();
-			// Can't recover if there is no valid attribute object, throw it up the stack. 
-			throw new RuntimeException (e);
-		}
-		 
-		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
-		*/
 	}
 	
 	/**
