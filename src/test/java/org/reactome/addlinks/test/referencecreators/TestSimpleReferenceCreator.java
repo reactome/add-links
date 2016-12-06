@@ -37,7 +37,7 @@ public class TestSimpleReferenceCreator
 	FlyBaseFileProcessor flyBaseFileProcessor; 
 	
 	@Autowired
-	SimpleReferenceCreator FlyBaseReferenceCreator;
+	SimpleReferenceCreator<String> FlyBaseReferenceCreator;
 	
 	@Autowired
 	ReferenceObjectCache objectCache;
@@ -49,7 +49,7 @@ public class TestSimpleReferenceCreator
 	OrphanetFileProcessor orphanetFileProcessor; 
 	
 	@Autowired
-	SimpleReferenceCreator OrphanetReferenceCreator;
+	SimpleReferenceCreator<String> OrphanetReferenceCreator;
 
 	@Autowired
 	FileRetriever PROToReferencePeptideSequence;
@@ -58,7 +58,7 @@ public class TestSimpleReferenceCreator
 	PROFileProcessor proFileProcessor; 
 	
 	@Autowired
-	SimpleReferenceCreator proRefCreator;
+	SimpleReferenceCreator<String> proRefCreator;
 	
 	@Autowired
 	OneToOneReferenceCreator geneCardsRefCreator;
