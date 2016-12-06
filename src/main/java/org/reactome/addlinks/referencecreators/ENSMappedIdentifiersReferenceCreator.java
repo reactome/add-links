@@ -22,22 +22,24 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.db.ReferenceCreator;
 
-public class ENSMappedIdentifiersReferenceCreator
+public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,Map<String,List<String>>>>
 {
-	private MySQLAdaptor adapter;
-	
-	protected String classToCreateName ;
-	protected String classReferringToRefName ;
-	protected String referringAttributeName ;
-	protected String targetRefDB ;
-	protected String sourceRefDB ;
-	protected boolean testMode;
-	
+//	private MySQLAdaptor adapter;
+//	
+//	protected String classToCreateName ;
+//	protected String classReferringToRefName ;
+//	protected String referringAttributeName ;
+//	protected String targetRefDB ;
+//	protected String sourceRefDB ;
+//	protected boolean testMode;
+//	
 	private static final Logger logger = LogManager.getLogger();
-	protected ReferenceCreator refCreator;
+//	protected ReferenceCreator refCreator;
 
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+		/*
 		this.adapter = adapter;
 		
 		this.classToCreateName = classToCreate;
@@ -70,12 +72,13 @@ public class ENSMappedIdentifiersReferenceCreator
 		}
 		 
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
+		*/
 	}
 	
 	/**
 	 * Creates identifiers based on the mappings found in files.
 	 * @param personID - The ID of the person ID that will be associated with the identifiers that will be created.
-	 * @param mappingFile - The path to the file that contains the mappings that should be created as references.
+	 * @param mappings - A map of maps of strings.
 	 * @throws IOException - if an I/O error occurs opening the file
 	 */
 	public void createIdentifiers(long personID, Map<String,Map<String,List<String>>> mappings) throws IOException
@@ -254,15 +257,5 @@ public class ENSMappedIdentifiersReferenceCreator
 //		{
 //			logger.info("ENSEMBL mapping file {} is empty for {} to {}", mappingFile.toString(), sourceRefDB, targetRefDB);
 //		}
-	}
-	
-	public boolean isTestMode()
-	{
-		return this.testMode;
-	}
-
-	public void setTestMode(boolean testMode)
-	{
-		this.testMode = testMode;
 	}
 }

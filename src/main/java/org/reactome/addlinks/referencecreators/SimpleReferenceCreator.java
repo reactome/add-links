@@ -75,6 +75,7 @@ public class SimpleReferenceCreator <T>
 	 * Creates identifiers.
 	 * @param personID - Newly created Identifiers will be associated with an InstanceEdit. That InstanceEdit will be associated with the Person entity whose ID == personID
 	 * @param mapping - The mapping of Identifiers to create. This is a map of existing source identifiers to new identifiers. The Values in this case should be single-valued.
+	 * The mapping is from identifiers in the source system to identifiers in the target system.
 	 * @param sourceReferences - A list of GKInstance objects that were in the database. References will be created if they are in the keys of mapping and also in sourceReferences.
 	 * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome. 
 	 * @throws Exception
