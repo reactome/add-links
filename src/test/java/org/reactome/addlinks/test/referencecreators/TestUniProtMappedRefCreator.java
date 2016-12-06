@@ -101,6 +101,16 @@ public class TestUniProtMappedRefCreator
 	@Autowired
 	UniprotFileProcessor UniprotToEntrezGeneFileProcessor;
 	
+	// For EntrezGene - from ENSEMBL
+	@Autowired
+	UPMappedIdentifiersReferenceCreator ENSEMBLToEntrezGeneRefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver ENSEMBLToEntrezGeneRetriever;
+	
+	@Autowired
+	UniprotFileProcessor ENSEMBLToEntrezGeneFileProcessor;
+	
 	@BeforeClass
 	public static void setup()
 	{
@@ -288,4 +298,27 @@ public class TestUniProtMappedRefCreator
 		upMappedEntrezGeneRefCreator.setTestMode(true);
 		upMappedEntrezGeneRefCreator.createIdentifiers(123456, Paths.get(UniProtToEntrezGene.getFetchDestination()));
 	}
+	
+//	// Nope. UniProt won't map non-uniprot input IDs.
+//	@Test
+//	public void testExperimentalENSEMBLToEntrezGene() throws Exception
+//	{
+//		String refDb = "ENSEMBL_Canis familiaris_PROTEIN";
+//		String species = "Canis familiaris";
+//		String className = "ReferenceGeneProduct";
+//		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+//		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+//		String identifiers = getIdentifiersList(refDb, species, className);
+//		assertTrue(identifiers.length()>0);
+//		System.out.print(identifiers);
+//		ENSEMBLToEntrezGeneRetriever.setFetchDestination(ENSEMBLToEntrezGeneRetriever.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+//		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+//		ENSEMBLToEntrezGeneRetriever.setDataInputStream(inStream);
+//		ENSEMBLToEntrezGeneRetriever.fetchData();
+//		@SuppressWarnings("unchecked")
+//		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) ENSEMBLToEntrezGeneFileProcessor.getIdMappingsFromFile();
+//		assertTrue(mappings.keySet().size() > 0);
+//		ENSEMBLToEntrezGeneRefCreator.setTestMode(true);
+//		ENSEMBLToEntrezGeneRefCreator.createIdentifiers(123456, Paths.get(ENSEMBLToEntrezGeneRetriever.getFetchDestination()));
+//	}
 }
