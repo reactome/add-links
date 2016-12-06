@@ -92,7 +92,7 @@ public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayLi
 					else
 					{
 						uniprotsWithExistingIdentifier.incrementAndGet();
-					}			
+					}
 				}
 			}
 			catch (InvalidAttributeException e)
