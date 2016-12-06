@@ -18,19 +18,24 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.db.ReferenceCreator;
 
+/**
+ * Creates PDB identifiers for UniProt IDs, based on DOCKBlaster's mapping.
+ * @author sshorser
+ *
+ */
 public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayList<String>>
 {
-	protected boolean testMode = true;
+//	protected boolean testMode = true;
 	
-	protected MySQLAdaptor adapter;
-	protected ReferenceCreator refCreator;
+//	protected MySQLAdaptor adapter;
+//	protected ReferenceCreator refCreator;
 	private static final Logger logger = LogManager.getLogger();
-	
-	protected String classToCreateName ;
-	protected String classReferringToRefName ;
-	protected String referringAttributeName ;
-	protected String targetRefDB ;
-	protected String sourceRefDB ;
+//	
+//	protected String classToCreateName ;
+//	protected String classReferringToRefName ;
+//	protected String referringAttributeName ;
+//	protected String targetRefDB ;
+//	protected String sourceRefDB ;
 
 	public DOCKBlasterReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
@@ -67,6 +72,13 @@ public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayLi
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);*/
 	}
 
+	/**
+	 * Creates identifiers, overrides parent-class implementation.
+	 * @param personID - The ID of the person associated with the newly created identifiers.
+	 * @param mapping - PDB IDs mapped to UniProt IDs, from DOCKBlaster. Could be 1:n mapping.
+	 * @param sourceReferences - The list of UniProt IDs that are available in the database that we can map. We won't create PDB Identifiers
+	 * that are mapped to UniProt Identifiers if those UniProt Identifiers are not in sourceReference.
+	 */
 	@Override
 	public void createIdentifiers(long personID, Map<String, ArrayList<String>> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
@@ -143,65 +155,6 @@ public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayLi
 				this.targetRefDB,
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, uniprotsWithNewIdentifier,
 				this.sourceRefDB, this.targetRefDB, uniprotsWithExistingIdentifier,
-				this.sourceRefDB, this.targetRefDB, this.targetRefDB, uniprotsWithNoMapping);	}
-	
-	public boolean isTestMode()
-	{
-		return this.testMode;
-	}
-
-	public void setTestMode(boolean testMode)
-	{
-		this.testMode = testMode;
-	}
-
-	public String getClassToCreateName()
-	{
-		return this.classToCreateName;
-	}
-
-	public void setClassToCreateName(String classToCreateName)
-	{
-		this.classToCreateName = classToCreateName;
-	}
-
-	public String getClassReferringToRefName()
-	{
-		return this.classReferringToRefName;
-	}
-
-	public void setClassReferringToRefName(String classReferringToRefName)
-	{
-		this.classReferringToRefName = classReferringToRefName;
-	}
-
-	public String getReferringAttributeName()
-	{
-		return this.referringAttributeName;
-	}
-
-	public void setReferringAttributeName(String referringAttributeName)
-	{
-		this.referringAttributeName = referringAttributeName;
-	}
-
-	public String getTargetRefDB()
-	{
-		return this.targetRefDB;
-	}
-
-	public void setTargetRefDB(String targetRefDB)
-	{
-		this.targetRefDB = targetRefDB;
-	}
-
-	public String getSourceRefDB()
-	{
-		return this.sourceRefDB;
-	}
-
-	public void setSourceRefDB(String sourceRefDB)
-	{
-		this.sourceRefDB = sourceRefDB;
+				this.sourceRefDB, this.targetRefDB, this.targetRefDB, uniprotsWithNoMapping);
 	}
 }

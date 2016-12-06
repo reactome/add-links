@@ -25,23 +25,25 @@ import org.reactome.addlinks.db.ReferenceCreator;
  * Creates references for identifiers that were mapped from one database (usually UniProt) to another by the UniProt web service.
  * The name *is* pretty terrible, need to come up with something better later.
  */
-public class UPMappedIdentifiersReferenceCreator
+public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Object>
 {
 
-	private MySQLAdaptor adapter;
-	
-	protected String classToCreateName ;
-	protected String classReferringToRefName ;
-	protected String referringAttributeName ;
-	protected String targetRefDB ;
-	protected String sourceRefDB ;
-	protected boolean testMode;
-	
+	//private MySQLAdaptor adapter;
+//	
+//	protected String classToCreateName ;
+//	protected String classReferringToRefName ;
+//	protected String referringAttributeName ;
+//	protected String targetRefDB ;
+//	protected String sourceRefDB ;
+//	protected boolean testMode;
+//	
 	private static final Logger logger = LogManager.getLogger();
-	protected ReferenceCreator refCreator;
+//	protected ReferenceCreator refCreator;
 	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+		/*
 		this.adapter = adapter;
 		
 		this.classToCreateName = classToCreate;
@@ -74,6 +76,7 @@ public class UPMappedIdentifiersReferenceCreator
 		}
 		 
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
+		*/
 	}
 	
 	/**
@@ -92,14 +95,14 @@ public class UPMappedIdentifiersReferenceCreator
 		Files.lines(mappingFile).sequential().filter(line -> !line.startsWith("From")).forEach( line -> {
 			sb.append(line).append("\n");
 		});
-
-		if (sb.toString().length() > 0)
+		String[] lines = sb.toString().split("\n");
+		if (lines != null && lines.length > 0)
 		{
-			String[] lines = sb.toString().split("\n");
+			
 			List<String> thingsToCreate = new ArrayList<String>();
 			Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 			
-			Arrays.stream(lines).parallel().forEach(line -> {
+			Arrays.stream(lines).filter(p -> !p.trim().equals("")).parallel().forEach(line -> {
 				String[] parts = line.split("\t");
 				String sourceIdentifier = parts[0];
 				String targetIdentifier = parts[1];
@@ -203,6 +206,7 @@ public class UPMappedIdentifiersReferenceCreator
 				}
 				catch (Exception e)
 				{
+					e.printStackTrace();
 					throw new RuntimeException(e);
 				}
 			});
@@ -243,15 +247,5 @@ public class UPMappedIdentifiersReferenceCreator
 		{
 			logger.info("UniProt mapping file {} is empty for {} to {}", mappingFile.toString(), sourceRefDB, targetRefDB);
 		}
-	}
-
-	public boolean isTestMode()
-	{
-		return this.testMode;
-	}
-
-	public void setTestMode(boolean testMode)
-	{
-		this.testMode = testMode;
 	}
 }

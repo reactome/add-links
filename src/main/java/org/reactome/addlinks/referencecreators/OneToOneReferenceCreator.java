@@ -21,7 +21,7 @@ public class OneToOneReferenceCreator extends SimpleReferenceCreator<Object>
 	@Override
 	public void createIdentifiers(long personID, Map<String, Object> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
-		logger.warn("This override does not make use of the \"mapping\" parameter. Just so you know...");
+		logger.warn("This function does not make use of the \"mapping\" parameter. The override \"createIdentifiers(long personID, List<GKInstance> sourceReferences)\". will be called for you. Just so you know...");
 		this.createIdentifiers(personID, sourceReferences);
 	}
 	
