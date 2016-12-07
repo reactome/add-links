@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-public class HmdbMetabolitesFileProcessor extends FileProcessor
+public class HmdbMetabolitesFileProcessor extends FileProcessor<String>
 {
 	private static XPathExpression pathToAccession;
 	private static XPathExpression pathToChebi;
