@@ -38,7 +38,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, S
 			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
 			// if we want new identifiers to have the same species of the thing which they refer to.
 			Long speciesID = null;
-			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>)sourceReference.getSchemaAttributes())
+			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>) sourceReference.getSchemaAttributes())
 			{
 				if (attrib.getName().equals(ReactomeJavaConstants.species) )
 				{
@@ -53,7 +53,8 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, S
 			// Check if the source UniProt Identifier is in the mapping.
 			if (mapping.containsKey(sourceReferenceIdentifier))
 			{
-				Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
 				boolean xrefAlreadyExists = false;
 				
 				Map<KEGGKeys, String> keggData = mapping.get(sourceReferenceIdentifier);
@@ -86,7 +87,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, S
 					String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
 					String ecNumbers = keggData.get(KEGGKeys.EC_NUMBERS);
 					
-					sourceIdentifiersWithNewIdentifier ++;
+					sourceIdentifiersWithNewIdentifier++;
 					if (!this.testMode)
 					{
 						// Also need to add the keggDefinition and keggGeneID as "name" attributes.
@@ -126,10 +127,21 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, S
 								}
 							}
 							// IntEnz reference is always created.
-							refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "IntEnz", personID, this.getClass().getName(), speciesID);
+							if (!this.testMode)
+							{
+								refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "IntEnz", personID, this.getClass().getName(), speciesID);
+							}
 						}
 					}
 				}
+				else
+				{
+					sourceIdentifiersWithExistingIdentifier++;
+				}
+			}
+			else
+			{
+				sourceIdentifiersWithNoMapping++;
 			}
 		}
 		logger.info("{} reference creation summary: \n"
