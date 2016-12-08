@@ -397,7 +397,7 @@ public final class ReferenceObjectCache
 	}
 	
 	/**
-	 * Returns a 1:n mapping of Reference Datbase names mapped to a list of DB_IDs.
+	 * Returns a 1:n mapping of Reference Database names mapped to a list of DB_IDs.
 	 * @return
 	 */
 	public Map<String,List<String>> getRefDbNamesToIds()

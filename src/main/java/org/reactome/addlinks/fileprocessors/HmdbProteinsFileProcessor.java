@@ -24,7 +24,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-public class HmdbProteinsFileProcessor extends FileProcessor
+public class HmdbProteinsFileProcessor extends FileProcessor<List<String>>
 {
 	private static XPathExpression pathToProteinsList;
 	private static XPathExpression pathToAccession;

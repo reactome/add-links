@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ZincMoleculesFileProcessor extends FileProcessor
+public class ZincMoleculesFileProcessor extends FileProcessor<String>
 {
 
 	private static final Logger logger = LogManager.getLogger();

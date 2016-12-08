@@ -111,6 +111,17 @@ public class TestUniProtMappedRefCreator
 	@Autowired
 	UniprotFileProcessor ENSEMBLToEntrezGeneFileProcessor;
 	
+	
+	// For KEGG
+	@Autowired
+	UPMappedIdentifiersReferenceCreator upMappedKEGGRefCreator;
+	
+	@Autowired
+	UniprotFileRetreiver UniProtToKEGG;
+	
+	@Autowired
+	UniprotFileProcessor UniprotToKEGGFileProcessor;
+	
 	@BeforeClass
 	public static void setup()
 	{
@@ -297,6 +308,28 @@ public class TestUniProtMappedRefCreator
 		assertTrue(mappings.keySet().size() > 0);
 		upMappedEntrezGeneRefCreator.setTestMode(true);
 		upMappedEntrezGeneRefCreator.createIdentifiers(123456, Paths.get(UniProtToEntrezGene.getFetchDestination()));
+	}
+	
+	@Test
+	public void testUPRefCreatorKEGG() throws Exception
+	{
+		String refDb = "UniProt";
+		String species = "Xenopus laevis";
+		String className = "ReferenceGeneProduct";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		String identifiers = getIdentifiersList(refDb, species, className);
+		assertTrue(identifiers.length()>0);
+		System.out.print(identifiers);
+		UniProtToKEGG.setFetchDestination(UniProtToKEGG.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
+		UniProtToKEGG.setDataInputStream(inStream);
+		UniProtToKEGG.fetchData();
+		@SuppressWarnings("unchecked")
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToKEGGFileProcessor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		upMappedKEGGRefCreator.setTestMode(true);
+		upMappedKEGGRefCreator.createIdentifiers(123456, Paths.get(UniProtToKEGG.getFetchDestination()));
 	}
 	
 //	// Nope. UniProt won't map non-uniprot input IDs.

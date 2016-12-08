@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class UniprotFileProcessor extends FileProcessor
+public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>>
 {
 	private String fileGlob;
 	
@@ -38,7 +38,7 @@ public class UniprotFileProcessor extends FileProcessor
 	private static final Pattern pattern = Pattern.compile("[^.]*\\.(\\d*)\\.\\d*\\.txt");
 	private static final Logger logger = LogManager.getLogger();
 	@Override
-	public Map<String, ?> getIdMappingsFromFile()
+	public Map<String, Map<String,List<String>>> getIdMappingsFromFile()
 	{
 		//The returned structure looks like this:
 		/*
