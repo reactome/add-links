@@ -12,8 +12,17 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class KEGGFileProcessor extends FileProcessor<Map<String,String>>
+public class KEGGFileProcessor extends FileProcessor<Map<KEGGFileProcessor.KEGGKeys, String>>
 {
+	public enum KEGGKeys
+	{
+		KEGG_IDENTIFIER,
+		KEGG_GENE_ID,
+		KEGG_SPECIES,
+		KEGG_DEFINITION,
+		EC_NUMBERS
+	}
+	
 	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
 	
 	private static final Logger logger = LogManager.getLogger();
@@ -23,9 +32,9 @@ public class KEGGFileProcessor extends FileProcessor<Map<String,String>>
 	 * @return
 	 */
 	@Override
-	public Map<String, Map<String,String>> getIdMappingsFromFile()
+	public Map<String, Map<KEGGKeys, String>> getIdMappingsFromFile()
 	{
-		Map<String, Map<String,String>> mappings = new HashMap<String, Map<String,String>>();
+		Map<String, Map<KEGGKeys, String>> mappings = new HashMap<String, Map<KEGGKeys, String>>();
 
 		try
 		{
@@ -124,12 +133,12 @@ public class KEGGFileProcessor extends FileProcessor<Map<String,String>>
 						{
 							if (!mappings.containsKey(uniProtID))
 							{
-								Map<String,String> keggValues = new HashMap<String,String>(4);
-								keggValues.put("KEGG_IDENTIFIER", keggIdentifier);
-								keggValues.put("KEGG_GENE_ID", keggGeneID);
-								keggValues.put("KEGG_SPECIES", keggSpeciesCode);
-								keggValues.put("KEGG_DEFINITION", keggDefinition);
-								keggValues.put("EC_NUMBERS", ecNumber);
+								Map<KEGGKeys,String> keggValues = new HashMap<KEGGKeys,String>(5);
+								keggValues.put(KEGGKeys.KEGG_IDENTIFIER, keggIdentifier);
+								keggValues.put(KEGGKeys.KEGG_GENE_ID, keggGeneID);
+								keggValues.put(KEGGKeys.KEGG_SPECIES, keggSpeciesCode);
+								keggValues.put(KEGGKeys.KEGG_DEFINITION, keggDefinition);
+								keggValues.put(KEGGKeys.EC_NUMBERS, ecNumber);
 								mappings.put(uniProtID, keggValues);
 								
 								logger.debug("UniProt ID {} maps to {}", uniProtID, keggValues.toString());

@@ -21,6 +21,7 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
+import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -98,7 +99,7 @@ public class TestKEGG
 		// Get the KEGG mappings.
 		KEGGFileProcessor keggProcessor = new KEGGFileProcessor();
 		keggProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"));
-		Map<String,Map<String,String>> mappings = keggProcessor.getIdMappingsFromFile();
+		Map<String,Map<KEGGKeys,String>> mappings = keggProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size()>0);
 		
