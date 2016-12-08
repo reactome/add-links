@@ -1,6 +1,8 @@
 package org.reactome.addlinks.db;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,17 +48,36 @@ public class ReferenceCreator
 	}
 
 	/**
-	 * This overload allows a species to be added to the identifier, if that is an allowed attribute.
+	 * Creates an identifier with a speceis (if species is an allowed attribute)
 	 * @param identifierValue - The Identifying string.
 	 * @param referenceToValue - The DB ID of the pre-existing thing this Identifier identifiers. 
 	 * @param refDB - The reference database that this Identifier comes from, such as FlyBase, HMDB, etc...
 	 * @param personID - The ID of the Person who is creating this Identifier.
 	 * @param creatorName - A string which identifiers the code that created this Identifier. 
 	 * @param speciesID - The ID of the species. If the Reference being created does not allow the "species" attribute, a warning message will be printed.
+	 * @return The DB_ID of the newly created instance.
 	 * @throws Exception if anything goes wrong. 
 	 */
-	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName, Long speciesID) throws Exception
+	public Long createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName, Long speciesID) throws Exception
 	{
+		return createIdentifier(identifierValue, referenceToValue, refDB, personID, creatorName, speciesID, null);
+	}
+	
+	/**
+	 * Creates an identifier with extra attributes.
+	 * @param identifierValue - The Identifying string.
+	 * @param referenceToValue - The DB ID of the pre-existing thing this Identifier identifiers. 
+	 * @param refDB - The reference database that this Identifier comes from, such as FlyBase, HMDB, etc...
+	 * @param personID - The ID of the Person who is creating this Identifier.
+	 * @param creatorName - A string which identifiers the code that created this Identifier. 
+	 * @param speciesID - The ID of the species. If the Reference being created does not allow the "species" attribute, a warning message will be printed.
+	 * @param otherAttribs - Extra attributes. Each attribute name maps to a list of possible values, so you can add multi-valued attributes with this method.
+	 * @return The DB_ID of the newly created instance.
+	 * @throws Exception if anything goes wrong. 
+	 */
+	public Long createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName, Long speciesID, Map<String,List<String>> otherAttribs) throws Exception
+	{
+		Long newInstanceID = null;
 		try
 		{
 			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
@@ -113,9 +134,22 @@ public class ReferenceCreator
 				// Get the refDB and add it as an attribute.
 				GKInstance refDBInstance = getReferenceDatabase(refDB);
 				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
+				
+				// If the user wanted to specify any other attributes, add them here. 
+				if (otherAttribs != null && otherAttribs.keySet().size() > 0)
+				{
+					for (String otherAttributeName : otherAttribs.keySet())
+					{
+//						for (String attributeValue : otherAttribs.get(otherAttributeName))
+//						{
+							identifierInstance.setAttributeValue(otherAttributeName, otherAttribs.get(otherAttributeName));
+//						}
+					}
+				}
+				
 				//Save changes to the new Identifier.
 				InstanceDisplayNameGenerator.setDisplayName(identifierInstance);
-				long newInstanceID = this.dbAdapter.storeInstance(identifierInstance);
+				newInstanceID = this.dbAdapter.storeInstance(identifierInstance);
 				logger.debug("Just created new {} with DB_ID: {}", identifierInstance.getSchemClass().getName(), newInstanceID);
 				//...and then immediately grab it.
 				GKInstance createdIdentifier = this.dbAdapter.fetchInstance(newInstanceID);
@@ -145,7 +179,7 @@ public class ReferenceCreator
 			e.printStackTrace();
 			throw e;
 		}
-
+		return newInstanceID;
 	}
 	
 	/**
@@ -157,9 +191,9 @@ public class ReferenceCreator
 	 * @param creatorName - A string which identifiers the code that created this Identifier. 
 	 * @throws Exception if anything goes wrong. 
 	 */
-	public void createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName) throws Exception
+	public Long createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName) throws Exception
 	{
-		this.createIdentifier(identifierValue, referenceToValue, refDB, personID, creatorName, null);
+		return this.createIdentifier(identifierValue, referenceToValue, refDB, personID, creatorName, null);
 	}
 
 	/**
