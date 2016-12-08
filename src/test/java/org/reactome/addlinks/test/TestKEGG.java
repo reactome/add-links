@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.junit.Test;
@@ -22,10 +23,16 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
+import org.reactome.addlinks.referencecreators.KEGGReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+/**
+ * *INTEGRATION* tests for KEGG code.
+ * @author sshorser
+ *
+ */
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
 public class TestKEGG
@@ -103,6 +110,17 @@ public class TestKEGG
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size()>0);
 		
+		String classToCreate = ReactomeJavaConstants.ReferenceDNASequence;
+		String classReferring = ReactomeJavaConstants.ReferenceGeneProduct;
+		String referringAttribute = ReactomeJavaConstants.crossReference;
+		String sourceDB = "UniProt";
+		String targetDB = "KEGG";
+		KEGGReferenceCreator refCreator = new KEGGReferenceCreator(dbAdapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+		refCreator.setTestMode(true);
+		long personID = 123456;
+
+		List<GKInstance> sourceReferences = objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
+		refCreator.createIdentifiers(personID , mappings, sourceReferences );
 //		@SuppressWarnings("unchecked")
 //		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToKEGGFileProcessor.getIdMappingsFromFile();
 //		assertTrue(mappings.keySet().size() > 0);
