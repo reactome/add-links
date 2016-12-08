@@ -1,14 +1,16 @@
 package org.reactome.addlinks.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -17,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.fileprocessors.KEGGFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +92,15 @@ public class TestKEGG
 		List<Path> uniprotToKEGGFiles = new ArrayList<Path>();
 		uniprotToKEGGFiles.add(Paths.get(UniProtToKEGG.getFetchDestination()));
 		KEGGRetriever.setUniprotToKEGGFiles(uniprotToKEGGFiles);
+		KEGGRetriever.setMaxAge(Duration.ofSeconds(1));		
 		KEGGRetriever.fetchData();
+		
+		// Get the KEGG mappings.
+		KEGGFileProcessor keggProcessor = new KEGGFileProcessor();
+		keggProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"));
+		Map<String,Map<String,String>> mappings = keggProcessor.getIdMappingsFromFile();
+		assertNotNull(mappings);
+		assertTrue(mappings.keySet().size()>0);
 		
 //		@SuppressWarnings("unchecked")
 //		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToKEGGFileProcessor.getIdMappingsFromFile();

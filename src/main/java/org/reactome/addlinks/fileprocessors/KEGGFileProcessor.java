@@ -3,26 +3,29 @@ package org.reactome.addlinks.fileprocessors;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class KEGGFileProcessor extends FileProcessor<String[]>
+public class KEGGFileProcessor extends FileProcessor<Map<String,String>>
 {
+	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
+	
 	private static final Logger logger = LogManager.getLogger();
 	/**
-	 * Returns UniProt-to-KEGG mappings. The KEGG mappings are array of the form
-	 * [KEGG_ID, KEGG_NAME, KEGG_IDENTIFIER] The KEGG_IDENTIFIER may not always
-	 * be present.
+	 * Returns UniProt-to-KEGG mappings.
 	 * 
 	 * @return
 	 */
 	@Override
-	public Map<String, String[]> getIdMappingsFromFile()
+	public Map<String, Map<String,String>> getIdMappingsFromFile()
 	{
-		Map<String, String[]> mappings = new HashMap<String, String[]>();
+		Map<String, Map<String,String>> mappings = new HashMap<String, Map<String,String>>();
 
 		try
 		{
@@ -30,6 +33,14 @@ public class KEGGFileProcessor extends FileProcessor<String[]>
 					BufferedReader br = new BufferedReader(fr);)
 			{
 				String line;
+				
+				String keggGeneID = null;
+				String keggSpeciesCode = null;
+				String keggDefinition = null;
+				String keggIdentifier = null;
+				String ecNumber = null;
+				String uniProtID = null;
+				boolean watchingForUniprotID = false;
 				while ((line = br.readLine()) != null)
 				{
 					// If a line begins with "ENTRY " then it is a new KEGG entry. Extract the Kegg ID from this line.
@@ -52,20 +63,13 @@ public class KEGGFileProcessor extends FileProcessor<String[]>
 					// Also, it looks like we will need to extract EC numbers from ORTHOLOGY (if it's there) to create the EC abd BRENDA and IntEnz identifiers.
 					
 					
-					String keggGeneID = null;
-					String keggSpeciesCode = null;
-					String keggDefinition = null;
-					String keggIdentifier = null;
-					String uniProtID = null;
-					boolean watchingForUniprotID = false;
-					String[] parts = line.split(" +");
 					
 					if (!line.equals("///"))
 					{
-					
+						String[] parts = line.split("\\s+");
 						if (!watchingForUniprotID)
 						{
-							switch (parts[0])
+							switch (parts[0].trim())
 							{
 								case "ENTRY":
 									keggGeneID = parts[1];
@@ -77,13 +81,23 @@ public class KEGGFileProcessor extends FileProcessor<String[]>
 									keggDefinition = line.replaceFirst("DEFINITION +", "");
 									break;
 								case "NAME":
-									//keggIdentifier = line.replaceAll("ORTHOLOGY +", "").
+									//Extract the first String from the NAME line (after "NAME").
+									keggIdentifier = Arrays.asList(line.replaceAll("NAME +", "").split(",")).get(0).trim();
+									break;
+								case "ORTHOLOGY":
+									// This could actually be several EC numbers separated by a space character.
+									Matcher matcher = ecPattern.matcher(line); 
+									if (matcher.matches() && matcher.groupCount() > 0)
+									{
+										ecNumber = matcher.group(2);
+									}
 									break;
 								case "DBLINKS":
 									// The UniProt ID could be on the FIRST line of DBLINKS (well... I haven't seen it but there's no reason to think it's impossible).
 									if (line.contains("UniProt:"))
 									{
 										uniProtID = line.replaceAll("UniProt:", "").trim();
+										watchingForUniprotID = false;
 									}
 									else
 									{
@@ -110,9 +124,26 @@ public class KEGGFileProcessor extends FileProcessor<String[]>
 						{
 							if (!mappings.containsKey(uniProtID))
 							{
-								String[] keggData = new String[3];
-								keggData[0] = keggGeneID;
-								//mappings.put(uniProtID, )
+								Map<String,String> keggValues = new HashMap<String,String>(4);
+								keggValues.put("KEGG_IDENTIFIER", keggIdentifier);
+								keggValues.put("KEGG_GENE_ID", keggGeneID);
+								keggValues.put("KEGG_SPECIES", keggSpeciesCode);
+								keggValues.put("KEGG_DEFINITION", keggDefinition);
+								keggValues.put("EC_NUMBERS", ecNumber);
+								mappings.put(uniProtID, keggValues);
+								
+								logger.debug("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
+								
+								//Now reset all the variables.
+								keggDefinition = null;
+								keggGeneID = null;
+								keggSpeciesCode = null;
+								keggIdentifier = null;
+								ecNumber = null;
+							}
+							else
+							{
+								logger.warn("The UniProt ID {} is already in the UniProt-to-KEGG mapping, the new mapping will NOT be added.", uniProtID);
 							}
 						}
 						else
@@ -120,8 +151,8 @@ public class KEGGFileProcessor extends FileProcessor<String[]>
 							logger.error("Processing a KEGG entry and no UniProt ID was found! "
 									+ "This is very strange since the KEGG IDs we looked up are known to UniProt. "
 									+ "Perhaps KEGG does not know the corresponding UniProt IDs? "
-									+ "Data that we have at this point: KEGG ID: {} ; KEGG Species code: {} ; KEGG Definition: {}",
-									keggGeneID, keggSpeciesCode, keggDefinition);
+									+ "Data that we have at this point: KEGG Gene ID: {} ; KEGG Species code: {} ; KEGG Definition: {} ; KEGG Identifier: {} ; EC Numbers from KEGG: {}",
+									keggGeneID, keggSpeciesCode, keggDefinition, keggGeneID, ecNumber);
 						}
 					}
 				}
@@ -133,7 +164,7 @@ public class KEGGFileProcessor extends FileProcessor<String[]>
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		return null;
+		return mappings;
 	}
 
 }
