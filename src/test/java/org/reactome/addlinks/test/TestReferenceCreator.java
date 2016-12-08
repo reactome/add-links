@@ -3,7 +3,11 @@ package org.reactome.addlinks.test;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -145,9 +149,19 @@ public class TestReferenceCreator
 			SchemaClass refGeneProdClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceGeneProduct);
 			GKSchemaAttribute refAttrib = (GKSchemaAttribute) refGeneProdClass.getAttribute(ReactomeJavaConstants.referenceGene);
 			ReferenceCreator creator = new ReferenceCreator(refDNASeqClass, refGeneProdClass, refAttrib, adapter);
+			
+			List<String> extraNames = new ArrayList<String>(3);
+			extraNames.add("extra name 1");
+			extraNames.add("extra name 2");
+			extraNames.add("extra name 3");
+			
+			Map<String,List<String>> extraAttributes = new HashMap<String,List<String>>(1);
+			
+			extraAttributes.put(ReactomeJavaConstants.name, extraNames);
+			
 			int personID = 8863762;
 			String referenceGeneProductID = "9604116";
-			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName(),new Long(48887));
+			creator.createIdentifier(identifier, referenceGeneProductID, "FlyBase", personID, this.getClass().getName(),new Long(48887),extraAttributes);
 			if (adapter.supportsTransactions())
 			{
 				adapter.commit();
@@ -178,7 +192,7 @@ public class TestReferenceCreator
 			((Collection<GKSchemaAttribute>)createdInstance.getSchemaAttributes()).stream().forEach( x -> {
 				try
 				{
-					System.out.println( ((GKSchemaAttribute)x).getName() +": "+ createdInstance.getAttributeValue((SchemaAttribute)x));
+					System.out.println( ((GKSchemaAttribute)x).getName() +": "+ createdInstance.getAttributeValuesList((SchemaAttribute)x));
 				}
 				catch(Exception e)
 				{
