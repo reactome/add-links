@@ -363,7 +363,7 @@
 		<property name="testMode" value="true"/>
 	</bean>
 	
-	<!-- EntrezGene -->
+	<!-- Attempted ensembl-to-entrezgene (didn't really work) -->
 	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLToEntrezGeneRetriever">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBL_To_Entrez_Gene.txt" />
@@ -394,6 +394,42 @@
 		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 		<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+
+
+	<!-- KEGG -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToKEGG">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG.txt" />
+		<property name="mapFromDbEnum">
+			<ref bean="UniprotDB_Uniprot"/>
+		</property>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">KEGG</value>
+		</property>
+		<property name="maxAge">
+			<ref bean="uniprotTestAge" />
+		</property>
+	</bean>
+	
+	<bean id="UniprotToKEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedKEGGRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="KEGG"/>
 		<property name="testMode" value="true"/>
 	</bean>
 </beans>

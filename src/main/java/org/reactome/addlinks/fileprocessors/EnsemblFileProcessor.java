@@ -22,7 +22,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class EnsemblFileProcessor extends FileProcessor
+public class EnsemblFileProcessor extends FileProcessor<Map<String,List<String>>>
 {
 
 	//A list of databses to search for in the XML file. 
@@ -31,7 +31,7 @@ public class EnsemblFileProcessor extends FileProcessor
 	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
-	public Map<String, ?> getIdMappingsFromFile()
+	public Map<String, Map<String,List<String>>> getIdMappingsFromFile()
 	{
 		TransformerFactory factory = TransformerFactory.newInstance();
 		

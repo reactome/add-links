@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class IntActFileProcessor extends FileProcessor
+public class IntActFileProcessor extends FileProcessor<String>
 {
 	private static final Logger logger = LogManager.getLogger();
 	@Override

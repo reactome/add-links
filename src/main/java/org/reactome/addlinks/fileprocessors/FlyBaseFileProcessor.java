@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class FlyBaseFileProcessor extends FileProcessor
+public class FlyBaseFileProcessor extends FileProcessor<String>
 {
 	private static final Logger logger = LogManager.getLogger();
 

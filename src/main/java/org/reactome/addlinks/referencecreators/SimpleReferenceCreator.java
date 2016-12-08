@@ -81,9 +81,9 @@ public class SimpleReferenceCreator <T>
 	 */
 	public void createIdentifiers(long personID, Map<String, T> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
-		int uniprotsWithNoMapping = 0;
-		int uniprotsWithNewIdentifier = 0;
-		int uniprotsWithExistingIdentifier = 0;
+		int sourceIdentifiersWithNoMapping = 0;
+		int sourceIdentifiersWithNewIdentifier = 0;
+		int sourceIdentifiersWithExistingIdentifier = 0;
 		logger.traceEntry();
 		for (GKInstance sourceReference : sourceReferences)
 		{
@@ -128,7 +128,7 @@ public class SimpleReferenceCreator <T>
 				if (!xrefAlreadyExists)
 				{
 					logger.trace("\tNeed to create a new identifier!");
-					uniprotsWithNewIdentifier ++;
+					sourceIdentifiersWithNewIdentifier ++;
 					if (!this.testMode)
 					{
 						refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID);
@@ -136,12 +136,12 @@ public class SimpleReferenceCreator <T>
 				}
 				else
 				{
-					uniprotsWithExistingIdentifier ++;
+					sourceIdentifiersWithExistingIdentifier ++;
 				}
 			}
 			else
 			{
-				uniprotsWithNoMapping ++;
+				sourceIdentifiersWithNoMapping ++;
 				//logger.debug("UniProt ID {} is NOT in the database.", uniprotID);
 			}
 		}
@@ -150,9 +150,9 @@ public class SimpleReferenceCreator <T>
 				+ "\t# {} identifiers which already had the same {} reference (nothing new was created): {};\n"
 				+ "\t# {} identifiers not in the {} mapping file (no new {} reference was created for them): {} ",
 				this.targetRefDB,
-				this.sourceRefDB, this.targetRefDB, this.targetRefDB, uniprotsWithNewIdentifier,
-				this.sourceRefDB, this.targetRefDB, uniprotsWithExistingIdentifier,
-				this.sourceRefDB, this.targetRefDB, this.targetRefDB, uniprotsWithNoMapping);
+				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNewIdentifier,
+				this.sourceRefDB, this.targetRefDB, sourceIdentifiersWithExistingIdentifier,
+				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
 
 	}
 
