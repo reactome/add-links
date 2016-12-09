@@ -35,7 +35,8 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 				}
 				chebiToZincMapping.put(chebiId, zincId);
 			});
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}

@@ -396,7 +396,6 @@
 		<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
 		<property name="testMode" value="true"/>
 	</bean>
-	
 
 
 	<!-- KEGG -->
@@ -432,4 +431,34 @@
 		<constructor-arg index="5" name="targetDB" value="KEGG"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<!-- ChEBI to ZINC -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ZincFileRetriever">
+		<property name="dataURL" value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_chebi_purch.xls" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
+	<bean id="zincMolFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_chebi_purch.xls"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincToChEBIReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
+		<constructor-arg index="5" name="targetDB" value="ZINC"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	
 </beans>
