@@ -66,6 +66,14 @@ public class KEGGFileRetriever extends FileRetriever
 												.filter(p -> !p.startsWith("From"))
 												.map( line -> Arrays.asList(line.split("\t")).get(1) )
 												.collect(Collectors.toList());
+			Path path = Paths.get(new URI("file://" + this.destination));
+			//Delete any old files (if they weren't cleaned up before). 
+			if (Files.exists(path))
+			{
+				Files.delete(path);
+			}
+			//Create the file.
+			Files.createFile(path);
 			
 			// Could these API requests be made in parallel?
 			for (int i = 0; i < keggIdentifiers.size(); i+=10)
@@ -97,11 +105,12 @@ public class KEGGFileRetriever extends FileRetriever
 					{
 					
 						case HttpStatus.SC_OK:
-							// Write the response to a file. Because we can only do 10 at a time, we need to APPEND to the file.
+							// Write the response to a file. Because we can only do 10 at a time, we need to constantly APPEND to the file.
+							// File creation should have been performed earlier, outside the loop.
 							String responseEntityString = EntityUtils.toString(getResponse.getEntity());
-							Path path = Paths.get(new URI("file://" + this.destination));
+							
 							Files.createDirectories(path.getParent());
-							Files.write(path,responseEntityString.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+							Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
 							if (!Files.isReadable(path))
 							{
 								throw new Exception("The new file "+ path +" is not readable!");
