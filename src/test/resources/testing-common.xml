@@ -28,6 +28,12 @@
 		</constructor-arg>
 	</bean>
 	
+	<bean id="ReferenceMoleculeBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceMolecule"/>
+		</constructor-arg>
+	</bean>
+	
 	<bean id="crossReferenceBean" class="java.lang.String">
 		<constructor-arg>
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.crossReference"/>

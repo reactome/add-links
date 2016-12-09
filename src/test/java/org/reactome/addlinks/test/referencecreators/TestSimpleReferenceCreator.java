@@ -15,6 +15,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
+import org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,15 @@ public class TestSimpleReferenceCreator
 	
 	@Autowired
 	OneToOneReferenceCreator geneCardsRefCreator;
+	
+	@Autowired
+	FileRetriever ZincFileRetriever;
+	
+	@Autowired
+	ZincMoleculesFileProcessor zincMolFileProcessor;
+	
+	@Autowired
+	SimpleReferenceCreator<String> zincToChEBIReferenceCreator;
 	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
@@ -117,5 +127,17 @@ public class TestSimpleReferenceCreator
 		List<GKInstance> uniprotReferences = objectCache.getByRefDbAndSpecies("2", "48887", ReactomeJavaConstants.ReferenceGeneProduct);
 		assertTrue(uniprotReferences.size() > 0);
 		geneCardsRefCreator.createIdentifiers(123456, uniprotReferences);
+	}
+	
+	@Test
+	public void testZincMoleculeReferenceCreator() throws Exception
+	{
+		String className = "ReferenceMolecule";
+		String refDb = objectCache.getRefDbNamesToIds().get("ChEBI").get(0);
+		System.out.println("ChEBI ID: "+refDb);
+		List<GKInstance> chebiReferences = objectCache.getByRefDb(refDb, className);
+		ZincFileRetriever.fetchData();
+		Map<String,String> mappings = zincMolFileProcessor.getIdMappingsFromFile();
+		zincToChEBIReferenceCreator.createIdentifiers(123456, mappings, chebiReferences);
 	}
 }
