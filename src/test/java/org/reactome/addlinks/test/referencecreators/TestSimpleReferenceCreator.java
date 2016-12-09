@@ -16,6 +16,7 @@ import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
 import org.reactome.addlinks.fileprocessors.PROFileProcessor;
 import org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor;
+import org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,16 @@ public class TestSimpleReferenceCreator
 	
 	@Autowired
 	SimpleReferenceCreator<String> zincToChEBIReferenceCreator;
+	
+	@Autowired
+	FileRetriever OrthologsFromZinc;
+	
+	@Autowired
+	ZincProteinsFileProcessor zincProtFileProcessor;
+	
+	@Autowired
+	SimpleReferenceCreator<String> zincToUniProtReferenceCreator;
+	
 	
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
@@ -139,5 +150,16 @@ public class TestSimpleReferenceCreator
 		ZincFileRetriever.fetchData();
 		Map<String,String> mappings = zincMolFileProcessor.getIdMappingsFromFile();
 		zincToChEBIReferenceCreator.createIdentifiers(123456, mappings, chebiReferences);
+	}
+	
+	@Test
+	public void testZincProteinReferenceCreator() throws Exception
+	{
+		String className = "ReferenceGeneProduct";
+		String refDb = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
+		List<GKInstance> uniprotReferences = objectCache.getByRefDb(refDb, className);
+		OrthologsFromZinc.fetchData();
+		Map<String,String> mappings = zincProtFileProcessor.getIdMappingsFromFile();
+		zincToUniProtReferenceCreator.createIdentifiers(123456, mappings, uniprotReferences);
 	}
 }
