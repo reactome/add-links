@@ -110,21 +110,7 @@ public class SimpleReferenceCreator <T>
 				String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
 				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
 				// Look for cross-references.
-				Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
-				boolean xrefAlreadyExists = false;
-				for (GKInstance xref : xrefs)
-				{
-					logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-					// We won't add a cross-reference if it already exists
-					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( mapping.get(sourceReferenceIdentifier) ))
-					{
-						xrefAlreadyExists = true;
-						// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-						// in letting the loop run longer.
-						// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-						break;
-					}
-				}
+				boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
 				if (!xrefAlreadyExists)
 				{
 					logger.trace("\tNeed to create a new identifier!");
@@ -156,6 +142,30 @@ public class SimpleReferenceCreator <T>
 
 	}
 
+	/**
+	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
+	 * @param sourceReference - The source Object that has cross references.
+	 * @param targetRefDBIdentifier - The identifier that you are looking for.
+	 * @return - TRUE of sourceReference has a cross-reference to an identifier whose value is targetRefDBIdentifier. Otherwise, FALSE.
+	 * @throws InvalidAttributeException
+	 * @throws Exception
+	 */
+	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier) throws InvalidAttributeException, Exception
+	{
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
+		for (GKInstance xref : xrefs)
+		{
+			logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+			// We won't add a cross-reference if it already exists
+			if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetRefDBIdentifier ))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isTestMode()
 	{
 		return this.testMode;

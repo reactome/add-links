@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 
 public class OneToOneReferenceCreator extends SimpleReferenceCreator<Object>
 {
@@ -45,22 +46,7 @@ public class OneToOneReferenceCreator extends SimpleReferenceCreator<Object>
 				String targetRefDBIdentifier = sourceRefDBIdentifier;
 				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceRefDBIdentifier, this.targetRefDB, targetRefDBIdentifier);
 				// Look for cross-references.
-				@SuppressWarnings("unchecked")
-				Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
-				boolean xrefAlreadyExists = false;
-				for (GKInstance xref : xrefs)
-				{
-					logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-					// We won't add a cross-reference if it already exists
-					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetRefDBIdentifier ))
-					{
-						xrefAlreadyExists = true;
-						// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-						// in letting the loop run longer.
-						// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-						break;
-					}
-				}
+				boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
 				if (!xrefAlreadyExists)
 				{
 					logger.trace("\tNeed to create a new identifier!");
