@@ -487,4 +487,33 @@
 		<constructor-arg index="5" name="targetDB" value="ZINC"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<!-- HMDB Proteins -->
+	
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbProteinsRetriever">
+		<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_proteins.zip" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
+	<bean id="HmdbProteinsFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.HmdbProteinsFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/hmdb_proteins.zip"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator" id="HMDBProtReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="HMDB"/>
+		<property name="testMode" value="true"/>
+	</bean>
 </beans>

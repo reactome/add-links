@@ -158,7 +158,12 @@ public class HmdbProteinsFileProcessor extends FileProcessor<List<String>>
 			e.printStackTrace();
 		}
 
-		logger.info("Number of accessions: {}", accesionToUniprots.keySet().size());
+		int totalUniprotIDs = accesionToUniprots.keySet()
+												.stream()
+												.map( m -> accesionToUniprots.get(m).size() )
+												.reduce(0, (a,b) -> a + b );
+		logger.info("Number of HMDB accessions: {}", accesionToUniprots.keySet().size());
+		logger.info("Total number of all UniProt IDs: {}", totalUniprotIDs);
 		return accesionToUniprots;
 	}
 
