@@ -1,12 +1,15 @@
 package org.reactome.addlinks.db;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 
 public final class ReferenceObjectCache 
 {
@@ -60,14 +64,7 @@ public final class ReferenceObjectCache
 				ReferenceObjectCache.cacheInitializedMessageHasBeenPrinted = true;
 			}
 		}
-		
-		//return ReferenceObjectCache.cache;
 	}
-	
-//	public static void setAdapter(MySQLAdaptor adapter)
-//	{
-//		ReferenceObjectCache.adapter = adapter;
-//	}
 	
 	private static void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
 	{
@@ -75,34 +72,102 @@ public final class ReferenceObjectCache
 		
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> referenceObjects = ReferenceObjectCache.adapter.fetchInstancesByClass(className);
-		for (GKInstance referenceObject : referenceObjects)
+		
+		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
+		
+		referenceObjects.stream().parallel().forEach( referenceObject -> 
 		{
-			//Get all the other values.
-			//(
-			// I still don't like doing this... I think doing it all in one query would run faster, but I'm starting to think 
-			// it's better to stick with the existing API. It's a little weird, but it seemsd to work. Once you get used to it, that is. ;)
-			//)
-			//adapter.fastLoadInstanceAttributeValues(refGeneProduct);
-			
-			//Now, insert into the caches.
+			MySQLAdaptor localAdapter ;
+			long threadID = Thread.currentThread().getId();
+			if (adapterPool.containsKey(threadID))
+			{
+				localAdapter = adapterPool.get(threadID);
+			}
+			else
+			{
+				logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+				try
+				{
+					localAdapter = new MySQLAdaptor( ((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBHost(),
+													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBName(),
+													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBUser(),
+													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBPwd(),
+													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBPort());
+					adapterPool.put(threadID, localAdapter);
+				}
+				catch (SQLException e)
+				{
+					e.printStackTrace();
+					throw new Error(e);
+				}
+			}
+			// We don't explicitly call the adapter in this code. We rely on each GKInstance object to have a reference to a PersistenceAdapter.
+			// To allow for multiuple threads, we need to ensure that these objects use the local adapter from the pool.
+			referenceObject.setDbAdaptor(localAdapter);
+			// Retreive the Identifier because that is an attribute we will want later.
+			try
+			{
+				referenceObject.getAttributeValue(ReactomeJavaConstants.identifier);
+			}
+			catch (InvalidAttributeException e)
+			{
+				logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, referenceObject);
+			}
+			catch (Exception e)
+			{
+				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+			}
 
 			// ReferenceMolecules do not have associated species.
 			if ( !className.equals(ReactomeJavaConstants.ReferenceMolecule) )
 			{
-				//String species = null;
 				List<String> allSpecies = null;
 				//ReferenceRNASequence objects don't always have Species info, for some reason, so we need to get that from the associated ReferenceGeneProduct
 				if (className.equals(ReactomeJavaConstants.ReferenceRNASequence))
 				{
-					if (null == referenceObject.getAttributeValue(ReactomeJavaConstants.species))
+					Object species = null;
+					try
 					{
-						Collection<GKInstance> referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
-						allSpecies = new ArrayList<>(referringRefTranscripts.size());
-						// Populate a list of species that this ReferenceRNASequence could be cached by.
-						for (GKInstance refTranscript : referringRefTranscripts)
+						species = referenceObject.getAttributeValue(ReactomeJavaConstants.species);
+					}
+					catch (InvalidAttributeException e)
+					{
+						logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, referenceObject);
+					}
+					catch (Exception e)
+					{
+						logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+					}
+					
+					if (null == species)
+					{
+						Collection<GKInstance> referringRefTranscripts;
+						try
 						{
-							allSpecies.add(  ((GKInstance)refTranscript.getAttributeValue(ReactomeJavaConstants.species)).getDBID().toString() );
+							referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
+							allSpecies = new ArrayList<>(referringRefTranscripts.size());
+							// Populate a list of species that this ReferenceRNASequence could be cached by.
+							for (GKInstance refTranscript : referringRefTranscripts)
+							{
+								try
+								{
+									allSpecies.add(  ((GKInstance)refTranscript.getAttributeValue(ReactomeJavaConstants.species)).getDBID().toString() );
+								}
+								catch (InvalidAttributeException e)
+								{
+									logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, refTranscript);
+								}
+								catch (Exception e)
+								{
+									logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, refTranscript, e.getMessage());
+								}
+							}
 						}
+						catch (Exception e1)
+						{
+							logger.error("Could not get ReferenceTranscripts for {} (while trying to determine the species)", referenceObject);
+						}
+						
 					}
 				}
 
@@ -111,8 +176,21 @@ public final class ReferenceObjectCache
 				if (allSpecies == null)
 				{
 					allSpecies = new ArrayList<String>(1);
-					String species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
-					allSpecies.add(species);
+					String species;
+					try
+					{
+						species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
+						allSpecies.add(species);
+					}
+					catch (InvalidAttributeException e)
+					{
+						logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, referenceObject);
+					}
+					catch (Exception e)
+					{
+						logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+					}
+					
 				}
 				
 				for (String species : allSpecies)
@@ -120,7 +198,7 @@ public final class ReferenceObjectCache
 					//Add to the Species Cache
 					if (! cacheBySpecies.containsKey(species))
 					{
-						List<GKInstance> bySpecies = new LinkedList<GKInstance>();
+						List<GKInstance> bySpecies = Collections.synchronizedList(new LinkedList<GKInstance>());
 						bySpecies.add(referenceObject);
 						cacheBySpecies.put(species, bySpecies);
 					}
@@ -132,20 +210,34 @@ public final class ReferenceObjectCache
 			}
 			//ReferenceDatabase Cache
 			//If this species is not yet cached...
-			String refDBID = String.valueOf(((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
-			if (! cacheByRefDB.containsKey(refDBID))
+			String refDBID;
+			try
 			{
-				List<GKInstance> byRefDb = new LinkedList<GKInstance>();
-				byRefDb.add(referenceObject);
-				cacheByRefDB.put(refDBID, byRefDb);
+				refDBID = String.valueOf(((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDBID());
+				if (! cacheByRefDB.containsKey(refDBID))
+				{
+					List<GKInstance> byRefDb = Collections.synchronizedList( new LinkedList<GKInstance>() );
+					byRefDb.add(referenceObject);
+					cacheByRefDB.put(refDBID, byRefDb);
+				}
+				else
+				{
+					cacheByRefDB.get(refDBID).add(referenceObject);
+				}
 			}
-			else
+			catch (InvalidAttributeException e)
 			{
-				cacheByRefDB.get(refDBID).add(referenceObject);
+				logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.referenceDatabase, referenceObject);
 			}
+			catch (Exception e)
+			{
+				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+				e.printStackTrace();
+			}
+			
 			// ID Cache
 			cacheByID.put(String.valueOf(referenceObject.getDBID()), referenceObject);
-		}
+		});
 		logger.debug("Built {} caches: cacheById, cacheByRefDb, and cacheBySpecies caches.",className);
 		logger.info("\n\tKeys in cache-by-refdb: {};"
 				+ "\n\tkeys in cache-by-species: {};"
@@ -158,7 +250,6 @@ public final class ReferenceObjectCache
 
 	private static synchronized void populateCaches(MySQLAdaptor adapter)
 	{
-		//ReferenceObjectCache.setAdapter(adapter);
 		ReferenceObjectCache.adapter = adapter;
 		if (ReferenceObjectCache.adapter!=null)
 		{
@@ -272,31 +363,31 @@ public final class ReferenceObjectCache
 	}
 	
 	// ReferenceMolecule caches
-	private static Map<String, GKInstance> moleculeCacheByID = new HashMap<String, GKInstance>();
-	private static Map<String, List<GKInstance>> moleculeCacheByRefDB = new HashMap<String, List<GKInstance>>();
+	private static Map<String, GKInstance> moleculeCacheByID = new ConcurrentHashMap<String, GKInstance>();
+	private static Map<String, List<GKInstance>> moleculeCacheByRefDB = new ConcurrentHashMap<String, List<GKInstance>>();
 	
 	// ReferenceDNASequence caches
-	private static Map<String,List<GKInstance>> refDNASeqCacheBySpecies = new HashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> refDNASeqCacheByRefDb = new HashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> refDNASeqCacheById = new HashMap<String,GKInstance>();
+	private static Map<String,List<GKInstance>> refDNASeqCacheBySpecies = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refDNASeqCacheByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> refDNASeqCacheById = new ConcurrentHashMap<String,GKInstance>();
 
 	// ReferenceRNASequence caches
-	private static Map<String,List<GKInstance>> refRNASeqCacheBySpecies = new HashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> refRNASeqCacheByRefDb = new HashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> refRNASeqCacheById = new HashMap<String,GKInstance>();
+	private static Map<String,List<GKInstance>> refRNASeqCacheBySpecies = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refRNASeqCacheByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> refRNASeqCacheById = new ConcurrentHashMap<String,GKInstance>();
 	
 	// ReferenceGeneProduct caches
-	private static Map<String,List<GKInstance>> refGeneProdCacheBySpecies = new HashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> refGeneProdCacheByRefDb = new HashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> refGeneProdCacheById = new HashMap<String,GKInstance>();
+	private static Map<String,List<GKInstance>> refGeneProdCacheBySpecies = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refGeneProdCacheByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> refGeneProdCacheById = new ConcurrentHashMap<String,GKInstance>();
 	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	//These really should be 1:n mappings...
-	private static Map<String,List<String>> speciesMapping = new HashMap<String,List<String>>();
-	private static Map<String,List<String>> refdbMapping = new HashMap<String,List<String>>();
+	private static Map<String,List<String>> speciesMapping = new ConcurrentHashMap<String,List<String>>();
+	private static Map<String,List<String>> refdbMapping = new ConcurrentHashMap<String,List<String>>();
 	//...Aaaaaand mappings from names to IDs which will be 1:n
-	private static Map<String,List<String>> refDbNamesToIds = new HashMap<String,List<String>>();
-	private static Map<String,List<String>> speciesNamesToIds = new HashMap<String,List<String>>();
+	private static Map<String,List<String>> refDbNamesToIds = new ConcurrentHashMap<String,List<String>>();
+	private static Map<String,List<String>> speciesNamesToIds = new ConcurrentHashMap<String,List<String>>();
 	
 	/**
 	 * Get a list of ReferenceGeneProduct shells keyed by Reference Database.
