@@ -1,11 +1,10 @@
 package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.schema.GKSchemaAttribute;
 import org.gk.schema.InvalidAttributeException;
 
 /*
@@ -47,54 +45,33 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
-//		StringBuilder sb = new StringBuilder();
-//		Files.lines(mappingFile).sequential().filter(line -> !line.startsWith("From")).forEach( line -> {
-//			sb.append(line).append("\n");
-//		});
-//		String[] lines = sb.toString().split("\n");
-//		if (lines != null && lines.length > 0)
-		
+
 		// First, we need a map of sourceReferences.
 		Map<String, List<GKInstance>> sourceRefMap = new HashMap<String, List<GKInstance>>(sourceReferences.size());
 		
 		sourceReferences.stream().forEach(sourceRef -> {
-			
 			try
 			{
-				//this.adapter.fetchInstanceByAttribute(this.classReferringToRefName, ReactomeJavaConstants.identifier, "=", sourceRef).forEach( sourceRefInstance -> {
-					try
-					{
-						String identifier = (String) ((GKInstance) sourceRef).getAttributeValue(ReactomeJavaConstants.identifier);
-						if (sourceRefMap.containsKey(identifier))
-						{
-							sourceRefMap.get(identifier).add((GKInstance) sourceRef);
-							
-						}
-						else
-						{
-							sourceRefMap.put(identifier, new ArrayList<GKInstance>( Arrays.asList( (GKInstance)sourceRef) ) );
-//						sourceRefMap.put((String) sourceRef.getAttributeValue(ReactomeJavaConstants.identifier) , sourceRef);
-						}
-					}
-					catch (InvalidAttributeException e1)
-					{
-						e1.printStackTrace();
-						throw new Error(e1);
-					}
-					catch (Exception e1)
-					{
-						e1.printStackTrace();
-						throw new Error(e1);
-					}
-				//});
-			} catch (Exception e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new Error(e);
+				String identifier = (String) ((GKInstance) sourceRef).getAttributeValue(ReactomeJavaConstants.identifier);
+				if (sourceRefMap.containsKey(identifier))
+				{
+					sourceRefMap.get(identifier).add((GKInstance) sourceRef);
+				}
+				else
+				{
+					sourceRefMap.put(identifier, new ArrayList<GKInstance>( Arrays.asList( (GKInstance)sourceRef) ) );
+				}
 			}
-			
-			
+			catch (InvalidAttributeException e1)
+			{
+				e1.printStackTrace();
+				throw new Error(e1);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace();
+				throw new Error(e1);
+			}
 		});
 		
 		if (mappings.keySet().size() > 0)
@@ -102,19 +79,12 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 			for (String speciesID : mappings.keySet())
 			{
 				
-				List<String> thingsToCreate = new ArrayList<String>();
+				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
-				//Arrays.stream(lines).filter(p -> !p.trim().equals("")).parallel().forEach(line ->
-				//for (String uniprotID : mappings.get(speciesID).keySet())
 				mappings.get(speciesID).keySet().stream().parallel().forEach(uniprotID -> 
 				{
-					// Really, I don't think this loop will often run more than once or twice
-					
-					//String[] parts = line.split("\t");
-					//String sourceIdentifier = parts[0];
-					//String targetIdentifier = parts[1];
-					
+
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
 					
@@ -136,8 +106,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 								adapterPool.put(threadID, localAdapter);
 							}
 							// Now we need to get the DBID of the pre-existing identifier.
-							@SuppressWarnings("unchecked")
-							//Collection<GKInstance> sourceInstances = (Collection<GKInstance>) localAdapter.fetchInstanceByAttribute(this.classReferringToRefName, ReactomeJavaConstants.identifier, "=", sourceIdentifier);
+
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
 							if (sourceInstances.size() > 0)
 							{
@@ -153,22 +122,6 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 									{
 										logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 									}
-									
-									// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
-									// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
-									// if we want new identifiers to have the same species of the thing which they refer to.
-									//Long speciesID = null;
-	//								for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>) inst.getSchemaAttributes())
-	//								{
-	//									if (attrib.getName().equals(ReactomeJavaConstants.species) )
-	//									{
-	//										GKInstance speciesInst = (GKInstance) inst.getAttributeValue(ReactomeJavaConstants.species);
-	//										if (speciesInst != null)
-	//										{
-	//											speciesID = new Long(speciesInst.getDBID());
-	//										}
-	//									}
-	//								}
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 									// check and make sure the cross refernces don't already exist.
@@ -193,7 +146,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 									{
 										if (!this.testMode)
 										{
-											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>
+											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
 											thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
 										}
 										createdCounter.getAndIncrement();
@@ -224,30 +177,35 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 					}
 				} );
 				
-				if (!this.testMode)
-				{
-					thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-						String[] parts = newIdentifier.split(":");
-						logger.trace("Creating new identifier {} ", parts[0] );
-						try
+				// Go through the list of references that need to be created, and create them!
+				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
+					String[] parts = newIdentifier.split(":");
+					logger.trace("Creating new identifier {} ", parts[0] );
+					try
+					{
+						// The string had a species-part.
+						if (parts[2] != null && !parts[2].trim().equals(""))
 						{
-							if (parts[2] != null && !parts[2].trim().equals(""))
+							if (!this.testMode)
 							{
-								// The string had a species-part.
 								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 							}
-							else
+						}
+						// The string did NOT have a species-part.
+						else
+						{
+							if (!this.testMode)
 							{
-								// The string did NOT have a species-part.
 								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
 							}
 						}
-						catch (Exception e)
-						{
-							throw new RuntimeException(e);
-						}
-					} );
-				}
+					}
+					catch (Exception e)
+					{
+						throw new RuntimeException(e);
+					}
+				} );
+			
 				
 				logger.info("{} Reference creation summary:\n"
 						+ "\t# Identifiers created: {}\n"
