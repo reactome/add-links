@@ -22,6 +22,12 @@
 		</constructor-arg>
 	</bean>
 	
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+	
 	<bean id="UniprotDB_ENSEMBL_PRO" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBLProtein</value>
