@@ -123,18 +123,18 @@ public class TestUniProtMappedRefCreator
 	@Autowired
 	UniprotFileProcessor UniprotToKEGGFileProcessor;
 	
-	@BeforeClass
-	public static void setup()
-	{
-		System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
-		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-		
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.conn", "DEBUG");
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.client", "DEBUG");
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
-	}
+//	@BeforeClass
+//	public static void setup()
+//	{
+//		System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
+//		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
+//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
+//		
+//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.conn", "DEBUG");
+//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.client", "DEBUG");
+//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
+//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
+//	}
 
 	private BufferedInputStream indentifiersAsStream(List<GKInstance> identifiers)
 	{
@@ -225,20 +225,7 @@ public class TestUniProtMappedRefCreator
 		String refDb = "UniProt";
 		String species = "Homo sapiens";
 		String className = "ReferenceGeneProduct";
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
-		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-		List<GKInstance> identifiers = getIdentifiersList(refDb, species, className);
-		assertTrue(identifiers.size()>0);
-		System.out.println("Number of identifiers to look up: " + identifiers.size());
-		UniProtToRefSeqPeptide.setFetchDestination(UniProtToRefSeqPeptide.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
-		BufferedInputStream inStream = indentifiersAsStream(identifiers);
-		UniProtToRefSeqPeptide.setDataInputStream(inStream);
-		System.out.println("Fetching data...");
-		UniProtToRefSeqPeptide.fetchData();
-		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToRefSeqPeptideFileProcessor.getIdMappingsFromFile();
-		assertTrue(mappings.keySet().size() > 0);
-		upMappedRefSeqPeptideRefCreator.setTestMode(true);
-		upMappedRefSeqPeptideRefCreator.createIdentifiers(123456, mappings, identifiers );
+		testReferenceCreation(refDb, species, className, UniProtToRefSeqPeptide, UniprotToRefSeqPeptideFileProcessor, upMappedRefSeqPeptideRefCreator);
 	}
 	
 	@Test
@@ -247,20 +234,7 @@ public class TestUniProtMappedRefCreator
 		String refDb = "UniProt";
 		String species = "Homo sapiens";
 		String className = "ReferenceGeneProduct";
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
-		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-		List<GKInstance> identifiers = getIdentifiersList(refDb, species, className);
-		assertTrue(identifiers.size()>0);
-		System.out.println("Number of identifiers to look up: " + identifiers.size());
-		UniProtToRefSeqRNA.setFetchDestination(UniProtToRefSeqRNA.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
-		BufferedInputStream inStream = indentifiersAsStream(identifiers);
-		UniProtToRefSeqRNA.setDataInputStream(inStream);
-		System.out.println("Fetching data...");
-		UniProtToRefSeqRNA.fetchData();
-		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToRefSeqRNAFileProcessor.getIdMappingsFromFile();
-		assertTrue(mappings.keySet().size() > 0);
-		upMappedRefSeqRNARefCreator.setTestMode(true);
-		upMappedRefSeqRNARefCreator.createIdentifiers(123456, mappings, identifiers );
+		testReferenceCreation(refDb, species, className, UniProtToRefSeqRNA, UniprotToRefSeqRNAFileProcessor, upMappedRefSeqRNARefCreator);
 	}
 	
 	@Test
@@ -269,20 +243,7 @@ public class TestUniProtMappedRefCreator
 		String refDb = "UniProt";
 		String species = "Homo sapiens";
 		String className = "ReferenceGeneProduct";
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
-		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-		List<GKInstance> identifiers = getIdentifiersList(refDb, species, className);
-		assertTrue(identifiers.size()>0);
-		System.out.println("Number of identifiers to look up: " + identifiers.size());
-		UniProtToENSEMBLGene.setFetchDestination(UniProtToENSEMBLGene.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
-		BufferedInputStream inStream = indentifiersAsStream(identifiers);
-		UniProtToENSEMBLGene.setDataInputStream(inStream);
-		System.out.println("Fetching data...");
-		UniProtToENSEMBLGene.fetchData();
-		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToENSEMBLGeneFileProcessor.getIdMappingsFromFile();
-		assertTrue(mappings.keySet().size() > 0);
-		upMappedENSEMBLGeneRefCreator.setTestMode(true);
-		upMappedENSEMBLGeneRefCreator.createIdentifiers(123456, mappings, identifiers );
+		testReferenceCreation(refDb, species, className, UniProtToENSEMBLGene, UniprotToENSEMBLGeneFileProcessor, upMappedENSEMBLGeneRefCreator);
 	}
 	
 	@Test
@@ -291,20 +252,7 @@ public class TestUniProtMappedRefCreator
 		String refDb = "UniProt";
 		String species = "Homo sapiens";
 		String className = "ReferenceGeneProduct";
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
-		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-		List<GKInstance> identifiers = getIdentifiersList(refDb, species, className);
-		assertTrue(identifiers.size()>0);
-		System.out.println("Number of identifiers to look up: " + identifiers.size());
-		UniProtToEntrezGene.setFetchDestination(UniProtToENSEMBLGene.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
-		BufferedInputStream inStream = indentifiersAsStream(identifiers);
-		UniProtToEntrezGene.setDataInputStream(inStream);
-		System.out.println("Fetching data...");
-		UniProtToENSEMBLGene.fetchData();
-		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToEntrezGeneFileProcessor.getIdMappingsFromFile();
-		assertTrue(mappings.keySet().size() > 0);
-		upMappedEntrezGeneRefCreator.setTestMode(true);
-		upMappedEntrezGeneRefCreator.createIdentifiers(123456, mappings, identifiers );
+		testReferenceCreation(refDb, species, className, UniProtToEntrezGene, UniprotToEntrezGeneFileProcessor, upMappedEntrezGeneRefCreator);
 	}
 	
 	@Test
@@ -313,20 +261,7 @@ public class TestUniProtMappedRefCreator
 		String refDb = "UniProt";
 		String species = "Xenopus laevis";
 		String className = "ReferenceGeneProduct";
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
-		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-		List<GKInstance> identifiers = getIdentifiersList(refDb, species, className);
-		assertTrue(identifiers.size()>0);
-		System.out.println("Number of identifiers to look up: " + identifiers.size());
-		UniProtToKEGG.setFetchDestination(UniProtToKEGG.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
-		BufferedInputStream inStream = indentifiersAsStream(identifiers);
-		UniProtToKEGG.setDataInputStream(inStream);
-		System.out.println("Fetching data...");
-		UniProtToKEGG.fetchData();
-		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) UniprotToKEGGFileProcessor.getIdMappingsFromFile();
-		assertTrue(mappings.keySet().size() > 0);
-		upMappedKEGGRefCreator.setTestMode(true);
-		upMappedKEGGRefCreator.createIdentifiers(123456, mappings, identifiers );
+		testReferenceCreation(refDb, species, className, UniProtToKEGG, UniprotToKEGGFileProcessor, upMappedKEGGRefCreator);
 	}
 
 
