@@ -23,7 +23,14 @@ public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>
 	private String fileGlob;
 	
 	/**
-	 * Sets the globbing pattern to match against for this instance of UniprotFileProcessor
+	 * Sets the globbing pattern to match against for this instance of UniprotFileProcessor.
+	 * This is necessary because UniProt files will have the species ID and the Reference Database ID in their files names,
+	 * but those values can't be set in Spring because they might not be known until runtime (in cases where new ReferenceDatabase
+	 * need to be created in the database, for example). So, set a file pattern name to match.
+	 * You should still include the *name* of the database you want to lookup, such as "/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB."
+	 * If this is set, the UniprotFileRetriever will process all UniProt-to-PDB mappings, with names like uniprot_mapping_Uniprot_To_PDB.68323.2.txt and also
+	 * uniprot_mapping_Uniprot_To_PDB.48887.2.txt. The mapping returned by this object will contain a map keyed by species, referencing maps keyed by UniProt ID,
+	 * referening Lists of other identifiers (since it might not be a 1:1 mapping). 
 	 * @param glob
 	 */
 	public void setFileGlob(String glob)
@@ -47,24 +54,25 @@ public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>
 		 *   |
 		 *   +--Species 1 (Key)
 		 *   |    |
-		 *   |    +- Ref DB 1 (Key)
-		 *   |    |     |  
+		 *   |    +--UniProt ID 1 (Key)
 		 *   |    |     | (List)
 		 *   |    |     +- Other DB ID 1
 		 *   |    |     +- Other DB ID 2
 		 *   |    |     +- Other DB ID 3
-		 *   |    |   
-		 *   |    +- Ref DB 2
 		 *   |    |
-		 *   |    +- Ref DB 3
+		 *   |    +--UniProt ID 2 (Key)
+		 *   |          | (List)
+		 *   |          +- Other DB ID 1
+		 *   |          +- Other DB ID 2
+		 *   |          +- Other DB ID 3
 		 *   |
-		 *   +--Species 1
-		 *        |
-		 *        +- Ref DB 1
-		 *        |
-		 *        +- Ref DB 2
-		 *        |
-		 *        +- Ref DB 3
+		 *   +--Species 2
+		 *   |    |
+		 *   |    +--UniProt ID 1 (Key)
+		 *   |    |     | (List)
+		 *   |    |     +- Other DB ID 1
+		 *   |    |     +- Other DB ID 2
+		 *   |    |     +- Other DB ID 3
 		 *   ...
 		 */
 		
@@ -107,7 +115,7 @@ public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>
 									String[] parts = line.split("\\t");
 									String uniProtId = parts[0];
 									String otherId = parts[1];
-									if (mappings.containsKey(uniProtId))
+									if (mappings.get(speciesId).containsKey(uniProtId))
 									{
 										List<String> otherIds = mappings.get(speciesId).get(uniProtId);
 										otherIds.add(otherId);
@@ -117,7 +125,7 @@ public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>
 									{
 										List<String> otherIds = new ArrayList<String>();
 										otherIds.add(otherId);
-										mappings.get(speciesId).put(otherId, otherIds);
+										mappings.get(speciesId).put(uniProtId, otherIds);
 									}
 								});
 								//mappings.put(speciesId, submappings);
