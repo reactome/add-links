@@ -27,8 +27,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<String,Collection<String>>>
+public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>>
 {
+	public enum HMDBFileMappingKeys
+	{
+		CHEBI,
+		UNIPROT
+	}
+	
 	private static XPathExpression pathToAccession;
 	private static XPathExpression pathToChebi;
 	private static XPathExpression pathToUniprot;
@@ -56,13 +62,13 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<String,Colle
 	 * @see org.reactome.addlinks.fileprocessors.FileProcessor#getIdMappingsFromFile()
 	 */
 	@Override
-	public Map<String,Map<String,Collection<String>>> getIdMappingsFromFile() 
+	public Map<String, Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>> getIdMappingsFromFile() 
 	{
 		try
 		{
 			String dirToHmdbFiles = this.unzipFile(this.pathToFile);
 			
-			Map<String,Map<String,Collection<String>>> hmdb2ChebiAndUniprot = new ConcurrentHashMap<String,Map<String,Collection<String>>>();
+			Map<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>> hmdb2ChebiAndUniprot = new ConcurrentHashMap<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>>();
 			
 			AtomicInteger fileCounter = new AtomicInteger(0);
 			AtomicInteger totalChEBIMappingCounter = new AtomicInteger(0);
@@ -93,13 +99,13 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<String,Colle
 					logger.trace("# Uniprot mappings: {}",nodeList.getLength());
 
 					// Build the result for THIS file.
-					Map<String, Collection<String>> hmdbVals = new ConcurrentHashMap<String, Collection<String>>();
-					hmdbVals.put("UniProt", uniProtList);
+					Map<HMDBFileMappingKeys, Collection<String>> hmdbVals = new ConcurrentHashMap<HMDBFileMappingKeys, Collection<String>>();
+					hmdbVals.put(HMDBFileMappingKeys.UNIPROT, uniProtList);
 					if (chebiId != null && !chebiId.trim().equals(""))
 					{
 						totalChEBIMappingCounter.getAndIncrement();
 					}
-					hmdbVals.put("ChEBI", Arrays.asList(chebiId));
+					hmdbVals.put(HMDBFileMappingKeys.CHEBI, Arrays.asList(chebiId));
 					// Add the result from THIS file to the main map.
 					hmdb2ChebiAndUniprot.put(accession, hmdbVals);
 				}

@@ -516,4 +516,32 @@
 		<constructor-arg index="5" name="targetDB" value="HMDB"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<!-- HMDB Molecules -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbMoleculesRetriever">
+		<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_metabolites.zip" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
+	<bean id="HmdbMoleculesFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/hmdb_metabolites.zip"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator" id="HmdbMoleculeReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt or ChEBI"/>
+		<constructor-arg index="5" name="targetDB" value="HMDB"/>
+		<property name="testMode" value="true"/>
+	</bean>
 </beans>

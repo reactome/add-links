@@ -2,6 +2,7 @@ package org.reactome.addlinks.test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
+import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor.HMDBFileMappingKeys;
 import org.reactome.addlinks.fileprocessors.HmdbProteinsFileProcessor;
 import org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator;
 import org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator;
@@ -45,8 +47,8 @@ public class TestHMDB
 	@Autowired
 	HmdbMetabolitesFileProcessor HmdbMoleculesFileProcessor;
 	
-//	@Autowired
-//	HMDBMoleculeReferenceCreator HmdbMoleculeReferenceCreator;
+	@Autowired
+	HMDBMoleculeReferenceCreator HmdbMoleculeReferenceCreator;
 	
 	@Test
 	public void testGetHMDBProteinsFile() throws Exception
@@ -65,7 +67,7 @@ public class TestHMDB
 	{
 		HmdbMoleculesRetriever.fetchData();
 		
-		Map<String, Map<String, Collection<String>>> mappings = HmdbMoleculesFileProcessor.getIdMappingsFromFile();
+		Map<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>> mappings = HmdbMoleculesFileProcessor.getIdMappingsFromFile();
 		
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size() > 0);
@@ -101,20 +103,27 @@ public class TestHMDB
 		HMDBProtReferenceCreator.createIdentifiers(123456, mappings, sourceReferences);
 	}
 	
-//	@Test
-//	public void testCreateHMDBMoleculesReferences() throws Exception
-//	{
-//		HmdbMoleculesRetriever.fetchData();
-//		
-//		Map<String, String> mappings = HmdbMoleculesFileProcessor.getIdMappingsFromFile();
-//		
-//		assertNotNull(mappings);
-//		assertTrue(mappings.keySet().size() > 0);
-//		String refDB = objectCache.getRefDbNamesToIds().get("ChEBI").get(0);
-//		String species = "48887";
-//		String className = "ReferenceMolecule";
-//		List<GKInstance> sourceReferences = objectCache.getByRefDbAndSpecies(refDB, species, className);
-//		
-//		HmdbMoleculeReferenceCreator.createIdentifiers(123456, mappings, sourceReferences);
-//	}
+	@Test
+	public void testCreateHMDBMoleculesReferences() throws Exception
+	{
+		HmdbMoleculesRetriever.fetchData();
+		
+		Map<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>> mappings = HmdbMoleculesFileProcessor.getIdMappingsFromFile();
+		
+		assertNotNull(mappings);
+		assertTrue(mappings.keySet().size() > 0);
+		String refDB = objectCache.getRefDbNamesToIds().get("ChEBI").get(0);
+		String species = "48887";
+		String className = "ReferenceMolecule";
+		List<GKInstance> sourceReferencesChEBI = objectCache.getByRefDb(refDB, className);
+		assertNotNull(sourceReferencesChEBI);
+		assertTrue(sourceReferencesChEBI.size()>0);
+		List<GKInstance> sourceReferencesUniProt = objectCache.getByRefDbAndSpecies(objectCache.getRefDbNamesToIds().get("UniProt").get(0), species, "ReferenceGeneProduct");
+		assertNotNull(sourceReferencesUniProt);
+		assertTrue(sourceReferencesUniProt.size()>0);
+		List<GKInstance> sourceReferences = new ArrayList<GKInstance>(sourceReferencesChEBI.size() + sourceReferencesUniProt.size());
+		sourceReferences.addAll(sourceReferencesUniProt);
+		sourceReferences.addAll(sourceReferencesChEBI);
+		HmdbMoleculeReferenceCreator.createIdentifiers(123456, mappings, sourceReferences);
+	}
 }
