@@ -544,4 +544,14 @@
 		<constructor-arg index="5" name="targetDB" value="HMDB"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<!-- RHEA testing -->
+	<bean class="org.reactome.addlinks.dataretrieval.RHEAFileRetriever" id="rheaRetriever">
+		<property name="dataURL" value="http://www.ebi.ac.uk/rhea/rest/1.0/ws/reaction?q=" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea_files/" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
 </beans>

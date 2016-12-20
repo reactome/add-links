@@ -88,6 +88,9 @@ public class RHEAFileProcessor extends FileProcessor<String>
 				// This XPath expression will extract the "link" elements that contain a "reactome.org" href attribute.
 				// This should be evaluated against the web-service response from querying a specific RHEA ID.
 				// /*[local-name()='reaction']/*[local-name()='map']/*[local-name()='link' and contains(./@href,'reactome.org')!='' ]
+				
+				
+				// Maybe for Rhea provide a link to the search results page: http://www.rhea-db.org/searchresults?q=CHEBI%3A15441
 			}
 		}
 		
