@@ -30,6 +30,8 @@ public final class ReferenceObjectCache
 	//private static ReferenceObjectCache cache;
 	private static boolean cachesArePopulated = false;
 	
+	private static boolean lazyLoad = false;
+	
 //	private static final String query = "select _displayName, _class, DatabaseObject.db_id as object_db_id, ReferenceEntity.identifier, ReferenceEntity.referenceDatabase as refent_refdb, ReferenceSequence.species " +
 //										" from DatabaseObject "+
 //										" inner join ReferenceGeneProduct on ReferenceGeneProduct.db_id = DatabaseObject.db_id "+ 
@@ -46,32 +48,45 @@ public final class ReferenceObjectCache
 	
 	private static MySQLAdaptor adapter;
 	
-	public ReferenceObjectCache(MySQLAdaptor adapter) 
+	public ReferenceObjectCache(MySQLAdaptor adapter, boolean lazyLoad)
 	{
-		//if (ReferenceObjectCache.cache == null)
-		if (!ReferenceObjectCache.cachesArePopulated)
+		ReferenceObjectCache.lazyLoad = lazyLoad;
+		if (!lazyLoad)
 		{
-			ReferenceObjectCache.adapter = adapter;
-			logger.info("Cache is not initialized. Will initialize now.");
-			//ReferenceObjectCache.cache = ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
-			ReferenceObjectCache.populateCaches(adapter);
+			if (!ReferenceObjectCache.cachesArePopulated)
+			{
+				ReferenceObjectCache.adapter = adapter;
+				logger.info("Cache is not initialized. Will initialize now.");
+				//ReferenceObjectCache.cache = ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
+				ReferenceObjectCache.populateCaches(adapter);
+			}
+			else
+			{
+				if (!cacheInitializedMessageHasBeenPrinted)
+				{
+					logger.info("Cache is already initialized.");
+					ReferenceObjectCache.cacheInitializedMessageHasBeenPrinted = true;
+				}
+			}		
 		}
 		else
 		{
-			if (!cacheInitializedMessageHasBeenPrinted)
-			{
-				logger.info("Cache is already initialized.");
-				ReferenceObjectCache.cacheInitializedMessageHasBeenPrinted = true;
-			}
+			logger.info("lazy-loading is enabled. Caches will only be populated on request.");
 		}
 	}
 	
-	private static void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
+	public ReferenceObjectCache(MySQLAdaptor adapter)
+	{
+		this(adapter, false);
+	}
+	
+	// This also needs to be synchronized in case lazy-loading is enabled and populateCaches isn't called from the constructor.
+	private static synchronized void buildReferenceCaches(String className, Map<String,List<GKInstance>> cacheBySpecies, Map<String,GKInstance> cacheByID, Map<String,List<GKInstance>> cacheByRefDB) throws Exception
 	{
 		logger.debug("Building caches of {}", className);
 		
 		@SuppressWarnings("unchecked")
-		Collection<GKInstance> referenceObjects = ReferenceObjectCache.adapter.fetchInstancesByClass(className);
+		Collection<GKInstance> referenceObjects = (Collection<GKInstance>) ReferenceObjectCache.adapter.fetchInstancesByClass(className);
 		
 		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 		
@@ -267,11 +282,8 @@ public final class ReferenceObjectCache
 				
 				// Build up the Reference Database caches.
 				buildReferenceDatabaseCache(adapter);
-				logger.debug("Built refdbMapping cache.");
-				
 				// Build up the species caches.
 				buildSpeciesCache(adapter);
-				logger.debug("Built speciesMapping cache.");
 
 				logger.info("All caches initialized."
 						+ "\n\tkeys in refDbMapping: {};"
@@ -341,79 +353,13 @@ public final class ReferenceObjectCache
 	private static void buildSpeciesCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
 	{
 		buildOneToManyCache(adapter, ReactomeJavaConstants.Species, ReferenceObjectCache.speciesNamesToIds, ReferenceObjectCache.speciesMapping);
-//		@SuppressWarnings("unchecked")
-//		Collection<GKInstance> species = adapter.fetchInstancesByClass(ReactomeJavaConstants.Species);
-//		for (GKInstance singleSpecies : species)
-//		{
-//			String db_id = singleSpecies.getDBID().toString();
-//			String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
-//			List<String> listOfIds;
-//			if (ReferenceObjectCache.speciesNamesToIds.containsKey(name))
-//			{
-//				listOfIds = ReferenceObjectCache.speciesNamesToIds.get(name);
-//			}
-//			else
-//			{
-//				listOfIds = new ArrayList<String>(1);
-//			}
-//			listOfIds.add(db_id);
-//			ReferenceObjectCache.speciesNamesToIds.put(name, listOfIds);
-//			
-//			List<String> listOfNames;
-//			if (ReferenceObjectCache.speciesMapping.containsKey(db_id))
-//			{
-//				listOfNames = ReferenceObjectCache.speciesMapping.get(db_id);
-//			}
-//			else
-//			{
-//				listOfNames = new ArrayList<String>(1);
-//			}
-//			listOfNames.add(name);
-//			ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
-//		}
+		logger.debug("Built refdbMapping cache.");
 	}
 
 	private static void buildReferenceDatabaseCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
 	{
-		@SuppressWarnings("unchecked")
-		Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
-		for (GKInstance refDB : refDBs)
-		{
-			String db_id = refDB.getDBID().toString();
-			@SuppressWarnings("unchecked")
-			List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
-			List<String> listOfIds;
-			// Because in some cases (I'm mostly thinking of Ensembl here), there could be a number of ReferenceDatabase
-			// objects all sharing the same name (WHERE name_rank = 0). We want ALL names, not just the first one.
-			for (String name : names)
-			{
-				// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
-				if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
-				{
-					listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
-				}
-				else
-				{
-					listOfIds = new ArrayList<String>(1);
-				}
-				listOfIds.add(db_id);
-
-				ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
-			
-				// refdbMapping is a 1:n from db_ids to names.
-				List<String> listOfNames;
-				if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
-				{
-					listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
-				}
-				else
-				{
-					listOfNames = new ArrayList<String>(1);
-				}
-				listOfNames.add(name);
-				ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
-			}
-		}
+		buildOneToManyCache(adapter, ReactomeJavaConstants.Species, ReferenceObjectCache.refDbNamesToIds, ReferenceObjectCache.refdbMapping);
+		logger.debug("Built speciesMapping cache.");
 	}
 	
 	// ReferenceMolecule caches
@@ -453,16 +399,69 @@ public final class ReferenceObjectCache
 		switch (className)
 		{
 			case ReactomeJavaConstants.ReferenceGeneProduct:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheById, ReferenceObjectCache.refGeneProdCacheByRefDb);
+				}
 				return ReferenceObjectCache.refGeneProdCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refGeneProdCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			}
 			case ReactomeJavaConstants.ReferenceDNASequence:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceDNASequence, ReferenceObjectCache.refDNASeqCacheBySpecies, ReferenceObjectCache.refDNASeqCacheById, ReferenceObjectCache.refDNASeqCacheByRefDb);
+				}
 				return ReferenceObjectCache.refDNASeqCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refDNASeqCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			}
 			case ReactomeJavaConstants.ReferenceRNASequence:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheById, ReferenceObjectCache.refRNASeqCacheByRefDb);
+				}
 				return ReferenceObjectCache.refRNASeqCacheByRefDb.containsKey(refDb) ? ReferenceObjectCache.refRNASeqCacheByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			}
 			case ReactomeJavaConstants.ReferenceMolecule:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceMolecule, null, ReferenceObjectCache.moleculeCacheByID, ReferenceObjectCache.moleculeCacheByRefDB);
+				}
 				return ReferenceObjectCache.moleculeCacheByRefDB.containsKey(refDb) ? ReferenceObjectCache.moleculeCacheByRefDB.get(refDb) : new ArrayList<GKInstance>(0);
+			}
 			default:
 				logger.error("Invalid className: {} Nothing will be returned.", className);
 				return null;
+		}
+	}
+	
+	/**
+	 * Build a *set* of lazy-loaded caches: the objects-by-species, the cache-by-ID of those objects, the cache-by-refDB of those objects.
+	 * @param objectClass 
+	 * @param objectCacheBySpecies
+	 * @param objectCacheByID
+	 * @param objectCacheByRefDB
+	 */
+	private void buildLazilyLoadedCaches(String objectClass, Map<String, List<GKInstance>> objectCacheBySpecies, Map<String, GKInstance> objectCacheByID, Map<String, List<GKInstance>> objectCacheByRefDB)
+	{
+		if (objectCacheBySpecies.keySet().size() == 0)
+		{
+			logger.info("Lazy-loading caches for {}", objectClass);
+			try
+			{
+				ReferenceObjectCache.buildReferenceCaches(objectClass, objectCacheBySpecies, objectCacheByID, objectCacheByRefDB);
+				// Build up the Reference Database caches.
+				buildReferenceDatabaseCache(adapter);
+				// Build up the species caches.
+				buildSpeciesCache(adapter);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				logger.error("An Exception was caught while trying to populate the caches: {}\n"
+						+ "Caches might not be populated, any results returned might not be what you'd have hoped for. Sorry.", e.getMessage());
+			}
 		}
 	}
 	
@@ -476,16 +475,36 @@ public final class ReferenceObjectCache
 		switch (className)
 		{
 			case ReactomeJavaConstants.ReferenceGeneProduct:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheById, ReferenceObjectCache.refGeneProdCacheByRefDb);
+				}
 				return ReferenceObjectCache.refGeneProdCacheBySpecies.get(species);
+			}
 			case ReactomeJavaConstants.ReferenceDNASequence:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceDNASequence, ReferenceObjectCache.refDNASeqCacheBySpecies, ReferenceObjectCache.refDNASeqCacheById, ReferenceObjectCache.refDNASeqCacheByRefDb);
+				}
 				return ReferenceObjectCache.refDNASeqCacheBySpecies.get(species);
+			}
 			case ReactomeJavaConstants.ReferenceRNASequence:
+			{
+				if (ReferenceObjectCache.lazyLoad)
+				{
+					buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheById, ReferenceObjectCache.refRNASeqCacheByRefDb);
+				}
 				return ReferenceObjectCache.refRNASeqCacheBySpecies.get(species);
+			}
 			default:
 				logger.error("Invalid className: {} Nothing will be returned.", className);
 				return null;
 		}
 	}
+
+
 	
 	/**
 	 * Get a ReferenceGeneProduct shell by its DB_ID.
