@@ -51,11 +51,11 @@ public final class ReferenceObjectCache
 	public ReferenceObjectCache(MySQLAdaptor adapter, boolean lazyLoad)
 	{
 		ReferenceObjectCache.lazyLoad = lazyLoad;
+		ReferenceObjectCache.adapter = adapter;
 		if (!lazyLoad)
 		{
 			if (!ReferenceObjectCache.cachesArePopulated)
 			{
-				ReferenceObjectCache.adapter = adapter;
 				logger.info("Cache is not initialized. Will initialize now.");
 				//ReferenceObjectCache.cache = ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
 				ReferenceObjectCache.populateCaches(adapter);
@@ -308,7 +308,7 @@ public final class ReferenceObjectCache
 	}
 
 	/**
-	 * Used for building up two 1:n caches. 
+	 * Used for building up two 1:n caches. Needs to be syncrhonized in case lazy-loading is enabled and the populateCaches method does not get called. 
 	 * @param adapter - The db adapter.
 	 * @param lookupClass - The Reactome Class that will be used to look for items to put in the cache.
 	 * @param nameToIDCache - The name-to-DB_ID cache.
@@ -316,14 +316,15 @@ public final class ReferenceObjectCache
 	 * @throws Exception
 	 * @throws InvalidAttributeException
 	 */
-	private static void buildOneToManyCache(MySQLAdaptor adapter, String lookupClass, Map<String, List<String>> nameToIDCache, Map<String, List<String>> idToNameCache) throws Exception, InvalidAttributeException
+	private static synchronized void buildOneToManyCache(MySQLAdaptor adapter, String lookupClass, Map<String, List<String>> nameToIDCache, Map<String, List<String>> idToNameCache) throws Exception, InvalidAttributeException
 	{
+		logger.debug("Building caches for {}", lookupClass);
 		@SuppressWarnings("unchecked")
-		Collection<GKInstance> species = adapter.fetchInstancesByClass(lookupClass);
-		for (GKInstance singleSpecies : species)
+		Collection<GKInstance> dbOjects = adapter.fetchInstancesByClass(lookupClass);
+		for (GKInstance dbOject : dbOjects)
 		{
-			String db_id = singleSpecies.getDBID().toString();
-			String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
+			String db_id = dbOject.getDBID().toString();
+			String name = (String)dbOject.getAttributeValue(ReactomeJavaConstants.name);
 			List<String> listOfIds;
 			if (nameToIDCache.containsKey(name))
 			{
@@ -348,18 +349,17 @@ public final class ReferenceObjectCache
 			listOfNames.add(name);
 			idToNameCache.put(db_id,listOfNames);
 		}
+		logger.info("Keys in name-to-ID cache: {}; keys in ID-to_NAME: {}", nameToIDCache.size(), idToNameCache.size());
 	}
 	
 	private static void buildSpeciesCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
 	{
 		buildOneToManyCache(adapter, ReactomeJavaConstants.Species, ReferenceObjectCache.speciesNamesToIds, ReferenceObjectCache.speciesMapping);
-		logger.debug("Built refdbMapping cache.");
 	}
 
 	private static void buildReferenceDatabaseCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
 	{
-		buildOneToManyCache(adapter, ReactomeJavaConstants.Species, ReferenceObjectCache.refDbNamesToIds, ReferenceObjectCache.refdbMapping);
-		logger.debug("Built speciesMapping cache.");
+		buildOneToManyCache(adapter, ReactomeJavaConstants.ReferenceDatabase, ReferenceObjectCache.refDbNamesToIds, ReferenceObjectCache.refdbMapping);
 	}
 	
 	// ReferenceMolecule caches
@@ -542,14 +542,18 @@ public final class ReferenceObjectCache
 		return objectsByRefDbAndSpecies;
 	}
 	
-	/**
-	 * Returns a set of the keys used to cache by Reference Database.
-	 * @return
-	 */
-	public Set<String> getListOfRefGeneProdRefDbs()
-	{
-		return ReferenceObjectCache.refGeneProdCacheByRefDb.keySet();
-	}
+//	/**
+//	 * Returns a set of the keys used to cache by Reference Database.
+//	 * @return
+//	 */
+//	public Set<String> getListOfRefGeneProdRefDbs()
+//	{
+//		if (ReferenceObjectCache.lazyLoad)
+//		{
+//			buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheById, ReferenceObjectCache.refGeneProdCacheByRefDb);
+//		}
+//		return ReferenceObjectCache.refGeneProdCacheByRefDb.keySet();
+//	}
 
 	/**
 	 * Returns a map of Reference Database names, keyed by their DB_IDs.
@@ -557,6 +561,21 @@ public final class ReferenceObjectCache
 	 */
 	public Map<String,List<String>> getRefDBMappings()
 	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			try
+			{
+				buildReferenceDatabaseCache(ReferenceObjectCache.adapter);
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
 		return ReferenceObjectCache.refdbMapping;
 	}
 	
@@ -566,6 +585,21 @@ public final class ReferenceObjectCache
 	 */
 	public Map<String,List<String>> getRefDbNamesToIds()
 	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			try
+			{
+				buildReferenceDatabaseCache(ReferenceObjectCache.adapter);
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
 		return ReferenceObjectCache.refDbNamesToIds;
 	}
 	
@@ -575,15 +609,46 @@ public final class ReferenceObjectCache
 	 */
 	public Map<String,List<String>> getSpeciesNamesToIds()
 	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			try
+			{
+				buildSpeciesCache(ReferenceObjectCache.adapter);
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
 		return ReferenceObjectCache.speciesNamesToIds;
 	}
 	
 	/**
 	 * Returns a set of the keys used to cache by Species.
+	 * @deprecated This should not be used since it only returns data related to ReferenceGeneProducts. 
 	 * @return
 	 */
 	public Set<String> getListOfSpecies()
 	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			try
+			{
+				buildSpeciesCache(ReferenceObjectCache.adapter);
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
 		return ReferenceObjectCache.refGeneProdCacheBySpecies.keySet();
 	}
 	
@@ -593,6 +658,21 @@ public final class ReferenceObjectCache
 	 */
 	public Map<String,List<String>> getSpeciesMappings()
 	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			try
+			{
+				buildSpeciesCache(ReferenceObjectCache.adapter);
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
 		return ReferenceObjectCache.speciesMapping;
 	}
 }

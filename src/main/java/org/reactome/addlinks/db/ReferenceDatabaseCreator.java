@@ -49,7 +49,8 @@ public class ReferenceDatabaseCreator
 			{
 				// This is tricky: If there is an existing ReferenceDatabase that has a name match, we should probably ADD the other names to that ReferenceDatabase,
 				// Rather than create new ones. Unless the URLs don't match then maybe we should create new ReferenceDatabases? This needsa bit more thought.
-				Collection<GKInstance> preexistingReferenceDBs =  adapter.fetchInstanceByAttribute(dbNameAttrib, "=", name);
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", name);
 				
 				// Add to the list if the name is not yet in the database.
 				if (preexistingReferenceDBs.size() == 0)
@@ -85,6 +86,7 @@ public class ReferenceDatabaseCreator
 			{
 				for (GKInstance preexistingRefDB : instancesInDB)
 				{
+					@SuppressWarnings("unchecked")
 					List<String> preexistingNames = (List<String>)preexistingRefDB.getAttributeValuesList(dbNameAttrib);
 					// the names to add: everything that is in the input parameter "names" but not in "preexistingNames"
 					List<String> namesToAdd = (Arrays.asList(names)).stream().filter(p -> !preexistingNames.contains(p)).collect(Collectors.toList());
