@@ -256,6 +256,7 @@ public final class ReferenceObjectCache
 			try
 			{
 				logger.info("Building ReferenceObject caches...");
+				// Populate the main caches.
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceGeneProduct, refGeneProdCacheBySpecies, refGeneProdCacheById, refGeneProdCacheByRefDb);
 				
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceDNASequence, refDNASeqCacheBySpecies, refDNASeqCacheById, refDNASeqCacheByRefDb);
@@ -265,79 +266,11 @@ public final class ReferenceObjectCache
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceMolecule, null, moleculeCacheByID, moleculeCacheByRefDB);
 				
 				// Build up the Reference Database caches.
-				@SuppressWarnings("unchecked")
-				Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
-				
-				for (GKInstance refDB : refDBs)
-				{
-					String db_id = refDB.getDBID().toString();
-					@SuppressWarnings("unchecked")
-					List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
-					List<String> listOfIds;
-					// Because in some cases (I'm mostly thinking of Ensembl here), there could be a number of ReferenceDatabase
-					// objects all sharing the same name (WHERE name_rank = 0). We want ALL names, not just the first one.
-					for (String name : names)
-					{
-						// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
-						if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
-						{
-							listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
-						}
-						else
-						{
-							listOfIds = new ArrayList<String>(1);
-						}
-						listOfIds.add(db_id);
-		
-						ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
-					
-						// refdbMapping is a 1:n from db_ids to names.
-						List<String> listOfNames;
-						if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
-						{
-							listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
-						}
-						else
-						{
-							listOfNames = new ArrayList<String>(1);
-						}
-						listOfNames.add(name);
-						ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
-					}
-				}
+				buildReferenceDatabaseCache(adapter);
 				logger.debug("Built refdbMapping cache.");
 				
 				// Build up the species caches.
-				@SuppressWarnings("unchecked")
-				Collection<GKInstance> species = adapter.fetchInstancesByClass(ReactomeJavaConstants.Species);
-				for (GKInstance singleSpecies : species)
-				{
-					String db_id = singleSpecies.getDBID().toString();
-					String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
-					List<String> listOfIds;
-					if (ReferenceObjectCache.speciesNamesToIds.containsKey(name))
-					{
-						listOfIds = ReferenceObjectCache.speciesNamesToIds.get(name);
-					}
-					else
-					{
-						listOfIds = new ArrayList<String>(1);
-					}
-					listOfIds.add(db_id);
-					ReferenceObjectCache.speciesNamesToIds.put(name, listOfIds);
-					
-					List<String> listOfNames;
-					if (ReferenceObjectCache.speciesMapping.containsKey(db_id))
-					{
-						listOfNames = ReferenceObjectCache.speciesMapping.get(db_id);
-					}
-					else
-					{
-						listOfNames = new ArrayList<String>(1);
-					}
-					listOfNames.add(name);
-					ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
-				}
+				buildSpeciesCache(adapter);
 				logger.debug("Built speciesMapping cache.");
 
 				logger.info("All caches initialized."
@@ -359,6 +292,127 @@ public final class ReferenceObjectCache
 		{
 			logger.error("The adapter is null. Please set the adapter before attempting to initialize the cache.");
 			
+		}
+	}
+
+	/**
+	 * Used for building up two 1:n caches. 
+	 * @param adapter - The db adapter.
+	 * @param lookupClass - The Reactome Class that will be used to look for items to put in the cache.
+	 * @param nameToIDCache - The name-to-DB_ID cache.
+	 * @param idToNameCache - The DB_ID-to-name cache.
+	 * @throws Exception
+	 * @throws InvalidAttributeException
+	 */
+	private static void buildOneToManyCache(MySQLAdaptor adapter, String lookupClass, Map<String, List<String>> nameToIDCache, Map<String, List<String>> idToNameCache) throws Exception, InvalidAttributeException
+	{
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> species = adapter.fetchInstancesByClass(lookupClass);
+		for (GKInstance singleSpecies : species)
+		{
+			String db_id = singleSpecies.getDBID().toString();
+			String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
+			List<String> listOfIds;
+			if (nameToIDCache.containsKey(name))
+			{
+				listOfIds = nameToIDCache.get(name);
+			}
+			else
+			{
+				listOfIds = new ArrayList<String>(1);
+			}
+			listOfIds.add(db_id);
+			nameToIDCache.put(name, listOfIds);
+			
+			List<String> listOfNames;
+			if (idToNameCache.containsKey(db_id))
+			{
+				listOfNames = idToNameCache.get(db_id);
+			}
+			else
+			{
+				listOfNames = new ArrayList<String>(1);
+			}
+			listOfNames.add(name);
+			idToNameCache.put(db_id,listOfNames);
+		}
+	}
+	
+	private static void buildSpeciesCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
+	{
+		buildOneToManyCache(adapter, ReactomeJavaConstants.Species, ReferenceObjectCache.speciesNamesToIds, ReferenceObjectCache.speciesMapping);
+//		@SuppressWarnings("unchecked")
+//		Collection<GKInstance> species = adapter.fetchInstancesByClass(ReactomeJavaConstants.Species);
+//		for (GKInstance singleSpecies : species)
+//		{
+//			String db_id = singleSpecies.getDBID().toString();
+//			String name = (String)singleSpecies.getAttributeValue(ReactomeJavaConstants.name);
+//			List<String> listOfIds;
+//			if (ReferenceObjectCache.speciesNamesToIds.containsKey(name))
+//			{
+//				listOfIds = ReferenceObjectCache.speciesNamesToIds.get(name);
+//			}
+//			else
+//			{
+//				listOfIds = new ArrayList<String>(1);
+//			}
+//			listOfIds.add(db_id);
+//			ReferenceObjectCache.speciesNamesToIds.put(name, listOfIds);
+//			
+//			List<String> listOfNames;
+//			if (ReferenceObjectCache.speciesMapping.containsKey(db_id))
+//			{
+//				listOfNames = ReferenceObjectCache.speciesMapping.get(db_id);
+//			}
+//			else
+//			{
+//				listOfNames = new ArrayList<String>(1);
+//			}
+//			listOfNames.add(name);
+//			ReferenceObjectCache.speciesMapping.put(db_id,listOfNames);
+//		}
+	}
+
+	private static void buildReferenceDatabaseCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
+	{
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> refDBs = adapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
+		for (GKInstance refDB : refDBs)
+		{
+			String db_id = refDB.getDBID().toString();
+			@SuppressWarnings("unchecked")
+			List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
+			List<String> listOfIds;
+			// Because in some cases (I'm mostly thinking of Ensembl here), there could be a number of ReferenceDatabase
+			// objects all sharing the same name (WHERE name_rank = 0). We want ALL names, not just the first one.
+			for (String name : names)
+			{
+				// if the 1:n cache of names-to-IDs already has "name" then just add the db_id to the existing list.
+				if (ReferenceObjectCache.refDbNamesToIds.containsKey(name))
+				{
+					listOfIds = ReferenceObjectCache.refDbNamesToIds.get(name);
+				}
+				else
+				{
+					listOfIds = new ArrayList<String>(1);
+				}
+				listOfIds.add(db_id);
+
+				ReferenceObjectCache.refDbNamesToIds.put(name, listOfIds);
+			
+				// refdbMapping is a 1:n from db_ids to names.
+				List<String> listOfNames;
+				if (ReferenceObjectCache.refdbMapping.containsKey(db_id))
+				{
+					listOfNames = ReferenceObjectCache.refdbMapping.get(db_id);
+				}
+				else
+				{
+					listOfNames = new ArrayList<String>(1);
+				}
+				listOfNames.add(name);
+				ReferenceObjectCache.refdbMapping.put(db_id,listOfNames);
+			}
 		}
 	}
 	
