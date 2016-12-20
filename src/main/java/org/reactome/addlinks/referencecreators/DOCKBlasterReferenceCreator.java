@@ -65,21 +65,22 @@ public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayLi
 					GKInstance sourceReference = sourceMap.get(uniProtID);
 					// Look for cross-references.
 
-					Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
-					boolean xrefAlreadyExists = false;
-					for (GKInstance xref : xrefs)
-					{
-						logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-						// We won't add a cross-reference if it already exists
-						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( uniProtID ))
-						{
-							xrefAlreadyExists = true;
-							// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-							// in letting the loop run longer.
-							// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-							break;
-						}
-					}
+					//Collection<GKInstance> xrefs = sourceReference.getAttributeValuesList(referringAttributeName);
+					boolean xrefAlreadyExists = this.checkXRefExists(sourceReference, uniProtID);
+					
+//					for (GKInstance xref : xrefs)
+//					{
+//						logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+//						// We won't add a cross-reference if it already exists
+//						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( uniProtID ))
+//						{
+//							xrefAlreadyExists = true;
+//							// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+//							// in letting the loop run longer.
+//							// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+//							break;
+//						}
+//					}
 					if (!xrefAlreadyExists)
 					{
 						logger.trace("\tNeed to create a new identifier!");
