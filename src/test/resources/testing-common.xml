@@ -8,6 +8,8 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 
+	<import resource="db-adapter-config.xml"/>
+
 	<context:property-placeholder location="classpath:*.properties" />
 
 	<bean id="DatabaseIdentifierBean" class="java.lang.String">
@@ -61,13 +63,7 @@
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
-	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
-		<constructor-arg name="host" index="0" value="${database.host}"/>
-		<constructor-arg name="database" index="1" value="${database.name}"/>
-		<constructor-arg name="username" index="2" value="${database.user}"/>
-		<constructor-arg name="password" index="3" value="${database.password}"/>
-		<constructor-arg name="port" index="4" value="${database.port}"/>
-	</bean>
+
 	
 	
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
