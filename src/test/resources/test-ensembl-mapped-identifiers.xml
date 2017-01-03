@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+	<import resource="testing-common.xml"/>
+	
+	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ALL_DATABASES</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Wormbase" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>Wormbase</value>
+		</constructor-arg>
+	</bean>
+	
+	
+	<bean id="EnsemblDB_EnsemblGene" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>EnsemblGene</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_EntrezGene" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>EntrezGene</value>
+		</constructor-arg>
+	</bean>
+	
+	<!-- ENSEMBL -->
+	<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="ENSEMBLToEntrezGene">
+		<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ENSG.xml" />
+		<property name="mapFromDbEnum" ref="EnsemblDB_ALL"/>
+			<!--  the fromDB doesn't really matter... eventually it should be removed. -->
+		<property name="mapToDbEnum" ref="EnsemblDB_EntrezGene"/>
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	
+	<bean id="ENSEMBLToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.EnsemblFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.xml"/>
+			</bean>
+		</property>
+		<property name="dbs">
+			<util:list value-type="java.lang.String">
+				<value>EntrezGene</value>
+				<!-- <value>ENSEMBL</value> -->
+			</util:list>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ensMappedEntrezGeneRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+		<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
+		<property name="testMode" value="true"/>
+	</bean>
+</beans>
