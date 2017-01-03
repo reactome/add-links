@@ -21,7 +21,7 @@ PR:000000010	UniProtKB:O57472
 PR:000000010	UniProtKB:Q24025
 PR:000000010	UniProtKB:Q63148
 */
-public class PROFileProcessor extends FileProcessor
+public class PROFileProcessor extends FileProcessor<String>
 {
 	private static final Logger logger = LogManager.getLogger();
 	
@@ -30,16 +30,28 @@ public class PROFileProcessor extends FileProcessor
 	{
 		Map<String,String> mappings = new HashMap<String,String>();
 		AtomicInteger lineCount = new AtomicInteger(0);
+		AtomicInteger keyMatchValueCounter = new AtomicInteger(0);
+		AtomicInteger keyMismatchValueCounter = new AtomicInteger(0);
 		try
 		{
 			//We filter to only process UniProtKB: because that's the way the old Perl code did it. It ignored UniProtKB_VAR
 			Files.lines(this.pathToFile).filter(p -> p.contains("UniProtKB:")).sequential().forEach( line ->
 			{
+				String s = line.replace("UniProtKB:", "").replace("PR:","");
+				String[] parts = s.split("\\t");
 				lineCount.set(lineCount.get()+1);
 				//the UniProt ID
-				String key = line.substring(line.indexOf("UniProtKB:"));
+				String key = parts[1];
 				// the PRO ID
-				String value = line.substring(line.indexOf("PR:"), line.indexOf("\t"));
+				String value = parts[0];
+				if (key.equals(value))
+				{
+					keyMatchValueCounter.incrementAndGet();
+				}
+				else
+				{
+					keyMismatchValueCounter.incrementAndGet();
+				}
 				mappings.put(key, value);
 			} );
 		}
@@ -49,6 +61,7 @@ public class PROFileProcessor extends FileProcessor
 			e.printStackTrace();
 		}
 		logger.debug("Number of UniProt IDs in mapping: {}; number of lines processed: {}",mappings.keySet().size(),lineCount.get());
+		logger.debug("{} UniProtIDs matched PRO IDs ; {} IDs differed.",keyMatchValueCounter.get(), keyMismatchValueCounter.get());
 		return mappings;
 	}
 }

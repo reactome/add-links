@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}#%M - %msg%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger level="warn" name="org.springframework" />
+		<Logger level="info" name="org.reactome.addlinks.referencecreators.OrphanetReferenceCreator" />
+		<Logger level="debug" name="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" />
+		<Logger level="info" name="org.reactome.addlinks.referencecreators.PROReferenceCreator" />
+		<Logger level="debug" name="org.reactome.addlinks.referencecreators.DOCKBlasterReferenceCreator" />
+		<Root level="debug">
+			<AppenderRef ref="Console" />
+		</Root>
+	</Loggers>
+</Configuration>
