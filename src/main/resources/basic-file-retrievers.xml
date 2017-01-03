@@ -99,7 +99,7 @@
 		
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_04.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_05.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge">
 					<ref bean="maxFileAge" />

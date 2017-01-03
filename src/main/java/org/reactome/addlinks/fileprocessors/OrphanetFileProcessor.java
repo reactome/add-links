@@ -19,7 +19,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class OrphanetFileProcessor extends FileProcessor
+public class OrphanetFileProcessor extends FileProcessor<String>
 {
 	
 	private static final Logger logger = LogManager.getLogger();
