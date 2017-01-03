@@ -1,7 +1,6 @@
 package org.reactome.addlinks.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
@@ -13,10 +12,14 @@ public class TestKEGGSpeciesCache
 	{
 		try
 		{
-			KEGGSpeciesCache.generateSpeciesMapping();
 			System.out.println(KEGGSpeciesCache.getKEGGCode("Homo sapiens"));
 			assertEquals("hsa",KEGGSpeciesCache.getKEGGCode("Homo sapiens"));
 			assertEquals("human",KEGGSpeciesCache.getKEGGCommonName("Homo sapiens"));
+			assertNotNull(KEGGSpeciesCache.getKEGGCode("Bos taurus"));
+			System.out.println(KEGGSpeciesCache.getKEGGCode("Bos taurus"));
+			
+			assertNotNull(KEGGSpeciesCache.getKEGGCode("Mus musculus"));
+			System.out.println(KEGGSpeciesCache.getKEGGCode("Mus musculus"));
 		}
 		catch (Exception e)
 		{

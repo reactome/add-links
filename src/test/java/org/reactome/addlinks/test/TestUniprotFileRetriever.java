@@ -43,7 +43,7 @@ public class TestUniprotFileRetriever
 		
 		UniprotFileRetreiver retriever = new UniprotFileRetreiver();
 		retriever.setDataURL(new URI("http://www.uniprot.org/uploadlists/"));
-		FileInputStream inStream = new FileInputStream(new File("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/uniprot_ids.txt"));
+		FileInputStream inStream = new FileInputStream(this.getClass().getClassLoader().getResource("uniprot_ids.txt").getFile());
 		BufferedInputStream bis = new BufferedInputStream(inStream);
 		retriever.setDataInputStream(bis);
 		String mapFrom=UniprotFileRetreiver.UniprotDB.GeneName.getUniprotName();//"ACC+ID";

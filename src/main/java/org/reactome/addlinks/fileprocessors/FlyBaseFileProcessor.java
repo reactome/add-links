@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class FlyBaseFileProcessor extends FileProcessor
+public class FlyBaseFileProcessor extends FileProcessor<String>
 {
 	private static final Logger logger = LogManager.getLogger();
 
@@ -39,6 +39,8 @@ public class FlyBaseFileProcessor extends FileProcessor
 						else
 						{
 							logger.warn("Could not extract the UniProt ID from line #{}", lineCount.get());
+							// Only print the bad line in TRACE logging mode.
+							logger.trace("{}",line);
 						}
 					}
 				});
