@@ -22,7 +22,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class EnsemblFileProcessor extends FileProcessor
+public class EnsemblFileProcessor extends FileProcessor<Map<String,List<String>>>
 {
 
 	//A list of databses to search for in the XML file. 
@@ -31,7 +31,7 @@ public class EnsemblFileProcessor extends FileProcessor
 	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
-	public Map<String, ?> getIdMappingsFromFile()
+	public Map<String, Map<String,List<String>>> getIdMappingsFromFile()
 	{
 		TransformerFactory factory = TransformerFactory.newInstance();
 		
@@ -40,7 +40,7 @@ public class EnsemblFileProcessor extends FileProcessor
 		{
 			AtomicInteger counter = new AtomicInteger(0);
 			Map<String,List<String>> ensemblToOther = new HashMap<String, List<String>>();
-			logger.info("Extracting data for \"" + dbName + "\" from ENSEMBL-downloaded data.");
+			logger.info("Extracting data for \"" + dbName + "\" from ENSEMBL-downloaded data; input file is {}", this.pathToFile.toString());
 			try
 			{
 				//Transform the generated Ensembl output XML into a more usable CSV file.
@@ -51,13 +51,13 @@ public class EnsemblFileProcessor extends FileProcessor
 				if (Files.exists(this.pathToFile))
 				{
 					Source xmlSource = new StreamSource(this.pathToFile.toFile());
-					String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + "." + dbName + ".transformed.csv";
+					String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + "." + dbName + ".transformed.tsv";
 					Result outputTarget =  new StreamResult(new File(outfileName));
 					transformer.transform(xmlSource, outputTarget);
-					
+					logger.info("Building map from generated file: {}",outfileName);
 					//Now we read the file we just created.
 					Files.readAllLines(Paths.get(outfileName)).forEach( line -> {
-						String parts[] = line.split(",");
+						String parts[] = line.split("\t");
 						String ensemblId = parts[0];
 						String otherDbId = parts[1];
 						counter.getAndIncrement();

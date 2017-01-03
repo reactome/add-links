@@ -18,12 +18,17 @@
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
-	<bean id="dbAdapter" class="org.gk.persistence.MySQLAdaptor">
+	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
 		<constructor-arg name="host" index="0" value="${database.host}"/>
 		<constructor-arg name="database" index="1" value="${database.name}"/>
 		<constructor-arg name="username" index="2" value="${database.user}"/>
 		<constructor-arg name="password" index="3" value="${database.password}"/>
 		<constructor-arg name="port" index="4" value="${database.port}"/>
+	</bean>
+	
+	
+	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
+		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
 	</bean>
 	
 

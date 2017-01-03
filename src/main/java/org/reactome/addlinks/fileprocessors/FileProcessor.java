@@ -17,7 +17,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class FileProcessor
+public abstract class FileProcessor<T>
 {
 	private static final Logger logger = LogManager.getLogger();
 	
@@ -33,7 +33,7 @@ public abstract class FileProcessor
 	 * This assumes that the file contains a mapping, and in this context, it probably does.
 	 * @return
 	 */
-	public abstract Map<String,?> getIdMappingsFromFile();
+	public abstract Map<String, T> getIdMappingsFromFile();
 
 	/**
 	 * Unzips a file.

@@ -107,7 +107,16 @@ public class UniprotFileRetreiver extends FileRetriever
 		String[] parts = location.split("\\?");
 		String[] schemeAndHost = parts[0].split("://");
 		builder.setScheme(schemeAndHost[0]);
-		builder.setHost(schemeAndHost[1]);
+		if (schemeAndHost.length > 1)
+		{
+			builder.setHost(schemeAndHost[1]);
+		}
+		else
+		{
+			logger.warn("schemeAndHost had length < 2: {} ; will use try to host from original URI: {}", schemeAndHost, this.uri.getHost());
+			builder.setScheme(this.uri.getScheme());
+			builder.setHost(this.uri.getHost()+"/"+schemeAndHost[0]);
+		}
 		
 		if (parts.length>1)
 		{
@@ -291,6 +300,7 @@ public class UniprotFileRetreiver extends FileRetriever
 				if (result != null && result.length > 0)
 				{
 					logger.debug(".tab result size: {}", result.length);
+					
 					Path path = Paths.get(new URI("file://" + this.destination));
 					Files.createDirectories(path.getParent());
 					//Files.write(path, result);
