@@ -165,6 +165,14 @@ public class EnsemblFileRetriever extends FileRetriever
 		// http://rest.ensembl.org/xrefs/id/ENSG00000175899?content-type=text/xml&all_levels=1&species=Homo_Sapiens&external_db=EntrezGene
 		// ...then, extract all primary_id attributes. Be sure to get any synonyms as well (the EntrezGene URI demonstrates this). 
 
+		// 2017-01-05
+		// This will all need to be redone! Getting data from ENSEMBL REST API isn't as simple as I thought.
+		// Here's how it needs to happen:
+		// 1) POST to ENSEMBL lookup (see: http://rest.ensembl.org/documentation/info/lookup_post)
+		// This needs to be done once per species, for ALL IDs of a given species (but maybe test if you can do a multi-species POST? The fewer total requests we send, the better)
+		// 2) Process the results. Extract the "Parent" value for each "id" in the resultset. This Parent is probably a Transcript ID which you can use to do another lookup (or maybe batch of lookups?)
+		// 3) Process the results again. This time, the "Parent" should be a gene ID. This can be used to query against the xref endpoint!
+		
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
