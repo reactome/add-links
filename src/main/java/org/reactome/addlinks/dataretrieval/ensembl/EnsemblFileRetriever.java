@@ -1,4 +1,4 @@
-package org.reactome.addlinks.dataretrieval;
+package org.reactome.addlinks.dataretrieval.ensembl;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,16 +14,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.reactome.addlinks.dataretrieval.FileRetriever;
 
 public class EnsemblFileRetriever extends FileRetriever
 {
@@ -135,6 +141,83 @@ public class EnsemblFileRetriever extends FileRetriever
 		this.identifiers = identifiers;
 	}
 	
+	/**
+	 * Does a batch lookup by POSTing to http://rest.ensembl.org/lookup/id?${SPECIES}
+	 * @param identifiers - a list of ENSEMBL identifiers to look up.
+	 * @param species - The species name, will be appended to the URL.
+	 * @return The result of the lookup, as an XML string.
+	 */
+	private String doBatchLookup(List<String> identifiers, String species)
+	{
+		// $ curl -H "Content-type: application/json" -H "Accept:text/xml" -X POST -d '{ "ids":["ENSGALP00000056694","ENSGALP00000056695","ENSGALP00000000000"]}' http://rest.ensembl.org/lookup/id/?species=gallus_gallus
+		// <opt>
+		//   <data ENSGALP00000000000="">
+		//     <ENSGALP00000056694 id="ENSGALP00000056694" Parent="ENSGALT00000080481" db_type="core" end="5024" length="324" object_type="Translation" species="gallus_gallus" start="4050" />
+		//     <ENSGALP00000056695 id="ENSGALP00000056695" Parent="ENSGALT00000061540" db_type="core" end="48345104" length="981" object_type="Translation" species="gallus_gallus" start="48335217" />
+		//   </data>
+		// </opt>
+		// # In the example above, you can see that unsuccessful IDs become attributes with no value in the "data" element.
+		// # In this example below, you can see that when everything maps successfully, the output looks a little different:
+		// <opt>
+		//   <!-- What ENSEMBL results look like when everything can be successfully looked up -->
+		//   <data name="ENSGALP00000056694" Parent="ENSGALT00000080481" db_type="core" end="5024" id="ENSGALP00000056694" length="324" object_type="Translation" species="gallus_gallus" start="4050" />
+		//   <data name="ENSGALP00000056695" Parent="ENSGALT00000061540" db_type="core" end="48345104" id="ENSGALP00000056695" length="981" object_type="Translation" species="gallus_gallus" start="48335217" />
+		//   <data name="ENSGALP00000056696" Parent="ENSGALT00000080370" db_type="core" end="3954" id="ENSGALP00000056696" length="139" object_type="Translation" species="gallus_gallus" start="409" />
+		// </opt>
+		////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////
+		// Use this XPath (2.0 - because of using concat on attributes)
+		// expression to combine the input IDs with the matching Trascript IDs:
+		//	//opt//.[@Parent != null]/concat(@id,',',@Parent)
+		// Actually, this might be better (faster):
+		//	//opt/(data|.)/*[@Parent ne null]/concat(@id,',',@Parent)
+		// See: ensembl-lookup-simplifier.xsl for actual implementation.
+		StringBuilder resultBuilder = new StringBuilder();
+		resultBuilder.append("<results>");
+		
+		boolean done = false;
+		int index = 0;
+		// Loop on groups of 1000 identifiers because their service limits to 1000 per request.
+		while (!done)
+		{
+			StringBuilder sb = new StringBuilder("[");
+			int i = 0;
+			while (i < 1000 || index + i < identifiers.size())
+			{
+				sb.append("\"").append(identifiers.get(index + i)).append("\",");
+				i ++;
+			}
+			index = i;
+			
+			// Remove trailing "," and add the "]" to complete the JSON array.
+			String identifiersList = (sb.toString().substring(0, sb.toString().length() - 1)) + "]";
+
+
+			HttpPost post = new HttpPost("http://rest.ensembl.org/lookup/id/?"+species);
+			HttpEntity attachment = MultipartEntityBuilder.create()
+									.addTextBody("ids", identifiersList)
+									.build();
+			
+			post.setEntity(attachment);
+			post.setHeader("Accepts","text/xml");
+			
+			try (CloseableHttpClient postClient = HttpClients.createDefault();
+					CloseableHttpResponse postResponse = postClient.execute(post);)
+			{
+				String responseString = EntityUtils.toString(postResponse.getEntity());
+				resultBuilder.append(responseString);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+		}
+		
+		resultBuilder.append("</results>");
+		return resultBuilder.toString();
+	}
+	
 	@Override
 	public void downloadData()
 	{
@@ -170,8 +253,9 @@ public class EnsemblFileRetriever extends FileRetriever
 		// Here's how it needs to happen:
 		// 1) POST to ENSEMBL lookup (see: http://rest.ensembl.org/documentation/info/lookup_post)
 		// This needs to be done once per species, for ALL IDs of a given species (but maybe test if you can do a multi-species POST? The fewer total requests we send, the better)
+		// You can test this with this curl command: `curl -H "Content-type: application/json" -H "Accept:text/xml" -X POST -d '{ "ids":["ENSGALP00000056694","ENSGALP00000056695"]}' http://rest.ensembl.org/lookup/id/?species=gallus_gallus`
 		// 2) Process the results. Extract the "Parent" value for each "id" in the resultset. This Parent is probably a Transcript ID which you can use to do another lookup (or maybe batch of lookups?)
-		// 3) Process the results again. This time, the "Parent" should be a gene ID. This can be used to query against the xref endpoint!
+		// 3) Process the results again. This time, the "Parent" should be a gene ID. This can be used to query against the xref endpoint (http://rest.ensembl.org/xrefs/id/) but it does not accept POST so must do them 1 by 1!
 		
 		try
 		{
