@@ -22,7 +22,7 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBL</value>
 		</constructor-arg>
