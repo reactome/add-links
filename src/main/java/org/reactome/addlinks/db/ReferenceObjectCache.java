@@ -324,30 +324,35 @@ public final class ReferenceObjectCache
 		for (GKInstance dbOject : dbOjects)
 		{
 			String db_id = dbOject.getDBID().toString();
-			String name = (String)dbOject.getAttributeValue(ReactomeJavaConstants.name);
-			List<String> listOfIds;
-			if (nameToIDCache.containsKey(name))
+			//Because names could be many-valued...
+			@SuppressWarnings("unchecked")
+			List<String> names = (List<String>)dbOject.getAttributeValuesList(ReactomeJavaConstants.name);
+			for (String name : names)
 			{
-				listOfIds = nameToIDCache.get(name);
+				List<String> listOfIds;
+				if (nameToIDCache.containsKey(name))
+				{
+					listOfIds = nameToIDCache.get(name);
+				}
+				else
+				{
+					listOfIds = new ArrayList<String>(1);
+				}
+				listOfIds.add(db_id);
+				nameToIDCache.put(name, listOfIds);
+				
+				List<String> listOfNames;
+				if (idToNameCache.containsKey(db_id))
+				{
+					listOfNames = idToNameCache.get(db_id);
+				}
+				else
+				{
+					listOfNames = new ArrayList<String>(1);
+				}
+				listOfNames.add(name);
+				idToNameCache.put(db_id,listOfNames);
 			}
-			else
-			{
-				listOfIds = new ArrayList<String>(1);
-			}
-			listOfIds.add(db_id);
-			nameToIDCache.put(name, listOfIds);
-			
-			List<String> listOfNames;
-			if (idToNameCache.containsKey(db_id))
-			{
-				listOfNames = idToNameCache.get(db_id);
-			}
-			else
-			{
-				listOfNames = new ArrayList<String>(1);
-			}
-			listOfNames.add(name);
-			idToNameCache.put(db_id,listOfNames);
 		}
 		logger.info("Keys in name-to-ID cache: {}; keys in ID-to_NAME: {}", nameToIDCache.size(), idToNameCache.size());
 	}
