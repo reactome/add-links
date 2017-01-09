@@ -22,17 +22,17 @@ public class TestEnsemblFileRetrievalIT
 	@Test
 	public void testEnsemblBatchLookup() throws Exception
 	{
-		String refDb = "ENSEMBL";
-		String species = "Canis familiaris";
+		String refDb = "ENSEMBL_Gallus gallus_PROTEIN";
+		String species = "Gallus gallus";
 		String className = "ReferenceGeneProduct";
 		List<String> refDBIDs = objectCache.getRefDbNamesToIds().get(refDb);
 		String refDBID = refDBIDs.get(0);
 		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
 
 		List<String> identifiers = TestUtils.getIdentifiersList(refDBID,species,className,objectCache);
-		
+		System.out.println("# identifiers: "+identifiers.size());
 		EnsemblBatchLookup retriever = new EnsemblBatchLookup();		
-		retriever.setSpecies("canis_familiaris");
+		retriever.setSpecies(species.replace(" ", "_"));
 		//retriever.setDataURL(new URI("http://rest.ensembl.org/lookup/id/"));
 		retriever.setDataURL(new URI("http://localhost:9999/lookup/id/"));
 		retriever.setFetchDestination("/tmp/addlinks-downloaded-files/ensembl/ENSP_batch_lookup."+speciesDBID+"."+refDBID+".xml");
