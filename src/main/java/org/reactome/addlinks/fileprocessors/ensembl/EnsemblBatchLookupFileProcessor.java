@@ -22,6 +22,7 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 {
+	private static final String XSL_FILE_NAME = "ensembl-lookup-simplifier.xsl";
 	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
@@ -29,8 +30,8 @@ public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 	{
 		Map<String,String> mapping = new HashMap<String, String>();
 		TransformerFactory factory = TransformerFactory.newInstance();
-		//Transform the generated Ensembl output XML into a more usable CSV file.
-		Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("ensembl-lookup-simplifier.xsl"));
+		//Transform the generated Ensembl batch-lookup output XML into a more usable CSV file.
+		Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream(XSL_FILE_NAME));
 		Transformer transformer;
 		try
 		{
@@ -38,6 +39,7 @@ public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 			if (Files.exists(this.pathToFile))
 			{
 				Source xmlSource = new StreamSource(this.pathToFile.toFile());
+				logger.debug("Transforming {} with {} ",this.pathToFile.getFileName(), XSL_FILE_NAME);
 				String outfileName = this.pathToFile.getParent().toString() + "/" +  this.pathToFile.getFileName().toString() + ".transformed.csv";
 				Result outputTarget =  new StreamResult(new File(outfileName));
 				transformer.transform(xmlSource, outputTarget);
@@ -45,21 +47,7 @@ public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 				//Now we read the file we just created.
 				Files.readAllLines(Paths.get(outfileName)).forEach( line -> {
 					String parts[] = line.split(",");
-					String ensemblId = parts[0];
-					String otherDbId = parts[1];
-					mapping.put(ensemblId, otherDbId);
-//					if (ensemblToOther.containsKey(ensemblId))
-//					{
-//						List<String> idList = (ensemblToOther.get(ensemblId));
-//						idList.add(otherDbId);
-//						ensemblToOther.put(ensemblId, idList );
-//					}
-//					else
-//					{
-//						List<String> idList = new ArrayList<String>();
-//						idList.add(otherDbId);
-//						ensemblToOther.put(ensemblId, idList);
-//					}
+					mapping.put(parts[0], parts[1]);
 				});
 			}
 			else
@@ -82,8 +70,6 @@ public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		
 		return mapping;
 	}
-
 }
