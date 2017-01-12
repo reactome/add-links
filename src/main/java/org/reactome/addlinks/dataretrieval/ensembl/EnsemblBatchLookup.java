@@ -1,11 +1,16 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
+import static org.mockito.Mockito.doThrow;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -16,6 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.addlinks.dataretrieval.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
 
 public class EnsemblBatchLookup  extends FileRetriever
 {
@@ -97,16 +103,55 @@ public class EnsemblBatchLookup  extends FileRetriever
 										.build();
 				post.setEntity(attachment);
 				post.addHeader("Accept","text/xml");
-				logger.debug("Submitting batch request - {}", index);
-				try (CloseableHttpClient postClient = HttpClients.createDefault();
-						CloseableHttpResponse postResponse = postClient.execute(post);)
+				
+				try
 				{
-					String responseString = EntityUtils.toString(postResponse.getEntity());
-					resultBuilder.append(responseString);
+					boolean requestDone = false;
+					while (!requestDone)
+					{
+						logger.debug("Submitting batch request - {}", index);
+						try (CloseableHttpClient postClient = HttpClients.createDefault();
+								CloseableHttpResponse postResponse = postClient.execute(post);)
+						{
+							EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(postResponse);
+							// This means we need to wait, and then retry
+							if (!result.getWaitTime().equals(Duration.ZERO))
+							{
+								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
+								Thread.currentThread().wait(result.getWaitTime().toMillis());
+							}
+							else
+							{
+								if (result.getStatus() == HttpStatus.SC_OK)
+								{
+								
+									String responseString = result.getResult();
+			//						String responseString = EntityUtils.toString(postResponse.getEntity());
+									resultBuilder.append(responseString);
+									requestDone = true;
+								}
+								else
+								{
+									// The only case where isOkToRetry is true is when the rate limit was exceeded. 
+									// So, setting requestDone to !isOkToRetry should terminate the request-loop.
+									requestDone = !result.isOkToRetry();
+								}
+							}
+						}
+					}
 				}
 				catch (IOException e)
 				{
 					e.printStackTrace();
+					logger.error("Error occurred while sending webservice request: {}", e.getMessage());
+					// This is probably not recoverable.
+					throw new Error(e);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+					logger.error("Something bad happened while waiting to re-try the webservice request: {}", e.getMessage());
+					// Throw a new error, this is probably not recoverable.
 					throw new Error(e);
 				}
 				
@@ -115,7 +160,7 @@ public class EnsemblBatchLookup  extends FileRetriever
 					done = true;
 				}
 			}
-			
+			logger.info("{} requests remaining for ENSEMBL service.", EnsemblServiceResponseProcessor.getNumRequestsRemaining());
 			resultBuilder.append("</results>");
 			return resultBuilder.toString();
 		}
