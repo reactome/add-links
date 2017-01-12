@@ -16,10 +16,10 @@ final class EnsemblServiceResponseProcessor
 
 	class EnsemblServiceResult
 	{
-		Duration waitTime = Duration.ZERO;
-		String result;
-		boolean okToRetry;
-		int status;
+		private Duration waitTime = Duration.ZERO;
+		private String result;
+		private boolean okToRetry;
+		private int status;
 		
 		public Duration getWaitTime()
 		{
@@ -123,8 +123,6 @@ final class EnsemblServiceResponseProcessor
 						e.printStackTrace();
 					}
 					logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
-					//sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8") + "\">\n"+ s +"</ensemblResponse>\n");
-					//result.setResult("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(originalURI.toString(), "UTF-8") + "\">\n"+ s +"</ensemblResponse>\n");
 					okToQuery = false;
 					break;
 				default:

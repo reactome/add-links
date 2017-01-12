@@ -126,7 +126,6 @@ public class EnsemblBatchLookup  extends FileRetriever
 								{
 								
 									String responseString = result.getResult();
-			//						String responseString = EntityUtils.toString(postResponse.getEntity());
 									resultBuilder.append(responseString);
 									requestDone = true;
 								}

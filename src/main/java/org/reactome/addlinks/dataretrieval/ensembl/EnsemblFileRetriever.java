@@ -41,9 +41,7 @@ public class EnsemblFileRetriever extends FileRetriever
 	private String mapToDb="";
 	private String species;
 	private List<String> identifiers;
-	//private int retryCount = 0;
-	//private static final int MAX_RETRIES = 5;
-	//private InputStream inStream;
+
 
 	public enum EnsemblDB
 	{
@@ -85,7 +83,7 @@ public class EnsemblFileRetriever extends FileRetriever
 			}
 			mapToEnum.put(s, this);
 		}
-//		
+
 		public String getEnsemblName()
 		{
 			return this.ensemblName;
@@ -204,9 +202,8 @@ public class EnsemblFileRetriever extends FileRetriever
 				logger.trace("URI: "+get.getURI());
 				
 				boolean done = false;
-//				boolean okToQuery = true;
-//				logger.info("Query quota is: "+EnsemblFileRetriever.numRequestsRemaining.get());
-				while (!done /*&& okToQuery*/)
+
+				while (!done)
 				{
 					try (CloseableHttpClient getClient = HttpClients.createDefault();
 							CloseableHttpResponse getResponse = getClient.execute(get);)
@@ -228,45 +225,6 @@ public class EnsemblFileRetriever extends FileRetriever
 							}
 							done = true;
 						}
-//						if ( getResponse.containsHeader("Retry-After") )
-//						{
-//							logger.debug("Response code: {}", getResponse.getStatusLine().getStatusCode());
-//							Duration waitTime = Duration.ofSeconds(Integer.valueOf(getResponse.getHeaders("Retry-After")[0].getValue().toString()));
-//							logger.info("The server told us to wait, so we will wait for {} before trying again.",waitTime);
-//							Thread.sleep(waitTime.toMillis());
-//						}
-//						else
-//						{
-//							switch (getResponse.getStatusLine().getStatusCode())
-//							{
-//								case HttpStatus.SC_OK:
-//									String content = EntityUtils.toString(getResponse.getEntity());
-//									//We'll store everything in an XML and then use a FileProcessor to sort out the details later.
-//									// ... or maybe we should process the XML response here? In that case, you will need this xpath expression:
-//									// - to get all primary IDs: //data/@primary_id
-//									// - to get all synonyms: //data/synonyms/text() (though I'm not so sure the synonyms should be included in the results...)
-//									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
-//									done = true;
-//									break;
-//								case HttpStatus.SC_NOT_FOUND:
-//									logger.error("Response code 404 (\"Not found\") received, check that your URL is correct: {}", get.getURI().toString());
-//									okToQuery = false;
-//									break;
-//								case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-//									logger.error("Error 500 detected! Message: {}",getResponse.getStatusLine().getReasonPhrase());
-//									// If we get 500 error then we should just get  out of here. Maybe throw an exception?
-//									okToQuery = false;
-//									break;
-//								case HttpStatus.SC_BAD_REQUEST:
-//									String s = EntityUtils.toString(getResponse.getEntity());
-//									logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
-//									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8") + "\">\n"+ s +"</ensemblResponse>\n");
-//									okToQuery = false;
-//									break;
-//							}
-//						}
-//						int numRequestsRemaining = Integer.valueOf(getResponse.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
-//						EnsemblFileRetriever.numRequestsRemaining.set(numRequestsRemaining);
 					} 
 				}
 				i++;
@@ -281,22 +239,18 @@ public class EnsemblFileRetriever extends FileRetriever
 		}
 		catch (InterruptedException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (URISyntaxException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (ClientProtocolException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
