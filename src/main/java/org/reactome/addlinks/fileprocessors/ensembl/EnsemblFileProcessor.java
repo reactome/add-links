@@ -1,4 +1,4 @@
-package org.reactome.addlinks.fileprocessors;
+package org.reactome.addlinks.fileprocessors.ensembl;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class EnsemblFileProcessor extends FileProcessor<Map<String,List<String>>>
 {

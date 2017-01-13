@@ -17,7 +17,7 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
-import org.reactome.addlinks.fileprocessors.EnsemblFileProcessor;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
