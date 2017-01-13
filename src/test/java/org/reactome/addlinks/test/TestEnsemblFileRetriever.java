@@ -10,8 +10,8 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever;
-import org.reactome.addlinks.dataretrieval.EnsemblFileRetriever.EnsemblDB;
+import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
+import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*"})
 @RunWith(PowerMockRunner.class)
