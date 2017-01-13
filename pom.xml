@@ -5,7 +5,7 @@
 	<artifactId>AddLinks</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<properties>
-		<spring.version>4.3.4.RELEASE</spring.version>
+		<spring.version>4.3.5.RELEASE</spring.version>
 	</properties>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->

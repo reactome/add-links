@@ -16,34 +16,34 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBL</value>
 		</constructor-arg>
 	</bean>
 	
 	
-	<bean id="EnsemblDB_Protein" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_Protein" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBLProtein</value>
 		</constructor-arg>
 	</bean>
 	
 	
-	<bean id="EnsemblDB_Gene" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_Gene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBLGene</value>
 		</constructor-arg>
 	</bean>
 	
 	
-	<bean id="EnsemblDB_Transcript" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_Transcript" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBLTranscript</value>
 		</constructor-arg>
 	</bean>
 	
-	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ALL_DATABASES</value>
 		</constructor-arg>
@@ -54,7 +54,7 @@
 	<util:map id="EnsemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
 
 		<entry key="EnsemblToALL">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblToALL">
+			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="EnsemblToALL">
 				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ALL.xml" />
 				<property name="mapFromDbEnum">
@@ -70,7 +70,7 @@
 		</entry>
 
 		<entry key="EnsemblGeneToALL">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblToALL">
+			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="EnsemblToALL">
 				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensemblGene_to_ALL.xml" />
 				<property name="mapFromDbEnum">
@@ -86,7 +86,7 @@
 		</entry>
 
 		<entry key="EnsemblTranscriptToALL">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblTranscriptToALL">
+			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="EnsemblTranscriptToALL">
 				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensemblTranscript_to_ALL.xml" />
 				<property name="mapFromDbEnum">
@@ -102,7 +102,7 @@
 		</entry>
 
 		<entry key="EnsemblProteinToALL">
-			<bean class="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever" id="EnsemblProteinToALL">
+			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="EnsemblProteinToALL">
 				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensemblProtein_to_ALL.xml" />
 				<property name="mapFromDbEnum">
