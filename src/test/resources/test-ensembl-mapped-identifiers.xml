@@ -45,7 +45,7 @@
 		<property name="maxAge" ref="maxFileAge" />
 	</bean>
 	
-	<bean id="ENSEMBLToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.EnsemblFileProcessor">
+	<bean id="ENSEMBLToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
 		<property name="path">
 			<bean class="java.nio.file.Paths" factory-method="get">
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.xml"/>
