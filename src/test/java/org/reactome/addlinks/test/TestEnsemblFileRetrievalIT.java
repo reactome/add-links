@@ -7,6 +7,7 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.fileprocessors.EnsemblFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -171,5 +173,13 @@ public class TestEnsemblFileRetrievalIT
 		
 		xrefRetriever.fetchData();
 		
+		EnsemblFileProcessor xrefProcessor = new EnsemblFileProcessor();
+		
+		xrefProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.xml"));
+		xrefProcessor.setDbs(Arrays.asList("EntrezGene"));
+		
+		Map<String, Map<String, List<String>>> xrefMappings = xrefProcessor.getIdMappingsFromFile();
+		assertNotNull(xrefMappings);
+		assertTrue(xrefMappings.keySet().size() > 0);
 	}
 }
