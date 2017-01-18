@@ -634,10 +634,10 @@ public final class ReferenceObjectCache
 	
 	/**
 	 * Returns a set of the keys used to cache by Species.
-	 * @deprecated This should not be used since it only returns data related to ReferenceGeneProducts. 
+	 * //@deprecated This should not be used since it only returns data related to ReferenceGeneProducts. THIS MAY NO LONGER BE TRUE. 
 	 * @return
 	 */
-	public Set<String> getListOfSpecies()
+	public Set<String> getListOfSpeciesNames()
 	{
 		if (ReferenceObjectCache.lazyLoad)
 		{
