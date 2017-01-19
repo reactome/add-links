@@ -26,7 +26,7 @@ public class TestReferenceObjectCache
 
 		assertTrue(cache.getRefDBMappings().size() > 0);
 		assertTrue(cache.getRefDbNamesToIds().size() > 0);
-		assertTrue(cache.getSpeciesMappings().size() > 0);
+		assertTrue(cache.getSpeciesNamesByID().size() > 0);
 		assertTrue(cache.getSpeciesNamesToIds().size() > 0);
 		
 		assertTrue(cache.getByRefDbAndSpecies("2", "48887", ReactomeJavaConstants.ReferenceGeneProduct).size() > 0);
@@ -43,14 +43,14 @@ public class TestReferenceObjectCache
 		
 		assertTrue(cache.getRefDBMappings().size() > 0);
 		assertTrue(cache.getRefDbNamesToIds().size() > 0);
-		assertTrue(cache.getSpeciesMappings().size() > 0);
+		assertTrue(cache.getSpeciesNamesByID().size() > 0);
 		assertTrue(cache.getSpeciesNamesToIds().size() > 0);
 		
 		cache.getByRefDbAndSpecies("2", "48887", ReactomeJavaConstants.ReferenceDNASequence);
 		
 		assertTrue(cache.getRefDBMappings().size() > 0);
 		assertTrue(cache.getRefDbNamesToIds().size() > 0);
-		assertTrue(cache.getSpeciesMappings().size() > 0);
+		assertTrue(cache.getSpeciesNamesByID().size() > 0);
 		assertTrue(cache.getSpeciesNamesToIds().size() > 0);
 		String refDBID = cache.getRefDbNamesToIds().get("Wormbase").get(0);
 		assertNotNull(refDBID);
