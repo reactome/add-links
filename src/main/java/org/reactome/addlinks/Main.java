@@ -16,7 +16,6 @@ public class Main
 	 */
 	public static void main(String[] args) throws Exception
 	{
-		
 		String springConfigFile = args[0];
 		logger.info("Spring context will be loaded from {}", springConfigFile);
 		ConfigurableApplicationContext context = new FileSystemXmlApplicationContext(springConfigFile);

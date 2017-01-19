@@ -14,10 +14,10 @@
 	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
  -->	
 	<import resource="reference-databases.xml"/>
-	<import resource="file:///home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/main/resources/basic-file-retrievers.xml"/>
-	<import resource="file:///home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/main/resources/uniprot-file-retrievers.xml"/>
-	<import resource="file:///home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/main/resources/ensembl-file-retrievers.xml"/>
-	<import resource="file:///home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/main/resources/file-processors.xml"/>
+	<import resource="basic-file-retrievers.xml"/>
+	<import resource="uniprot-file-retrievers.xml"/>
+	<import resource="ensembl-file-retrievers.xml"/>
+	<import resource="file-processors.xml"/>
 
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
@@ -85,7 +85,8 @@
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName" 
 		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers">
-
+		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
+		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
 	</bean>
 	
 </beans>
