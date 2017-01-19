@@ -51,7 +51,7 @@
 	
 	<!-- See IdentifierMapper/ENSEMBLMart.pm in the old add_links system. -->
 	
-	<util:map id="EnsemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
+	<util:map id="ensemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
 
 		<entry key="EnsemblToALL">
 			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="EnsemblToALL">

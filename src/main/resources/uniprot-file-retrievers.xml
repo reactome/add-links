@@ -53,9 +53,9 @@
 	</bean>
 
 	
-	<util:map id="UniProtFileRetrievers"
-		value-type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver"
-		key-type="java.lang.String">
+	<util:map id="uniProtFileRetrievers"
+		key-type="java.lang.String"
+		value-type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver">
 
 		<entry key="UniProtToOMIM">
 			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToOMIM">
