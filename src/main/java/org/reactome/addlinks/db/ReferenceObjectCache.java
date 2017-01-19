@@ -30,7 +30,7 @@ public final class ReferenceObjectCache
 	//private static ReferenceObjectCache cache;
 	private static boolean cachesArePopulated = false;
 	
-	private static boolean lazyLoad = false;
+	private static boolean lazyLoad = true;
 	
 //	private static final String query = "select _displayName, _class, DatabaseObject.db_id as object_db_id, ReferenceEntity.identifier, ReferenceEntity.referenceDatabase as refent_refdb, ReferenceSequence.species " +
 //										" from DatabaseObject "+
@@ -318,43 +318,47 @@ public final class ReferenceObjectCache
 	 */
 	private static synchronized void buildOneToManyCache(MySQLAdaptor adapter, String lookupClass, Map<String, List<String>> nameToIDCache, Map<String, List<String>> idToNameCache) throws Exception, InvalidAttributeException
 	{
-		logger.debug("Building caches for {}", lookupClass);
-		@SuppressWarnings("unchecked")
-		Collection<GKInstance> dbOjects = adapter.fetchInstancesByClass(lookupClass);
-		for (GKInstance dbOject : dbOjects)
+		if (nameToIDCache.isEmpty() || nameToIDCache.keySet().isEmpty()
+				|| idToNameCache.isEmpty() || idToNameCache.keySet().isEmpty())
 		{
-			String db_id = dbOject.getDBID().toString();
-			//Because names could be many-valued...
+			logger.debug("Building caches for {}", lookupClass);
 			@SuppressWarnings("unchecked")
-			List<String> names = (List<String>)dbOject.getAttributeValuesList(ReactomeJavaConstants.name);
-			for (String name : names)
+			Collection<GKInstance> dbOjects = adapter.fetchInstancesByClass(lookupClass);
+			for (GKInstance dbOject : dbOjects)
 			{
-				List<String> listOfIds;
-				if (nameToIDCache.containsKey(name))
+				String db_id = dbOject.getDBID().toString();
+				//Because names could be many-valued...
+				@SuppressWarnings("unchecked")
+				List<String> names = (List<String>)dbOject.getAttributeValuesList(ReactomeJavaConstants.name);
+				for (String name : names)
 				{
-					listOfIds = nameToIDCache.get(name);
+					List<String> listOfIds;
+					if (nameToIDCache.containsKey(name))
+					{
+						listOfIds = nameToIDCache.get(name);
+					}
+					else
+					{
+						listOfIds = new ArrayList<String>(1);
+					}
+					listOfIds.add(db_id);
+					nameToIDCache.put(name, listOfIds);
+					
+					List<String> listOfNames;
+					if (idToNameCache.containsKey(db_id))
+					{
+						listOfNames = idToNameCache.get(db_id);
+					}
+					else
+					{
+						listOfNames = new ArrayList<String>(1);
+					}
+					listOfNames.add(name);
+					idToNameCache.put(db_id,listOfNames);
 				}
-				else
-				{
-					listOfIds = new ArrayList<String>(1);
-				}
-				listOfIds.add(db_id);
-				nameToIDCache.put(name, listOfIds);
-				
-				List<String> listOfNames;
-				if (idToNameCache.containsKey(db_id))
-				{
-					listOfNames = idToNameCache.get(db_id);
-				}
-				else
-				{
-					listOfNames = new ArrayList<String>(1);
-				}
-				listOfNames.add(name);
-				idToNameCache.put(db_id,listOfNames);
 			}
+			logger.info("Keys in name-to-ID cache: {}; keys in ID-to_NAME: {}", nameToIDCache.size(), idToNameCache.size());
 		}
-		logger.info("Keys in name-to-ID cache: {}; keys in ID-to_NAME: {}", nameToIDCache.size(), idToNameCache.size());
 	}
 	
 	private static void buildSpeciesCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
@@ -547,19 +551,6 @@ public final class ReferenceObjectCache
 		return objectsByRefDbAndSpecies;
 	}
 	
-//	/**
-//	 * Returns a set of the keys used to cache by Reference Database.
-//	 * @return
-//	 */
-//	public Set<String> getListOfRefGeneProdRefDbs()
-//	{
-//		if (ReferenceObjectCache.lazyLoad)
-//		{
-//			buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheById, ReferenceObjectCache.refGeneProdCacheByRefDb);
-//		}
-//		return ReferenceObjectCache.refGeneProdCacheByRefDb.keySet();
-//	}
-
 	/**
 	 * Returns a map of Reference Database names, keyed by their DB_IDs.
 	 * @return
@@ -654,14 +645,14 @@ public final class ReferenceObjectCache
 				e.printStackTrace();
 			}
 		}
-		return ReferenceObjectCache.refGeneProdCacheBySpecies.keySet();
+		return ReferenceObjectCache.speciesNamesToIds.keySet();
 	}
 	
 	/**
 	 * Returns a map of Species names, keyed by their DB_IDs.
 	 * @return
 	 */
-	public Map<String,List<String>> getSpeciesMappings()
+	public Map<String,List<String>> getSpeciesNamesByID()
 	{
 		if (ReferenceObjectCache.lazyLoad)
 		{
