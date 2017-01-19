@@ -93,7 +93,7 @@ public class ReferenceDatabaseCreator
 					
 					for (String n : namesToAdd)
 					{
-						logger.info("Adding the name {} to the existing ReferenceDatanbase {}",n,preexistingRefDB);
+						logger.info("Adding the name {} to the existing ReferenceDatabase {}",n,preexistingRefDB);
 						preexistingRefDB.addAttributeValue(dbNameAttrib, n);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
 					}
