@@ -2,6 +2,7 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,42 +27,45 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+import javax.annotation.*;
 
+@Configurable(autowire = Autowire.BY_NAME, dependencyCheck = true)
 public class AddLinks
 {
 	private static final Logger logger = LogManager.getLogger();
 	
-	@Autowired
-	private static ReferenceObjectCache objectCache;
+	private ReferenceObjectCache objectCache;
 	
-	@Autowired
-	private static List<String> fileProcessorFilter;
+	private List<String> fileProcessorFilter;
 	
-	@Autowired
-	private static List<String> fileRetrieverFilter;
+	private List<String> fileRetrieverFilter;
 	
-	@Autowired
-	private static Map<String,UniprotFileRetreiver> uniprotFileRetrievers;
+	private HashMap<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	
-	@Autowired
-	private static Map<String,EnsemblFileRetriever> ensemblFileRetrievers;
+	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	
-	@Autowired
-	private static Map<String,FileProcessor> fileProcessors;
+	private Map<String, FileProcessor> fileProcessors;
 	
-	@Autowired
-	private static Map<String,FileRetriever> fileRetrievers;
+	private Map<String,FileRetriever> fileRetrievers;
 
-	/**
-	 * Main method for AddLinks.
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception
+	//private ConfigurableApplicationContext context;
+
+	public void doAddLinks() throws Exception
 	{
+		//this.context = context;
+		if (objectCache == null)
+		{
+			throw new Error("ObjectCache cannot be null.");
+		}
+		
 		//TODO: Command line arguments:
 		// - paths to spring config and addlinks.properties files.
 		
@@ -69,7 +73,8 @@ public class AddLinks
 		applicationProps.load(AddLinks.class.getClassLoader().getResourceAsStream("addlinks.properties"));
 		
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
-		ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
+		// Will need to switch to FileSystemXmlApplicationContext if path to config is going to be configurable.
+		//ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
 
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
 		if (filterRetrievers)
@@ -120,12 +125,17 @@ public class AddLinks
 //		orphanetRefCreator.createIdentifiers(personID, dbMappings.get("OrphanetFileProcessor"), uniprotReferences );
 
 		logger.info("Process complete.");
-		context.close();
+		
 	}
 
-	private static void executeSimpleFileRetrievers()
+	private void executeSimpleFileRetrievers()
 	{
 		//Execute the file retreivers in parallel
+//		if (fileRetrievers == null)
+//		{
+//			fileRetrievers = context.getBean("fileRetrievers", Map.class);
+//		}
+		
 		fileRetrievers.keySet().stream().parallel().forEach(k -> {
 			if (fileRetrieverFilter.contains(k))
 			{
@@ -148,7 +158,7 @@ public class AddLinks
 		});
 	}
 
-	private static void executeEnsemblFileRetrievers() throws Exception
+	private void executeEnsemblFileRetrievers() throws Exception
 	{
 		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
 		{
@@ -237,7 +247,7 @@ public class AddLinks
 		}
 	}
 
-	private static void executeUniprotFileRetrievers()
+	private void executeUniprotFileRetrievers()
 	{
 		//Now download mapping data from Uniprot.
 		//@SuppressWarnings("unchecked")
@@ -393,6 +403,41 @@ public class AddLinks
 			}
 //		});
 		}
+	}
+
+	public void setObjectCache(ReferenceObjectCache objectCache)
+	{
+		this.objectCache = objectCache;
+	}
+
+	public void setFileProcessorFilter(List<String> fileProcessorFilter)
+	{
+		this.fileProcessorFilter = fileProcessorFilter;
+	}
+
+	public void setFileRetrieverFilter(List<String> fileRetrieverFilter)
+	{
+		this.fileRetrieverFilter = fileRetrieverFilter;
+	}
+
+	public void setUniprotFileRetrievers(HashMap<String, UniprotFileRetreiver> uniprotFileRetrievers)
+	{
+		this.uniprotFileRetrievers = uniprotFileRetrievers;
+	}
+
+	public void setEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
+	{
+		this.ensemblFileRetrievers = ensemblFileRetrievers;
+	}
+
+	public void setFileProcessors(Map<String, FileProcessor> fileProcessors)
+	{
+		this.fileProcessors = fileProcessors;
+	}
+
+	public void setFileRetrievers(Map<String, FileRetriever> fileRetrievers)
+	{
+		this.fileRetrievers = fileRetrievers;
 	}
 
 }
