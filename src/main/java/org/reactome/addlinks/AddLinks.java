@@ -2,7 +2,6 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,14 +27,7 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblD
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
-import javax.annotation.*;
 
 @Configurable(autowire = Autowire.BY_NAME, dependencyCheck = true)
 public class AddLinks
@@ -56,11 +48,8 @@ public class AddLinks
 	
 	private Map<String,FileRetriever> fileRetrievers;
 
-	//private ConfigurableApplicationContext context;
-
 	public void doAddLinks() throws Exception
 	{
-		//this.context = context;
 		if (objectCache == null)
 		{
 			throw new Error("ObjectCache cannot be null.");
@@ -73,8 +62,6 @@ public class AddLinks
 		applicationProps.load(AddLinks.class.getClassLoader().getResourceAsStream("addlinks.properties"));
 		
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
-		// Will need to switch to FileSystemXmlApplicationContext if path to config is going to be configurable.
-		//ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
 
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
 		if (filterRetrievers)
@@ -82,17 +69,10 @@ public class AddLinks
 			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
-		//final List<String> retrieversToExecuteF = new LinkedList<String>(retrieversToExecute); 
-		//@SuppressWarnings("unchecked")
-		//Map<String,FileRetriever> fileRetrievers = context.getBean("FileRetrievers", Map.class);
 		
 
 		executeSimpleFileRetrievers();
-		
 		executeUniprotFileRetrievers();
-		
-		//@SuppressWarnings("unchecked")
-		//Map<String,EnsemblFileRetriever> ensemblFileRetrievers = context.getBean("EnsemblFileRetrievers", Map.class);
 		executeEnsemblFileRetrievers();
 		
 		logger.info("Finished downloading files.");
@@ -101,10 +81,7 @@ public class AddLinks
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
-		//@SuppressWarnings("unchecked")
-		//List<String> fileProcessorFilter = context.getBean("fileProcessorFilter",List.class);
-		//@SuppressWarnings("unchecked")
-		//Map<String,FileProcessor> fileProcessors = context.getBean("FileProcessors", Map.class);
+
 		fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
 			{
 				logger.info("Executing file processor: {}", k);
@@ -116,26 +93,14 @@ public class AddLinks
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
 		//Now we create references.
-		//TODO: Get referenceCreators from a spring config file.
-//		List<GKInstance> uniprotReferences = objectCache.getByRefDb("UniProt", ReactomeJavaConstants.ReferenceGeneProduct);
-//		PROReferenceCreator proRefCreator = new PROReferenceCreator(adapter);
-//		proRefCreator.createIdentifiers(personID, dbMappings.get("PROFileProcessor"), uniprotReferences );
-//
-//		OrphanetReferenceCreator orphanetRefCreator = new OrphanetReferenceCreator(adapter);
-//		orphanetRefCreator.createIdentifiers(personID, dbMappings.get("OrphanetFileProcessor"), uniprotReferences );
 
+		
 		logger.info("Process complete.");
 		
 	}
 
 	private void executeSimpleFileRetrievers()
 	{
-		//Execute the file retreivers in parallel
-//		if (fileRetrievers == null)
-//		{
-//			fileRetrievers = context.getBean("fileRetrievers", Map.class);
-//		}
-		
 		fileRetrievers.keySet().stream().parallel().forEach(k -> {
 			if (fileRetrieverFilter.contains(k))
 			{
@@ -250,8 +215,6 @@ public class AddLinks
 	private void executeUniprotFileRetrievers()
 	{
 		//Now download mapping data from Uniprot.
-		//@SuppressWarnings("unchecked")
-		//Map<String,UniprotFileRetreiver> uniprotFileRetrievers = context.getBean("UniProtFileRetrievers", Map.class);
 		for (String key : uniprotFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
 		//uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).parallel().forEach(key -> 
 		{
