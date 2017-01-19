@@ -1,9 +1,14 @@
 package org.reactome.addlinks;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,18 +23,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
+import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
+import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Configurable(autowire = Autowire.BY_NAME, dependencyCheck = true)
 public class AddLinks
 {
 	private static final Logger logger = LogManager.getLogger();
@@ -40,13 +45,17 @@ public class AddLinks
 	
 	private List<String> fileRetrieverFilter;
 	
-	private HashMap<String, UniprotFileRetreiver> uniprotFileRetrievers;
+	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	
 	private Map<String, FileProcessor> fileProcessors;
 	
 	private Map<String,FileRetriever> fileRetrievers;
+	
+	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
+	
+	private MySQLAdaptor dbAdapter;
 
 	public void doAddLinks() throws Exception
 	{
@@ -70,25 +79,19 @@ public class AddLinks
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
 		
-
-		executeSimpleFileRetrievers();
-		executeUniprotFileRetrievers();
-		executeEnsemblFileRetrievers();
+		executeCreateReferenceDatabases();
+		
+		//executeSimpleFileRetrievers();
+		//executeUniprotFileRetrievers();
+		//executeEnsemblFileRetrievers();
 		
 		logger.info("Finished downloading files.");
 		
 		logger.info("Now processing the files...");
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
-		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
-
-		fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
-			{
-				logger.info("Executing file processor: {}", k);
-				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
-			}
-		);
-		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
+//		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
+//		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
@@ -97,6 +100,70 @@ public class AddLinks
 		
 		logger.info("Process complete.");
 		
+	}
+
+	private void executeCreateReferenceDatabases()
+	{
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter);
+		for (String key : this.referenceDatabasesToCreate.keySet())
+		{
+			logger.info("Creating ReferenceDatabase {}", key);
+			
+			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
+			String url = null, accessUrl = null;
+			List<String> names = new ArrayList<String>();
+			for(String attributeKey : refDB.keySet())
+			{
+				switch (attributeKey)
+				{
+					case "Name":
+						if (refDB.get(attributeKey) instanceof String )
+						{
+							names.add((String) refDB.get(attributeKey));
+						}
+						else if (refDB.get(attributeKey) instanceof List )
+						{
+							names.addAll((Collection<? extends String>) refDB.get(attributeKey));
+						}
+						else
+						{
+							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
+						}
+						break;
+	
+					case "AccessURL":
+						accessUrl = (String) refDB.get(attributeKey) ;
+						break;
+						
+					case "URL":
+						url = (String) refDB.get(attributeKey) ;
+						break;
+				}
+				
+			}
+			try
+			{
+				creator.createReferenceDatabase(url, accessUrl, (String[]) names.toArray(new String[names.size()]) );
+			}
+			catch (Exception e)
+			{
+				logger.error("Error while trying to create ReferenceDatabase record: {}", e.getMessage());
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private Map<String, Map<String, ?>> executeFileProcessors()
+	{
+		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
+
+		fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
+			{
+				logger.info("Executing file processor: {}", k);
+				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
+			}
+		);
+		return dbMappings;
 	}
 
 	private void executeSimpleFileRetrievers()
@@ -161,7 +228,7 @@ public class AddLinks
 					{
 						logger.info("Number of species IDs to process: {}", speciesList.size() );
 						
-						List<String> possibleSpecies = objectCache.getSpeciesMappings().get(speciesId);
+						List<String> possibleSpecies = objectCache.getSpeciesNamesByID().get(speciesId);
 						
 						if (possibleSpecies.size() > 1)
 						{
@@ -215,34 +282,34 @@ public class AddLinks
 	private void executeUniprotFileRetrievers()
 	{
 		//Now download mapping data from Uniprot.
-		for (String key : uniprotFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
+		for (String key : this.uniprotFileRetrievers.keySet().stream().sequential().filter(p -> this.fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
 		//uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).parallel().forEach(key -> 
 		{
 			logger.info("Executing Downloader: {}", key);
-			UniprotFileRetreiver retriever = uniprotFileRetrievers.get(key);
+			UniprotFileRetreiver retriever = this.uniprotFileRetrievers.get(key);
 			
 			UniprotDB toDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapToDb());
 			UniprotDB fromDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapFromDb());
 			//String toDb = retriever.getMapToDb();
 			String originalFileDestinationName = retriever.getFetchDestination();
 			
-			List<String> refDbIds = new ArrayList<String>();
+			List<String> refDbIds;
 			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
 			if (fromDb == UniprotDB.ENSEMBLProtein)
 			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
+				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList()));
 			}
 			else if (fromDb == UniprotDB.ENSEMBLGene)
 			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
+				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList()));
 			}
 			else if (fromDb == UniprotDB.ENSEMBLTranscript)
 			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
+				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList()));
 			}
 			else
 			{
-				refDbIds = objectCache.getRefDbNamesToIds().get(fromDb.toString() );
+				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().get(fromDb.toString() ));
 			}
 			
 			if (refDbIds != null && refDbIds.size() > 0 )
@@ -253,7 +320,7 @@ public class AddLinks
 				for (String refDb : refDbIds)
 				{
 					//Set<String> speciesList = ReferenceObjectCache.getInstance().getListOfSpecies();
-					List<String> speciesList = new ArrayList<String>( objectCache.getListOfSpeciesNames() );
+					List<String> speciesList = new ArrayList<String>( objectCache.getSpeciesNamesByID().keySet() );
 					//for (String speciesId : speciesList)
 					logger.debug("Degree of parallelism in the Common Pool: {}", ForkJoinPool.getCommonPoolParallelism());
 					// TODO: Parameterise this in the config file, call it "uniprotDownloaderNumThreads". If not set, then just fall back to default parallelism. 
@@ -276,7 +343,7 @@ public class AddLinks
 								String speciesId = speciesList.get(speciesIndex);
 								List<GKInstance> refGenes = objectCache.getByRefDbAndSpecies(refDb,speciesId,ReactomeJavaConstants.ReferenceGeneProduct);
 								
-								String speciesName = objectCache.getSpeciesMappings().get(speciesId).get(0);
+								String speciesName = objectCache.getSpeciesNamesByID().get(speciesId).get(0);
 								
 								Callable<Boolean> task = new Callable<Boolean>()
 								{
@@ -383,7 +450,7 @@ public class AddLinks
 		this.fileRetrieverFilter = fileRetrieverFilter;
 	}
 
-	public void setUniprotFileRetrievers(HashMap<String, UniprotFileRetreiver> uniprotFileRetrievers)
+	public void setUniprotFileRetrievers(Map<String, UniprotFileRetreiver> uniprotFileRetrievers)
 	{
 		this.uniprotFileRetrievers = uniprotFileRetrievers;
 	}
@@ -401,6 +468,16 @@ public class AddLinks
 	public void setFileRetrievers(Map<String, FileRetriever> fileRetrievers)
 	{
 		this.fileRetrievers = fileRetrievers;
+	}
+
+	public void setReferenceDatabasesToCreate(Map<String, Map<String, ?>> referenceDatabasesToCreate)
+	{
+		this.referenceDatabasesToCreate = referenceDatabasesToCreate;
+	}
+
+	public void setDbAdapter(MySQLAdaptor dbAdapter)
+	{
+		this.dbAdapter = dbAdapter;
 	}
 
 }
