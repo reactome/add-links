@@ -33,7 +33,7 @@
 	
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
-		<constructor-arg index="1"  name="lazyLoad" value="true" />
+		<constructor-arg index="1" name="lazyLoad" value="true" />
 	</bean>
 	
 
@@ -83,10 +83,11 @@
 
 	
 
-	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName" 
-		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers">
+	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
+		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases">
 		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
 		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
 	</bean>
+	
 	
 </beans>

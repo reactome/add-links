@@ -6,7 +6,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-		
+
 	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
 		<constructor-arg index="0">
 			<value type="java.lang.Long">48</value>
@@ -57,7 +57,7 @@
 	retriever beans can use this one as the parent,
 	and then override any values that they need to override.
 	-->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="baseUniProtRetriever">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="baseUniProtRetriever" abstract="true">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="maxAge" ref="maxFileAge" />
@@ -126,4 +126,5 @@
 		</entry>
 		
 	</util:map>
+
 </beans>
