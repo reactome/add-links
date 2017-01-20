@@ -193,6 +193,18 @@ public class AddLinks
 		// To do the batch lookups, you will need the species, and also the species-specific ENSEMBL db_id.
 		// To do the xref lookup, you will need the target database.
 		
+		// Input to this algorithm should be: species and external db. You can give in a list of retrievers that contain the external db they want
+		// to do a cross-ref lookup on. Filtering by species should also be allowed. 
+		// Also: maybe allow PROTEIN, GENE, TRANSCRIPT as inputs, to start with different ENSEMBL_${species}_PROTEIN/GENE/TRANSCRIPT Ensembl IDs.
+		// 
+		// Ok, here's what to do: 
+		// 1) for all species, generate ReferenceDatabase names for ENSEMBL with the pattern ENSEMBL_${species}_PROTEIN/GENE/TRANSCRIPT
+		// 2) check to see if that Name is a valid name in the database.
+		// 3) if it is, then do batch lookups on everything in the database for that Ensembl ReferenceDatabase.
+		// 4) do batch lookups to get ENSG ENSEMBL IDs, where necessary.
+		// 5) Use list of ensemblFileRetrievers to do xref lookups.
+		// Consider refactoring all of this into a separate class.
+		
 		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
 		{
 			logger.info("Executing Downloader: {}", key);
