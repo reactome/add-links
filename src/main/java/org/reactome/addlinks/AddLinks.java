@@ -1,12 +1,9 @@
 package org.reactome.addlinks;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +30,6 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblD
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class AddLinks
 {
@@ -81,9 +77,9 @@ public class AddLinks
 		
 		executeCreateReferenceDatabases();
 		
-		//executeSimpleFileRetrievers();
-		//executeUniprotFileRetrievers();
-		//executeEnsemblFileRetrievers();
+		executeSimpleFileRetrievers();
+		executeUniprotFileRetrievers();
+		executeEnsemblFileRetrievers();
 		
 		logger.info("Finished downloading files.");
 		
@@ -192,6 +188,11 @@ public class AddLinks
 
 	private void executeEnsemblFileRetrievers() throws Exception
 	{
+		// Getting cross-references from ENSEMBL requires first getting doing a batch mapping from ENSP to ENST, then batch mapping ENST to ENSG.
+		// Then, individual xref lookups on ENSG.
+		// To do the batch lookups, you will need the species, and also the species-specific ENSEMBL db_id.
+		// To do the xref lookup, you will need the target database.
+		
 		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
 		{
 			logger.info("Executing Downloader: {}", key);

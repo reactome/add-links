@@ -95,6 +95,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		}
 	}
 	
+	@Deprecated
 	public String getMapFromDb()
 	{
 		return this.mapFromDb;
@@ -105,6 +106,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		return this.mapToDb;
 	}
 	
+	@Deprecated
 	public void setMapFromDbEnum(EnsemblDB mapFromDb)
 	{
 		this.mapFromDb = mapFromDb.getEnsemblName();
@@ -115,6 +117,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		this.mapToDb = mapToDb.getEnsemblName();
 	}
 	
+	@Deprecated
 	public void setMapFromDb(String mapFromDb)
 	{
 		this.mapFromDb = mapFromDb;
@@ -146,11 +149,11 @@ public class EnsemblFileRetriever extends FileRetriever
 	public void downloadData()
 	{
 		// Check inputs:
-		if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
+		/*if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map from!");
 		}
-		else if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
+		else */if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map to!");
 		}
