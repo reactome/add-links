@@ -30,7 +30,6 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
-import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
@@ -200,126 +199,112 @@ public class AddLinks
 		// To do the batch lookups, you will need the species, and also the species-specific ENSEMBL db_id.
 		// To do the xref lookup, you will need the target database.
 		
-		// Input to this algorithm should be: species and external db. You can give in a list of retrievers that contain the external db they want
-		// to do a cross-ref lookup on. Filtering by species should also be allowed. 
-		// Also: maybe allow PROTEIN, GENE, TRANSCRIPT as inputs, to start with different ENSEMBL_${species}_PROTEIN/GENE/TRANSCRIPT Ensembl IDs.
-		// 
 		// Ok, here's what to do: 
-		// 1) for all species, generate ReferenceDatabase names for ENSEMBL with the pattern ENSEMBL_${species}_PROTEIN/GENE/TRANSCRIPT
-		// 2) check to see if that Name is a valid name in the database.
-		// 3) if it is, then do batch lookups on everything in the database for that Ensembl ReferenceDatabase.
-		// 4) do batch lookups to get ENSG ENSEMBL IDs, where necessary.
-		// 5) Use list of ensemblFileRetrievers to do xref lookups.
+		// 1) Find all ReferenceDatabase objects whose name is LIKE 'ENSEMBL_%_PROTEIN' and accessUrl is LIKE '%www.ensembl.org%'
+		//    (this will capture "core" databases. We'll handle the ones that are for other ENSEMBL databases, such as "plants.ensembl.org" and "fungi.ensembl.org" separately)
+		// 2) do batch lookups on everything in the database for that Ensembl ReferenceDatabase.
+		// 3) do batch lookups to get ENSG ENSEMBL IDs, where necessary.
+		// 4) Use list of ensemblFileRetrievers to do xref lookups.
 		// Consider refactoring all of this into a separate class.
 		
-		//for (String speciesName : objectCache.getListOfSpeciesNames())
+		String dbName = "ENSEMBL_%_PROTEIN";
+		logger.debug("Trying to find database with name {}", dbName);
+		List<AttributeQueryRequest> aqrList = new ArrayList<AttributeQueryRequest>();
+		AttributeQueryRequest dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
+		AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "accessUrl", " LIKE ", "%www.ensembl.org%");
+		aqrList.add(dbNameARQ);
+		aqrList.add(accessUrlARQ);
+		@SuppressWarnings("unchecked")
+		Set<GKInstance> databases = (Set<GKInstance>) dbAdapter._fetchInstance(aqrList);
+		if (databases.size() > 0)
 		{
-			//now, generate an ENSEMBL database name ending in _GENE, _PROTEIN, _TRANSCRIPT
-			//for (String suffix : new String[]{/*"_GENE", "_TRANSCRIPT", */"_PROTEIN"})
+			logger.debug("Database {} exists ({} matches), now trying to find entities that reference it.", dbName, databases.size());
+			List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
+			for (GKInstance database : databases)
 			{
-				// replace any spaces with "_". Remember: MySQL will match "_" with any single character when you try to match using the LIKE operator.
-				// this is necessary because some databases have a space in the species name and some have an underscore.
-				//String dbName = "ENSEMBL_" + speciesName.replace(" ", "_") + suffix;
-				String dbName = "ENSEMBL_%_PROTEIN";
-				logger.debug("Trying to find database with name {}", dbName);
-				//List<GKInstance> databases = (List<GKInstance>) dbAdapter.fetchInstanceByAttribute("ReferenceDatabase", "name", "LIKE", dbName);
-				List<AttributeQueryRequest> aqrList = new ArrayList<AttributeQueryRequest>();
-				AttributeQueryRequest dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
-				AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "accessUrl", " LIKE ", "%www.ensembl.org%");
-				aqrList.add(dbNameARQ);
-				aqrList.add(accessUrlARQ);
-				Set<GKInstance> databases = (Set<GKInstance>) dbAdapter._fetchInstance(aqrList);
-				if (databases.size() > 0)
+				for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
+									.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
 				{
-					logger.debug("Database {} exists ({} matches), now trying to find entities that reference it.", dbName, databases.size());
-					List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
-					for (GKInstance database : databases)
-					{
-						for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
-											.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
-						{
-							logger.debug("Trying {}", name);
-							List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
-							refGeneProducts.addAll(results);
-							logger.debug("{} results found in cache", results.size());
-							
-						}
-					}
-					logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+					logger.debug("Trying {}", name);
+					List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
+					refGeneProducts.addAll(results);
+					logger.debug("{} results found in cache", results.size());
 					
-					// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
-					Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
-					refGeneProducts.stream().forEach(instance -> {
-						try
-						{
-							String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
-							if (refGeneProdsBySpecies.get(species) == null)
-							{
-								refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
-							}
-							else
-							{
-								refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
-							}
-						}
-						catch (Exception e)
-						{
-							e.printStackTrace();
-						}
-						
-					});
-					
-					// now, do batch look-ups by species. This will perform Protein-to-Transcript mappings.
-					String baseFetchDestination = ensemblBatchLookup.getFetchDestination();
-					for (String species : refGeneProdsBySpecies.keySet())
+				}
+			}
+			logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+			
+			// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
+			Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
+			refGeneProducts.stream().forEach(instance -> {
+				try
+				{
+					String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
+					if (refGeneProdsBySpecies.get(species) == null)
 					{
-						String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
-						
-						ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENSP_batch_lookup."+species+".xml");
-						ensemblBatchLookup.setSpecies(speciesName);
-						ensemblBatchLookup.setIdentifiers(refGeneProdsBySpecies.get(species));
-						ensemblBatchLookup.downloadData();
-						
-						EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor();
-						enspProcessor.setPath(Paths.get(baseFetchDestination+"ENSP_batch_lookup."+species+".xml"));
-						Map<String, String> enspToEnstMap = enspProcessor.getIdMappingsFromFile();
-						
-						if (!enspToEnstMap.isEmpty())
-						{
-							ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENST_batch_lookup."+species+".xml");
-							ensemblBatchLookup.setSpecies(speciesName);
-							ensemblBatchLookup.setIdentifiers(new ArrayList<String>(enspToEnstMap.values()));
-							ensemblBatchLookup.downloadData();
-							
-							enspProcessor.setPath(Paths.get(baseFetchDestination+"ENST_batch_lookup."+species+".xml"));
-							Map<String, String> enstToEnsgMap = enspProcessor.getIdMappingsFromFile();
-	
-							if (!enstToEnsgMap.isEmpty())
-							{
-								// Ok, now we have RefGeneProd for ENSEMBL_%_PROTEIN. Now we can map these identifiers to some external database.
-								for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
-								{
-									EnsemblFileRetriever retriever = ensemblFileRetrievers.get(ensemblRetrieverName);
-									retriever.setFetchDestination(retriever.getFetchDestination().replaceAll(".[0-9]*.xml", "." + species + ".xml"));
-									retriever.setSpecies(speciesName);
-									retriever.setIdentifiers(new ArrayList<String>(enstToEnsgMap.values()));
-									retriever.downloadData();
-								}
-							}
-							else
-							{
-								logger.debug("ENST to ENSG mapping is empty. No identifiers to do xref lookup for species {}/{}", species, speciesName);
-							}
-						}
-						else
-						{
-							logger.debug("ENSP to ENST mapping returned no results for species {}/{}", species, speciesName);
-						}
+						refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
 					}
+					else
+					{
+						refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				
+			});
+			
+			// now, do batch look-ups by species. This will perform Protein-to-Transcript mappings.
+			String baseFetchDestination = ensemblBatchLookup.getFetchDestination();
+			for (String species : refGeneProdsBySpecies.keySet())
+			{
+				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
+				
+				ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENSP_batch_lookup."+species+".xml");
+				ensemblBatchLookup.setSpecies(speciesName);
+				ensemblBatchLookup.setIdentifiers(refGeneProdsBySpecies.get(species));
+				ensemblBatchLookup.downloadData();
+				
+				EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor();
+				enspProcessor.setPath(Paths.get(baseFetchDestination+"ENSP_batch_lookup."+species+".xml"));
+				Map<String, String> enspToEnstMap = enspProcessor.getIdMappingsFromFile();
+				
+				if (!enspToEnstMap.isEmpty())
+				{
+					ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENST_batch_lookup."+species+".xml");
+					ensemblBatchLookup.setSpecies(speciesName);
+					ensemblBatchLookup.setIdentifiers(new ArrayList<String>(enspToEnstMap.values()));
+					ensemblBatchLookup.downloadData();
+					
+					enspProcessor.setPath(Paths.get(baseFetchDestination+"ENST_batch_lookup."+species+".xml"));
+					Map<String, String> enstToEnsgMap = enspProcessor.getIdMappingsFromFile();
 
+					if (!enstToEnsgMap.isEmpty())
+					{
+						// Ok, now we have RefGeneProd for ENSEMBL_%_PROTEIN. Now we can map these identifiers to some external database.
+						for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
+						{
+							EnsemblFileRetriever retriever = ensemblFileRetrievers.get(ensemblRetrieverName);
+							retriever.setFetchDestination(retriever.getFetchDestination().replaceAll(".[0-9]*.xml", "." + species + ".xml"));
+							retriever.setSpecies(speciesName);
+							retriever.setIdentifiers(new ArrayList<String>(enstToEnsgMap.values()));
+							retriever.downloadData();
+						}
+					}
+					else
+					{
+						logger.debug("ENST to ENSG mapping is empty. No identifiers to do xref lookup for species {}/{}", species, speciesName);
+					}
+				}
+				else
+				{
+					logger.debug("ENSP to ENST mapping returned no results for species {}/{}", species, speciesName);
 				}
 			}
 		}
+		// TODO: Add code to handle non-"core" ENSEMBL databases, such as the database at plants.ensembl.org.
 	}
 
 	private void executeUniprotFileRetrievers()
