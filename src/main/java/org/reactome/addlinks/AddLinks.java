@@ -2,8 +2,10 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,15 +23,18 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
+import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
 
 public class AddLinks
 {
@@ -50,6 +55,8 @@ public class AddLinks
 	private Map<String,FileRetriever> fileRetrievers;
 	
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
+	
+	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
 
@@ -75,10 +82,10 @@ public class AddLinks
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
 		
-		executeCreateReferenceDatabases();
+		//executeCreateReferenceDatabases();
 		
-		executeSimpleFileRetrievers();
-		executeUniprotFileRetrievers();
+		//executeSimpleFileRetrievers();
+		//executeUniprotFileRetrievers();
 		executeEnsemblFileRetrievers();
 		
 		logger.info("Finished downloading files.");
@@ -205,89 +212,112 @@ public class AddLinks
 		// 5) Use list of ensemblFileRetrievers to do xref lookups.
 		// Consider refactoring all of this into a separate class.
 		
-		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
+		//for (String speciesName : objectCache.getListOfSpeciesNames())
 		{
-			logger.info("Executing Downloader: {}", key);
-			EnsemblFileRetriever retriever = ensemblFileRetrievers.get(key);
-			
-			EnsemblDB toDb = EnsemblDB.ensemblDBFromEnsemblName(retriever.getMapToDb());
-			EnsemblDB fromDb = EnsemblDB.ensemblDBFromEnsemblName(retriever.getMapFromDb());
-			String originalFileDestinationName = retriever.getFetchDestination();
-			List<String> refDbIds = new ArrayList<String>();
-			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
-			if (fromDb == EnsemblDB.ENSEMBLProtein)
+			//now, generate an ENSEMBL database name ending in _GENE, _PROTEIN, _TRANSCRIPT
+			//for (String suffix : new String[]{/*"_GENE", "_TRANSCRIPT", */"_PROTEIN"})
 			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
-			}
-			else if (fromDb == EnsemblDB.ENSEMBLGene)
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
-			}
-			else if (fromDb == EnsemblDB.ENSEMBLTranscript)
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
-			}
-			else
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().get(fromDb.toString() );
-			}
-			if (refDbIds != null && refDbIds.size() > 0 )
-			{
-				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
-				for (String refDb : refDbIds)
+				// replace any spaces with "_". Remember: MySQL will match "_" with any single character when you try to match using the LIKE operator.
+				// this is necessary because some databases have a space in the species name and some have an underscore.
+				//String dbName = "ENSEMBL_" + speciesName.replace(" ", "_") + suffix;
+				String dbName = "ENSEMBL_%_PROTEIN";
+				logger.debug("Trying to find database with name {}", dbName);
+				//List<GKInstance> databases = (List<GKInstance>) dbAdapter.fetchInstanceByAttribute("ReferenceDatabase", "name", "LIKE", dbName);
+				List<AttributeQueryRequest> aqrList = new ArrayList<AttributeQueryRequest>();
+				AttributeQueryRequest dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
+				AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "accessUrl", " LIKE ", "%www.ensembl.org%");
+				aqrList.add(dbNameARQ);
+				aqrList.add(accessUrlARQ);
+				Set<GKInstance> databases = (Set<GKInstance>) dbAdapter._fetchInstance(aqrList);
+				if (databases.size() > 0)
 				{
-					Set<String> speciesList = objectCache.getListOfSpeciesNames();
-					for (String speciesId : speciesList)
+					logger.debug("Database {} exists ({} matches), now trying to find entities that reference it.", dbName, databases.size());
+					List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
+					for (GKInstance database : databases)
 					{
-						logger.info("Number of species IDs to process: {}", speciesList.size() );
-						
-						List<String> possibleSpecies = objectCache.getSpeciesNamesByID().get(speciesId);
-						
-						if (possibleSpecies.size() > 1)
+						for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
+											.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
 						{
-							logger.info("Trying to do a mapping with species ID {} but there are {} multiple names associated with id: {}. I'm just going to use the first one in the list: {}", speciesId, possibleSpecies.size(), possibleSpecies, possibleSpecies.get(0));
+							logger.debug("Trying {}", name);
+							List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
+							refGeneProducts.addAll(results);
+							logger.debug("{} results found in cache", results.size());
+							
+						}
+					}
+					logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+					
+					// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
+					Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
+					refGeneProducts.stream().forEach(instance -> {
+						try
+						{
+							String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
+							if (refGeneProdsBySpecies.get(species) == null)
+							{
+								refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
+							}
+							else
+							{
+								refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
+							}
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
 						}
 						
-						String speciesName = possibleSpecies.get(0).replace(" ", "_");
-						retriever.setSpecies(speciesName);
+					});
+					
+					// now, do batch look-ups by species. This will perform Protein-to-Transcript mappings.
+					String baseFetchDestination = ensemblBatchLookup.getFetchDestination();
+					for (String species : refGeneProdsBySpecies.keySet())
+					{
+						String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
 						
-						List<GKInstance> refGenes = objectCache.getByRefDbAndSpecies(refDb,speciesId,ReactomeJavaConstants.ReferenceGeneProduct);
+						ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENSP_batch_lookup."+species+".xml");
+						ensemblBatchLookup.setSpecies(speciesName);
+						ensemblBatchLookup.setIdentifiers(refGeneProdsBySpecies.get(species));
+						ensemblBatchLookup.downloadData();
 						
-						if (refGenes != null && refGenes.size() > 0)
+						EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor();
+						enspProcessor.setPath(Paths.get(baseFetchDestination+"ENSP_batch_lookup."+species+".xml"));
+						Map<String, String> enspToEnstMap = enspProcessor.getIdMappingsFromFile();
+						
+						if (!enspToEnstMap.isEmpty())
 						{
-							logger.info("Number of identifiers that we will attempt to map TO {} FROM db_id: {}/{} (species: {}/{} ) is: {}", toDb.toString(), refDb,fromDb.toString() , speciesId, speciesName, refGenes.size());
-							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> {
-								try
-								{
-									return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
-								}
-								catch (InvalidAttributeException e)
-								{
-									e.printStackTrace();
-									throw new RuntimeException(e);
-								}
-								catch (Exception e)
-								{
-									e.printStackTrace();
-									throw new RuntimeException(e);
-								}
-							}).collect(Collectors.toList());
-							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
+							ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENST_batch_lookup."+species+".xml");
+							ensemblBatchLookup.setSpecies(speciesName);
+							ensemblBatchLookup.setIdentifiers(new ArrayList<String>(enspToEnstMap.values()));
+							ensemblBatchLookup.downloadData();
 							
-							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
-							retriever.setIdentifiers(identifiersList);
-							retriever.fetchData();
+							enspProcessor.setPath(Paths.get(baseFetchDestination+"ENST_batch_lookup."+species+".xml"));
+							Map<String, String> enstToEnsgMap = enspProcessor.getIdMappingsFromFile();
+	
+							if (!enstToEnsgMap.isEmpty())
+							{
+								// Ok, now we have RefGeneProd for ENSEMBL_%_PROTEIN. Now we can map these identifiers to some external database.
+								for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
+								{
+									EnsemblFileRetriever retriever = ensemblFileRetrievers.get(ensemblRetrieverName);
+									retriever.setFetchDestination(retriever.getFetchDestination().replaceAll(".[0-9]*.xml", "." + species + ".xml"));
+									retriever.setSpecies(speciesName);
+									retriever.setIdentifiers(new ArrayList<String>(enstToEnsgMap.values()));
+									retriever.downloadData();
+								}
+							}
+							else
+							{
+								logger.debug("ENST to ENSG mapping is empty. No identifiers to do xref lookup for species {}/{}", species, speciesName);
+							}
 						}
 						else
 						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {}/{} for species {}/{}", refDb, fromDb.toString(), speciesId, speciesName);
+							logger.debug("ENSP to ENST mapping returned no results for species {}/{}", species, speciesName);
 						}
 					}
+
 				}
-			}
-			else
-			{
-				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
 			}
 		}
 	}
@@ -493,5 +523,9 @@ public class AddLinks
 		this.dbAdapter = dbAdapter;
 	}
 
+	public void setEnsemblBatchLookup(EnsemblBatchLookup ensemblBatchLookup)
+	{
+		this.ensemblBatchLookup = ensemblBatchLookup;
+	}
 }
 
