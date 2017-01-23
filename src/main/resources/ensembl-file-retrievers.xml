@@ -54,12 +54,14 @@
 	
 	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup" id="ensemblBatchLookup" scope="prototype">
 		<property name="dataURL" value="http://rest.ensembl.org/lookup/id/" />
+		<!-- The main program will update festDestination to be more specific, as it needs to. -->
+		<property name="fetchDestination"  value="/tmp/addlinks-downloaded-files/ensembl/"/>
 		<property name="maxAge" ref="maxFileAge"/> 
 	</bean>
 	
-	
 	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="ensemblBaseXrefRetriever" abstract="true">
 		<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
+		<!-- <property name="dataURL" value="http://localhost:9999/xrefs/id/" /> -->
 		<property name="maxAge" ref="maxFileAge"/> 
 	</bean>
 	
