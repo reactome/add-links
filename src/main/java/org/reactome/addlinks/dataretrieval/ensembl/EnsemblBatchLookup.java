@@ -26,6 +26,10 @@ public class EnsemblBatchLookup  extends FileRetriever
 	private String species;
 	private List<String> identifiers;
 
+	public String getFetchDestination()
+	{
+		return this.destination;
+	}
 	
 	public void setSpecies(String s)
 	{
