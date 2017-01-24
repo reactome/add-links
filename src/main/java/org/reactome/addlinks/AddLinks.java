@@ -211,7 +211,7 @@ public class AddLinks
 		logger.debug("Trying to find database with name {}", dbName);
 		List<AttributeQueryRequest> aqrList = new ArrayList<AttributeQueryRequest>();
 		AttributeQueryRequest dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
-		AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "accessUrl", " LIKE ", "%www.ensembl.org%");
+		AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "url", " LIKE ", "%www.ensembl.org%");
 		aqrList.add(dbNameARQ);
 		aqrList.add(accessUrlARQ);
 		@SuppressWarnings("unchecked")
@@ -286,11 +286,12 @@ public class AddLinks
 						// Ok, now we have RefGeneProd for ENSEMBL_%_PROTEIN. Now we can map these identifiers to some external database.
 						for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
 						{
+							logger.info("Executing file retriever: {}",ensemblRetrieverName);
 							EnsemblFileRetriever retriever = ensemblFileRetrievers.get(ensemblRetrieverName);
-							retriever.setFetchDestination(retriever.getFetchDestination().replaceAll(".[0-9]*.xml", "." + species + ".xml"));
+							retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
 							retriever.setSpecies(speciesName);
 							retriever.setIdentifiers(new ArrayList<String>(enstToEnsgMap.values()));
-							retriever.downloadData();
+							retriever.fetchData();
 						}
 					}
 					else

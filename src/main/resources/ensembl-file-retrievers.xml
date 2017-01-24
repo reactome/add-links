@@ -52,6 +52,12 @@
 		</constructor-arg>
 	</bean>
 	
+	<bean id="EnsemblDB_Wormbase" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>Wormbase</value>
+		</constructor-arg>
+	</bean>
+	
 	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup" id="ensemblBatchLookup" scope="prototype">
 		<property name="dataURL" value="http://rest.ensembl.org/lookup/id/" />
 		<!-- The main program will update festDestination to be more specific, as it needs to. -->
@@ -70,8 +76,15 @@
 	
 		<entry key="ensemblToEntrezGene" >
 			<bean id="ensemblToEntrezGene" parent="ensemblBaseXrefRetriever">
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.xml" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensembl_to_EntrezGene.xml" />
 				<property name="mapToDbEnum" ref="EnsemblDB_EntezGene"/>
+			</bean>
+		</entry>
+		
+		<entry key="ensemblToWormbase" >
+			<bean id="ensemblToEntrezGene" parent="ensemblBaseXrefRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensembl_to_Wormbase.xml" />
+				<property name="mapToDbEnum" ref="EnsemblDB_Wormbase"/>
 			</bean>
 		</entry>
 	
