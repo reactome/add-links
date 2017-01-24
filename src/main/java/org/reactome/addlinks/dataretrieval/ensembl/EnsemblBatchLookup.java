@@ -129,11 +129,11 @@ public class EnsemblBatchLookup  extends FileRetriever
 									resultBuilder.append(responseString);
 									requestDone = true;
 								}
-								else
+								else if (result.isOkToRetry())
 								{
-									// The only case where isOkToRetry is true is when the rate limit was exceeded. 
+									// The only case where isOkToRetry is true is when the rate limit was exceeded or when the endpoint timed out. 
 									// So, setting requestDone to !isOkToRetry should terminate the request-loop.
-									requestDone = !result.isOkToRetry();
+									requestDone = false;
 								}
 							}
 						}

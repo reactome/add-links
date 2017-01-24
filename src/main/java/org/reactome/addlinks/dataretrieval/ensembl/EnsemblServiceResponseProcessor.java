@@ -125,6 +125,10 @@ final class EnsemblServiceResponseProcessor
 					logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
 					okToQuery = false;
 					break;
+				case HttpStatus.SC_GATEWAY_TIMEOUT:
+					logger.error("Request timed out! You should retry it.");
+					okToQuery = true;
+					break;
 				default:
 					// Log any other kind of response.
 					okToQuery = false;
@@ -146,10 +150,11 @@ final class EnsemblServiceResponseProcessor
 			}
 		}
 		result.setOkToRetry(okToQuery);
-		int numRequestsRemaining = Integer.valueOf(response.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
-
-		EnsemblServiceResponseProcessor.numRequestsRemaining.set(numRequestsRemaining);
-		
+		if (response.containsHeader("X-RateLimit-Remaining"))
+		{
+			int numRequestsRemaining = Integer.valueOf(response.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
+			EnsemblServiceResponseProcessor.numRequestsRemaining.set(numRequestsRemaining);
+		}
 		return result;
 	}
 	
