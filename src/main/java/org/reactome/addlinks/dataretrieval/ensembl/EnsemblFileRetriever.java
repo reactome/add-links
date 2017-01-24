@@ -233,6 +233,7 @@ public class EnsemblFileRetriever extends FileRetriever
 				i++;
 				if (i%100 == 0)
 				{
+					// of course, this only works if the Identifiers list is > 100 ...
 					logger.info("{} requests remaining.", EnsemblServiceResponseProcessor.getNumRequestsRemaining());
 				}
 			}
