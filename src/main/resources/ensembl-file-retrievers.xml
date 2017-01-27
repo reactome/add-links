@@ -71,6 +71,25 @@
 		<property name="maxAge" ref="maxFileAge"/> 
 	</bean>
 	
+	<util:map id="ensemblFileRetrieversNonCore" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
+	
+		<entry key="ensemblToEntrezGene" >
+			<bean id="ensemblToEntrezGene" parent="ensemblBaseXrefRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_EntrezGene.xml" />
+				<property name="mapToDbEnum" ref="EnsemblDB_EntezGene"/>
+				<property name="dataURL" value="http://rest.ensemblgenomes.org/xrefs/id/" />
+			</bean>
+		</entry>
+		
+		<entry key="ensemblToWormbase" >
+			<bean id="ensemblToEntrezGene" parent="ensemblBaseXrefRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_Wormbase.xml" />
+				<property name="mapToDbEnum" ref="EnsemblDB_Wormbase"/>
+				<property name="dataURL" value="http://rest.ensemblgenomes.org/xrefs/id/" />
+			</bean>
+		</entry>
+	</util:map>
+	
 	<!-- See IdentifierMapper/ENSEMBLMart.pm in the old add_links system. -->
 	<util:map id="ensemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
 	

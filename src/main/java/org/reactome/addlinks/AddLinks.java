@@ -49,6 +49,8 @@ public class AddLinks
 	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	
+	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
+	
 	private Map<String, FileProcessor> fileProcessors;
 	
 	private Map<String,FileRetriever> fileRetrievers;
@@ -265,7 +267,7 @@ public class AddLinks
 				ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENSP_batch_lookup."+species+".xml");
 				ensemblBatchLookup.setSpecies(speciesName);
 				ensemblBatchLookup.setIdentifiers(refGeneProdsBySpecies.get(species));
-				ensemblBatchLookup.downloadData();
+				ensemblBatchLookup.fetchData();
 				
 				EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor();
 				enspProcessor.setPath(Paths.get(baseFetchDestination+"ENSP_batch_lookup."+species+".xml"));
@@ -276,7 +278,7 @@ public class AddLinks
 					ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENST_batch_lookup."+species+".xml");
 					ensemblBatchLookup.setSpecies(speciesName);
 					ensemblBatchLookup.setIdentifiers(new ArrayList<String>(enspToEnstMap.values()));
-					ensemblBatchLookup.downloadData();
+					ensemblBatchLookup.fetchData();
 					
 					enspProcessor.setPath(Paths.get(baseFetchDestination+"ENST_batch_lookup."+species+".xml"));
 					Map<String, String> enstToEnsgMap = enspProcessor.getIdMappingsFromFile();
@@ -284,15 +286,24 @@ public class AddLinks
 					if (!enstToEnsgMap.isEmpty())
 					{
 						// Ok, now we have RefGeneProd for ENSEMBL_%_PROTEIN. Now we can map these identifiers to some external database.
-						for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
+						//for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
+						ensemblFileRetrievers.keySet().parallelStream().forEach( ensemblRetrieverName -> {
 						{
 							logger.info("Executing file retriever: {}",ensemblRetrieverName);
 							EnsemblFileRetriever retriever = ensemblFileRetrievers.get(ensemblRetrieverName);
 							retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
 							retriever.setSpecies(speciesName);
 							retriever.setIdentifiers(new ArrayList<String>(enstToEnsgMap.values()));
-							retriever.fetchData();
+							try
+							{
+								retriever.fetchData();
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+							}
 						}
+						});
 					}
 					else
 					{
@@ -306,6 +317,75 @@ public class AddLinks
 			}
 		}
 		// TODO: Add code to handle non-"core" ENSEMBL databases, such as the database at plants.ensembl.org.
+		dbName = "ENSEMBL_%_PROTEIN";
+		aqrList = new ArrayList<AttributeQueryRequest>();
+		dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
+		accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "url", " NOT LIKE ", "%www.ensembl.org%");
+		aqrList.add(dbNameARQ);
+		aqrList.add(accessUrlARQ);
+		databases = (Set<GKInstance>) dbAdapter.fetchInstance(aqrList);
+		logger.debug("{} databases found for non-core ENSEMBL databases.", databases.size());
+		if (databases.size() > 0)
+		{
+			// These don't need multiple steps - rest.ensemblgenomes.org can translate them immediately.
+			List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
+			for (GKInstance database : databases)
+			{
+				for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
+									.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
+				{
+					logger.debug("Trying {}", name);
+					List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
+					refGeneProducts.addAll(results);
+					logger.debug("{} results found in cache", results.size());
+					
+				}
+			}
+			logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+			
+			// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
+			Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
+			refGeneProducts.stream().forEach(instance -> {
+				try
+				{
+					String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
+					if (refGeneProdsBySpecies.get(species) == null)
+					{
+						refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
+					}
+					else
+					{
+						refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				
+			});
+			for (String species : refGeneProdsBySpecies.keySet())
+			{
+				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
+				ensemblFileRetrieversNonCore.keySet().parallelStream().forEach( ensemblRetrieverName -> {
+				{
+					logger.info("Executing file retriever: {}",ensemblRetrieverName);
+					EnsemblFileRetriever retriever = ensemblFileRetrieversNonCore.get(ensemblRetrieverName);
+					retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
+					retriever.setSpecies(speciesName);
+					retriever.setIdentifiers(refGeneProdsBySpecies.get(species));
+					try
+					{
+						retriever.fetchData();
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+				}
+				});
+			}
+		}
 	}
 
 	private void executeUniprotFileRetrievers()
@@ -487,6 +567,11 @@ public class AddLinks
 	public void setEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
 	{
 		this.ensemblFileRetrievers = ensemblFileRetrievers;
+	}
+	
+	public void setEnsemblFileRetrieversNonCore(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
+	{
+		this.ensemblFileRetrieversNonCore = ensemblFileRetrievers;
 	}
 
 	public void setFileProcessors(Map<String, FileProcessor> fileProcessors)
