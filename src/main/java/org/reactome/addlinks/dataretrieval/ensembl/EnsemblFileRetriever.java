@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,21 +13,14 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -187,7 +181,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
-			StringBuilder sb = new StringBuilder("<ensemblResponses>\n");
+			StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
 			logger.info("");
 			int i = 0;
 			for (String identifier : identifiers)
@@ -223,7 +217,7 @@ public class EnsemblFileRetriever extends FileRetriever
 							// Only record the successful responses.
 							if (result.getStatus() == HttpStatus.SC_OK)
 							{
-								String content = result.getResult();
+								String content = result.getResult().trim();
 								sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
 							}
 							else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
@@ -242,8 +236,14 @@ public class EnsemblFileRetriever extends FileRetriever
 				}
 			}
 			Files.createDirectories(path.getParent());
+			String xml10pattern = "[^"
+					+ "\u0009\r\n"
+					+ "\u0020-\uD7FF"
+					+ "\uE000-\uFFFD"
+					+ "\ud800\udc00-\udbff\udfff"
+					+ "]";
 			sb.append("</ensemblResponses>");
-			Files.write(path, sb.toString().getBytes(), StandardOpenOption.CREATE);
+			Files.write(path, sb.toString().trim().replaceAll(xml10pattern, "").getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE);
 		}
 		catch (InterruptedException e)
 		{

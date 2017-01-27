@@ -4,15 +4,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +32,7 @@ public abstract class FileProcessor<T>
 	
 	protected Path pathToFile;
 	
+
 	public void setPath(Path p)
 	{
 		this.pathToFile = p;
@@ -34,8 +44,8 @@ public abstract class FileProcessor<T>
 	 * @return
 	 */
 	public abstract Map<String, T> getIdMappingsFromFile();
-
-	/**
+	
+		/**
 	 * Unzips a file.
 	 * @param p - The path to the file.
 	 * @return The directory where the files are unzipped.
