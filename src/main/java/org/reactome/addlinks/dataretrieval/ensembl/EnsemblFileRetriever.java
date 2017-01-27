@@ -226,6 +226,10 @@ public class EnsemblFileRetriever extends FileRetriever
 								String content = result.getResult();
 								sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
 							}
+							else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
+							{
+								logger.trace("Got BAD_REQUEST reponse. This was the request that was sent: {}", get.toString());
+							}
 							done = true;
 						}
 					} 

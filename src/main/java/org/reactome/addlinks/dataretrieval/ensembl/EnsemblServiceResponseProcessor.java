@@ -122,7 +122,7 @@ final class EnsemblServiceResponseProcessor
 					{
 						e.printStackTrace();
 					}
-					logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
+					logger.trace("Response code was 400 (\"Bad request\"). Message from server: {}", s);
 					okToQuery = false;
 					break;
 				case HttpStatus.SC_GATEWAY_TIMEOUT:
