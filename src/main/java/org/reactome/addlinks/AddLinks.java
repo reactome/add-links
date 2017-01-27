@@ -103,8 +103,10 @@ public class AddLinks
 		logger.info("Now processing the files...");
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
-//		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
-//		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
+		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
+		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
+		
+		
 		
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
@@ -169,8 +171,8 @@ public class AddLinks
 	private Map<String, Map<String, ?>> executeFileProcessors()
 	{
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
-
-		fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
+		logger.info("{} file processors to execute.", this.fileProcessors.keySet().size());
+		this.fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
 			{
 				logger.info("Executing file processor: {}", k);
 				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
@@ -320,25 +322,11 @@ public class AddLinks
 													e.printStackTrace();
 												}
 											}
-											List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
-//											for (GKInstance database : databases)
-//											{
-//												for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
-//																	.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
-//												{
-//													logger.debug("Trying {}", name);
-//													List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
-//													refGeneProducts.addAll(results);
-//													logger.debug("{} results found in cache", results.size());
-//													
-//												}
-//											}
-//											logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());		else
+											else
 											{
 												logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
 											}
 //										}
-	
 										return false;
 									}
 								};

@@ -1,6 +1,7 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -85,7 +86,8 @@ final class EnsemblServiceResponseProcessor
 				case HttpStatus.SC_OK:
 					try
 					{
-						content = EntityUtils.toString(response.getEntity());
+						//ContentType.get(response.getEntity()).getCharset().name();
+						content = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
 					}
 					catch (ParseException e)
 					{
@@ -134,7 +136,7 @@ final class EnsemblServiceResponseProcessor
 					okToQuery = false;
 					try
 					{
-						content = EntityUtils.toString(response.getEntity());
+						content = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
 					}
 					catch (ParseException e)
 					{

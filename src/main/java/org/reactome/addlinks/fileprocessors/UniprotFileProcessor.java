@@ -18,9 +18,8 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>>
+public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<String>>>
 {
-	private String fileGlob;
 	
 	/**
 	 * Sets the globbing pattern to match against for this instance of UniprotFileProcessor.
@@ -33,19 +32,11 @@ public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>
 	 * referening Lists of other identifiers (since it might not be a 1:1 mapping). 
 	 * @param glob
 	 */
-	public void setFileGlob(String glob)
-	{
-		this.fileGlob = glob;
-	}
-	
-	public String getFileGlob()
-	{
-		return this.fileGlob;
-	}
+
 	private static final Pattern pattern = Pattern.compile("[^.]*\\.(\\d*)\\.\\d*\\.txt");
 	private static final Logger logger = LogManager.getLogger();
 	@Override
-	public Map<String, Map<String,List<String>>> getIdMappingsFromFile()
+	protected Map<String, Map<String,List<String>>> getIdMappingsFromFilesMatchingGlob()
 	{
 		//The returned structure looks like this:
 		/*
@@ -76,7 +67,8 @@ public class UniprotFileProcessor extends FileProcessor<Map<String,List<String>>
 		 *   ...
 		 */
 		
-		Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
+		//Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
+		this.mappings = new HashMap<String, Map<String,List<String>>>();
 
 		// Uniprot filenames are generated on the fly, so all we can get is the general pattern. 
 		// From there, we have to process all files that match the pattern. 
