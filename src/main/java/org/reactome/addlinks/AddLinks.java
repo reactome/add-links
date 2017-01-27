@@ -25,6 +25,7 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
+import org.gk.schema.InvalidClassException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
@@ -211,52 +212,28 @@ public class AddLinks
 		
 		String dbName = "ENSEMBL_%_PROTEIN";
 		logger.debug("Trying to find database with name {}", dbName);
-		List<AttributeQueryRequest> aqrList = new ArrayList<AttributeQueryRequest>();
-		AttributeQueryRequest dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
-		AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "url", " LIKE ", "%www.ensembl.org%");
-		aqrList.add(dbNameARQ);
-		aqrList.add(accessUrlARQ);
-		@SuppressWarnings("unchecked")
-		Set<GKInstance> databases = (Set<GKInstance>) dbAdapter._fetchInstance(aqrList);
+		Set<GKInstance> databases = getRefDatabaseObjects(dbName, "%www.ensembl.org%", " LIKE ");
 		if (databases.size() > 0)
 		{
 			logger.debug("Database {} exists ({} matches), now trying to find entities that reference it.", dbName, databases.size());
-			List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
-			for (GKInstance database : databases)
-			{
-				for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
-									.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
-				{
-					logger.debug("Trying {}", name);
-					List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
-					refGeneProducts.addAll(results);
-					logger.debug("{} results found in cache", results.size());
-					
-				}
-			}
-			logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+//			List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
+//			for (GKInstance database : databases)
+//			{
+//				for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
+//									.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
+//				{
+//					logger.debug("Trying {}", name);
+//					List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
+//					refGeneProducts.addAll(results);
+//					logger.debug("{} results found in cache", results.size());
+//					
+//				}
+//			}
+//			logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+			List<GKInstance> refGeneProducts = getRefGeneProds(databases);
 			
 			// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
-			Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
-			refGeneProducts.stream().forEach(instance -> {
-				try
-				{
-					String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
-					if (refGeneProdsBySpecies.get(species) == null)
-					{
-						refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
-					}
-					else
-					{
-						refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
-					}
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-				
-			});
+			Map<String, List<String>> refGeneProdsBySpecies = getRefGeneProdsBySpecies(refGeneProducts);
 			
 			// now, do batch look-ups by species. This will perform Protein-to-Transcript mappings.
 			String baseFetchDestination = ensemblBatchLookup.getFetchDestination();
@@ -285,25 +262,9 @@ public class AddLinks
 
 					if (!enstToEnsgMap.isEmpty())
 					{
+						List<String> identifiers = new ArrayList<String>(enstToEnsgMap.values());
 						// Ok, now we have RefGeneProd for ENSEMBL_%_PROTEIN. Now we can map these identifiers to some external database.
-						//for (String ensemblRetrieverName : ensemblFileRetrievers.keySet())
-						ensemblFileRetrievers.keySet().parallelStream().forEach( ensemblRetrieverName -> {
-						{
-							logger.info("Executing file retriever: {}",ensemblRetrieverName);
-							EnsemblFileRetriever retriever = ensemblFileRetrievers.get(ensemblRetrieverName);
-							retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
-							retriever.setSpecies(speciesName);
-							retriever.setIdentifiers(new ArrayList<String>(enstToEnsgMap.values()));
-							try
-							{
-								retriever.fetchData();
-							}
-							catch (Exception e)
-							{
-								e.printStackTrace();
-							}
-						}
-						});
+						_executeEnsemblFileRetrievers(ensemblFileRetrievers, species, speciesName, identifiers);
 					}
 					else
 					{
@@ -317,75 +278,117 @@ public class AddLinks
 			}
 		}
 		// TODO: Add code to handle non-"core" ENSEMBL databases, such as the database at plants.ensembl.org.
-		dbName = "ENSEMBL_%_PROTEIN";
-		aqrList = new ArrayList<AttributeQueryRequest>();
-		dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
-		accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "url", " NOT LIKE ", "%www.ensembl.org%");
-		aqrList.add(dbNameARQ);
-		aqrList.add(accessUrlARQ);
-		databases = (Set<GKInstance>) dbAdapter.fetchInstance(aqrList);
+		databases = getRefDatabaseObjects(dbName, "%www.ensembl.org%", " NOT LIKE ");
 		logger.debug("{} databases found for non-core ENSEMBL databases.", databases.size());
 		if (databases.size() > 0)
 		{
 			// These don't need multiple steps - rest.ensemblgenomes.org can translate them immediately.
-			List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
-			for (GKInstance database : databases)
-			{
-				for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
-									.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
-				{
-					logger.debug("Trying {}", name);
-					List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
-					refGeneProducts.addAll(results);
-					logger.debug("{} results found in cache", results.size());
-					
-				}
-			}
-			logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+			List<GKInstance> refGeneProducts = getRefGeneProds(databases);
 			
-			// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
-			Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
-			refGeneProducts.stream().forEach(instance -> {
-				try
-				{
-					String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
-					if (refGeneProdsBySpecies.get(species) == null)
-					{
-						refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
-					}
-					else
-					{
-						refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
-					}
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-				
-			});
+			Map<String, List<String>> refGeneProdsBySpecies = getRefGeneProdsBySpecies(refGeneProducts);
 			for (String species : refGeneProdsBySpecies.keySet())
 			{
 				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
-				ensemblFileRetrieversNonCore.keySet().parallelStream().forEach( ensemblRetrieverName -> {
-				{
-					logger.info("Executing file retriever: {}",ensemblRetrieverName);
-					EnsemblFileRetriever retriever = ensemblFileRetrieversNonCore.get(ensemblRetrieverName);
-					retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
-					retriever.setSpecies(speciesName);
-					retriever.setIdentifiers(refGeneProdsBySpecies.get(species));
-					try
-					{
-						retriever.fetchData();
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-					}
-				}
-				});
+//				ensemblFileRetrieversNonCore.keySet().parallelStream().forEach( ensemblRetrieverName -> {
+//				{
+//					logger.info("Executing file retriever: {}",ensemblRetrieverName);
+//					EnsemblFileRetriever retriever = ensemblFileRetrieversNonCore.get(ensemblRetrieverName);
+//					retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
+//					retriever.setSpecies(speciesName);
+//					retriever.setIdentifiers(refGeneProdsBySpecies.get(species));
+//					try
+//					{
+//						retriever.fetchData();
+//					}
+//					catch (Exception e)
+//					{
+//						e.printStackTrace();
+//					}
+//				}
+//				});
+				_executeEnsemblFileRetrievers(ensemblFileRetrieversNonCore, species, speciesName, refGeneProdsBySpecies.get(species));
 			}
 		}
+	}
+
+	private void _executeEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> retrievers, String species, String speciesName, List<String> identifiers)
+	{
+		retrievers.keySet().parallelStream().forEach( ensemblRetrieverName -> {
+		{
+			logger.info("Executing file retriever: {}",ensemblRetrieverName);
+			EnsemblFileRetriever retriever = retrievers.get(ensemblRetrieverName);
+			retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
+			retriever.setSpecies(speciesName);
+			retriever.setIdentifiers(identifiers);
+			try
+			{
+				retriever.fetchData();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		});
+	}
+
+	private Map<String, List<String>> getRefGeneProdsBySpecies(List<GKInstance> refGeneProducts)
+	{
+		Map<String, List<String>> refGeneProdsBySpecies = new HashMap<String, List<String>>();
+		refGeneProducts.stream().forEach(instance -> {
+			try
+			{
+				String species = String.valueOf(((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID());
+				if (refGeneProdsBySpecies.get(species) == null)
+				{
+					refGeneProdsBySpecies.put(species, new ArrayList<String>( Arrays.asList((String)instance.getAttributeValue(ReactomeJavaConstants.identifier) ) ) );
+				}
+				else
+				{
+					refGeneProdsBySpecies.get(species).add((String)instance.getAttributeValue(ReactomeJavaConstants.identifier));
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+			
+		});
+		return refGeneProdsBySpecies;
+	}
+
+	private List<GKInstance> getRefGeneProds(Set<GKInstance> databases) throws InvalidAttributeException, Exception
+	{
+		List<GKInstance> refGeneProducts = new ArrayList<GKInstance>();
+		for (GKInstance database : databases)
+		{
+			// Filter out anything whose name is simply "ENSEMBL". We want the ENSEMBL_* databases
+			for (String name : ((List<String>) database.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
+								.filter(n -> !n.toUpperCase().equals("ENSEMBL")).collect(Collectors.toList()) )
+			{
+				logger.debug("Trying {}", name);
+				// Get ReferenceGeneProducts from the cache.
+				List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
+				refGeneProducts.addAll(results);
+				logger.debug("{} results found in cache", results.size());
+				
+			}
+		}
+		logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());
+		return refGeneProducts;
+	}
+
+	private Set<GKInstance> getRefDatabaseObjects(String dbName, String url, String operator)
+			throws InvalidClassException, InvalidAttributeException, Exception
+	{
+		List<AttributeQueryRequest> aqrList = new ArrayList<AttributeQueryRequest>();
+		AttributeQueryRequest dbNameARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "name", " LIKE ", dbName);
+		AttributeQueryRequest accessUrlARQ = dbAdapter.new AttributeQueryRequest("ReferenceDatabase", "url", operator, url);
+		aqrList.add(dbNameARQ);
+		aqrList.add(accessUrlARQ);
+		@SuppressWarnings("unchecked")
+		Set<GKInstance> databases = (Set<GKInstance>) dbAdapter._fetchInstance(aqrList);
+		return databases;
 	}
 
 	private void executeUniprotFileRetrievers()
