@@ -99,7 +99,7 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 					logger.info("Building map from generated file: {}",outfileName);
 					//Now we read the file we just created.
 					Files.readAllLines(Paths.get(outfileName)).forEach( line -> {
-						String parts[] = line.split(",");
+						String parts[] = line.split("\t");
 						String ensemblId = parts[0];
 						String otherDbId = parts[1];
 						counter.getAndIncrement();
