@@ -2,17 +2,14 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,9 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
-import org.gk.schema.InvalidClassException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
@@ -35,7 +30,8 @@ import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
-import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
+import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
+import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 
 public class AddLinks
 {
@@ -58,6 +54,12 @@ public class AddLinks
 	private Map<String,FileRetriever> fileRetrievers;
 	
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
+	
+	private Map<String, String> processorCreatorLink;
+	
+	private Map<String, UPMappedIdentifiersReferenceCreator> uniprotReferenceCreators;
+	
+	private Map<String, ? extends SimpleReferenceCreator<?>> referenceCreators;
 	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
@@ -85,17 +87,17 @@ public class AddLinks
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
 		
-		//executeCreateReferenceDatabases();
+		executeCreateReferenceDatabases();
 		
-		//executeSimpleFileRetrievers();
-		//executeUniprotFileRetrievers();
+		executeSimpleFileRetrievers();
+		executeUniprotFileRetrievers();
 		
 		EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
-		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(ensemblBatchLookup);
-		ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(ensemblFileRetrievers);
-		ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(ensemblFileRetrieversNonCore);
-		ensemblFileRetrieverExecutor.setObjectCache(objectCache);
-		ensemblFileRetrieverExecutor.setDbAdapter(dbAdapter);
+		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(this.ensemblBatchLookup);
+		ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(this.ensemblFileRetrievers);
+		ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(this.ensemblFileRetrieversNonCore);
+		ensemblFileRetrieverExecutor.setObjectCache(this.objectCache);
+		ensemblFileRetrieverExecutor.setDbAdapter(this.dbAdapter);
 		ensemblFileRetrieverExecutor.execute();
 		
 		logger.info("Finished downloading files.");
@@ -113,7 +115,7 @@ public class AddLinks
 			{
 				if (dbMappings.get(k).get(subk) instanceof Map)
 				{
-					logger.info("    subkey: {} has {} subkeys", subk, ((Map)dbMappings.get(k).get(subk)).keySet().size() );
+					logger.info("    subkey: {} has {} subkeys", subk, ((Map<String, ?>)dbMappings.get(k).get(subk)).keySet().size() );
 				}
 				
 			}
@@ -122,7 +124,22 @@ public class AddLinks
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
 		//Now we create references.
-
+		for (String fileProcessorName : this.processorCreatorLink.keySet())
+		{
+			logger.info("Executing reference creator: {}", this.processorCreatorLink.get(fileProcessorName));
+			List<GKInstance> sourceReferences = null;
+			if (referenceCreators.containsKey(fileProcessorName))
+			{
+				@SuppressWarnings("rawtypes")
+				SimpleReferenceCreator refCreator = referenceCreators.get(fileProcessorName);
+				refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName), sourceReferences);
+			}
+			else if (uniprotReferenceCreators.containsKey(fileProcessorName))
+			{
+				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(fileProcessorName);
+				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName), sourceReferences);
+			}
+		}
 		
 		logger.info("Process complete.");
 		
@@ -425,6 +442,21 @@ public class AddLinks
 	public void setEnsemblBatchLookup(EnsemblBatchLookup ensemblBatchLookup)
 	{
 		this.ensemblBatchLookup = ensemblBatchLookup;
+	}
+
+	public void setProcessorCreatorLink(Map<String, String> processorCreatorLink)
+	{
+		this.processorCreatorLink = processorCreatorLink;
+	}
+
+	public void setUniprotReferenceCreators(Map<String, UPMappedIdentifiersReferenceCreator> uniprotReferenceCreators)
+	{
+		this.uniprotReferenceCreators = uniprotReferenceCreators;
+	}
+
+	public void setReferenceCreators(Map<String, ? extends SimpleReferenceCreator<?>> referenceCreators)
+	{
+		this.referenceCreators = referenceCreators;
 	}
 }
 
