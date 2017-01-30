@@ -63,8 +63,9 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
- 		<value>ENSEMBLFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -87,6 +88,7 @@
 		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases">
 		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
 		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
+		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
 	</bean>
 	
 	
