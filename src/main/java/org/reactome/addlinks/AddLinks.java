@@ -1,9 +1,8 @@
 package org.reactome.addlinks;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,16 +23,19 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
+import org.gk.schema.InvalidClassException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
+import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
-import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblDB;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
 
 public class AddLinks
 {
@@ -49,11 +51,15 @@ public class AddLinks
 	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	
+	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
+	
 	private Map<String, FileProcessor> fileProcessors;
 	
 	private Map<String,FileRetriever> fileRetrievers;
 	
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
+	
+	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
 
@@ -79,19 +85,39 @@ public class AddLinks
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
 		
-		executeCreateReferenceDatabases();
+		//executeCreateReferenceDatabases();
 		
 		//executeSimpleFileRetrievers();
 		//executeUniprotFileRetrievers();
-		//executeEnsemblFileRetrievers();
+		
+		EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
+		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(ensemblBatchLookup);
+		ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(ensemblFileRetrievers);
+		ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(ensemblFileRetrieversNonCore);
+		ensemblFileRetrieverExecutor.setObjectCache(objectCache);
+		ensemblFileRetrieverExecutor.setDbAdapter(dbAdapter);
+		ensemblFileRetrieverExecutor.execute();
 		
 		logger.info("Finished downloading files.");
 		
 		logger.info("Now processing the files...");
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
-//		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
-//		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
+		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
+		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
+		
+		for (String k : dbMappings.keySet())
+		{
+			logger.info("DB Key: {} has {} submaps.", k, dbMappings.get(k).keySet().size());
+			for (String subk : dbMappings.get(k).keySet())
+			{
+				if (dbMappings.get(k).get(subk) instanceof Map)
+				{
+					logger.info("    subkey: {} has {} subkeys", subk, ((Map)dbMappings.get(k).get(subk)).keySet().size() );
+				}
+				
+			}
+		}
 		
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
@@ -156,8 +182,8 @@ public class AddLinks
 	private Map<String, Map<String, ?>> executeFileProcessors()
 	{
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
-
-		fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
+		logger.info("{} file processors to execute.", this.fileProcessors.keySet().size());
+		this.fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
 			{
 				logger.info("Executing file processor: {}", k);
 				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
@@ -190,95 +216,7 @@ public class AddLinks
 		});
 	}
 
-	private void executeEnsemblFileRetrievers() throws Exception
-	{
-		for (String key : ensemblFileRetrievers.keySet().stream().filter(p -> fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
-		{
-			logger.info("Executing Downloader: {}", key);
-			EnsemblFileRetriever retriever = ensemblFileRetrievers.get(key);
-			
-			EnsemblDB toDb = EnsemblDB.ensemblDBFromEnsemblName(retriever.getMapToDb());
-			EnsemblDB fromDb = EnsemblDB.ensemblDBFromEnsemblName(retriever.getMapFromDb());
-			String originalFileDestinationName = retriever.getFetchDestination();
-			List<String> refDbIds = new ArrayList<String>();
-			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
-			if (fromDb == EnsemblDB.ENSEMBLProtein)
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList());
-			}
-			else if (fromDb == EnsemblDB.ENSEMBLGene)
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList());
-			}
-			else if (fromDb == EnsemblDB.ENSEMBLTranscript)
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("TRANSCRIPT")).collect(Collectors.toList());
-			}
-			else
-			{
-				refDbIds = objectCache.getRefDbNamesToIds().get(fromDb.toString() );
-			}
-			if (refDbIds != null && refDbIds.size() > 0 )
-			{
-				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
-				for (String refDb : refDbIds)
-				{
-					Set<String> speciesList = objectCache.getListOfSpeciesNames();
-					for (String speciesId : speciesList)
-					{
-						logger.info("Number of species IDs to process: {}", speciesList.size() );
-						
-						List<String> possibleSpecies = objectCache.getSpeciesNamesByID().get(speciesId);
-						
-						if (possibleSpecies.size() > 1)
-						{
-							logger.info("Trying to do a mapping with species ID {} but there are {} multiple names associated with id: {}. I'm just going to use the first one in the list: {}", speciesId, possibleSpecies.size(), possibleSpecies, possibleSpecies.get(0));
-						}
-						
-						String speciesName = possibleSpecies.get(0).replace(" ", "_");
-						retriever.setSpecies(speciesName);
-						
-						List<GKInstance> refGenes = objectCache.getByRefDbAndSpecies(refDb,speciesId,ReactomeJavaConstants.ReferenceGeneProduct);
-						
-						if (refGenes != null && refGenes.size() > 0)
-						{
-							logger.info("Number of identifiers that we will attempt to map TO {} FROM db_id: {}/{} (species: {}/{} ) is: {}", toDb.toString(), refDb,fromDb.toString() , speciesId, speciesName, refGenes.size());
-							List<String> identifiersList = refGenes.stream().map(refGeneProduct -> {
-								try
-								{
-									return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
-								}
-								catch (InvalidAttributeException e)
-								{
-									e.printStackTrace();
-									throw new RuntimeException(e);
-								}
-								catch (Exception e)
-								{
-									e.printStackTrace();
-									throw new RuntimeException(e);
-								}
-							}).collect(Collectors.toList());
-							//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
-							
-							retriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
-							retriever.setIdentifiers(identifiersList);
-							retriever.fetchData();
-						}
-						else
-						{
-							logger.info("Could not find any RefefenceGeneProducts for reference database ID {}/{} for species {}/{}", refDb, fromDb.toString(), speciesId, speciesName);
-						}
-					}
-				}
-			}
-			else
-			{
-				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
-			}
-		}
-	}
-
+	
 	private void executeUniprotFileRetrievers()
 	{
 		//Now download mapping data from Uniprot.
@@ -400,7 +338,6 @@ public class AddLinks
 												logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
 											}
 //										}
-	
 										return false;
 									}
 								};
@@ -459,6 +396,11 @@ public class AddLinks
 	{
 		this.ensemblFileRetrievers = ensemblFileRetrievers;
 	}
+	
+	public void setEnsemblFileRetrieversNonCore(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
+	{
+		this.ensemblFileRetrieversNonCore = ensemblFileRetrievers;
+	}
 
 	public void setFileProcessors(Map<String, FileProcessor> fileProcessors)
 	{
@@ -480,5 +422,9 @@ public class AddLinks
 		this.dbAdapter = dbAdapter;
 	}
 
+	public void setEnsemblBatchLookup(EnsemblBatchLookup ensemblBatchLookup)
+	{
+		this.ensemblBatchLookup = ensemblBatchLookup;
+	}
 }
 

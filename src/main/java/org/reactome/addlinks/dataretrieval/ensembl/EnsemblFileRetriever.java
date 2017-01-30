@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,21 +13,14 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -95,6 +89,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		}
 	}
 	
+	@Deprecated
 	public String getMapFromDb()
 	{
 		return this.mapFromDb;
@@ -105,6 +100,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		return this.mapToDb;
 	}
 	
+	@Deprecated
 	public void setMapFromDbEnum(EnsemblDB mapFromDb)
 	{
 		this.mapFromDb = mapFromDb.getEnsemblName();
@@ -115,6 +111,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		this.mapToDb = mapToDb.getEnsemblName();
 	}
 	
+	@Deprecated
 	public void setMapFromDb(String mapFromDb)
 	{
 		this.mapFromDb = mapFromDb;
@@ -146,11 +143,11 @@ public class EnsemblFileRetriever extends FileRetriever
 	public void downloadData()
 	{
 		// Check inputs:
-		if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
+		/*if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map from!");
 		}
-		else if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
+		else */if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map to!");
 		}
@@ -184,7 +181,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
-			StringBuilder sb = new StringBuilder("<ensemblResponses>\n");
+			StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
 			logger.info("");
 			int i = 0;
 			for (String identifier : identifiers)
@@ -220,8 +217,12 @@ public class EnsemblFileRetriever extends FileRetriever
 							// Only record the successful responses.
 							if (result.getStatus() == HttpStatus.SC_OK)
 							{
-								String content = result.getResult();
+								String content = result.getResult().trim();
 								sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
+							}
+							else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
+							{
+								logger.trace("Got BAD_REQUEST reponse. This was the request that was sent: {}", get.toString());
 							}
 							done = true;
 						}
@@ -230,12 +231,19 @@ public class EnsemblFileRetriever extends FileRetriever
 				i++;
 				if (i%100 == 0)
 				{
+					// of course, this only works if the Identifiers list is > 100 ...
 					logger.info("{} requests remaining.", EnsemblServiceResponseProcessor.getNumRequestsRemaining());
 				}
 			}
 			Files.createDirectories(path.getParent());
+			String xml10pattern = "[^"
+					+ "\u0009\r\n"
+					+ "\u0020-\uD7FF"
+					+ "\uE000-\uFFFD"
+					+ "\ud800\udc00-\udbff\udfff"
+					+ "]";
 			sb.append("</ensemblResponses>");
-			Files.write(path, sb.toString().getBytes(), StandardOpenOption.CREATE);
+			Files.write(path, sb.toString().trim().replaceAll(xml10pattern, "").getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE);
 		}
 		catch (InterruptedException e)
 		{

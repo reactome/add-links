@@ -1,6 +1,7 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -85,7 +86,8 @@ final class EnsemblServiceResponseProcessor
 				case HttpStatus.SC_OK:
 					try
 					{
-						content = EntityUtils.toString(response.getEntity());
+						//ContentType.get(response.getEntity()).getCharset().name();
+						content = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
 					}
 					catch (ParseException e)
 					{
@@ -122,15 +124,19 @@ final class EnsemblServiceResponseProcessor
 					{
 						e.printStackTrace();
 					}
-					logger.error("Response code was 400 (\"Bad request\"). Message from server: {}", s);
+					logger.trace("Response code was 400 (\"Bad request\"). Message from server: {}", s);
 					okToQuery = false;
+					break;
+				case HttpStatus.SC_GATEWAY_TIMEOUT:
+					logger.error("Request timed out! You should retry it.");
+					okToQuery = true;
 					break;
 				default:
 					// Log any other kind of response.
 					okToQuery = false;
 					try
 					{
-						content = EntityUtils.toString(response.getEntity());
+						content = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
 					}
 					catch (ParseException e)
 					{
@@ -146,10 +152,11 @@ final class EnsemblServiceResponseProcessor
 			}
 		}
 		result.setOkToRetry(okToQuery);
-		int numRequestsRemaining = Integer.valueOf(response.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
-
-		EnsemblServiceResponseProcessor.numRequestsRemaining.set(numRequestsRemaining);
-		
+		if (response.containsHeader("X-RateLimit-Remaining"))
+		{
+			int numRequestsRemaining = Integer.valueOf(response.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
+			EnsemblServiceResponseProcessor.numRequestsRemaining.set(numRequestsRemaining);
+		}
 		return result;
 	}
 	
