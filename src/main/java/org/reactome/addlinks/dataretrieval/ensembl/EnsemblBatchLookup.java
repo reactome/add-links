@@ -1,7 +1,5 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
-import static org.mockito.Mockito.doThrow;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,7 +7,6 @@ import java.time.Duration;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -17,7 +14,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -30,6 +26,10 @@ public class EnsemblBatchLookup  extends FileRetriever
 	private String species;
 	private List<String> identifiers;
 
+	public String getFetchDestination()
+	{
+		return this.destination;
+	}
 	
 	public void setSpecies(String s)
 	{
@@ -129,11 +129,11 @@ public class EnsemblBatchLookup  extends FileRetriever
 									resultBuilder.append(responseString);
 									requestDone = true;
 								}
-								else
+								else if (result.isOkToRetry())
 								{
-									// The only case where isOkToRetry is true is when the rate limit was exceeded. 
+									// The only case where isOkToRetry is true is when the rate limit was exceeded or when the endpoint timed out. 
 									// So, setting requestDone to !isOkToRetry should terminate the request-loop.
-									requestDone = !result.isOkToRetry();
+									requestDone = false;
 								}
 							}
 						}

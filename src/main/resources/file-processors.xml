@@ -104,9 +104,27 @@
 			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ALL.xml"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
 					</bean>
 				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/ensembl/ensembl_to_ALL*xml"/>
+				<property name="dbs">
+					<util:list value-type="java.lang.String">
+						<value>Wormbase</value>
+						<value>EntrezGene</value>
+					</util:list>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="ENSEMBLNonCoreFileProcessor">
+			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_ALL*xml"/>
 				<property name="dbs">
 					<util:list value-type="java.lang.String">
 						<value>Wormbase</value>
