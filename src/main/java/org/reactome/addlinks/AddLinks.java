@@ -106,7 +106,18 @@ public class AddLinks
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		
-		
+		for (String k : dbMappings.keySet())
+		{
+			logger.info("DB Key: {} has {} submaps.", k, dbMappings.get(k).keySet().size());
+			for (String subk : dbMappings.get(k).keySet())
+			{
+				if (dbMappings.get(k).get(subk) instanceof Map)
+				{
+					logger.info("    subkey: {} has {} subkeys", subk, ((Map)dbMappings.get(k).get(subk)).keySet().size() );
+				}
+				
+			}
+		}
 		
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
