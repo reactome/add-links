@@ -50,7 +50,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 			Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 			// Loop for each database
 			mappings.keySet().stream().sequential().forEach( dbName -> {
-				
+				logger.debug("DB: {}", dbName);
 				// Loop for all ENS identifiers under the named DB.
 				Set<String> ensemblIdentifiers = mappings.get(dbName).keySet();
 				

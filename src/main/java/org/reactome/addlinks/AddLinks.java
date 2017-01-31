@@ -30,6 +30,8 @@ import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
+import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
+import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 
@@ -42,6 +44,8 @@ public class AddLinks
 	private List<String> fileProcessorFilter;
 	
 	private List<String> fileRetrieverFilter;
+	
+	private List<String> referenceCreatorFilter;
 	
 	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	
@@ -59,7 +63,7 @@ public class AddLinks
 	
 	private Map<String, UPMappedIdentifiersReferenceCreator> uniprotReferenceCreators;
 	
-	private Map<String, ? extends SimpleReferenceCreator<?>> referenceCreators;
+	private Map<String, BatchReferenceCreator<?>> referenceCreators;
 	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
@@ -108,7 +112,7 @@ public class AddLinks
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		
-		for (String k : dbMappings.keySet())
+		for (String k : dbMappings.keySet().stream().sorted().collect(Collectors.toList()))
 		{
 			logger.info("DB Key: {} has {} submaps.", k, dbMappings.get(k).keySet().size());
 			for (String subk : dbMappings.get(k).keySet())
@@ -124,19 +128,34 @@ public class AddLinks
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
 		//Now we create references.
-		for (String fileProcessorName : this.processorCreatorLink.keySet())
+		for (String refCreatorName : this.referenceCreatorFilter)
 		{
-			logger.info("Executing reference creator: {}", this.processorCreatorLink.get(fileProcessorName));
-			List<GKInstance> sourceReferences = null;
-			if (referenceCreators.containsKey(fileProcessorName))
+			logger.info("Executing reference creator: {}", refCreatorName);
+			List<GKInstance> sourceReferences = new ArrayList<GKInstance>();
+			String fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> this.processorCreatorLink.get(k).equals(refCreatorName) ).map( m -> m).findFirst().get();
+			if (referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")
-				SimpleReferenceCreator refCreator = referenceCreators.get(fileProcessorName);
-				refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName), sourceReferences);
+				BatchReferenceCreator refCreator = referenceCreators.get(refCreatorName);
+				if (refCreator instanceof ENSMappedIdentifiersReferenceCreator)
+				{
+					sourceReferences = getENSEMBLIdentifiersList();
+					logger.debug("{} ENSEMBL source references", sourceReferences.size());
+					Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName);
+					((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+				}
+				else
+				{
+					sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
+					logger.debug("{} source references", sourceReferences.size());
+					refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName), sourceReferences);
+				}
+				
 			}
-			else if (uniprotReferenceCreators.containsKey(fileProcessorName))
+			else if (uniprotReferenceCreators.containsKey(refCreatorName))
 			{
-				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(fileProcessorName);
+				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(refCreatorName);
+				sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName), sourceReferences);
 			}
 		}
@@ -145,6 +164,45 @@ public class AddLinks
 		
 	}
 
+	private List<GKInstance> getENSEMBLIdentifiersList()
+	{
+		List<GKInstance> identifiers = new ArrayList<GKInstance>();
+		
+		List<String> ensemblDBNames = objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().contains("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
+		
+		for (String dbName : ensemblDBNames)
+		{
+			identifiers.addAll(objectCache.getByRefDb(objectCache.getRefDbNamesToIds().get(dbName).get(0), "ReferenceGeneProduct"));
+		}
+		
+		return identifiers;
+	}
+	
+	private List<GKInstance> getIdentifiersList(String refDb, String className)
+	{
+		return this.getIdentifiersList(refDb, null, className);
+	}
+	
+	private List<GKInstance> getIdentifiersList(String refDb, String species, String className)
+	{
+		// Need a list of identifiers.
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		List<GKInstance> identifiers;
+		if (species!=null)
+		{
+			String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+			identifiers = objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
+			logger.debug(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
+		}
+		else
+		{
+			identifiers = objectCache.getByRefDb(refDBID, className);
+			logger.debug(refDb + " " + refDBID + " ; " );
+		}
+		
+		return identifiers;
+	}
+	
 	private void executeCreateReferenceDatabases()
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter);
@@ -234,6 +292,7 @@ public class AddLinks
 	}
 
 	
+	//TODO: refactor this to a separate class, maybe.
 	private void executeUniprotFileRetrievers()
 	{
 		//Now download mapping data from Uniprot.
@@ -361,8 +420,7 @@ public class AddLinks
 								tasks.add(task);
 							}
 						}
-						
-						
+						// now that the pool is full of jobs, run them!
 						pool.invokeAll(tasks);
 						try
 						{
@@ -454,9 +512,14 @@ public class AddLinks
 		this.uniprotReferenceCreators = uniprotReferenceCreators;
 	}
 
-	public void setReferenceCreators(Map<String, ? extends SimpleReferenceCreator<?>> referenceCreators)
+	public void setReferenceCreators(Map<String, BatchReferenceCreator<?>> referenceCreators)
 	{
 		this.referenceCreators = referenceCreators;
+	}
+
+	public void setReferenceCreatorFilter(List<String> referenceCreatorFilter)
+	{
+		this.referenceCreatorFilter = referenceCreatorFilter;
 	}
 }
 

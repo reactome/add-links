@@ -19,8 +19,8 @@
 	 	<entry key="OrphanetFileProcessor" value="OrphanetReferenceCreator"/>
 	 	<!-- <entry key="IntActFileProcessor" value=""/> -->
 	 	<entry key="ZincMoleculesFileProcessor" value="zincToChEBIReferenceCreator"/>
-	 	<!-- <entry key="ENSEMBLFileProcessor" value=""/> -->
-	 	<!-- <entry key="ENSEMBLNonCoreFileProcessor" value=""/> -->
+	 	<entry key="ENSEMBLFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
+	 	<entry key="ENSEMBLNonCoreFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
 	 	<entry key="UniprotToEnsemblFileProcessor" value="upMappedENSEMBLGeneRefCreator"/>
 	 	<entry key="UniprotToPDBFileProcessor" value="upMappedPDBRefCreator"/>
 	 	<entry key="UniprotToRefSeqPeptideFileProcessor" value="upMappedRefSeqPeptideRefCreator"/>
