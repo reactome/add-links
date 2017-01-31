@@ -22,7 +22,7 @@ import org.reactome.addlinks.db.ReferenceCreator;
  * @author sshorser
  *
  */
-public class SimpleReferenceCreator <T>
+public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 {
 	protected boolean testMode = true;
 	
