@@ -69,7 +69,14 @@ public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, Lis
 				
 				if (mappings.get(dbName).containsKey(ensp))
 				{
-					mappings.get(dbName).get(ensp).add(targetValue);
+					// prevent duplicates. Could happen when mode == ENSP_TO_ENSG 
+					// because there could be multiple entries in an aggregate file
+					// when the same identifier maps to multiple XREF identifiers.
+					// But for ENSP -> ENSG, we only want a SINGLE mapping.
+					if (!mappings.get(dbName).get(ensp).contains(targetValue) )
+					{
+						mappings.get(dbName).get(ensp).add(targetValue);
+					}
 				}
 				else
 				{
