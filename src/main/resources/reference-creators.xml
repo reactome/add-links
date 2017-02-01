@@ -108,7 +108,7 @@
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Orphanet"/>
 				<property name="testMode" value="true"/>
@@ -130,7 +130,7 @@
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="FlyBase"/>
 				<property name="testMode" value="true"/>
@@ -216,12 +216,12 @@
  		<entry key="ENSEMBLToEntrezGeneRefCreator">
 			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLToEntrezGeneRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
-				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
 				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
-				<property name="testMode" value="false"/>
+				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
  		<entry key="ENSEMBLToWormbaseRefCreator">
@@ -229,12 +229,22 @@
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
 				<constructor-arg index="5" name="targetDB" value="Wormbase"/>
-				<property name="testMode" value="false"/>
+				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
-
+		<entry key="ENSEMBLEnspToEnsgRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLEnspToEnsgRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
+				<property name="testMode" value="true"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
