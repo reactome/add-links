@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -39,7 +40,6 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcesso
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
-import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 
 public class AddLinks
@@ -116,13 +116,13 @@ public class AddLinks
 		logger.info("Now processing the files...");
 		
 		// TODO: Link the file processors to the file retrievers so that if
-		// any are filtered, only the appropriate processors will execute.
+		// any are filtered, only the appropriate processors will execute. Maybe?
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
 
 		// Special extra work for ENSEMBL...
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> enspDatabases = dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, " LIKE ", "ENSEMBL%PROTEIN");
-		Set<String> species = new HashSet<String>(); 
+		Set<String> species = new HashSet<String>();
 		for (GKInstance inst : enspDatabases)
 		{	
 			List<GKInstance> refGeneProds = objectCache.getByRefDb(inst.getDBID().toString(), "ReferenceGeneProduct");
@@ -172,7 +172,8 @@ public class AddLinks
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
 			List<GKInstance> sourceReferences = new ArrayList<GKInstance>();
-			String fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> this.processorCreatorLink.get(k).equals(refCreatorName) ).map( m -> m).findFirst().get();
+			// Try to get the processor name, except for E
+			Optional<String> fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> this.processorCreatorLink.get(k).equals(refCreatorName) ).map( m -> m).findFirst();
 			if (referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")
@@ -181,18 +182,32 @@ public class AddLinks
 				{
 					sourceReferences = getENSEMBLIdentifiersList();
 					logger.debug("{} ENSEMBL source references", sourceReferences.size());
-					// For ENSEBML, there are many dbmappings
-					for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
+					// This is for ENSP -> ENSG mappings.
+					if (refCreator.getSourceRefDB().equals(((ENSMappedIdentifiersReferenceCreator) refCreator).getTargetRefDB()))
 					{
-						Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-						((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
+						{
+							logger.info("Ensembl cross-references: {}", k);
+							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+						}
+					}
+					else
+					{
+						// For ENSEBML, there are many dbmappings
+						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
+						{
+							logger.info("Ensembl cross-references: {}", k);
+							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+						}
 					}
 				}
 				else
 				{
 					sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 					logger.debug("{} source references", sourceReferences.size());
-					refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName), sourceReferences);
+					refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName.get()), sourceReferences);
 				}
 				
 			}
@@ -200,7 +215,7 @@ public class AddLinks
 			{
 				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(refCreatorName);
 				sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
-				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName), sourceReferences);
+				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName.get()), sourceReferences);
 			}
 		}
 		
