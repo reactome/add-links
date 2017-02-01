@@ -2,7 +2,9 @@ package org.reactome.addlinks.fileprocessors.ensembl;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +16,7 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
  * @author sshorser
  *
  */
-public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, String>>
+public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, List<String>>>
 {
 
 	private static final Logger logger = LogManager.getLogger();
@@ -29,9 +31,9 @@ public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, Str
 	private EnsemblAggregateProcessingMode mode;
 	
 	@Override
-	public Map<String, Map<String, String>> getIdMappingsFromFile()
+	public Map<String, Map<String, List<String>>> getIdMappingsFromFile()
 	{
-		Map<String, Map<String, String>> mappings = new HashMap<String, Map<String,String>>();
+		Map<String, Map<String, List<String>>> mappings = new HashMap<String, Map<String, List<String>>>();
 		try
 		{
 			Files.lines(this.pathToFile).sequential()
@@ -62,10 +64,20 @@ public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, Str
 				// Do we need to create a key for this db?
 				if (!mappings.containsKey(dbName))
 				{
-					mappings.put(dbName, new HashMap<String,String>());
+					mappings.put(dbName, new HashMap<String, List<String>>());
 				}
 				
-				mappings.get(dbName).put(ensp, targetValue);
+				if (mappings.get(dbName).containsKey(ensp))
+				{
+					mappings.get(dbName).get(ensp).add(targetValue);
+				}
+				else
+				{
+					List<String> xrefList = new ArrayList<String>();
+					xrefList.add(targetValue);
+					mappings.get(dbName).put(ensp, xrefList);
+				}
+				
 			});
 		}
 		catch (IOException e)

@@ -2,14 +2,18 @@ package org.reactome.addlinks;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,6 +34,9 @@ import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor.EnsemblAggregateProcessingMode;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
@@ -107,9 +114,42 @@ public class AddLinks
 		logger.info("Finished downloading files.");
 		
 		logger.info("Now processing the files...");
+		
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute.
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
+
+		// Special extra work for ENSEMBL...
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> enspDatabases = dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, " LIKE ", "ENSEMBL%PROTEIN");
+		Set<String> species = new HashSet<String>(); 
+		for (GKInstance inst : enspDatabases)
+		{	
+			List<GKInstance> refGeneProds = objectCache.getByRefDb(inst.getDBID().toString(), "ReferenceGeneProduct");
+			for (GKInstance refGeneProd : refGeneProds)
+			{
+				species.add(((GKInstance)refGeneProd.getAttributeValue(ReactomeJavaConstants.species)).getDBID().toString());
+			}
+		}
+		
+		for (String speciesID : species/*objectCache.getSpeciesNamesByID().keySet()*/)
+		{
+			List<String> dbNames = new ArrayList<String>(Arrays.asList("EntrezGene", "Wormbase")/*objectCache.getRefDbNamesToIds().keySet()*/);
+			EnsemblFileAggregator ensemblAggregator = new EnsemblFileAggregator(speciesID, dbNames, "/tmp/addlinks-downloaded-files/ensembl/");
+			ensemblAggregator.createAggregateFile();
+			
+			EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor();
+			aggregateProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/ensembl/"+ "ensembl_p2xref_mapping."+speciesID+".csv") );
+			aggregateProcessor.setMode(EnsemblAggregateProcessingMode.XREF);
+			Map<String, Map<String, List<String>>> xrefMapping = aggregateProcessor.getIdMappingsFromFile();
+			dbMappings.put("ENSEMBL_XREF_"+speciesID, xrefMapping);
+			
+			aggregateProcessor.setMode(EnsemblAggregateProcessingMode.ENSP_TO_ENSG);
+			Map<String, Map<String, List<String>>> ensp2EnsgMapping = aggregateProcessor.getIdMappingsFromFile();
+			dbMappings.put("ENSEMBL_ENSP_2_ENSG_"+speciesID, ensp2EnsgMapping);
+		}
+		
+		// Print stats on results of file processing.
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
 		
 		for (String k : dbMappings.keySet().stream().sorted().collect(Collectors.toList()))
@@ -141,8 +181,12 @@ public class AddLinks
 				{
 					sourceReferences = getENSEMBLIdentifiersList();
 					logger.debug("{} ENSEMBL source references", sourceReferences.size());
-					Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName);
-					((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+					// For ENSEBML, there are many dbmappings
+					for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
+					{
+						Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+						((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+					}
 				}
 				else
 				{

@@ -37,7 +37,7 @@ public class TestEnsemblFileAggregatorIT
 		EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor();
 		aggregateProcessor.setMode(EnsemblAggregateProcessingMode.XREF);
 		aggregateProcessor.setPath(pathToOutfile);
-		Map<String, Map<String, String>> mappings = aggregateProcessor.getIdMappingsFromFile();
+		Map<String, Map<String, List<String>>> mappings = aggregateProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
 		
 		aggregateProcessor.setMode(EnsemblAggregateProcessingMode.ENSP_TO_ENSG);

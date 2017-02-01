@@ -64,51 +64,66 @@ public class EnsemblFileAggregator
 	
 	private void buildMappingListsFromFile(String fileNamePattern, Map<String, List<String>> mapping)
 	{
-		try
+		if (Files.exists(Paths.get(fileNamePattern)))
 		{
-			Files.lines(Paths.get(fileNamePattern)).sequential().forEach( line -> {
-				String[] parts = parseLine(fileNamePattern, line);
-				//mapping.put(parts[0], parts[1]);
-				if (mapping.containsKey(parts[0]))
-				{
-					// no point in having duplicates
-					if (!mapping.get(parts[0]).contains(parts[1]))
+			try
+			{
+				Files.lines(Paths.get(fileNamePattern)).sequential().forEach( line -> {
+					String[] parts = parseLine(fileNamePattern, line);
+					//mapping.put(parts[0], parts[1]);
+					if (mapping.containsKey(parts[0]))
 					{
-						mapping.get(parts[0]).add(parts[1]);
-						logger.trace("{} maps to multiple cross-references {} ", parts[0],mapping.get(parts[0]));
+						// no point in having duplicates
+						if (!mapping.get(parts[0]).contains(parts[1]))
+						{
+							mapping.get(parts[0]).add(parts[1]);
+							logger.trace("{} maps to multiple cross-references {} ", parts[0],mapping.get(parts[0]));
+						}
 					}
-				}
-				else
-				{
-					mapping.put(parts[0], new ArrayList<String>(Arrays.asList(parts[1])) );
-				}
-				
-			});
+					else
+					{
+						mapping.put(parts[0], new ArrayList<String>(Arrays.asList(parts[1])) );
+					}
+					
+				});
+			}
+			catch (IOException e)
+			{
+				throw new Error(e);
+			}
 		}
-		catch (IOException e)
+		else
 		{
-			throw new Error(e);
+			logger.trace("File {} does not exist.", fileNamePattern);
 		}
 	}
 
 	private void buildMappingFromFile(String fileNamePattern, Map<String, String> mapping)
 	{
-		try
+		if (Files.exists(Paths.get(fileNamePattern)))
 		{
-			Files.lines(Paths.get(fileNamePattern)).sequential().forEach( line -> {
-				String[] parts = parseLine(fileNamePattern, line);
-				mapping.put(parts[0], parts[1]);
-				
-			});
+			try
+			{
+				Files.lines(Paths.get(fileNamePattern)).sequential().forEach( line -> {
+					String[] parts = parseLine(fileNamePattern, line);
+					mapping.put(parts[0], parts[1]);
+					
+				});
+			}
+			catch (IOException e)
+			{
+				throw new Error(e);
+			}
 		}
-		catch (IOException e)
+		else
 		{
-			throw new Error(e);
+			logger.trace("File {} does not exist.", fileNamePattern);
 		}
 	}
 	
 	public void createAggregateFile()
 	{
+		logger.info("Aggregating for species: {}", this.speciesID);
 		List<EnsemblMapping> mappings = new ArrayList<EnsemblMapping>();
 		
 		Map<String, String> enspToEnst = new HashMap<String, String>();
@@ -116,17 +131,26 @@ public class EnsemblFileAggregator
 		Map<String,Map<String, List<String>>> ensgToXrefs = new HashMap<String, Map<String, List<String>>>();
 		//first, process the ENSP file which will map to ENST.
 		buildMappingFromFile(rootPath + "/ENSP_batch_lookup." + this.speciesID + ".xml.transformed.csv", enspToEnst);
-		logger.info("{} ENSP->ENST mappings.", enspToEnst.size());
+		if (enspToEnst.size() > 0)
+		{
+			logger.info("  {} ENSP->ENST mappings.", enspToEnst.size());
+		}
 		//second, process the ENST lookup file with ENST -> ENSG mappings.
 		buildMappingFromFile(rootPath + "/ENST_batch_lookup." + this.speciesID + ".xml.transformed.csv", enstToEnsg);
-		logger.info("{} ENST->ENSG mappings.", enstToEnsg.size());
+		if (enstToEnsg.size() > 0)
+		{
+			logger.info("  {} ENST->ENSG mappings.", enstToEnsg.size());
+		}
 		//third, process the file which maps ENSG to cross-references.
 		for (String dbName : this.dbNames)
 		{
 			ensgToXrefs.put(dbName, new HashMap<String, List<String>>());
 			
 			buildMappingListsFromFile(rootPath + "/ensembl_to_ALL." + this.speciesID + ".xml." + dbName + ".transformed.tsv", ensgToXrefs.get(dbName));
-			logger.info("for {}, {} ENSG->Cross-Reference mappings.", dbName, ensgToXrefs.get(dbName).size());
+			if (ensgToXrefs.get(dbName).size() > 0)
+			{
+				logger.info("  for db {}, {} ENSG->Cross-Reference mappings.", dbName, ensgToXrefs.get(dbName).size());
+			}
 		}
 		
 		// Now we have to create the ENSP -> ENST -> ENSG -> Xref mappings.
