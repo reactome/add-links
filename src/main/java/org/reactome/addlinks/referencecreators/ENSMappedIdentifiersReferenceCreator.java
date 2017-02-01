@@ -48,12 +48,13 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 			String[] lines = sb.toString().split("\n");
 			List<String> thingsToCreate = new ArrayList<String>();
 			Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
+
 			// Loop for each database
 			mappings.keySet().stream().sequential().forEach( dbName -> {
 				logger.debug("DB: {}", dbName);
 				// Loop for all ENS identifiers under the named DB.
 				Set<String> ensemblIdentifiers = mappings.get(dbName).keySet();
-				
+				logger.debug("{} identifiers to map.", ensemblIdentifiers.size());
 				ensemblIdentifiers.stream().parallel().forEach( ensemblIdentifier -> {
 					String sourceIdentifier = ensemblIdentifier;
 					List<String> targetIdentifiers = mappings.get(dbName).get(ensemblIdentifier);
@@ -80,11 +81,12 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 							adapterPool.put(threadID, localAdapter);
 						}
 						// Now we need to get the DBID of the pre-existing identifier.
-						@SuppressWarnings("unchecked")
-						
+						// This seems to be the main bottleneck of this part of the code, from what I can tell, too many little queries hitting the database
+						// at the same time, slowing it down.
+						// TODO: Maybe pre-cache all of this data somehow, before attempting to create the references? It would involve 
+						// querying for ALL sourceIdentifiers in batches (of how ever many values can be fit into an IN statement in MySQL).
 						Collection<GKInstance> sourceInstances = (Collection<GKInstance>) localAdapter.fetchInstanceByAttribute(this.classReferringToRefName, ReactomeJavaConstants.identifier, "=", sourceIdentifier);
 						// I really wouldn't expect more than one instance, BUT the API function festInstanceByAttribute used here returns a Collection, so we should still loop.
-						
 						if (sourceInstances.size() > 0)
 						{
 							if (sourceInstances.size() > 1)
@@ -126,9 +128,12 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 									
 									for (GKInstance xref : xrefs)
 									{
-										logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+										String xrefIdentifier = xref.getAttributeValue(ReactomeJavaConstants.identifier) != null
+																? xref.getAttributeValue(ReactomeJavaConstants.identifier).toString()
+																: null;
+										logger.trace("\tcross-reference: {}",xrefIdentifier);
 										// We won't add a cross-reference if it already exists
-										if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetIdentifier ))
+										if (targetIdentifier.equals(xrefIdentifier))
 										{
 											xrefAlreadyExistsCounter.incrementAndGet();
 											xrefAlreadyExists = true;
@@ -140,7 +145,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 									}
 									if (!xrefAlreadyExists)
 									{
-										if (!this.testMode)
+										//if (!this.testMode)
 										{
 											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>
 											thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
@@ -157,7 +162,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 						}
 						if (printCounter.get() >= 99)
 						{
-							logger.debug("{} ; {} ; {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
+							logger.debug("# created: {} ; # already existing: {} ; # not created: {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 							printCounter.set(0);
 						}
 						else
@@ -174,28 +179,38 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 			if (!this.testMode)
 			{
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-					String[] parts = newIdentifier.split(":");
-					logger.trace("Creating new identifier {} ", parts[0]);
-					try
+					if (newIdentifier != null)
 					{
-						if (parts[2] != null && !parts[2].trim().equals(""))
+						String[] parts = newIdentifier.split(":");
+						logger.trace("Creating new identifier {} ", parts[0]);
+						try
 						{
-							// The string had a species-part.
-							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							if (parts[2] != null && !parts[2].trim().equals(""))
+							{
+								// The string had a species-part.
+								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							}
+							else
+							{
+								// The string did NOT have a species-part.
+								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+							}
 						}
-						else
+						catch (Exception e)
 						{
-							// The string did NOT have a species-part.
-							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+							throw new RuntimeException(e);
 						}
 					}
-					catch (Exception e)
+					else
 					{
-						throw new RuntimeException(e);
+						logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things to create: {}", thingsToCreate);
 					}
 				} );
 			}
-			
+			if (createdCounter.get() != thingsToCreate.size())
+			{
+				logger.warn("The \"created\" counter says: {} but the size of the thingsToCreate list is: {}",createdCounter.get(), thingsToCreate.size());
+			}
 			logger.info("{} Reference creation summary:\n"
 					+ "\t# Identifiers created: {}\n"
 					+ "\t# Identifiers which already existed: {} \n"
