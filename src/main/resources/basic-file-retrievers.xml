@@ -115,7 +115,7 @@
 		<entry key="OrthologsFromZinc">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsFromZinc">
 				<property name="dataURL" value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot_ortholog.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 
 			</bean>

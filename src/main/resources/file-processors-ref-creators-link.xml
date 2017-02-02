@@ -28,6 +28,9 @@
 	 	<entry key="UniprotToEntrezGeneFileProcessor" value="upMappedEntrezGeneRefCreator"/>
 	 	<entry key="UniprotToOMIMFileProcessor" value="upMappedOMIMRefCreator"/>
 	 	<entry key="UniprotToWormbaseFileProcessor" value="upMappedWormbaseRefCreator"/>
-	 	<entry key="UniprotToWormbaseFileProcessor" value="upMappedWormbaseRefCreator"/>
+	 	<entry key="UniprotToKEGGFileProcessor" value="upMappedKEGGRefCreator" />
+	 	<entry key="zincProtFileProcessor" value="zincToUniProtReferenceCreator" />
+	 	<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
+	 	<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
 	 </util:map>
 </beans>
