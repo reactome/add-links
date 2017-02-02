@@ -8,12 +8,18 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<context:property-placeholder location="classpath:*.properties" />
-
+	
+<!-- 	<context:annotation-config/>
+	
+	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
+ -->	
 	<import resource="reference-databases.xml"/>
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
 	<import resource="ensembl-file-retrievers.xml"/>
 	<import resource="file-processors.xml"/>
+	<import resource="file-processors-ref-creators-link.xml"/>
+	<import resource="reference-creators.xml"/>
 
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
@@ -29,15 +35,14 @@
 	
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="lazyLoad" value="true" />
 	</bean>
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>EnsemblToALL</value>
-		<value>EnsemblGeneToALL</value>
-		<value>EnsemblProteinToALL</value>
-		<value>EnsemblTranscriptToALL</value>
 		<value>UniProtToEntrez_Gene</value>
+		<value>UniProtToKEGG</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
@@ -58,8 +63,10 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>zincProtFileProcessor</value>
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
- 		<value>ENSEMBLFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -71,9 +78,41 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
-		<value>UniprotOMIMFileProcessor</value>
+		<value>UniprotToOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
 	</util:list>
 
+	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>upMappedKEGGRefCreator</value>
+		<value>upMappedPDBRefCreator</value>
+		<value>upMappedOMIMRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedRefSeqRNARefCreator</value>
+		<value>upMappedRefSeqPeptideRefCreator</value>
+		<value>upMappedWormbaseRefCreator</value>
+		<value>OrphanetReferenceCreator</value>
+		<value>proRefCreator</value>
+		<value>FlyBaseReferenceCreator</value>
+		<value>pdbRefCreator</value>
+		<value>geneCardsRefCreator</value>
+		<value>zincToChEBIReferenceCreator</value>
+		<value>HMDBProtReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>HmdbMoleculeReferenceCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+	</util:list>
+
+	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
+		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">
+		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
+		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
+		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
+		<property name="processorCreatorLink" ref="processorCreatorLink"/>
+	</bean>
+	
+	
 </beans>

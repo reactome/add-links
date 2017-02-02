@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,19 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -95,6 +90,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		}
 	}
 	
+	@Deprecated
 	public String getMapFromDb()
 	{
 		return this.mapFromDb;
@@ -105,6 +101,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		return this.mapToDb;
 	}
 	
+	@Deprecated
 	public void setMapFromDbEnum(EnsemblDB mapFromDb)
 	{
 		this.mapFromDb = mapFromDb.getEnsemblName();
@@ -115,6 +112,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		this.mapToDb = mapToDb.getEnsemblName();
 	}
 	
+	@Deprecated
 	public void setMapFromDb(String mapFromDb)
 	{
 		this.mapFromDb = mapFromDb;
@@ -146,11 +144,11 @@ public class EnsemblFileRetriever extends FileRetriever
 	public void downloadData()
 	{
 		// Check inputs:
-		if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
+		/*if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map from!");
 		}
-		else if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
+		else */if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map to!");
 		}
@@ -184,10 +182,12 @@ public class EnsemblFileRetriever extends FileRetriever
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
-			StringBuilder sb = new StringBuilder("<ensemblResponses>\n");
+			StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
 			logger.info("");
-			int i = 0;
-			for (String identifier : identifiers)
+			//int i = 0;
+			AtomicInteger i = new AtomicInteger(0);
+			//for (String identifier : identifiers)
+			identifiers.parallelStream().forEach( identifier -> { 
 			{
 				URIBuilder builder = new URIBuilder();
 
@@ -198,60 +198,92 @@ public class EnsemblFileRetriever extends FileRetriever
 						.addParameter("all_levels", "1")
 						.addParameter("species", this.species)
 						.addParameter("external_db", this.getMapToDb());
-				HttpGet get = new HttpGet(builder.build());
-				logger.trace("URI: "+get.getURI());
-				
-				boolean done = false;
-
-				while (!done)
+				try
 				{
-					try (CloseableHttpClient getClient = HttpClients.createDefault();
-							CloseableHttpResponse getResponse = getClient.execute(get);)
+					HttpGet get = new HttpGet(builder.build());
+					logger.trace("URI: "+get.getURI());
+					
+					boolean done = false;
+	
+					while (!done)
 					{
-						EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(getResponse);
-						if (!result.getWaitTime().equals(Duration.ZERO))
+						try (CloseableHttpClient getClient = HttpClients.createDefault();
+								CloseableHttpResponse getResponse = getClient.execute(get);)
 						{
-							logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
-							Thread.currentThread().wait(result.getWaitTime().toMillis());
-							done = false;
-						}
-						else
-						{
-							// Only record the successful responses.
-							if (result.getStatus() == HttpStatus.SC_OK)
+							EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(getResponse);
+							if (!result.getWaitTime().equals(Duration.ZERO))
 							{
-								String content = result.getResult();
-								sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
+								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
+								Thread.currentThread().wait(result.getWaitTime().toMillis());
+								done = false;
 							}
-							done = true;
+							else
+							{
+								// Only record the successful responses.
+								if (result.getStatus() == HttpStatus.SC_OK)
+								{
+									String content = result.getResult().trim();
+									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
+								}
+								else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
+								{
+									logger.trace("Got BAD_REQUEST reponse. This was the request that was sent: {}", get.toString());
+								}
+								done = true;
+							}
 						}
-					} 
+						catch (InterruptedException e)
+						{
+							e.printStackTrace();
+							throw new Error(e);
+							
+						} 
+					}
+					//i++;
 				}
-				i++;
-				if (i%100 == 0)
+				catch (URISyntaxException e)
 				{
+					e.printStackTrace();
+					throw new Error(e); 
+				}
+				catch (ClientProtocolException e)
+				{
+					e.printStackTrace();
+					throw new Error(e);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+					throw new Error(e);
+				}
+
+				if (i.incrementAndGet() % 100 == 0)
+				{
+					// of course, this only works if the Identifiers list is > 100 ...
 					logger.info("{} requests remaining.", EnsemblServiceResponseProcessor.getNumRequestsRemaining());
 				}
 			}
+			});
 			Files.createDirectories(path.getParent());
+			String xml10pattern = "[^"
+					+ "\u0009\r\n"
+					+ "\u0020-\uD7FF"
+					+ "\uE000-\uFFFD"
+					+ "\ud800\udc00-\udbff\udfff"
+					+ "]";
 			sb.append("</ensemblResponses>");
-			Files.write(path, sb.toString().getBytes(), StandardOpenOption.CREATE);
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-		catch (URISyntaxException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClientProtocolException e)
-		{
-			e.printStackTrace();
+			Files.write(path, sb.toString().trim().replaceAll(xml10pattern, "").getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+			throw new Error(e);
+		}
+		catch (URISyntaxException e)
+		{
+			e.printStackTrace();
+			throw new Error(e);
+
 		}
 	}
 }

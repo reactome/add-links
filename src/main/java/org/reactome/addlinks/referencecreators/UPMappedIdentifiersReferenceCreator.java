@@ -108,7 +108,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 							// Now we need to get the DBID of the pre-existing identifier.
 
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
-							if (sourceInstances.size() > 0)
+							if (sourceInstances != null && sourceInstances.size() > 0)
 							{
 								if (sourceInstances.size() > 1)
 								{
@@ -176,7 +176,19 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 						}
 					}
 				} );
-				
+				// empty the pool.
+				for (Long k : adapterPool.keySet())
+				{
+					try
+					{
+						adapterPool.get(k).cleanUp();
+					} 
+					catch (Exception e)
+					{
+						logger.error("Could not clean up the database adapter: {}",e.getMessage());
+						throw new Error(e);
+					}
+				}
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 					String[] parts = newIdentifier.split(":");
