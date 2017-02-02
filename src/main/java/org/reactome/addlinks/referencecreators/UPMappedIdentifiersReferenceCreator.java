@@ -108,7 +108,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 							// Now we need to get the DBID of the pre-existing identifier.
 
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
-							if (sourceInstances.size() > 0)
+							if (sourceInstances != null && sourceInstances.size() > 0)
 							{
 								if (sourceInstances.size() > 1)
 								{
