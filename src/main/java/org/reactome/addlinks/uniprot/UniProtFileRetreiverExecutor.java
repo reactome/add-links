@@ -27,12 +27,12 @@ public class UniProtFileRetreiverExecutor
 	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	private List<String> fileRetrieverFilter;
 	private ReferenceObjectCache objectCache;
+	private int numberOfUniprotDownloadThreads = 10;
 	
 	public void execute()
 	{
 		//Now download mapping data from Uniprot.
 		for (String key : this.uniprotFileRetrievers.keySet().stream().sequential().filter(p -> this.fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
-		//uniprotFileRetrievers.keySet().stream().filter(p -> retrieversToExecute.contains(p)).parallel().forEach(key -> 
 		{
 			logger.info("Executing Downloader: {}", key);
 			UniprotFileRetreiver retriever = this.uniprotFileRetrievers.get(key);
@@ -68,12 +68,9 @@ public class UniProtFileRetreiverExecutor
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
 				for (String refDb : refDbIds)
 				{
-					//Set<String> speciesList = ReferenceObjectCache.getInstance().getListOfSpecies();
 					List<String> speciesList = new ArrayList<String>( objectCache.getSpeciesNamesByID().keySet() );
-					//for (String speciesId : speciesList)
 					logger.debug("Degree of parallelism in the Common Pool: {}", ForkJoinPool.getCommonPoolParallelism());
-					// TODO: Parameterise this in the config file, call it "uniprotDownloaderNumThreads". If not set, then just fall back to default parallelism. 
-					int numRequestedThreads = 10;
+					int numRequestedThreads = numberOfUniprotDownloadThreads;
 					ForkJoinPool pool = new ForkJoinPool(numRequestedThreads);
 					int stepSize = pool.getParallelism();
 					logger.debug("Degree of parallelism in the pool: {}", stepSize);
@@ -99,56 +96,53 @@ public class UniProtFileRetreiverExecutor
 									@Override
 									public Boolean call()
 									{
-										//if (speciesIndex < speciesList.size())
-//										{
-											if (refGenes != null && refGenes.size() > 0)
-											{
-												
-												logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
-												String identifiersList = refGenes.stream().map(refGeneProduct -> {
-													try
-													{
-														return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
-													}
-													catch (InvalidAttributeException e1)
-													{
-														e1.printStackTrace();
-														throw new RuntimeException(e1);
-													} catch (Exception e1)
-													{
-														e1.printStackTrace();
-														throw new RuntimeException(e1);
-													}
-												}).collect(Collectors.joining("\n"));
-												
-												BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiersList.getBytes()));
-												// if we want to execute multiple retrievers in parallel, we need to create a 
-												// NEW retriever and pass in the relevant values from the retriever that came from the original Uniprot file retriever
-												// defined in the spring config file.
-												UniprotFileRetreiver innerRetriever = new UniprotFileRetreiver();
-												innerRetriever.setMapFromDb(retriever.getMapFromDb());
-												innerRetriever.setMapToDb(retriever.getMapToDb());
-												innerRetriever.setDataURL(retriever.getDataURL());
-												innerRetriever.setMaxAge(retriever.getMaxAge());
-												//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
-												innerRetriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
-												innerRetriever.setDataInputStream(inStream);
+										if (refGenes != null && refGenes.size() > 0)
+										{
+											
+											logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
+											String identifiersList = refGenes.stream().map(refGeneProduct -> {
 												try
 												{
-													innerRetriever.fetchData();
-													return true;
+													return (String)(refGeneProduct.getAttributeValue(ReactomeJavaConstants.identifier));
 												}
-												catch (Exception e)
+												catch (InvalidAttributeException e1)
 												{
-													logger.error("Error getting data for speciesId {}: {}", speciesId, e.getMessage());
-													e.printStackTrace();
+													e1.printStackTrace();
+													throw new RuntimeException(e1);
+												} catch (Exception e1)
+												{
+													e1.printStackTrace();
+													throw new RuntimeException(e1);
 												}
-											}
-											else
+											}).collect(Collectors.joining("\n"));
+											
+											BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiersList.getBytes()));
+											// if we want to execute multiple retrievers in parallel, we need to create a 
+											// NEW retriever and pass in the relevant values from the retriever that came from the original Uniprot file retriever
+											// defined in the spring config file.
+											UniprotFileRetreiver innerRetriever = new UniprotFileRetreiver();
+											innerRetriever.setMapFromDb(retriever.getMapFromDb());
+											innerRetriever.setMapToDb(retriever.getMapToDb());
+											innerRetriever.setDataURL(retriever.getDataURL());
+											innerRetriever.setMaxAge(retriever.getMaxAge());
+											//Inject the refdb in, for cases where there are multiple ref db IDs mapping to the same name.
+											innerRetriever.setFetchDestination(originalFileDestinationName.replace(".txt","." + speciesId + "." + refDb + ".txt"));
+											innerRetriever.setDataInputStream(inStream);
+											try
 											{
-												logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
+												innerRetriever.fetchData();
+												return true;
 											}
-//										}
+											catch (Exception e)
+											{
+												logger.error("Error getting data for speciesId {}: {}", speciesId, e.getMessage());
+												e.printStackTrace();
+											}
+										}
+										else
+										{
+											logger.info("Could not find any RefefenceGeneProducts for reference database ID {} for species {}/{}", refDb, speciesId, speciesName);
+										}
 										return false;
 									}
 								};
@@ -172,13 +166,14 @@ public class UniProtFileRetreiverExecutor
 							e.printStackTrace();
 						}
 					}
+					// try to get rid of any lingering threads that haven't been cleaned up yet.
+					pool.shutdown();
 				}
 			}
 			else
 			{
 				logger.info("Could not find Reference Database IDs for reference database named: {}",toDb.toString());
 			}
-//		});
 		}
 	}
 
@@ -195,5 +190,10 @@ public class UniProtFileRetreiverExecutor
 	public void setObjectCache(ReferenceObjectCache objectCache)
 	{
 		this.objectCache = objectCache;
+	}
+
+	public void setNumberOfUniprotDownloadThreads(int numberOfUniprotDownloadThreads)
+	{
+		this.numberOfUniprotDownloadThreads = numberOfUniprotDownloadThreads;
 	}
 }

@@ -33,6 +33,7 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcesso
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
+import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
 
@@ -72,6 +73,7 @@ public class AddLinks
 
 	public void doAddLinks() throws Exception
 	{
+		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
 		if (objectCache == null)
 		{
 			throw new Error("ObjectCache cannot be null.");
@@ -84,6 +86,7 @@ public class AddLinks
 		applicationProps.load(AddLinks.class.getClassLoader().getResourceAsStream("addlinks.properties"));
 		
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
+		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
 
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
 		if (filterRetrievers)
@@ -95,7 +98,7 @@ public class AddLinks
 		executeCreateReferenceDatabases();
 		
 		executeSimpleFileRetrievers();
-		executeUniprotFileRetrievers();
+		executeUniprotFileRetrievers(numUniprotDownloadThreads);
 		
 		EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
 		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(this.ensemblBatchLookup);
@@ -131,16 +134,21 @@ public class AddLinks
 				
 			}
 		}
-		
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
 		//Now we create references.
 		createReferences(personID, dbMappings);
 		
 		logger.info("Process complete.");
-		
 	}
 
+	/**
+	 * Create references.
+	 * @param personID - the ID of the Person entity which these new references will be attributed to.
+	 * @param dbMappings - A mapping from source identifier to target identifier.
+	 * @throws IOException
+	 * @throws Exception
+	 */
 	private void createReferences(long personID, Map<String, Map<String, ?>> dbMappings) throws IOException, Exception
 	{
 		for (String refCreatorName : this.referenceCreatorFilter)
@@ -182,7 +190,15 @@ public class AddLinks
 				{
 					sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 					logger.debug("{} source references", sourceReferences.size());
-					refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName.get()), sourceReferences);
+					if (refCreator instanceof OneToOneReferenceCreator)
+					{
+						// OneToOne Reference Creators do not take an input of mappings. They just create a 1:1 mapping from the source references.
+						refCreator.createIdentifiers(personID, null, sourceReferences);
+					}
+					else
+					{
+						refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName.get()), sourceReferences);
+					}
 				}
 				
 			}
@@ -195,6 +211,16 @@ public class AddLinks
 		}
 	}
 
+	/**
+	 * Process ENSEMBL files. ENSEMBL files need special processing - you can't do it in a single step.
+	 * This function will actually run EnsemblFileAggregators and EnsemblFileAggregatorProcessors.
+	 * These two classes are used to produce an aggregate file containing ALL Ensembl mappings: each line will have the following identifiers:
+	 *  - ENSP, ENST, ENSG.
+	 *  Each line also contains the Name of an external database that the ENSG maps to, and the identifier value from that external database (or "null" if there was no mapping).
+	 * @param dbMappings - this mapping will be updated by this function.
+	 * @throws Exception
+	 * @throws InvalidAttributeException
+	 */
 	private void processENSEMBLFiles(Map<String, Map<String, ?>> dbMappings) throws Exception, InvalidAttributeException
 	{
 		@SuppressWarnings("unchecked")
@@ -227,6 +253,11 @@ public class AddLinks
 		}
 	}
 
+	/**
+	 * This function will get a list of ENSEMBL identifiers. Each GKInstance will be a ReferenceGeneProduct from an ENSEMBL_*_PROTEIN database. 
+	 * 
+	 * @return
+	 */
 	private List<GKInstance> getENSEMBLIdentifiersList()
 	{
 		List<GKInstance> identifiers = new ArrayList<GKInstance>();
@@ -241,14 +272,31 @@ public class AddLinks
 		return identifiers;
 	}
 	
+	/**
+	 * Gets a list of identifiers for a given reference database and type. All relevant instances will be returned, regardless of species.
+	 * @param refDb - the reference database. 
+	 * @param className - the type, such as ReferenceGeneProduct.
+	 * @return
+	 */
 	private List<GKInstance> getIdentifiersList(String refDb, String className)
 	{
 		return this.getIdentifiersList(refDb, null, className);
 	}
 	
+	/**
+	 * Gets a list of identifiers for a given reference database, species, and type.
+	 * @param refDb
+	 * @param species
+	 * @param className
+	 * @return
+	 */
 	private List<GKInstance> getIdentifiersList(String refDb, String species, String className)
 	{
 		// Need a list of identifiers.
+		if (objectCache.getRefDbNamesToIds().get(refDb) == null)
+		{
+			throw new Error("Could not find a reference database for name: " + refDb);
+		}
 		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
 		List<GKInstance> identifiers;
 		if (species!=null)
@@ -266,6 +314,9 @@ public class AddLinks
 		return identifiers;
 	}
 	
+	/**
+	 * Create ReferenceDatabase objects, in case they done yet exist in this database. 
+	 */
 	private void executeCreateReferenceDatabases()
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter);
@@ -317,6 +368,10 @@ public class AddLinks
 		}
 	}
 
+	/**
+	 * Execute the file processors.
+	 * @return Mappings, keyed by the *name* of the file processor. The values of this mapping are Map<String,?> - see the specific processor to know what it returns for "?".
+	 */
 	private Map<String, Map<String, ?>> executeFileProcessors()
 	{
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
@@ -330,6 +385,9 @@ public class AddLinks
 		return dbMappings;
 	}
 
+	/**
+	 * Execute file retrievers. Covers pretty much everything, except for ENSEMBL and UniProt retrievers. 
+	 */
 	private void executeSimpleFileRetrievers()
 	{
 		fileRetrievers.keySet().stream().parallel().forEach(k -> {
@@ -354,12 +412,17 @@ public class AddLinks
 		});
 	}
 
-	private void executeUniprotFileRetrievers()
+	/**
+	 * Execute the UniProt retrievers.
+	 * @param numberOfUniprotDownloadThreads
+	 */
+	private void executeUniprotFileRetrievers(int numberOfUniprotDownloadThreads)
 	{
 		UniProtFileRetreiverExecutor executor = new UniProtFileRetreiverExecutor();
 		executor.setFileRetrieverFilter(fileRetrieverFilter);
 		executor.setObjectCache(objectCache);
 		executor.setUniprotFileRetrievers(uniprotFileRetrievers);
+		executor.setNumberOfUniprotDownloadThreads(numberOfUniprotDownloadThreads);
 		executor.execute();
 	}
 
@@ -438,4 +501,3 @@ public class AddLinks
 		this.referenceCreatorFilter = referenceCreatorFilter;
 	}
 }
-
