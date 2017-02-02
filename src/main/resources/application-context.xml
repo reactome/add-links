@@ -86,6 +86,7 @@
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
 	</util:list>	
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
