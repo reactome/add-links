@@ -6,6 +6,7 @@
 		</Console>
 	</Appenders>
 	<Loggers>
+		<Logger level="debug" name="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" />
 		<Root level="debug">
 			<AppenderRef ref="Console" />
 		</Root>

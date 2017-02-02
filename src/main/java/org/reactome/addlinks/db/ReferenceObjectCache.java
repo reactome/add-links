@@ -399,9 +399,10 @@ public final class ReferenceObjectCache
 	private static Map<String,List<String>> speciesNamesToIds = new ConcurrentHashMap<String,List<String>>();
 	
 	/**
-	 * Get a list of ReferenceGeneProduct shells keyed by Reference Database.
-	 * @param refDb
-	 * @return
+	 * Get a list of ReferenceGeneProduct/ReferenceDNASequeces/ReferenceMolecules/ReferenceRNASequences keyed by Reference Database.
+	 * @param refDb - the DB_ID ofthe reference database.
+	 * @param className - the class, one of:  ReferenceGeneProduct/ReferenceDNASequeces/ReferenceMolecules/ReferenceRNASequences
+	 * @return A list of GKInstances.
 	 */
 	public List<GKInstance> getByRefDb(String refDb, String className)
 	{

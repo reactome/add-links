@@ -18,6 +18,8 @@
 	<import resource="uniprot-file-retrievers.xml"/>
 	<import resource="ensembl-file-retrievers.xml"/>
 	<import resource="file-processors.xml"/>
+	<import resource="file-processors-ref-creators-link.xml"/>
+	<import resource="reference-creators.xml"/>
 
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
@@ -39,7 +41,7 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>EnsemblToALL</value>
-		<value>EnsemblGeneToALL</value>
+		<!-- <value>EnsemblGeneToALL</value>
 		<value>EnsemblProteinToALL</value>
 		<value>EnsemblTranscriptToALL</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -59,12 +61,12 @@
 		<value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>OrthologsFromZinc</value>
-		<value>Zinc</value>
+		<value>Zinc</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
 		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
+		<!-- <value>ENSEMBLNonCoreFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
@@ -79,16 +81,20 @@
 		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>UniprotOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>UniprotToWormbaseFileProcessor</value>
+		<value>UniprotToWormbaseFileProcessor</value> -->
 	</util:list>
 
-	
+	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+	</util:list>	
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
-		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases">
+		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">
 		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
 		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
 		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
+		<property name="processorCreatorLink" ref="processorCreatorLink"/>
 	</bean>
 	
 	

@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -181,10 +182,12 @@ public class EnsemblFileRetriever extends FileRetriever
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
-			StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
+			StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
 			logger.info("");
-			int i = 0;
-			for (String identifier : identifiers)
+			//int i = 0;
+			AtomicInteger i = new AtomicInteger(0);
+			//for (String identifier : identifiers)
+			identifiers.parallelStream().forEach( identifier -> { 
 			{
 				URIBuilder builder = new URIBuilder();
 
@@ -195,46 +198,72 @@ public class EnsemblFileRetriever extends FileRetriever
 						.addParameter("all_levels", "1")
 						.addParameter("species", this.species)
 						.addParameter("external_db", this.getMapToDb());
-				HttpGet get = new HttpGet(builder.build());
-				logger.trace("URI: "+get.getURI());
-				
-				boolean done = false;
-
-				while (!done)
+				try
 				{
-					try (CloseableHttpClient getClient = HttpClients.createDefault();
-							CloseableHttpResponse getResponse = getClient.execute(get);)
+					HttpGet get = new HttpGet(builder.build());
+					logger.trace("URI: "+get.getURI());
+					
+					boolean done = false;
+	
+					while (!done)
 					{
-						EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(getResponse);
-						if (!result.getWaitTime().equals(Duration.ZERO))
+						try (CloseableHttpClient getClient = HttpClients.createDefault();
+								CloseableHttpResponse getResponse = getClient.execute(get);)
 						{
-							logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
-							Thread.currentThread().wait(result.getWaitTime().toMillis());
-							done = false;
+							EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(getResponse);
+							if (!result.getWaitTime().equals(Duration.ZERO))
+							{
+								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
+								Thread.currentThread().wait(result.getWaitTime().toMillis());
+								done = false;
+							}
+							else
+							{
+								// Only record the successful responses.
+								if (result.getStatus() == HttpStatus.SC_OK)
+								{
+									String content = result.getResult().trim();
+									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
+								}
+								else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
+								{
+									logger.trace("Got BAD_REQUEST reponse. This was the request that was sent: {}", get.toString());
+								}
+								done = true;
+							}
 						}
-						else
+						catch (InterruptedException e)
 						{
-							// Only record the successful responses.
-							if (result.getStatus() == HttpStatus.SC_OK)
-							{
-								String content = result.getResult().trim();
-								sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
-							}
-							else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
-							{
-								logger.trace("Got BAD_REQUEST reponse. This was the request that was sent: {}", get.toString());
-							}
-							done = true;
-						}
-					} 
+							e.printStackTrace();
+							throw new Error(e);
+							
+						} 
+					}
+					//i++;
 				}
-				i++;
-				if (i%100 == 0)
+				catch (URISyntaxException e)
+				{
+					e.printStackTrace();
+					throw new Error(e); 
+				}
+				catch (ClientProtocolException e)
+				{
+					e.printStackTrace();
+					throw new Error(e);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+					throw new Error(e);
+				}
+
+				if (i.incrementAndGet() % 100 == 0)
 				{
 					// of course, this only works if the Identifiers list is > 100 ...
 					logger.info("{} requests remaining.", EnsemblServiceResponseProcessor.getNumRequestsRemaining());
 				}
 			}
+			});
 			Files.createDirectories(path.getParent());
 			String xml10pattern = "[^"
 					+ "\u0009\r\n"
@@ -245,21 +274,16 @@ public class EnsemblFileRetriever extends FileRetriever
 			sb.append("</ensemblResponses>");
 			Files.write(path, sb.toString().trim().replaceAll(xml10pattern, "").getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE);
 		}
-		catch (InterruptedException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
+			throw new Error(e);
 		}
 		catch (URISyntaxException e)
 		{
 			e.printStackTrace();
-		}
-		catch (ClientProtocolException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
+			throw new Error(e);
+
 		}
 	}
 }
