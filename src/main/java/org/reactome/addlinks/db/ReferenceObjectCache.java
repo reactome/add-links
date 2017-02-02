@@ -455,7 +455,7 @@ public final class ReferenceObjectCache
 	 */
 	private void buildLazilyLoadedCaches(String objectClass, Map<String, List<GKInstance>> objectCacheBySpecies, Map<String, GKInstance> objectCacheByID, Map<String, List<GKInstance>> objectCacheByRefDB)
 	{
-		if (objectCacheBySpecies.keySet().size() == 0)
+		if (objectCacheBySpecies == null || objectCacheBySpecies.keySet().size() == 0)
 		{
 			logger.info("Lazy-loading caches for {}", objectClass);
 			try
