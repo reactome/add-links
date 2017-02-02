@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<context:property-placeholder location="classpath:auth.properties" />
+	<context:property-placeholder  location="classpath:auth.properties" />
 
 	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
 		<constructor-arg index="0">
@@ -17,8 +17,8 @@
 			<value type="java.time.temporal.ChronoUnit">HOURS</value>
 		</constructor-arg>
 	</bean>
-
-	<util:map id="FileRetrievers"
+	
+	<util:map id="fileRetrievers"
 		value-type="org.reactome.addlinks.dataretrieval.FileRetriever"
 		key-type="java.lang.String">
 		<entry key="OrphanetToUniprotReferenceDNASequence">
@@ -115,7 +115,7 @@
 		<entry key="OrthologsFromZinc">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsFromZinc">
 				<property name="dataURL" value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot_ortholog.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 
 			</bean>

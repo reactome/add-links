@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	
-	<util:map id="FileProcessors"
+	<util:map id="fileProcessors"
 		value-type="org.reactome.addlinks.fileprocessors.FileProcessor"
 		key-type="java.lang.String">
 
@@ -104,9 +104,27 @@
 			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_ALL.xml"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
 					</bean>
 				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/ensembl/ensembl_to_ALL*xml"/>
+				<property name="dbs">
+					<util:list value-type="java.lang.String">
+						<value>Wormbase</value>
+						<value>EntrezGene</value>
+					</util:list>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="ENSEMBLNonCoreFileProcessor">
+			<bean id="ENSEMBLNonCoreFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_ALL*xml"/>
 				<property name="dbs">
 					<util:list value-type="java.lang.String">
 						<value>Wormbase</value>
@@ -171,7 +189,6 @@
 			</bean>
 		</entry>
 
-
 		<entry key="UniprotToOMIMFileProcessor">
 			<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
 				<property name="path">
@@ -191,6 +208,27 @@
 					</bean>
 				</property>
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase." />
+			</bean>
+		</entry>
+		
+		<entry key="UniprotToKEGGFileProcessor">
+			<bean id="UniprotToKEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG" />
+			</bean>
+		</entry>
+		
+		<entry key="zincProtFileProcessor">
+			<bean id="zincProtFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt"/>
+					</bean>
+				</property>
 			</bean>
 		</entry>
 	</util:map>

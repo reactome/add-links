@@ -164,7 +164,15 @@ public class ReferenceCreator
 				}
 				GKSchemaAttribute xrefAttrib = this.referringAttribute;
 				//logger.debug("referringToSchemaClass Available attributes: {}", this.referringToSchemaClass.getAttributes());
-				instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
+				try
+				{
+					instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
+				}
+				catch (InvalidAttributeValueException e)
+				{
+					logger.error("Invalid Attribute: {} added to object: {}", xrefAttrib, instanceReferredToByIdentifier);
+					throw new Error(e);
+				}
 				
 				// Only update the relevant attribute, better than updating the entire instance.
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
@@ -174,6 +182,7 @@ public class ReferenceCreator
 				logger.error("InstanceEdit was null! Could not create Reference because there was no InstanceEdit to associate it with.");
 			}
 		}
+
 		catch (Exception e)
 		{
 			e.printStackTrace();
@@ -207,7 +216,7 @@ public class ReferenceCreator
 	protected GKInstance getReferenceDatabase(String dbName) throws Exception
 	{
 		// Using _displayName can fetch local shell instances.
-		Collection<?> list = this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants._displayName, "=", dbName);
+		Collection<?> list = this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", dbName);
 		GKInstance refDb = null;
 		
 		if (list.size() > 0)
