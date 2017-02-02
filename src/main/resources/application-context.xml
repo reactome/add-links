@@ -41,10 +41,8 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>EnsemblToALL</value>
-		<!-- <value>EnsemblGeneToALL</value>
-		<value>EnsemblProteinToALL</value>
-		<value>EnsemblTranscriptToALL</value>
 		<value>UniProtToEntrez_Gene</value>
+		<value>UniProtToKEGG</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
@@ -61,12 +59,13 @@
 		<value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>OrthologsFromZinc</value>
-		<value>Zinc</value> -->
+		<value>Zinc</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>zincProtFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
-		<!-- <value>ENSEMBLNonCoreFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
@@ -79,15 +78,33 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
-		<value>UniprotOMIMFileProcessor</value>
+		<value>UniprotToOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>UniprotToWormbaseFileProcessor</value> -->
+		<value>UniprotToWormbaseFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>upMappedKEGGRefCreator</value>
+		<value>upMappedPDBRefCreator</value>
+		<value>upMappedOMIMRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedRefSeqRNARefCreator</value>
+		<value>upMappedRefSeqPeptideRefCreator</value>
+		<value>upMappedWormbaseRefCreator</value>
+		<value>OrphanetReferenceCreator</value>
+		<value>proRefCreator</value>
+		<value>FlyBaseReferenceCreator</value>
+		<value>pdbRefCreator</value>
+		<value>geneCardsRefCreator</value>
+		<value>zincToChEBIReferenceCreator</value>
+		<value>HMDBProtReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
-	</util:list>	
+	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
 		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">

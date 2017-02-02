@@ -189,7 +189,6 @@
 			</bean>
 		</entry>
 
-
 		<entry key="UniprotToOMIMFileProcessor">
 			<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
 				<property name="path">
@@ -209,6 +208,27 @@
 					</bean>
 				</property>
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase." />
+			</bean>
+		</entry>
+		
+		<entry key="UniprotToKEGGFileProcessor">
+			<bean id="UniprotToKEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG" />
+			</bean>
+		</entry>
+		
+		<entry key="zincProtFileProcessor">
+			<bean id="zincProtFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt"/>
+					</bean>
+				</property>
 			</bean>
 		</entry>
 	</util:map>

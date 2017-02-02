@@ -124,7 +124,14 @@
 				</property>
 			</bean>
 		</entry>
-		
+		<entry key="UniProtToKEGG">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToKEGG" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">KEGG</value>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 
 </beans>
