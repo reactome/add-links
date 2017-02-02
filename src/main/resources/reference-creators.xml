@@ -56,17 +56,6 @@
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
-<!-- 		<entry key="ENSEMBLToEntrezGeneRefCreator">
-			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="ENSEMBLToEntrezGeneRefCreator">
-				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
-				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
-				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
-				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
-				<property name="testMode" value="true"/>
-			</bean>
-		</entry> -->
 		<entry key="upMappedKEGGRefCreator">
 			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedKEGGRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -113,13 +102,13 @@
 		</entry>
 	</util:map>
 
-	<util:map id="referenceCreators" key-type="java.lang.String" value-type="org.reactome.addlinks.referencecreators.SimpleReferenceCreator">
+	<util:map id="referenceCreators" key-type="java.lang.String" value-type="org.reactome.addlinks.referencecreators.BatchReferenceCreator">
 		<entry key="OrphanetReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="OrphanetReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Orphanet"/>
 				<property name="testMode" value="true"/>
@@ -141,7 +130,7 @@
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="FlyBase"/>
 				<property name="testMode" value="true"/>
@@ -213,7 +202,7 @@
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
-		<entry key="ensMappedEntrezGeneRefCreator">
+<!-- 		<entry key="ensMappedEntrezGeneRefCreator">
 			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ensMappedEntrezGeneRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
@@ -223,7 +212,39 @@
 				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
 				<property name="testMode" value="true"/>
 			</bean>
+		</entry> -->
+ 		<entry key="ENSEMBLToEntrezGeneRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLToEntrezGeneRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
+				<property name="testMode" value="true"/>
+			</bean>
 		</entry>
-		
+ 		<entry key="ENSEMBLToWormbaseRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLToWormbaseRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+				<property name="testMode" value="true"/>
+			</bean>
+		</entry>
+		<entry key="ENSEMBLEnspToEnsgRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLEnspToEnsgRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
+				<property name="testMode" value="true"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

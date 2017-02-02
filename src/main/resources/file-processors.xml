@@ -118,7 +118,7 @@
 		</entry>
 
 		<entry key="ENSEMBLNonCoreFileProcessor">
-			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
+			<bean id="ENSEMBLNonCoreFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
