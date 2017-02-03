@@ -33,6 +33,15 @@
 		<property name="testMode" value="true"/>
 	</bean>
 
+	<!-- test BRENDA file retrieval -->
+	<bean id="brendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+		<property name="userName" value="${brenda.user}"/>
+		<property name="password" value="${brenda.password}"/>
+		<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA.txt"/>
+		<property name="maxAge" ref="zeroFileAge" />
+	</bean>
+
 	<!-- Beans for Orphanet testing. -->
 	<bean id="OrphanetToUniprotReferenceDNASequence"
 		class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever">
