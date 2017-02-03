@@ -61,6 +61,29 @@
 		<property name="testMode" value="true"/>
 	</bean>
 	
+	<!-- IntEnz testing -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="intEnzFileRetriever">
+		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	<bean id="intEnzFileProcessor" class="org.reactome.addlinks.fileprocessors.IntEnzFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/IntEnz.dat"/>
+			</bean>
+		</property>
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.IntEnzReferenceCreator" id="intEnzReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="IntEnz"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
 	<!--  flybase testing -->
 	<bean id="FlyBaseFileProcessor"
 		class="org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor">
