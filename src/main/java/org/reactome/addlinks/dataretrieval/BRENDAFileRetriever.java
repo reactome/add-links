@@ -1,9 +1,13 @@
 package org.reactome.addlinks.dataretrieval;
 
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
@@ -24,7 +28,7 @@ public class BRENDAFileRetriever extends FileRetriever
 	private static final Logger logger = LogManager.getLogger();
 	private String userName;
 	private String password;
-	
+	private Map<String, List<String>> identifiers;
 	
 	public class BRENDASoapClient
 	{
@@ -38,9 +42,9 @@ public class BRENDAFileRetriever extends FileRetriever
 			this.password = p;
 		}
 		
-		public String callBrendaService()
+		public String callBrendaService(String endpoint, String operation, String wsArgs)
 		{
-			String endpoint = "http://www.brenda-enzymes.org/soap/brenda_server.php";
+			//String endpoint = "http://www.brenda-enzymes.org/soap/brenda_server.php";
 			String password = this.password;
 
 			String resultString = null;
@@ -60,8 +64,8 @@ public class BRENDAFileRetriever extends FileRetriever
 					}
 				}
 				call.setTargetEndpointAddress( new java.net.URL(endpoint) );
-				String parameters = this.userName + ","+hexString+",ecNumber*1.1.1.1#organism*Mus musculus";
-				call.setOperationName(new QName("http://soapinterop.org/", "getEcNumbersFromSynonyms"));
+				String parameters = this.userName + ","+hexString+","+wsArgs;
+				call.setOperationName(new QName("http://soapinterop.org/", operation));
 				resultString = (String) call.invoke( new Object[] {parameters} );
 				
 				return resultString;
@@ -89,12 +93,30 @@ public class BRENDAFileRetriever extends FileRetriever
 		}
 	}
 	
+	public void setIdentifiers(Map<String, List<String>> identifiers)
+	{
+		this.identifiers = identifiers;
+	}
+	
 	@Override
 	protected void downloadData() throws Exception
 	{
 		BRENDASoapClient client = new BRENDASoapClient(this.userName, this.password);
-		String result = client.callBrendaService();
-		System.out.println(result);
+		//String result = client.callBrendaService("http://www.brenda-enzymes.org/soap/brenda_server.php", "getPdb", "organism*Homo sapiens#pdb*3uzd");
+		StringBuilder sb = new StringBuilder();
+		for (String speciesName : identifiers.keySet())
+		{
+			for (String pdbID : identifiers.get(speciesName))
+			{
+				// BRENDA won't work if there's an underscore in the species name.
+				speciesName = speciesName.replace("_", " ");
+				String result = client.callBrendaService(this.getDataURL().toString(), "getPdb", "organism*"+speciesName+"#pdb*"+pdbID); //4d18
+				//logger.debug(result);
+				sb.append(result).append("\n");
+			}
+		}
+		//String result = client.callBrendaService(this.getDataURL().toString(), "getPdb", "organism*Homo sapiens#pdb*3uzd"); //4d18
+		Files.write(Paths.get(this.destination), sb.toString().getBytes());
 	}
 
 	public void setUserName(String userName)
@@ -107,3 +129,4 @@ public class BRENDAFileRetriever extends FileRetriever
 		this.password = password;
 	}
 }
+;
