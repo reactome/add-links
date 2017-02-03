@@ -3,6 +3,7 @@ package org.reactome.addlinks.fileprocessors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Returns a mapping of EC numbers, and the UniProt accessions that are associated with them.
+ * Returns a mapping of UniProt accessions mapped to EC numbers.
  * @author sshorser
  *
  */
@@ -22,11 +23,11 @@ public class IntEnzFileProcessor extends FileProcessor<List<String>>
 	@Override
 	public Map<String, List<String>> getIdMappingsFromFile()
 	{
+		int accessionsWithMultipleECs = 0;
 		Map<String, List<String>> mappings = new HashMap<String, List<String>>();
 		try
 		{
 			String ecNum = new String();
-			List<String> uniprots = new ArrayList<String>();
 
 			for (String line : Files.readAllLines(this.pathToFile))
 			{
@@ -34,12 +35,8 @@ public class IntEnzFileProcessor extends FileProcessor<List<String>>
 				if (line.startsWith("//"))
 				{
 					// The "//" means a new record is begining,
-					// so update the main mapping.
-					// Then clear (or re-initialize) all fields.
-					mappings.put(ecNum, uniprots);
 					//logger.trace("{} : {}", ecNum, uniprots);
-					//ecNum = new String();
-					uniprots.clear();// = new ArrayList<String>();
+					ecNum = new String();
 				}
 				else if (line.startsWith("ID"))
 				{
@@ -57,7 +54,16 @@ public class IntEnzFileProcessor extends FileProcessor<List<String>>
 					{
 						// each mapping is of the form <UNIPROT_ACCESSION> , <UNIPROT_NAME??> - we only want the accession.
 						String[] moreParts = part.split(",");
-						uniprots.add(moreParts[0].trim());
+						//uniprots.add(moreParts[0].trim());
+						if (!mappings.containsKey(moreParts[0]))
+						{
+							mappings.put(moreParts[0], new ArrayList<String>(Arrays.asList(ecNum)));
+						}
+						else
+						{
+							mappings.get(moreParts[0]).add(ecNum);
+							accessionsWithMultipleECs++;
+						}
 					}
 				}
 			}
@@ -67,7 +73,7 @@ public class IntEnzFileProcessor extends FileProcessor<List<String>>
 			throw new Error(e);
 		}
 		
-		logger.info("{} EC numbers in mapping.", mappings.keySet().size());
+		logger.info("{} UniProt accessions in mapping, {} with > 1 EC.", mappings.keySet().size(), accessionsWithMultipleECs);
 		return mappings;
 	}
 
