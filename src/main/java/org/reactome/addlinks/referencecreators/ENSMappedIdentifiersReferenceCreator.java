@@ -41,8 +41,8 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
 	
-		List<String> thingsToCreate = new ArrayList<String>();
-		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
+		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
+		Map<Long,MySQLAdaptor> adapterPool = Collections.synchronizedMap( new HashMap<Long,MySQLAdaptor>() );
 
 		// Loop for each database
 		mappings.keySet().stream().sequential().forEach( dbName -> {
@@ -116,7 +116,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 								}
 								logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 								// check and make sure the cross refernces don't already exist.
-								Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
+								Collection<GKInstance> xrefs = (Collection<GKInstance>) inst.getAttributeValuesList(referringAttributeName);
 								boolean xrefAlreadyExists = false;
 								
 								for (GKInstance xref : xrefs)
