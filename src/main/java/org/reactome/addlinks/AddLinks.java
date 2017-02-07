@@ -172,7 +172,7 @@ public class AddLinks
 						{
 							logger.info("Ensembl cross-references: {}", k);
 							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
 						}
 					}
 					else
@@ -182,7 +182,7 @@ public class AddLinks
 						{
 							logger.info("Ensembl cross-references: {}", k);
 							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings);
+							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
 						}
 					}
 				}
