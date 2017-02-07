@@ -1,6 +1,8 @@
 package org.reactome.addlinks;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
@@ -30,6 +33,7 @@ import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor.EnsemblAggregateProcessingMode;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
@@ -88,7 +92,9 @@ public class AddLinks
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
 		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
 
-		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
+		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null
+									? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers"))
+									: false;		
 		if (filterRetrievers)
 		{
 			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
@@ -99,6 +105,77 @@ public class AddLinks
 		
 		executeSimpleFileRetrievers();
 		executeUniprotFileRetrievers(numUniprotDownloadThreads);
+		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
+		if (this.fileRetrieverFilter.contains("KEGGRetriever"))
+		{
+			UniprotFileRetreiver uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
+			KEGGFileRetriever keggFileRetriever = (KEGGFileRetriever) this.fileRetrievers.get("KEGGRetriever");
+			
+			// Now we need to loop through the species.
+			String downloadDestination = keggFileRetriever.getFetchDestination();
+			//for (String speciesName : objectCache.getListOfSpeciesNames())
+			objectCache.getListOfSpeciesNames().parallelStream().forEach( speciesName ->
+			{
+				String keggCode = KEGGSpeciesCache.getKEGGCode(speciesName);
+				if (keggCode != null)
+				{
+					String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
+					//List<Path> uniprotToKEGGFiles = new ArrayList<Path>();
+					//uniprotToKEGGFiles.add(Paths.get(uniprotToKeggRetriever.getActualFetchDestinations().stream().filter(fileName -> !fileName.contains(".not")).collect(Collectors.toList())));
+					List<Path> uniProtToKeggFiles = uniprotToKeggRetriever.getActualFetchDestinations().stream()
+																				.filter(fileName -> !fileName.contains(".notMapped")
+																									&& fileName.contains("KEGG")
+																									&& fileName.contains(speciesCode))
+																				.map(fileName -> Paths.get(fileName))
+																				.collect(Collectors.toList());
+					// This could happen if the UniProt files were already downloaded. In that case, uniprotToKeggRetriever.getActualFetchDestinations() will return 
+					// NULL because nothing was downloaded this time.
+					if (uniProtToKeggFiles == null || uniProtToKeggFiles.isEmpty())
+					{
+						// Since the uniprotToKeggRetriever didn't download anything, maybe we can check in the directory and see if there are any other files there.
+						String uniProtToKeggDestination = uniprotToKeggRetriever.getFetchDestination();
+						
+						try
+						{
+							// We'll try to search for everything in the uniprotToKeggRetriever's destination's directory.
+							uniProtToKeggFiles = Files.list(Paths.get(uniProtToKeggDestination).getParent())
+														.filter(path -> !path.getFileName().toString().contains(".notMapped.")
+																		&& path.getFileName().toString().contains("KEGG")
+																		&& path.getFileName().toString().contains(speciesCode) )
+														.collect(Collectors.toList());
+						}
+						catch (IOException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+					
+					logger.info("{} uniprot-to-kegg files will be used in the KEGG lookup.", uniProtToKeggFiles.size());
+					
+					keggFileRetriever.setUniprotToKEGGFiles(uniProtToKeggFiles);
+
+					// the ".2" is for the ReferenceDatabase - in this case it is UniProt whose DB_ID is 2.
+					keggFileRetriever.setFetchDestination(downloadDestination.replaceAll(".txt", "." + speciesCode + ".2.txt"));
+					try
+					{
+						keggFileRetriever.fetchData();
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+						throw new Error(e);
+					}
+				}
+				else
+				{
+					logger.info("Species with name \"{}\" could not be found in the KEGG species mapping.", speciesName);
+				}
+			//}
+			});
+		}
+		
 		
 		EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
 		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(this.ensemblBatchLookup);
@@ -391,7 +468,8 @@ public class AddLinks
 	private void executeSimpleFileRetrievers()
 	{
 		fileRetrievers.keySet().stream().parallel().forEach(k -> {
-			if (fileRetrieverFilter.contains(k))
+			// KEGGRetreiver is special: it depends on the result of the uniprotToKegg retriever as an input, so we can't execute it here.
+			if (fileRetrieverFilter.contains(k) && !k.equals("KEGGRetreiver"))
 			{
 				FileRetriever retriever = fileRetrievers.get(k);
 				logger.info("Executing downloader: {}",k);

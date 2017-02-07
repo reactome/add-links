@@ -40,7 +40,7 @@ public class KEGGFileRetriever extends FileRetriever
 	private static final Logger logger = LogManager.getLogger();
 
 	// TODO: remove this. List of identifiers should not come from outside.
-	private List<String> identifiers;
+//	private List<String> identifiers;
 	
 	// We need to have the lists of uniprot-to-kegg mappings before we attempt to get the KEGG entries.
 	private List<Path> uniprotToKEGGFiles;
@@ -63,7 +63,7 @@ public class KEGGFileRetriever extends FileRetriever
 			// The file has two columns: left is UniProt ID, right is KEGG ID.
 			// We want all the KEGG IDs, collected into a list. 
 			List<String> keggIdentifiers = Files.lines(uniprot2kegg)
-												.filter(p -> !p.startsWith("From"))
+												.filter(p -> !p.startsWith("From") && !p.trim().equals(""))
 												.map( line -> Arrays.asList(line.split("\t")).get(1) )
 												.collect(Collectors.toList());
 			Path path = Paths.get(new URI("file://" + this.destination));
@@ -72,6 +72,7 @@ public class KEGGFileRetriever extends FileRetriever
 			{
 				Files.delete(path);
 			}
+			Files.createDirectories(path.getParent());
 			//Create the file.
 			Files.createFile(path);
 			
@@ -95,7 +96,7 @@ public class KEGGFileRetriever extends FileRetriever
 						.setPath(this.uri.getPath() + identifiersForRequest)
 						.setScheme(this.uri.getScheme());
 				HttpGet get = new HttpGet(builder.build());
-				logger.debug("URI: "+get.getURI());
+				logger.trace("URI: "+get.getURI());
 				
 				try (CloseableHttpClient getClient = HttpClients.createDefault();
 						CloseableHttpResponse getResponse = getClient.execute(get);)
@@ -135,10 +136,10 @@ public class KEGGFileRetriever extends FileRetriever
 		}
 	}
 	
-	public void setIdentifiers(List<String> identifiers)
-	{
-		this.identifiers = identifiers;
-	}
+//	public void setIdentifiers(List<String> identifiers)
+//	{
+//		this.identifiers = identifiers;
+//	}
 
 	public List<Path> getUniprotToKEGGFiles()
 	{
@@ -158,5 +159,10 @@ public class KEGGFileRetriever extends FileRetriever
 	public void setAdapter(MySQLAdaptor adapter)
 	{
 		this.adapter = adapter;
+	}
+
+	public String getFetchDestination()
+	{
+		return this.destination;
 	}
 }
