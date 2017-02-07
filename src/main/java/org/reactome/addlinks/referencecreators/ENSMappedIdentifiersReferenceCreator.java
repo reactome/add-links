@@ -69,12 +69,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 						localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
 						adapterPool.put(threadID, localAdapter);
 					}
-					// Now we need to get the DBID of the pre-existing identifier.
-					// This seems to be the main bottleneck of this part of the code, from what I can tell, too many little queries hitting the database
-					// at the same time, slowing it down.
-					// TODO: Maybe pre-cache all of this data somehow, before attempting to create the references? It would involve 
-					// querying for ALL sourceIdentifiers in batches (of how ever many values can be fit into an IN statement in MySQL).
-					//Collection<GKInstance> sourceInstances = (Collection<GKInstance>) localAdapter.fetchInstanceByAttribute(this.classReferringToRefName, ReactomeJavaConstants.identifier, "=", sourceIdentifier);
+					// Filter the the input list of source reference objects by everything whose identifier matches the *current* sourceIdentifier.
 					Collection<GKInstance> sourceInstances = Collections.synchronizedCollection( sourceReferences.stream().filter(sourceRef -> {
 						try
 						{
@@ -94,17 +89,15 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 							//Actually, it's OK to have > 1 instances. This just means that the SOURCE ID has multiple entities that will be references, such as a ReferenceGeneProduct and a ReferenceIsoform.
 							logger.info("Got {} elements when fetching instances by attribute value: {}.{} {} \"{}\"",sourceInstances.size(),this.classReferringToRefName, this.referringAttributeName, "=", sourceIdentifier);
 						}
-	
-						
 						
 						for (GKInstance inst : sourceInstances)
 						{
 							for (String targetIdentifier : targetIdentifiers)
 							{
-//								if (sourceInstances.size() > 1)
-//								{
-//									logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
-//								}
+								if (sourceInstances.size() > 1)
+								{
+									logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
+								}
 								
 								// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
 								// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
@@ -145,11 +138,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 								}
 								if (!xrefAlreadyExists)
 								{
-									//if (!this.testMode)
-									{
-										// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>
-										thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
-									}
+									thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
 									createdCounter.getAndIncrement();
 								}
 							}
@@ -176,14 +165,14 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 				}
 			});
 		});
-		if (!this.testMode)
-		{
-			thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-				if (newIdentifier != null)
+		thingsToCreate.stream().sequential().forEach( newIdentifier -> {
+			if (newIdentifier != null)
+			{
+				String[] parts = newIdentifier.split(":");
+				logger.trace("Creating new identifier {} ", parts[0]);
+				try
 				{
-					String[] parts = newIdentifier.split(":");
-					logger.trace("Creating new identifier {} ", parts[0]);
-					try
+					if (!this.testMode)
 					{
 						if (parts[2] != null && !parts[2].trim().equals(""))
 						{
@@ -196,17 +185,17 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
 						}
 					}
-					catch (Exception e)
-					{
-						throw new RuntimeException(e);
-					}
 				}
-				else
+				catch (Exception e)
 				{
-					logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things to create: {}", thingsToCreate);
+					throw new RuntimeException(e);
 				}
-			} );
-		}
+			}
+			else
+			{
+				logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things to create: {}", thingsToCreate);
+			}
+		} );
 		if (createdCounter.get() != thingsToCreate.size())
 		{
 			logger.warn("The \"created\" counter says: {} but the size of the thingsToCreate list is: {}",createdCounter.get(), thingsToCreate.size());
