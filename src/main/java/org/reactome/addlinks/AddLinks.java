@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +43,7 @@ import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCrea
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
-import org.springframework.remoting.support.RemoteInvocationTraceInterceptor;
+
 
 public class AddLinks
 {
@@ -162,134 +163,102 @@ public class AddLinks
 			
 			// Now we need to loop through the species.
 			String downloadDestination = keggFileRetriever.getFetchDestination();
-			//for (String speciesName : objectCache.getListOfSpeciesNames())
-			System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "20");
-			ForkJoinPool pool = new ForkJoinPool(10);
+
 			List<Callable<Boolean>> keggJobs = new ArrayList<Callable<Boolean>>();
 			
 			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sequential()
 												.filter(speciesName -> KEGGSpeciesCache.getKEGGCode(speciesName)!=null)
 												.collect(Collectors.toList()))
 			{
-//			objectCache.getListOfSpeciesNames().parallelStream()
-//												.filter(speciesName -> KEGGSpeciesCache.getKEGGCode(speciesName)!=null)
-//												.forEach( speciesName ->
-//			{
-
-
-//						String keggCode = KEGGSpeciesCache.getKEGGCode(speciesName);
-//				if (keggCode != null)
-//				{
-						String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
-						logger.debug("Species Name: {} Species Code: {}", speciesName, speciesCode);
-						
-						//List<Path> uniprotToKEGGFiles = new ArrayList<Path>();
-						//uniprotToKEGGFiles.add(Paths.get(uniprotToKeggRetriever.getActualFetchDestinations().stream().filter(fileName -> !fileName.contains(".not")).collect(Collectors.toList())));
-						List<Path> uniProtToKeggFiles = uniprotToKeggRetriever.getActualFetchDestinations().stream()
-																					.filter(fileName -> {
-																						try
-																						{
-																							return !fileName.contains(".notMapped")
-																									&& fileName.contains("KEGG")
-																									//&& fileName.contains(speciesCode)
-																									&& objectCache.getSpeciesNamesToIds().get(speciesName).stream().anyMatch(s -> fileName.contains(s))
-																									&& Files.lines(Paths.get(fileName)).count() > 1;
-																						}
-																						catch (IOException e1)
-																						{
-																							// TODO Auto-generated catch block
-																							e1.printStackTrace();
-																							return false;
-																						}
-																					})
-																					.map(fileName -> Paths.get(fileName))
-																					.collect(Collectors.toList());
-						// This could happen if the UniProt files were already downloaded. In that case, uniprotToKeggRetriever.getActualFetchDestinations() will return 
-						// NULL because nothing was downloaded this time.
-						if (uniProtToKeggFiles == null || uniProtToKeggFiles.isEmpty())
+				String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
+				logger.debug("Species Name: {} Species Code: {}", speciesName, speciesCode);
+				
+				Predicate<String> isValidKEGGmappingFile = new Predicate<String>()
+				{
+					@Override
+					public boolean test(String fileName)
+					{
+						try
 						{
-							// Since the uniprotToKeggRetriever didn't download anything, maybe we can check in the directory and see if there are any other files there.
-							String uniProtToKeggDestination = uniprotToKeggRetriever.getFetchDestination();
-							
-							try
-							{
-								// We'll try to search for everything in the uniprotToKeggRetriever's destination's directory.
-								uniProtToKeggFiles = Files.list(Paths.get(uniProtToKeggDestination).getParent())
-															.filter(path -> {
-																try
-																{
-																	return !path.getFileName().toString().contains(".notMapped")
-																			&& path.getFileName().toString().contains("KEGG")
-																			//&& path.getFileName().toString().contains(speciesCode)
-																			&& objectCache.getSpeciesNamesToIds().get(speciesName).stream().anyMatch(s -> path.getFileName().toString().contains(s))
-																			&& Files.lines(path).count() > 1;
-																}
-																catch (IOException e1)
-																{
-																	// TODO Auto-generated catch block
-																	e1.printStackTrace();
-																	return false;
-																}
-															} )
-															.collect(Collectors.toList());
-							}
-							catch (IOException e)
-							{
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							
+							return !fileName.contains(".notMapped")
+									&& fileName.contains("KEGG")
+									&& Files.exists(Paths.get(fileName))
+									&& objectCache.getSpeciesNamesToIds().get(speciesName).stream().anyMatch(s -> fileName.contains(s))
+									&& Files.lines(Paths.get(fileName)).count() > 1;
 						}
-
-						if (uniProtToKeggFiles.size() > 0)
+						catch (IOException e1)
 						{
-							List<Path> files = uniProtToKeggFiles;
-							Callable<Boolean> job = new Callable<Boolean>()
-							{
-
-								@Override
-								public Boolean call() throws Exception
-								{
-									//logger.info("{} uniprot-to-kegg files will be used in the KEGG lookup.", uniProtToKeggFiles.size());
-									KEGGFileRetriever retriever = new KEGGFileRetriever();
-									retriever.setAdapter(keggFileRetriever.getAdapter());
-									retriever.setDataURL(keggFileRetriever.getDataURL());
-									retriever.setUniprotToKEGGFiles(files);
-									retriever.setMaxAge(keggFileRetriever.getMaxAge());
-									// the ".2" is for the ReferenceDatabase - in this case it is UniProt whose DB_ID is 2.
-									retriever.setFetchDestination(downloadDestination.replaceAll(".txt", "." + speciesCode + ".2.txt"));
-									try
-									{
-										retriever.fetchData();
-									}
-									catch (Exception e)
-									{
-										e.printStackTrace();
-										throw new Error(e);
-									}
-									return true;
-								}
-							};
-							keggJobs.add(job);
-
+							e1.printStackTrace();
+							return false;
 						}
-						else
-						{
-							logger.info("Sorry, No uniprot-to-kegg mappings found for species {} / {}", speciesName, speciesCode);
-						}
-//					}
-//			}
+					}
+				};
+				
+				List<Path> uniProtToKeggFiles = uniprotToKeggRetriever.getActualFetchDestinations().stream()
+																			.filter(fileName -> isValidKEGGmappingFile.test(fileName))
+																			.map(fileName -> Paths.get(fileName))
+																			.collect(Collectors.toList());
+				// This could happen if the UniProt files were already downloaded. In that case, uniprotToKeggRetriever.getActualFetchDestinations() will return 
+				// NULL because nothing was downloaded this time.
+				if (uniProtToKeggFiles == null || uniProtToKeggFiles.isEmpty())
+				{
+					// Since the uniprotToKeggRetriever didn't download anything, maybe we can check in the directory and see if there are any other files there.
+					String uniProtToKeggDestination = uniprotToKeggRetriever.getFetchDestination();
+					
+					try
+					{
+						// We'll try to search for everything in the uniprotToKeggRetriever's destination's directory.
+						uniProtToKeggFiles = Files.list(Paths.get(uniProtToKeggDestination).getParent())
+													.filter(path -> isValidKEGGmappingFile.test(path.toString()) )
+													.collect(Collectors.toList());
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
 					
 				}
-				pool.invokeAll(keggJobs);
-//				else
-//				{
-//					logger.info("Species with name \"{}\" could not be found in the KEGG species mapping.", speciesName);
-//				}
+
+				if (uniProtToKeggFiles.size() > 0)
+				{
+					List<Path> files = uniProtToKeggFiles;
+					Callable<Boolean> job = new Callable<Boolean>()
+					{
+
+						@Override
+						public Boolean call() throws Exception
+						{
+							KEGGFileRetriever retriever = new KEGGFileRetriever();
+							retriever.setAdapter(keggFileRetriever.getAdapter());
+							retriever.setDataURL(keggFileRetriever.getDataURL());
+							retriever.setUniprotToKEGGFiles(files);
+							retriever.setMaxAge(keggFileRetriever.getMaxAge());
+							// the ".2" is for the ReferenceDatabase - in this case it is UniProt whose DB_ID is 2.
+							retriever.setFetchDestination(downloadDestination.replaceAll(".txt", "." + speciesCode + ".2.txt"));
+							try
+							{
+								retriever.fetchData();
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+								throw new Error(e);
+							}
+							return true;
+						}
+					};
+					keggJobs.add(job);
+
+				}
+				else
+				{
+					logger.info("Sorry, No uniprot-to-kegg mappings found for species {} / {}", speciesName, speciesCode);
+				}
 			}
-			
-			//});
-		
+			// These jobs are not very CPU intense so it is probably not too serious to them ALL in parallel.
+			ForkJoinPool pool = new ForkJoinPool(keggJobs.size());
+			pool.invokeAll(keggJobs);
+		}
 	}
 
 	/**
