@@ -1,5 +1,6 @@
 package org.reactome.addlinks.dataretrieval;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,15 +40,14 @@ public class KEGGFileRetriever extends FileRetriever
 	
 	private static final Logger logger = LogManager.getLogger();
 
-	// TODO: remove this. List of identifiers should not come from outside.
-//	private List<String> identifiers;
-	
 	// We need to have the lists of uniprot-to-kegg mappings before we attempt to get the KEGG entries.
+	// This file will have the KEGG identifiers that we will look up.
 	private List<Path> uniprotToKEGGFiles;
 	
 	@Override
 	protected void downloadData() throws Exception
 	{
+		logger.debug("{} Uniprot-to-Kegg mapping files: {}", this.uniprotToKEGGFiles.size(), this.uniprotToKEGGFiles);
 		for (Path uniprot2kegg : this.uniprotToKEGGFiles)
 		{
 			// UniProt-to-KEGG files should be named like this: uniprot_mapping_Uniprot_To_KEGG.48887.2.txt
@@ -67,15 +67,26 @@ public class KEGGFileRetriever extends FileRetriever
 												.map( line -> Arrays.asList(line.split("\t")).get(1) )
 												.collect(Collectors.toList());
 			Path path = Paths.get(new URI("file://" + this.destination));
-			//Delete any old files (if they weren't cleaned up before). 
-			if (Files.exists(path))
+			// Delete any old files (if they weren't cleaned up before) - they could be incomplete 
+			// files if a previous KEGG File Retriever was interrupted, so let's just get rid of them
+			// and start fresh.
+			try
 			{
-				Files.delete(path);
+				if (Files.exists(path))
+				{
+					Files.delete(path);
+				}
+				Files.createDirectories(path.getParent());
+				//Create the file.
+				Files.createFile(path);
 			}
-			Files.createDirectories(path.getParent());
-			//Create the file.
-			Files.createFile(path);
-			
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+
+			logger.debug("Total # of identifiers to lookup: {}", keggIdentifiers.size());
 			// Could these API requests be made in parallel?
 			for (int i = 0; i < keggIdentifiers.size(); i+=10)
 			{
@@ -85,8 +96,8 @@ public class KEGGFileRetriever extends FileRetriever
 				{
 					if (j < keggIdentifiers.size())
 					{
-						// The HSA is because we're only supposed to map Human identifiers
-						identifiersForRequest += (/*keggSpeciesCode+":"+*/keggIdentifiers.get(j) + "+");
+						// You don't need to worry about prefixing with KEGG species code - that comes from the UniProt-to-KEGG mapping.
+						identifiersForRequest += (keggIdentifiers.get(j) + "+");
 					}
 				}
 				
@@ -110,7 +121,6 @@ public class KEGGFileRetriever extends FileRetriever
 							// File creation should have been performed earlier, outside the loop.
 							String responseEntityString = EntityUtils.toString(getResponse.getEntity());
 							
-							Files.createDirectories(path.getParent());
 							Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
 							if (!Files.isReadable(path))
 							{
@@ -132,15 +142,15 @@ public class KEGGFileRetriever extends FileRetriever
 							// Actually, maybe ALWAYS include the "hsa:####" as an extra ReferenceEntity name.
 					}
 				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
+
 		}
 	}
 	
-//	public void setIdentifiers(List<String> identifiers)
-//	{
-//		this.identifiers = identifiers;
-//	}
-
 	public List<Path> getUniprotToKEGGFiles()
 	{
 		return this.uniprotToKEGGFiles;
