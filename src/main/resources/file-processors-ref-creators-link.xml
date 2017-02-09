@@ -32,5 +32,6 @@
 	 	<entry key="zincProtFileProcessor" value="zincToUniProtReferenceCreator" />
 	 	<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
 	 	<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
+	 	<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
 	 </util:map>
 </beans>

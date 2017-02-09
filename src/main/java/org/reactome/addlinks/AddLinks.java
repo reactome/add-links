@@ -1,6 +1,8 @@
 package org.reactome.addlinks;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +14,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +26,7 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
@@ -30,12 +36,14 @@ import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor.EnsemblAggregateProcessingMode;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
+
 
 public class AddLinks
 {
@@ -88,7 +96,9 @@ public class AddLinks
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
 		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
 
-		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null ? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers")) : false;		
+		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null
+									? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers"))
+									: false;		
 		if (filterRetrievers)
 		{
 			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
@@ -99,6 +109,8 @@ public class AddLinks
 		
 		executeSimpleFileRetrievers();
 		executeUniprotFileRetrievers(numUniprotDownloadThreads);
+		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
+		executeKeggFileRetriever();
 		
 		EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
 		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(this.ensemblBatchLookup);
@@ -140,6 +152,113 @@ public class AddLinks
 		createReferences(personID, dbMappings);
 		
 		logger.info("Process complete.");
+	}
+
+	private void executeKeggFileRetriever()
+	{
+		if (this.fileRetrieverFilter.contains("KEGGRetriever"))
+		{
+			UniprotFileRetreiver uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
+			KEGGFileRetriever keggFileRetriever = (KEGGFileRetriever) this.fileRetrievers.get("KEGGRetriever");
+			
+			// Now we need to loop through the species.
+			String downloadDestination = keggFileRetriever.getFetchDestination();
+
+			List<Callable<Boolean>> keggJobs = new ArrayList<Callable<Boolean>>();
+			
+			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sequential()
+												.filter(speciesName -> KEGGSpeciesCache.getKEGGCode(speciesName)!=null)
+												.collect(Collectors.toList()))
+			{
+				String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
+				logger.debug("Species Name: {} Species Code: {}", speciesName, speciesCode);
+				
+				Predicate<String> isValidKEGGmappingFile = new Predicate<String>()
+				{
+					@Override
+					public boolean test(String fileName)
+					{
+						try
+						{
+							return !fileName.contains(".notMapped")
+									&& fileName.contains("KEGG")
+									&& Files.exists(Paths.get(fileName))
+									&& objectCache.getSpeciesNamesToIds().get(speciesName).stream().anyMatch(s -> fileName.contains(s))
+									&& Files.lines(Paths.get(fileName)).count() > 1;
+						}
+						catch (IOException e1)
+						{
+							e1.printStackTrace();
+							return false;
+						}
+					}
+				};
+				
+				List<Path> uniProtToKeggFiles = uniprotToKeggRetriever.getActualFetchDestinations().stream()
+																			.filter(fileName -> isValidKEGGmappingFile.test(fileName))
+																			.map(fileName -> Paths.get(fileName))
+																			.collect(Collectors.toList());
+				// This could happen if the UniProt files were already downloaded. In that case, uniprotToKeggRetriever.getActualFetchDestinations() will return 
+				// NULL because nothing was downloaded this time.
+				if (uniProtToKeggFiles == null || uniProtToKeggFiles.isEmpty())
+				{
+					// Since the uniprotToKeggRetriever didn't download anything, maybe we can check in the directory and see if there are any other files there.
+					String uniProtToKeggDestination = uniprotToKeggRetriever.getFetchDestination();
+					
+					try
+					{
+						// We'll try to search for everything in the uniprotToKeggRetriever's destination's directory.
+						uniProtToKeggFiles = Files.list(Paths.get(uniProtToKeggDestination).getParent())
+													.filter(path -> isValidKEGGmappingFile.test(path.toString()) )
+													.collect(Collectors.toList());
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+					
+				}
+
+				if (uniProtToKeggFiles.size() > 0)
+				{
+					List<Path> files = uniProtToKeggFiles;
+					Callable<Boolean> job = new Callable<Boolean>()
+					{
+
+						@Override
+						public Boolean call() throws Exception
+						{
+							KEGGFileRetriever retriever = new KEGGFileRetriever();
+							retriever.setAdapter(keggFileRetriever.getAdapter());
+							retriever.setDataURL(keggFileRetriever.getDataURL());
+							retriever.setUniprotToKEGGFiles(files);
+							retriever.setMaxAge(keggFileRetriever.getMaxAge());
+							// the ".2" is for the ReferenceDatabase - in this case it is UniProt whose DB_ID is 2.
+							retriever.setFetchDestination(downloadDestination.replaceAll(".txt", "." + speciesCode + ".2.txt"));
+							try
+							{
+								retriever.fetchData();
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+								throw new Error(e);
+							}
+							return true;
+						}
+					};
+					keggJobs.add(job);
+
+				}
+				else
+				{
+					logger.info("Sorry, No uniprot-to-kegg mappings found for species {} / {}", speciesName, speciesCode);
+				}
+			}
+			// These jobs are not very CPU intense so it is probably not too serious to them ALL in parallel.
+			ForkJoinPool pool = new ForkJoinPool(keggJobs.size());
+			pool.invokeAll(keggJobs);
+		}
 	}
 
 	/**
@@ -390,7 +509,11 @@ public class AddLinks
 	 */
 	private void executeSimpleFileRetrievers()
 	{
-		fileRetrievers.keySet().stream().parallel().forEach(k -> {
+		fileRetrievers.keySet().stream().parallel()
+										.filter(k -> !k.equals("KEGGRetriever"))
+										.forEach(k ->
+		{
+			// KEGGRetreiver is special: it depends on the result of the uniprotToKegg retriever as an input, so we can't execute it here.
 			if (fileRetrieverFilter.contains(k))
 			{
 				FileRetriever retriever = fileRetrievers.get(k);

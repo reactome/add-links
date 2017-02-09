@@ -202,17 +202,6 @@
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
-<!-- 		<entry key="ensMappedEntrezGeneRefCreator">
-			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ensMappedEntrezGeneRefCreator">
-				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
-				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
-				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
-				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
-				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
-				<property name="testMode" value="true"/>
-			</bean>
-		</entry> -->
  		<entry key="ENSEMBLToEntrezGeneRefCreator">
 			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLToEntrezGeneRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -246,5 +235,17 @@
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
+		<entry key="KEGGReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.KEGGReferenceCreator" id="KEGGReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="KEGG"/>
+				<property name="testMode" value="true"/>
+			</bean>
+		</entry>
+
 	</util:map>
 </beans>

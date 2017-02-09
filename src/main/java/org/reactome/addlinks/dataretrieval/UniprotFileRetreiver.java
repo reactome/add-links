@@ -13,8 +13,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -42,6 +45,8 @@ public class UniprotFileRetreiver extends FileRetriever
 	private String mapFromDb="";
 	private String mapToDb="";
 	private BufferedInputStream inStream;
+	// A list of paths that were actually downloaded to.
+	private static List<String> actualFetchDestinations = Collections.synchronizedList(new ArrayList<String>());
 
 	private final int maxAttemptCount = 5;
 	/**
@@ -302,6 +307,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					logger.debug(".tab result size: {}", result.length);
 					
 					Path path = Paths.get(new URI("file://" + this.destination));
+					
 					Files.createDirectories(path.getParent());
 					//Files.write(path, result);
 					BufferedWriter writer = Files.newBufferedWriter(path);
@@ -312,6 +318,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					{
 						throw new Exception("The new file "+ path +" is not readable!");
 					}
+					UniprotFileRetreiver.actualFetchDestinations.add(path.toString());
 				}
 				else
 				{
@@ -338,6 +345,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					{
 						throw new Exception("The new file "+ unmappedIdentifierspath +" is not readable!");
 					}
+					UniprotFileRetreiver.actualFetchDestinations.add(unmappedIdentifierspath.toString());
 				}
 				else
 				{
@@ -419,5 +427,10 @@ public class UniprotFileRetreiver extends FileRetriever
 	public String getFetchDestination()
 	{
 		return this.destination;
+	}
+
+	public List<String> getActualFetchDestinations()
+	{
+		return UniprotFileRetreiver.actualFetchDestinations;
 	}
 }
