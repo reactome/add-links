@@ -231,6 +231,17 @@
 				</property>
 			</bean>
 		</entry>
+		
+		<entry key="KEGGFileProcessor">
+			<bean id="KEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.KEGGFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/kegg_entries/"/>
+					</bean>
+				</property>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries*"/>
+			</bean>
+		</entry>
 	</util:map>
 
 </beans>

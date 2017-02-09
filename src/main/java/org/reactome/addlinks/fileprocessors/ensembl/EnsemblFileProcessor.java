@@ -138,9 +138,9 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 				throw new RuntimeException(e);
 			}
 			logger.info("Processed {} records.",counter.get());
-			mappings.put(dbName, ensemblToOther);
+			this.mappings.put(dbName, ensemblToOther);
 		}
-		return mappings;
+		return this.mappings;
 	}
 
 	public void setDbs(List<String> dbs)
