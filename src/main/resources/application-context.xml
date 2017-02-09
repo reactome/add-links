@@ -64,6 +64,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>KEGGFileProcessor</value>
 		<!-- <value>zincProtFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
@@ -86,6 +87,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>KEGGReferenceCreator</value>
 		<!-- <value>upMappedKEGGRefCreator</value>
 		<value>upMappedPDBRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
