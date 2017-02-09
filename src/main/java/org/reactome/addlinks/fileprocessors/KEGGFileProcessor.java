@@ -89,7 +89,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 				String keggDefinition = null;
 				String keggIdentifier = null;
 				String ecNumber = null;
-				String uniProtID = null;
+				String[] uniProtIDs = null;
 				boolean watchingForUniprotID = false;
 				while ((line = br.readLine()) != null)
 				{
@@ -146,7 +146,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 									// The UniProt ID could be on the FIRST line of DBLINKS (well... I haven't seen it but there's no reason to think it's impossible).
 									if (line.contains("UniProt:"))
 									{
-										uniProtID = line.replaceAll("UniProt:", "").trim();
+										uniProtIDs = line.replaceAll("UniProt:", "").trim().split("\\s+");
 										watchingForUniprotID = false;
 									}
 									else
@@ -162,7 +162,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							// Once UniProt is found, turn off the switch.
 							if (line.contains("UniProt:"))
 							{
-								uniProtID = line.replaceAll("UniProt:", "").trim();
+								uniProtIDs = line.replaceAll("UniProt:", "").trim().split("\\s+");
 								watchingForUniprotID = false;
 							}
 						}
@@ -179,7 +179,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							keggIdentifier = keggGeneID;
 						}
 
-						if (uniProtID!=null &&  !uniProtID.equals(""))
+						if (uniProtIDs!=null &&  uniProtIDs.length > 0)
 						{
 							Map<KEGGKeys,String> keggValues = new HashMap<KEGGKeys,String>(5);
 							keggValues.put(KEGGKeys.KEGG_IDENTIFIER, keggIdentifier);
@@ -187,36 +187,39 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							keggValues.put(KEGGKeys.KEGG_SPECIES, keggSpeciesCode);
 							keggValues.put(KEGGKeys.KEGG_DEFINITION, keggDefinition);
 							keggValues.put(KEGGKeys.EC_NUMBERS, ecNumber);
-							logger.trace("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
-							if (!this.mappings.containsKey(uniProtID))
+							for (String uniProtID : uniProtIDs)
 							{
-								List<Map<KEGGFileProcessor.KEGGKeys, String>> keggList = new ArrayList<Map<KEGGFileProcessor.KEGGKeys, String>>();
-								keggList.add(keggValues);
-								this.mappings.put(uniProtID, keggList);
-							}
-							else
-							{
-								//we should check for dupliates...
-								boolean isDuplicate = false;
-								for (Map<KEGGKeys, String> keggValue : this.mappings.get(uniProtID))
+								logger.trace("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
+								if (!this.mappings.containsKey(uniProtID))
 								{
-									if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(keggValue.get(KEGGKeys.KEGG_IDENTIFIER)))
+									List<Map<KEGGFileProcessor.KEGGKeys, String>> keggList = new ArrayList<Map<KEGGFileProcessor.KEGGKeys, String>>();
+									keggList.add(keggValues);
+									this.mappings.put(uniProtID, keggList);
+								}
+								else
+								{
+									//we should check for dupliates...
+									boolean isDuplicate = false;
+									for (Map<KEGGKeys, String> keggValue : this.mappings.get(uniProtID))
 									{
-										isDuplicate = true;
-										logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
+										if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(keggValue.get(KEGGKeys.KEGG_IDENTIFIER)))
+										{
+											isDuplicate = true;
+											logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
+										}
+									}
+									if (!isDuplicate)
+									{
+										this.mappings.get(uniProtID).add(keggValues);
 									}
 								}
-								if (!isDuplicate)
-								{
-									this.mappings.get(uniProtID).add(keggValues);
-								}
+								//Now reset all the variables.
+								keggDefinition = null;
+								keggGeneID = null;
+								keggSpeciesCode = null;
+								keggIdentifier = null;
+								ecNumber = null;
 							}
-							//Now reset all the variables.
-							keggDefinition = null;
-							keggGeneID = null;
-							keggSpeciesCode = null;
-							keggIdentifier = null;
-							ecNumber = null;
 						}
 						else
 						{
