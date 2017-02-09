@@ -175,7 +175,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 						watchingForUniprotID = false;
 						if (keggIdentifier == null)
 						{
-							logger.warn("\"NAME\" field not present for {}, will use {} as the KEGG Identifier", keggGeneID, keggGeneID);
+							// We can create a link to KEGG using the value from the ENTRY record, if there was no NAME record present.
 							keggIdentifier = keggGeneID;
 						}
 
