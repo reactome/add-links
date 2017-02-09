@@ -3,8 +3,13 @@ package org.reactome.addlinks.fileprocessors;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,7 +17,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class KEGGFileProcessor extends FileProcessor<Map<KEGGFileProcessor.KEGGKeys, String>>
+public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFileProcessor.KEGGKeys, String>>>
 {
 	public enum KEGGKeys
 	{
@@ -23,22 +28,58 @@ public class KEGGFileProcessor extends FileProcessor<Map<KEGGFileProcessor.KEGGK
 		EC_NUMBERS
 	}
 	
+	private static final Pattern pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
+	
 	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
 	
 	private static final Logger logger = LogManager.getLogger();
+	
+	@Override
+	protected Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> getIdMappingsFromFilesMatchingGlob()
+	{
+		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
+		
+		ReactomeMappingFileVisitor visitor = new ReactomeMappingFileVisitor() {
+			@Override
+			protected void addFileToMapping(Path file, Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mapping)
+			{
+				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
+				if (patternMatcher.matches() )
+				{
+					processFile(file);
+				}
+			}
+		};
+		Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = new HashMap<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>>();
+		this.mappings = mappings;
+		visitor.setMapping(this.mappings);
+		visitor.setMatcher(FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob));
+		this.globFileVisitor = visitor;
+		
+		try
+		{
+			Files.walkFileTree(this.pathToFile, this.globFileVisitor);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return visitor.getMapping();
+	}
+	
 	/**
 	 * Returns UniProt-to-KEGG mappings.
+	 * @param file 
 	 * 
 	 * @return
 	 */
-	@Override
-	public Map<String, Map<KEGGKeys, String>> getIdMappingsFromFile()
+	private Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> processFile(Path path)
 	{
-		Map<String, Map<KEGGKeys, String>> mappings = new HashMap<String, Map<KEGGKeys, String>>();
-
 		try
 		{
-			try (FileReader fr = new FileReader(this.pathToFile.toFile());
+			logger.debug("Processing: {}", path.toString());
+			try (FileReader fr = new FileReader(path.toFile());
 					BufferedReader br = new BufferedReader(fr);)
 			{
 				String line;
@@ -81,10 +122,10 @@ public class KEGGFileProcessor extends FileProcessor<Map<KEGGFileProcessor.KEGGK
 							switch (parts[0].trim())
 							{
 								case "ENTRY":
-									keggGeneID = parts[1];
+									keggGeneID = parts[1].trim();
 									break;
 								case "ORGANISM":
-									keggSpeciesCode = parts[1];
+									keggSpeciesCode = parts[1].trim();
 									break;
 								case "DEFINITION":
 									keggDefinition = line.replaceFirst("DEFINITION +", "");
@@ -129,31 +170,53 @@ public class KEGGFileProcessor extends FileProcessor<Map<KEGGFileProcessor.KEGGK
 					// When we get the "///" line, it means "End Of Record" and we need to add what we have to the map and then reset everything.
 					else
 					{
+						// Flip the flag on watchingForUniprotID back to false, since we've reached the end of a record.
+						// This is necessasry, in case one of the Records doesn't have any UniProt dblinks.
+						watchingForUniprotID = false;
+						if (keggIdentifier == null)
+						{
+							logger.warn("\"NAME\" field not present for {}, will use {} as the KEGG Identifier", keggGeneID, keggGeneID);
+							keggIdentifier = keggGeneID;
+						}
+
 						if (uniProtID!=null &&  !uniProtID.equals(""))
 						{
-							if (!mappings.containsKey(uniProtID))
+							Map<KEGGKeys,String> keggValues = new HashMap<KEGGKeys,String>(5);
+							keggValues.put(KEGGKeys.KEGG_IDENTIFIER, keggIdentifier);
+							keggValues.put(KEGGKeys.KEGG_GENE_ID, keggGeneID);
+							keggValues.put(KEGGKeys.KEGG_SPECIES, keggSpeciesCode);
+							keggValues.put(KEGGKeys.KEGG_DEFINITION, keggDefinition);
+							keggValues.put(KEGGKeys.EC_NUMBERS, ecNumber);
+							logger.trace("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
+							if (!this.mappings.containsKey(uniProtID))
 							{
-								Map<KEGGKeys,String> keggValues = new HashMap<KEGGKeys,String>(5);
-								keggValues.put(KEGGKeys.KEGG_IDENTIFIER, keggIdentifier);
-								keggValues.put(KEGGKeys.KEGG_GENE_ID, keggGeneID);
-								keggValues.put(KEGGKeys.KEGG_SPECIES, keggSpeciesCode);
-								keggValues.put(KEGGKeys.KEGG_DEFINITION, keggDefinition);
-								keggValues.put(KEGGKeys.EC_NUMBERS, ecNumber);
-								mappings.put(uniProtID, keggValues);
-								
-								logger.debug("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
-								
-								//Now reset all the variables.
-								keggDefinition = null;
-								keggGeneID = null;
-								keggSpeciesCode = null;
-								keggIdentifier = null;
-								ecNumber = null;
+								List<Map<KEGGFileProcessor.KEGGKeys, String>> keggList = new ArrayList<Map<KEGGFileProcessor.KEGGKeys, String>>();
+								keggList.add(keggValues);
+								this.mappings.put(uniProtID, keggList);
 							}
 							else
 							{
-								logger.warn("The UniProt ID {} is already in the UniProt-to-KEGG mapping, the new mapping will NOT be added.", uniProtID);
+								//we should check for dupliates...
+								boolean isDuplicate = false;
+								for (Map<KEGGKeys, String> keggValue : this.mappings.get(uniProtID))
+								{
+									if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(keggValue.get(KEGGKeys.KEGG_IDENTIFIER)))
+									{
+										isDuplicate = true;
+										logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
+									}
+								}
+								if (!isDuplicate)
+								{
+									this.mappings.get(uniProtID).add(keggValues);
+								}
 							}
+							//Now reset all the variables.
+							keggDefinition = null;
+							keggGeneID = null;
+							keggSpeciesCode = null;
+							keggIdentifier = null;
+							ecNumber = null;
 						}
 						else
 						{
@@ -173,7 +236,9 @@ public class KEGGFileProcessor extends FileProcessor<Map<KEGGFileProcessor.KEGGK
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		return mappings;
+		return this.mappings;
 	}
+
+
 
 }
