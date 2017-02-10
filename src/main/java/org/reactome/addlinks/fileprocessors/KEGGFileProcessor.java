@@ -3,8 +3,6 @@ package org.reactome.addlinks.fileprocessors;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,45 +26,11 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 		EC_NUMBERS
 	}
 	
-	private static final Pattern pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
+	//private static final Pattern pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
 	
 	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
 	
 	private static final Logger logger = LogManager.getLogger();
-	
-	@Override
-	protected Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> getIdMappingsFromFilesMatchingGlob()
-	{
-		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
-		
-		ReactomeMappingFileVisitor visitor = new ReactomeMappingFileVisitor() {
-			@Override
-			protected void addFileToMapping(Path file, Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mapping)
-			{
-				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
-				if (patternMatcher.matches() )
-				{
-					processFile(file);
-				}
-			}
-		};
-		Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = new HashMap<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>>();
-		this.mappings = mappings;
-		visitor.setMapping(this.mappings);
-		visitor.setMatcher(FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob));
-		this.globFileVisitor = visitor;
-		
-		try
-		{
-			Files.walkFileTree(this.pathToFile, this.globFileVisitor);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		return visitor.getMapping();
-	}
 	
 	/**
 	 * Returns UniProt-to-KEGG mappings.
@@ -74,6 +38,12 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 	 * 
 	 * @return
 	 */
+	public KEGGFileProcessor()
+	{
+		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
+		this.fileProcessor = this::processFile;
+	}
+	
 	private Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> processFile(Path path)
 	{
 		try
@@ -111,8 +81,6 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 					// http://rest.kegg.jp/get/xla:380246 which suggests that "cdk1.S" is a "better" KEGG Identifier than "K02087" 
 
 					// Also, it looks like we will need to extract EC numbers from ORTHOLOGY (if it's there) to create the EC abd BRENDA and IntEnz identifiers.
-					
-					
 					
 					if (!line.equals("///"))
 					{

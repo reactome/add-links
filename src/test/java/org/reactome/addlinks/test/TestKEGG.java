@@ -1,6 +1,7 @@
 package org.reactome.addlinks.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -23,7 +24,6 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
-import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 import org.reactome.addlinks.referencecreators.KEGGReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
