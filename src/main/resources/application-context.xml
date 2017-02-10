@@ -40,9 +40,10 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>EnsemblToALL</value>
-		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToKEGG</value>
+		<value>KEGGRetriever</value>
+		<!-- <value>EnsemblToALL</value>
+		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
@@ -59,11 +60,12 @@
 		<value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>OrthologsFromZinc</value>
-		<value>Zinc</value>
+		<value>Zinc</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>zincProtFileProcessor</value>
+		<value>KEGGFileProcessor</value>
+		<!-- <value>zincProtFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
@@ -81,11 +83,12 @@
 		<value>UniprotToOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value> -->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
+		<!-- <value>upMappedKEGGRefCreator</value>
 		<value>upMappedPDBRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
@@ -103,7 +106,7 @@
 		<value>zincToUniProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value> -->
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"

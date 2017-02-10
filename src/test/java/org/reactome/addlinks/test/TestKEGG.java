@@ -1,6 +1,7 @@
 package org.reactome.addlinks.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -23,7 +24,6 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
-import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 import org.reactome.addlinks.referencecreators.KEGGReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +137,7 @@ public class TestKEGG
 		// Get the KEGG mappings.
 		KEGGFileProcessor keggProcessor = new KEGGFileProcessor();
 		keggProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"));
-		Map<String,Map<KEGGKeys,String>> mappings = keggProcessor.getIdMappingsFromFile();
+		Map<String,List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = keggProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size()>0);
 	}
@@ -161,7 +161,7 @@ public class TestKEGG
 		
 		//Now that the Uniprot-to-KEGG lookup is done we have to query against KEGG to get the Entries list.
 		KEGGRetriever.setAdapter(dbAdapter);
-		KEGGRetriever.setFetchDestination("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt");
+		KEGGRetriever.setFetchDestination("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.0.0.txt");
 		KEGGRetriever.setDataURL(new URI("http://rest.kegg.jp/get/"));
 		List<Path> uniprotToKEGGFiles = new ArrayList<Path>();
 		uniprotToKEGGFiles.add(Paths.get(UniProtToKEGG.getFetchDestination()));
@@ -171,8 +171,9 @@ public class TestKEGG
 		
 		// Get the KEGG mappings.
 		KEGGFileProcessor keggProcessor = new KEGGFileProcessor();
-		keggProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"));
-		Map<String,Map<KEGGKeys,String>> mappings = keggProcessor.getIdMappingsFromFile();
+		keggProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.0.0.txt"));
+		keggProcessor.setFileGlob("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.0.0.txt");
+		Map<String,List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = keggProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size()>0);
 		

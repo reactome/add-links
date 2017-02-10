@@ -2,7 +2,6 @@ package org.reactome.addlinks.fileprocessors.ensembl;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.transform.Result;
@@ -36,41 +34,45 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	
 	private static final Logger logger = LogManager.getLogger();
 	
-	private static final Pattern pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
-	
-	@Override
-	protected Map<String, Map<String,List<String>>> getIdMappingsFromFilesMatchingGlob()
+	public EnsemblFileProcessor()
 	{
-		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
-		
-		ReactomeMappingFileVisitor visitor = new ReactomeMappingFileVisitor() {
-			@Override
-			protected void addFileToMapping(Path file, Map<String, Map<String, List<String>>> mapping)
-			{
-				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
-				if (patternMatcher.matches() )
-				{
-					processFile(file);
-				}
-			}
-		};
-		Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
-		this.mappings = mappings;
-		visitor.setMapping(this.mappings);
-		visitor.setMatcher(FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob));
-		this.globFileVisitor = visitor;
-		
-		try
-		{
-			Files.walkFileTree(this.pathToFile, this.globFileVisitor);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		return visitor.getMapping();
+		this.pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
+		this.fileProcessor = this::processFile;
 	}
+	
+//	@Override
+//	protected Map<String, Map<String,List<String>>> getIdMappingsFromFilesMatchingGlob()
+//	{
+//		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
+//		
+//		ReactomeMappingFileVisitor visitor = new ReactomeMappingFileVisitor() {
+//			@Override
+//			protected void addFileToMapping(Path file, Map<String, Map<String, List<String>>> mapping)
+//			{
+//				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
+//				if (patternMatcher.matches() )
+//				{
+//					processFile(file);
+//				}
+//			}
+//		};
+//		Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
+//		this.mappings = mappings;
+//		visitor.setMapping(this.mappings);
+//		visitor.setMatcher(FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob));
+//		this.globFileVisitor = visitor;
+//		
+//		try
+//		{
+//			Files.walkFileTree(this.pathToFile, this.globFileVisitor);
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		
+//		return visitor.getMapping();
+//	}
 
 	private Map<String, Map<String, List<String>>> processFile(Path file) throws TransformerFactoryConfigurationError
 	{
@@ -138,9 +140,9 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 				throw new RuntimeException(e);
 			}
 			logger.info("Processed {} records.",counter.get());
-			mappings.put(dbName, ensemblToOther);
+			this.mappings.put(dbName, ensemblToOther);
 		}
-		return mappings;
+		return this.mappings;
 	}
 
 	public void setDbs(List<String> dbs)
