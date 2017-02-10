@@ -117,7 +117,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 					sourceIdentifiersWithNewIdentifier ++;
 					if (!this.testMode)
 					{
-						refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID);
+						this.refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID);
 					}
 				}
 				else

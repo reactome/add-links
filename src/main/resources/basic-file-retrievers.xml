@@ -128,6 +128,15 @@
 				<property name="maxAge" ref="maxFileAge" />
 			</bean>
 		</entry>
+		
+		<entry key="KEGGRetriever">
+			<bean class="org.reactome.addlinks.dataretrieval.KEGGFileRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"/>
+				<property name="dataURL" value="http://rest.kegg.jp/get/" />
+				<property name="maxAge" ref="maxFileAge" />
+				<!-- You will need to set UniprotToKEGGFiles at runtime. -->
+			</bean>
+		</entry>
 	</util:map>
 	
 </beans>

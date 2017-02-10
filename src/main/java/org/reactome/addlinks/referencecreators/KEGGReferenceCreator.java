@@ -14,7 +14,7 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 
-public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, String>>
+public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
 {
 	private static final Logger logger = LogManager.getLogger();
 	
@@ -24,7 +24,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, S
 	}
 
 	@Override
-	public void createIdentifiers(long personID, Map<String, Map<KEGGKeys, String>> mapping, List<GKInstance> sourceReferences) throws Exception
+	public void createIdentifiers(long personID, Map<String, List<Map<KEGGKeys, String>>> mappings, List<GKInstance> sourceReferences) throws Exception
 	{
 		int sourceIdentifiersWithNoMapping = 0;
 		int sourceIdentifiersWithNewIdentifier = 0;
@@ -51,92 +51,95 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<Map<KEGGKeys, S
 			}
 
 			// Check if the source UniProt Identifier is in the mapping.
-			if (mapping.containsKey(sourceReferenceIdentifier))
+			if (mappings.containsKey(sourceReferenceIdentifier))
 			{
 				@SuppressWarnings("unchecked")
 				Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
 				boolean xrefAlreadyExists = false;
 				
-				Map<KEGGKeys, String> keggData = mapping.get(sourceReferenceIdentifier);
+				List<Map<KEGGKeys, String>> keggMaps = mappings.get(sourceReferenceIdentifier);
 				
-				// Use the KEGG Identifier (from the NAME line). If there is none, use the KEGG gene id, example: "hsa:12345"
-				String keggIdentifier = keggData.get(KEGGKeys.KEGG_IDENTIFIER);
-				String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
-				
-				if (keggIdentifier == null || keggIdentifier.trim().equals("") )
+				for (Map<KEGGKeys, String> keggData : keggMaps)
 				{
-					keggIdentifier = keggGeneIdentifier;
-				}
-				
-				for (GKInstance xref : xrefs)
-				{
-					logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-					// We won't add a cross-reference if it already exists
-					if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( keggIdentifier ))
-					{
-						xrefAlreadyExists = true;
-						// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-						// in letting the loop run longer.
-						// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-						break;
-					}
-				}
-				if (!xrefAlreadyExists)
-				{
-				
-					String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
-					String ecNumbers = keggData.get(KEGGKeys.EC_NUMBERS);
+					// Use the KEGG Identifier (from the NAME line). If there is none, use the KEGG gene id, example: "hsa:12345"
+					String keggIdentifier = keggData.get(KEGGKeys.KEGG_IDENTIFIER);
+					String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
 					
-					sourceIdentifiersWithNewIdentifier++;
-					if (!this.testMode)
+					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
-						// Also need to add the keggDefinition and keggGeneID as "name" attributes.
-						List<String> names = new ArrayList<String>(3);
-						names.add(keggDefinition);
-						names.add(keggIdentifier);
-						
-						if (! keggIdentifier.equals(keggGeneIdentifier))
+						keggIdentifier = keggGeneIdentifier;
+					}
+					for (GKInstance xref : xrefs)
+					{
+						logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+						// We won't add a cross-reference if it already exists
+						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( keggIdentifier ))
 						{
+							xrefAlreadyExists = true;
+							// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+							// in letting the loop run longer.
+							// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+							break;
+						}
+					}
+					if (!xrefAlreadyExists)
+					{
+						String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
+						sourceIdentifiersWithNewIdentifier++;
+						if (!this.testMode)
+						{
+							// Also need to add the keggDefinition and keggGeneID as "name" attributes.
+							List<String> names = new ArrayList<String>(3);
+							names.add(keggDefinition);
 							names.add(keggGeneIdentifier);
+							
+							if (! keggIdentifier.equals(keggGeneIdentifier))
+							{
+								names.add(keggIdentifier);
+							}
+							Map<String,List<String>> extraAttributes = new HashMap<String,List<String>>(1);
+							extraAttributes.put(ReactomeJavaConstants.name, names);
+							refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID, extraAttributes);
 						}
-						Map<String,List<String>> extraAttributes = new HashMap<String,List<String>>(1);
-						extraAttributes.put(ReactomeJavaConstants.name, names);
-						refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID, extraAttributes);
-					}
-					// Not only do we need to create a KEGG reference, we also need to
-					// create a BRENDA reference and an IntEnz reference if there are
-					// EC numbers present
-					if (ecNumbers != null && !ecNumbers.trim().equals(""))
-					{
-						for (String ecNumber : ecNumbers.split(" "))
+						// Not only do we need to create a KEGG reference, we also need to
+						// create a BRENDA reference and an IntEnz reference if there are
+						// EC numbers present
+						// TODO: Remove this once the stand-alone IntEnz and BRENDA code works Ok.
+						/*
+						String ecNumbers = keggData.get(KEGGKeys.EC_NUMBERS);
+						if (ecNumbers != null && !ecNumbers.trim().equals(""))
 						{
-							if (!ecNumber.contains("-"))
+							for (String ecNumber : ecNumbers.split(" "))
 							{
-								// According to the old Perl code, the BRENDA reference should only be created if there are no dashes in the EC number.
+								if (!ecNumber.contains("-"))
+								{
+									// According to the old Perl code, the BRENDA reference should only be created if there are no dashes in the EC number.
+									if (!this.testMode)
+									{
+										refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "BRENDA", personID, this.getClass().getName(), speciesID);
+									}
+								}
+								else
+								{
+									// According to the old Perl code, dashes should be removed and trailing "." should be removed.
+									if (!this.testMode)
+									{
+										ecNumber = ecNumber.replace("-", "").replaceAll("\\.*$", "");
+									}
+								}
+								// IntEnz reference is always created.
 								if (!this.testMode)
 								{
-									refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "BRENDA", personID, this.getClass().getName(), speciesID);
+									refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "IntEnz", personID, this.getClass().getName(), speciesID);
 								}
-							}
-							else
-							{
-								// According to the old Perl code, dashes should be removed and trailing "." should be removed.
-								if (!this.testMode)
-								{
-									ecNumber = ecNumber.replace("-", "").replaceAll("\\.*$", "");
-								}
-							}
-							// IntEnz reference is always created.
-							if (!this.testMode)
-							{
-								refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "IntEnz", personID, this.getClass().getName(), speciesID);
 							}
 						}
+						*/
 					}
-				}
-				else
-				{
-					sourceIdentifiersWithExistingIdentifier++;
+					else
+					{
+						sourceIdentifiersWithExistingIdentifier++;
+					}
 				}
 			}
 			else
