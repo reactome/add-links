@@ -1,12 +1,19 @@
 package org.reactome.addlinks.fileprocessors;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +43,45 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 		return this.getIdMappingsFromFilesMatchingGlob();
 	}
 	
-	protected abstract Map<String, T> getIdMappingsFromFilesMatchingGlob();
+	//protected abstract Map<String, T> getIdMappingsFromFilesMatchingGlob();
+	
+	protected Function<Path, Map<String, T>> fileProcessor ;
+	
+	protected Pattern pattern = null;
+	
+	protected Map<String, T> getIdMappingsFromFilesMatchingGlob()
+	{
+		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
+		
+		ReactomeMappingFileVisitor visitor = new ReactomeMappingFileVisitor() {
+			@Override
+			protected void addFileToMapping(Path file, Map<String, T> mapping)
+			{
+				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
+				if (patternMatcher.matches())
+				{
+					fileProcessor.apply(file);
+				}
+			}
+		};
+		//Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = new HashMap<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>>();
+		this.mappings = new HashMap<String, T>();
+		//this.mappings = mappings;
+		visitor.setMapping(this.mappings);
+		visitor.setMatcher(FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob));
+		this.globFileVisitor = visitor;
+		
+		try
+		{
+			Files.walkFileTree(this.pathToFile, this.globFileVisitor);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return visitor.getMapping();
+	}
 	
 	public abstract class ReactomeMappingFileVisitor extends SimpleFileVisitor<Path>
 	{
@@ -49,7 +94,7 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 		@Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
 		{
-			logger.debug("Checking for file: {}", file);
+			logger.trace("Checking for file: {}", file);
             if (this.matcher.matches(file))
             {
             	logger.debug("File {} matches the matcher", file);
@@ -58,7 +103,7 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
             }
             else
             {
-            	logger.error("File {} does not match pattern.", file);
+            	logger.trace("File {} does not match pattern.", file);
             }
             return FileVisitResult.CONTINUE;
         }
