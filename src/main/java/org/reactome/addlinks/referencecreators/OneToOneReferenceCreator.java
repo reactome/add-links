@@ -1,6 +1,5 @@
 package org.reactome.addlinks.referencecreators;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.schema.InvalidAttributeException;
 
 public class OneToOneReferenceCreator extends SimpleReferenceCreator<Object>
 {

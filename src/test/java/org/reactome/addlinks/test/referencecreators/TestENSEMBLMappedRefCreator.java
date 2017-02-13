@@ -90,7 +90,7 @@ public class TestENSEMBLMappedRefCreator
 			ENSEMBLToEntrezGene.setSpecies(species.toLowerCase().replace(" ", "_"));
 			ENSEMBLToEntrezGene.fetchData();
 			ENSEMBLToEntrezGeneFileProcessor.setPath(Paths.get(ENSEMBLToEntrezGene.getFetchDestination()));
-			@SuppressWarnings("unchecked")
+			//@SuppressWarnings("unchecked")
 			Map<String,Map<String,List<String>>> mappings = (Map<String,Map<String,List<String>>>) ENSEMBLToEntrezGeneFileProcessor.getIdMappingsFromFile();
 			assertTrue(mappings.keySet().size() > 0);
 			ensMappedEntrezGeneRefCreator.setTestMode(true);
