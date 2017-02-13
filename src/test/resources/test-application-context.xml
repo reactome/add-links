@@ -279,7 +279,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqRNARefCreator">
