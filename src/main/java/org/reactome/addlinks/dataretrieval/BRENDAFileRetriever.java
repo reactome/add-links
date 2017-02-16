@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
@@ -101,19 +102,38 @@ public class BRENDAFileRetriever extends FileRetriever
 	@Override
 	protected void downloadData() throws Exception
 	{
+		AtomicInteger requestCounter = new AtomicInteger(0);
+		// The number of identifiers that returned no mapping from BRENDA.
+		AtomicInteger noMapping = new AtomicInteger(0);
+		//AtomicInteger existsMapping = new AtomicInteger(0);
+		
 		BRENDASoapClient client = new BRENDASoapClient(this.userName, this.password);
 		//String result = client.callBrendaService("http://www.brenda-enzymes.org/soap/brenda_server.php", "getSequence", "organism*Bacillus anthracis#firstAccessionCode*Q81PP9");
-		StringBuilder sb = new StringBuilder();
+		StringBuffer sb = new StringBuffer();
+		logger.info("{} species to check.", identifiers.keySet().size());
 		for (String speciesName : identifiers.keySet())
 		{
-			for (String uniprotID : identifiers.get(speciesName))
+			logger.info("{} identifiers for species {}", identifiers.get(speciesName).size(), speciesName);
+			//for (String uniprotID : identifiers.get(speciesName))
+			identifiers.get(speciesName).parallelStream().forEach(uniprotID ->
 			{
 				// BRENDA won't work if there's an underscore in the species name.
-				speciesName = speciesName.replace("_", " ");
-				String result = client.callBrendaService(this.getDataURL().toString(), "getSequence", "organism*"+speciesName+"#firstAccessionCode*"+uniprotID);
-				//logger.debug(result);
+				String s = speciesName.replace("_", " ");
+				String result = client.callBrendaService(this.getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
+				
+				if (result == null || result.trim().equals(""))
+				{
+					noMapping.incrementAndGet();
+				}
+
+				result = "RESULT for " + s + "/" + uniprotID + ": " + result; 
+
 				sb.append(result).append("\n");
-			}
+				if (requestCounter.incrementAndGet() % 100 == 0)
+				{
+					logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
+				}
+			});
 		}
 		Files.createDirectories(Paths.get(this.destination).getParent());
 		// You can probably use this patter to match the results: ecNumber\*([\d\.]+)\#sequence\*[A-Z]*\#noOfAminoAcids\*\d*\#firstAccessionCode\*([^#]+)\#
@@ -128,6 +148,16 @@ public class BRENDAFileRetriever extends FileRetriever
 	public void setPassword(String password)
 	{
 		this.password = password;
+	}
+
+	public String getUserName()
+	{
+		return this.userName;
+	}
+	
+	public String getPassword()
+	{
+		return this.password;
 	}
 }
 ;
