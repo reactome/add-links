@@ -26,6 +26,9 @@ import org.xml.sax.InputSource;
 
 public class RHEAFileProcessor extends FileProcessor<String>
 {
+	// TODO: this will probably need to be updated to process this file: ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv
+	// It's much simpler: It has a Rhea ID, and a Reactome ID on each line.
+	
 	private static final Logger logger = LogManager.getLogger();
 	// XPATH expression to get RHEA URIs: /ns2:RheaWsResponse/resultset/rheaReaction/rheaid/rheaUri/uri[../uriresponseformat/text()='cmlreact' ]
 	private static XPathExpression rheaURIPath ;
