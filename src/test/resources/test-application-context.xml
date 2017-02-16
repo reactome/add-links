@@ -41,6 +41,14 @@
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA.txt"/>
 		<property name="maxAge" ref="zeroFileAge" />
 	</bean>
+	
+	<bean id="brendaProcessor" class="org.reactome.addlinks.fileprocessors.BRENDAFileProcessor">
+		<property name="path">
+		<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA.txt"/>
+			</bean>
+		</property>
+	</bean>
 
 	<!-- Beans for Orphanet testing. -->
 	<bean id="OrphanetToUniprotReferenceDNASequence"
