@@ -25,7 +25,7 @@ public class TestBrendaFileRetrieverIT
 		
 		Map<String, List<String>> identifiers = new HashMap<String, List<String>>();
 		
-		identifiers.put("Homo sapiens", Arrays.asList("3uzd", "4d18"));
+		identifiers.put("Homo sapiens", Arrays.asList("Q8N5Z0", "O00116"));
 		
 		brendaRetriever.setIdentifiers(identifiers);
 		

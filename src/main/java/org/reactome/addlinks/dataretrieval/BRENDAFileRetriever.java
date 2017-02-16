@@ -102,20 +102,20 @@ public class BRENDAFileRetriever extends FileRetriever
 	protected void downloadData() throws Exception
 	{
 		BRENDASoapClient client = new BRENDASoapClient(this.userName, this.password);
-		//String result = client.callBrendaService("http://www.brenda-enzymes.org/soap/brenda_server.php", "getPdb", "organism*Homo sapiens#pdb*3uzd");
+		//String result = client.callBrendaService("http://www.brenda-enzymes.org/soap/brenda_server.php", "getSequence", "organism*Bacillus anthracis#firstAccessionCode*Q81PP9");
 		StringBuilder sb = new StringBuilder();
 		for (String speciesName : identifiers.keySet())
 		{
-			for (String pdbID : identifiers.get(speciesName))
+			for (String uniprotID : identifiers.get(speciesName))
 			{
 				// BRENDA won't work if there's an underscore in the species name.
 				speciesName = speciesName.replace("_", " ");
-				String result = client.callBrendaService(this.getDataURL().toString(), "getPdb", "organism*"+speciesName+"#pdb*"+pdbID); //4d18
+				String result = client.callBrendaService(this.getDataURL().toString(), "getSequence", "organism*"+speciesName+"#firstAccessionCode*"+uniprotID);
 				//logger.debug(result);
 				sb.append(result).append("\n");
 			}
 		}
-		//String result = client.callBrendaService(this.getDataURL().toString(), "getPdb", "organism*Homo sapiens#pdb*3uzd"); //4d18
+		Files.createDirectories(Paths.get(this.destination).getParent());
 		Files.write(Paths.get(this.destination), sb.toString().getBytes());
 	}
 
