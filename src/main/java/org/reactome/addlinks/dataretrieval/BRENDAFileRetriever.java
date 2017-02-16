@@ -116,6 +116,7 @@ public class BRENDAFileRetriever extends FileRetriever
 			}
 		}
 		Files.createDirectories(Paths.get(this.destination).getParent());
+		// You can probably use this patter to match the results: ecNumber\*([\d\.]+)\#sequence\*[A-Z]*\#noOfAminoAcids\*\d*\#firstAccessionCode\*([^#]+)\#
 		Files.write(Paths.get(this.destination), sb.toString().getBytes());
 	}
 
