@@ -20,10 +20,11 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	public UniprotFileProcessor()
 	{
 		this.pattern = Pattern.compile("[^.]+\\.([0-9]+)\\.[0-9]+\\.txt");
-		this.fileProcessor = this::processFile;
+		//this.fileProcessor = this::processFile;
 	}
 	
-	private Map<String, Map<String,List<String>>> processFile(Path file)
+	@Override
+	protected Map<String, Map<String,List<String>>> processFile(Path file)
 	{
 		//The returned structure looks like this:
 		/*

@@ -37,7 +37,7 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	public EnsemblFileProcessor()
 	{
 		this.pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
-		this.fileProcessor = this::processFile;
+		//this.fileProcessor = this::processFile;
 	}
 	
 //	@Override
@@ -74,7 +74,8 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 //		return visitor.getMapping();
 //	}
 
-	private Map<String, Map<String, List<String>>> processFile(Path file) throws TransformerFactoryConfigurationError
+	@Override
+	protected Map<String, Map<String, List<String>>> processFile(Path file) throws TransformerFactoryConfigurationError
 	{
 		TransformerFactory factory = TransformerFactory.newInstance();
 		

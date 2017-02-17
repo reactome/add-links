@@ -41,10 +41,11 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 	public KEGGFileProcessor()
 	{
 		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
-		this.fileProcessor = this::processFile;
+		//this.fileProcessor = this::processFile;
 	}
 	
-	private Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> processFile(Path path)
+	@Override
+	protected Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> processFile(Path path)
 	{
 		try
 		{
