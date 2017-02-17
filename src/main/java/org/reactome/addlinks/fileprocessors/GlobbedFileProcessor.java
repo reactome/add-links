@@ -49,6 +49,8 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 	
 	protected Pattern pattern = null;
 	
+	abstract protected Map<String, T> processFile(Path file);
+	
 	protected Map<String, T> getIdMappingsFromFilesMatchingGlob()
 	{
 		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
@@ -60,7 +62,8 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
 				if (patternMatcher.matches())
 				{
-					fileProcessor.apply(file);
+					//fileProcessor.apply(file);
+					processFile(file);
 				}
 			}
 		};
