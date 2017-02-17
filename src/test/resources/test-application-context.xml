@@ -38,15 +38,16 @@
 		<property name="userName" value="${brenda.user}"/>
 		<property name="password" value="${brenda.password}"/>
 		<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
-		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA.txt"/>
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA.csv"/>
 		<property name="maxAge" ref="zeroFileAge" />
 	</bean>
 	<bean id="brendaProcessor" class="org.reactome.addlinks.fileprocessors.BRENDAFileProcessor">
 		<property name="path">
-		<bean class="java.nio.file.Paths" factory-method="get">
-				<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA.txt"/>
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA"/>
 			</bean>
 		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA*" />
 	</bean>
 	<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="brendaRefCreator">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
