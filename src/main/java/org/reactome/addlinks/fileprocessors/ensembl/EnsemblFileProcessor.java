@@ -37,49 +37,13 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	public EnsemblFileProcessor()
 	{
 		this.pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
-		//this.fileProcessor = this::processFile;
 	}
 	
-//	@Override
-//	protected Map<String, Map<String,List<String>>> getIdMappingsFromFilesMatchingGlob()
-//	{
-//		//PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob);
-//		
-//		ReactomeMappingFileVisitor visitor = new ReactomeMappingFileVisitor() {
-//			@Override
-//			protected void addFileToMapping(Path file, Map<String, Map<String, List<String>>> mapping)
-//			{
-//				Matcher patternMatcher = pattern.matcher(file.getFileName().toString());
-//				if (patternMatcher.matches() )
-//				{
-//					processFile(file);
-//				}
-//			}
-//		};
-//		Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
-//		this.mappings = mappings;
-//		visitor.setMapping(this.mappings);
-//		visitor.setMatcher(FileSystems.getDefault().getPathMatcher("glob:" + this.fileGlob));
-//		this.globFileVisitor = visitor;
-//		
-//		try
-//		{
-//			Files.walkFileTree(this.pathToFile, this.globFileVisitor);
-//		}
-//		catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		
-//		return visitor.getMapping();
-//	}
-
 	@Override
-	protected Map<String, Map<String, List<String>>> processFile(Path file) throws TransformerFactoryConfigurationError
+	protected void processFile(Path file, Map<String, Map<String, List<String>>> mapping) throws TransformerFactoryConfigurationError
 	{
 		TransformerFactory factory = TransformerFactory.newInstance();
 		
-		//Map<String,Map<String,List<String>>> mappings = new HashMap<String, Map<String,List<String>>>();
 		for (String dbName : dbs)
 		{
 			AtomicInteger counter = new AtomicInteger(0);
@@ -141,9 +105,8 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 				throw new RuntimeException(e);
 			}
 			logger.info("Processed {} records.",counter.get());
-			this.mappings.put(dbName, ensemblToOther);
+			mapping.put(dbName, ensemblToOther);
 		}
-		return this.mappings;
 	}
 
 	public void setDbs(List<String> dbs)
