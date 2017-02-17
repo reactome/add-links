@@ -26,25 +26,22 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 		EC_NUMBERS
 	}
 	
-	//private static final Pattern pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
-	
 	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
 	
 	private static final Logger logger = LogManager.getLogger();
 	
+	public KEGGFileProcessor()
+	{
+		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
+	}
+
 	/**
 	 * Returns UniProt-to-KEGG mappings.
 	 * @param file 
 	 * 
-	 * @return
 	 */
-	public KEGGFileProcessor()
-	{
-		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
-		this.fileProcessor = this::processFile;
-	}
-	
-	private Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> processFile(Path path)
+	@Override
+	protected void processFile(Path path, Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mapping)
 	{
 		try
 		{
@@ -158,17 +155,17 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							for (String uniProtID : uniProtIDs)
 							{
 								logger.trace("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
-								if (!this.mappings.containsKey(uniProtID))
+								if (!mapping.containsKey(uniProtID))
 								{
 									List<Map<KEGGFileProcessor.KEGGKeys, String>> keggList = new ArrayList<Map<KEGGFileProcessor.KEGGKeys, String>>();
 									keggList.add(keggValues);
-									this.mappings.put(uniProtID, keggList);
+									mapping.put(uniProtID, keggList);
 								}
 								else
 								{
 									//we should check for dupliates...
 									boolean isDuplicate = false;
-									for (Map<KEGGKeys, String> keggValue : this.mappings.get(uniProtID))
+									for (Map<KEGGKeys, String> keggValue : mapping.get(uniProtID))
 									{
 										if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(keggValue.get(KEGGKeys.KEGG_IDENTIFIER)))
 										{
@@ -178,7 +175,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 									}
 									if (!isDuplicate)
 									{
-										this.mappings.get(uniProtID).add(keggValues);
+										mapping.get(uniProtID).add(keggValues);
 									}
 								}
 								//Now reset all the variables.
@@ -207,7 +204,6 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		return this.mappings;
 	}
 
 

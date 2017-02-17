@@ -33,6 +33,32 @@
 		<property name="testMode" value="true"/>
 	</bean>
 
+	<!-- test BRENDA file retrieval -->
+	<bean id="brendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+		<property name="userName" value="${brenda.user}"/>
+		<property name="password" value="${brenda.password}"/>
+		<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA.csv"/>
+		<property name="maxAge" ref="zeroFileAge" />
+	</bean>
+	<bean id="brendaProcessor" class="org.reactome.addlinks.fileprocessors.BRENDAFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA*" />
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="brendaRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="BRENDA"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
 	<!-- Beans for Orphanet testing. -->
 	<bean id="OrphanetToUniprotReferenceDNASequence"
 		class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever">
@@ -189,7 +215,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedOMIMRefCreator">
