@@ -10,6 +10,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
+<<<<<<< HEAD
+=======
+import java.util.function.Function;
+>>>>>>> develop
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -23,7 +23,7 @@ public class TestEnsemblFileAggregatorIT
 	public void testCreateAggregateEnsemblMappingFile() throws IOException
 	{
 		String speciesID = "68323";// "48892";
-		List<String> dbNames = (List) Arrays.asList("EntrezGene", "Wormbase");
+		List<String> dbNames = (List<String>) Arrays.asList("EntrezGene", "Wormbase");
 		String rootPath = "/tmp/addlinks-downloaded-files/ensembl/";
 		EnsemblFileAggregator aggregator = new EnsemblFileAggregator(speciesID, dbNames, rootPath);
 		

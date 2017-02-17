@@ -56,8 +56,13 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 		Matcher matcher = this.pattern.matcher(file.getFileName().toString());
 		matcher.matches();
 		logger.info(matcher.groupCount());
+<<<<<<< HEAD
 		String speciesId = matcher.group();
 		if (mapping.containsKey(speciesId))
+=======
+		String speciesId = matcher.group(1);
+		if (mappings.containsKey(speciesId))
+>>>>>>> develop
 		{
 			logger.warn("You already have an entry for {}. You should only have ONE file for each species for each refDB. If you have more, something may have gone wrong...", speciesId);
 		}
