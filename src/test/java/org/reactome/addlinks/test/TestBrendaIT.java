@@ -2,7 +2,9 @@ package org.reactome.addlinks.test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,26 +43,18 @@ public class TestBrendaIT
 	@Test
 	public void testBrendaRetriever() throws Exception
 	{
-		
-		Map<String, List<String>> identifiers = new HashMap<String, List<String>>();
-		
-		identifiers.put("Homo sapiens", Arrays.asList("Q8N5Z0", "O00116"));
-		
-		brendaRetriever.setIdentifiers(identifiers);
-		
+		brendaRetriever.setIdentifiers(Arrays.asList("Q8N5Z0", "O00116"));
+		brendaRetriever.setSpeciesName("Homo sapiens");
+		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Homo_sapiens.csv"));
 		brendaRetriever.fetchData();
 	}
 	
 	@Test
 	public void testBrendaProcessor() throws Exception
 	{
-		
-		Map<String, List<String>> identifiers = new HashMap<String, List<String>>();
-		
-		identifiers.put("Homo sapiens", Arrays.asList("Q8N5Z0", "O00116"));
-		
-		brendaRetriever.setIdentifiers(identifiers);
-		
+		brendaRetriever.setIdentifiers(Arrays.asList("Q8N5Z0", "O00116"));
+		brendaRetriever.setSpeciesName("Homo sapiens");
+		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Homo_sapiens.csv"));
 		brendaRetriever.fetchData();
 		
 		Map<String, List<String>> mappings = brendaProcessor.getIdMappingsFromFile();
@@ -68,21 +62,16 @@ public class TestBrendaIT
 		System.out.println(mappings);
 		
 		assertNotNull(mappings);
-		
 		assertTrue(mappings.keySet().size() > 0);
-		
 	}
 	
 	@Test
 	public void testBrendaReferenceCreator() throws Exception
 	{
 		
-		Map<String, List<String>> identifiers = new HashMap<String, List<String>>();
-		
-		identifiers.put("Homo sapiens", Arrays.asList("Q8N5Z0", "O00116"));
-		
-		brendaRetriever.setIdentifiers(identifiers);
-		
+		brendaRetriever.setIdentifiers(Arrays.asList("Q8N5Z0", "O00116"));
+		brendaRetriever.setSpeciesName("Homo sapiens");
+		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Homo_sapiens.csv"));
 		brendaRetriever.fetchData();
 		
 		Map<String, List<String>> mappings = brendaProcessor.getIdMappingsFromFile();
@@ -105,16 +94,19 @@ public class TestBrendaIT
 	{
 		BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 		
+		// TODO: Maybe move this out to a BRENDASpeciesCache class. 
 		String speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
 		//Normalize the list.
 		List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
 		System.out.println(brendaSpecies.size() + " species known to BRENDA");
 
-		Map<String, List<String>> identifiers = new HashMap<String, List<String>>();
-		
-		for (String speciesId : objectCache.getSpeciesNamesByID().keySet())
+		List<String> identifiers = new ArrayList<String>();
+		String originalDestination = brendaRetriever.getFetchDestination();
+		//for (String speciesId : objectCache.getSpeciesNamesByID().keySet())
+		for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 		{
-			String speciesName = objectCache.getSpeciesNamesByID().get(speciesId).get(0);
+			//String speciesName = objectCache.getSpeciesNamesByID().get(speciesId).get(0);
+			String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
 			
 			if (brendaSpecies.contains(speciesName.trim().toUpperCase()))
 			{
@@ -135,21 +127,30 @@ public class TestBrendaIT
 				}).collect(Collectors.toList());
 				
 				System.out.println("Species: "+speciesId+"/"+speciesName);
-				identifiers.put(speciesName,uniprotIdentifiers);
+				identifiers.addAll(uniprotIdentifiers);
+				
+				if (uniprotIdentifiers != null && uniprotIdentifiers.size() > 0)
+				{
+					brendaRetriever.setSpeciesName(speciesName);
+					brendaRetriever.setIdentifiers(uniprotIdentifiers.subList(0, Math.min(100, uniprotIdentifiers.size())));
+					brendaRetriever.setFetchDestination(originalDestination.replace(".csv","."+speciesName.replace(" ", "_")+".csv"));
+					brendaRetriever.fetchData();
+				}
+				else
+				{
+					System.out.println("No uniprot identifiers for " + speciesName);
+				}
 			}
 			else
 			{
-				System.out.println("Species " + speciesName + "is not in the list of species known to BRENDA.");
+				System.out.println("Species " + speciesName + " is not in the list of species known to BRENDA.");
 			}
 		}
 		
-		brendaRetriever.setIdentifiers(identifiers);
-		
-		brendaRetriever.fetchData();
 		
 		Map<String, List<String>> mappings = brendaProcessor.getIdMappingsFromFile();
 
-		System.out.println(mappings);
+		//System.out.println(mappings);
 		
 		assertNotNull(mappings);
 		
