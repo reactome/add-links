@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;

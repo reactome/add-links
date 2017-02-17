@@ -56,7 +56,7 @@ public class TestReferenceDatabaseCreator
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
 		creator.createReferenceDatabase(refDBUrl, refDBAccessUrl, refDBName, refDBAlias);
 		// Now that we've created the instance, let's verify that it is there.
-		instances = adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
+		instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
 		assertTrue(instances.size() == 1);
 		instances.forEach( instance -> {
 			System.out.println("Checking instance: "+instance.getDBID()+" "+instance.getDisplayName());

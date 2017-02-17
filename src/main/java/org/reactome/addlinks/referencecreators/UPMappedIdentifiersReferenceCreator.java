@@ -120,7 +120,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 								{
 									if (sourceInstances.size() > 1)
 									{
-										logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
+										logger.trace("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 									}
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
