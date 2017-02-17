@@ -29,7 +29,8 @@ public class BRENDAFileRetriever extends FileRetriever
 	private static final Logger logger = LogManager.getLogger();
 	private String userName;
 	private String password;
-	private Map<String, List<String>> identifiers;
+	private List<String> identifiers;
+	private String speciesName;
 	
 	public class BRENDASoapClient
 	{
@@ -94,7 +95,7 @@ public class BRENDAFileRetriever extends FileRetriever
 		}
 	}
 	
-	public void setIdentifiers(Map<String, List<String>> identifiers)
+	public void setIdentifiers(List<String> identifiers)
 	{
 		this.identifiers = identifiers;
 	}
@@ -102,6 +103,8 @@ public class BRENDAFileRetriever extends FileRetriever
 	@Override
 	protected void downloadData() throws Exception
 	{
+		//TODO: Download to 1 file per species instead of all data into 1 file.
+		
 		AtomicInteger requestCounter = new AtomicInteger(0);
 		// The number of identifiers that returned no mapping from BRENDA.
 		AtomicInteger noMapping = new AtomicInteger(0);
@@ -110,12 +113,18 @@ public class BRENDAFileRetriever extends FileRetriever
 		BRENDASoapClient client = new BRENDASoapClient(this.userName, this.password);
 		//String result = client.callBrendaService("http://www.brenda-enzymes.org/soap/brenda_server.php", "getSequence", "organism*Bacillus anthracis#firstAccessionCode*Q81PP9");
 		StringBuffer sb = new StringBuffer();
-		logger.info("{} species to check.", identifiers.keySet().size());
-		for (String speciesName : identifiers.keySet())
+		//logger.info("{} species to check.", identifiers.keySet().size());
+		//String originalDestination = this.destination;
+		//for (String speciesName : identifiers.keySet())
 		{
-			logger.info("{} identifiers for species {}", identifiers.get(speciesName).size(), speciesName);
+			
+			//String fileDestination = originalDestination.replace(".csv", "."+speciesName.replace(" ", "_")+".csv");
+			Files.createDirectories(Paths.get(this.destination).getParent());
+			logger.info("{} identifiers for species {}", identifiers.size(), speciesName);
 			//for (String uniprotID : identifiers.get(speciesName))
-			identifiers.get(speciesName).parallelStream().forEach(uniprotID ->
+			
+			//TODO: Maybe run a custom ForkJoinPool to have a higher degree of parallelism to speed things up
+			identifiers.parallelStream().forEach(uniprotID ->
 			{
 				// BRENDA won't work if there's an underscore in the species name.
 				String s = speciesName.replace("_", " ");
@@ -126,18 +135,16 @@ public class BRENDAFileRetriever extends FileRetriever
 					noMapping.incrementAndGet();
 				}
 
-				result = "RESULT for " + s + "/" + uniprotID + ": " + result; 
+				result = uniprotID + "\t" + result + "\n"; 
 
-				sb.append(result).append("\n");
+				sb.append(result);
 				if (requestCounter.incrementAndGet() % 100 == 0)
 				{
 					logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
 				}
 			});
+			Files.write(Paths.get(this.destination), sb.toString().getBytes());
 		}
-		Files.createDirectories(Paths.get(this.destination).getParent());
-		// You can probably use this patter to match the results: ecNumber\*([\d\.]+)\#sequence\*[A-Z]*\#noOfAminoAcids\*\d*\#firstAccessionCode\*([^#]+)\#
-		Files.write(Paths.get(this.destination), sb.toString().getBytes());
 	}
 
 	public void setUserName(String userName)
@@ -158,6 +165,21 @@ public class BRENDAFileRetriever extends FileRetriever
 	public String getPassword()
 	{
 		return this.password;
+	}
+
+	public String getSpeciesName()
+	{
+		return this.speciesName;
+	}
+
+	public void setSpeciesName(String speciesName)
+	{
+		this.speciesName = speciesName;
+	}
+
+	public String getFetchDestination()
+	{
+		return this.destination;
 	}
 }
 ;
