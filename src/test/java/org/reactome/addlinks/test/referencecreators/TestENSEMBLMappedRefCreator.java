@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +72,11 @@ public class TestENSEMBLMappedRefCreator
 	}
 	
 	@Test
-	public void testENSRefCreatorWormbase() throws Exception
+	public void testENSRefCreator() throws Exception
 	{
 		//String refDb = "ENSEMBL";
-		String refDb = "ENSEMBL_Canis familiaris_PROTEIN";
-		String species = "Canis familiaris";
+		String refDb = "ENSEMBL_Rattus norvegicus_PROTEIN";
+		String species = "Rattus norvegicus";
 		String className = "ReferenceGeneProduct";
 		List<String> refDBID = objectCache.getRefDbNamesToIds().get(refDb);
 		//String refDBID = "8925713";
@@ -85,17 +87,20 @@ public class TestENSEMBLMappedRefCreator
 			System.out.println("# identifiers: " + identifiers.size());
 			assertTrue(identifiers.size()>0);
 			System.out.println(identifiers);
-			ENSEMBLToEntrezGene.setFetchDestination(ENSEMBLToEntrezGene.getFetchDestination().replace(".xml","." + speciesDBID + "." + refDBID + ".xml").replace("]","").replace("[", ""));
+			ENSEMBLToEntrezGene.setFetchDestination(ENSEMBLToEntrezGene.getFetchDestination().replace(".xml","." + speciesDBID + ".xml").replace("]","").replace("[", ""));
 			ENSEMBLToEntrezGene.setIdentifiers(identifiers);
 			ENSEMBLToEntrezGene.setSpecies(species.toLowerCase().replace(" ", "_"));
 			ENSEMBLToEntrezGene.fetchData();
+			
 			ENSEMBLToEntrezGeneFileProcessor.setPath(Paths.get(ENSEMBLToEntrezGene.getFetchDestination()));
 			//@SuppressWarnings("unchecked")
 			Map<String,Map<String,List<String>>> mappings = (Map<String,Map<String,List<String>>>) ENSEMBLToEntrezGeneFileProcessor.getIdMappingsFromFile();
 			assertTrue(mappings.keySet().size() > 0);
 			ensMappedEntrezGeneRefCreator.setTestMode(true);
-			// TODO: Fix this:
-			//ensMappedEntrezGeneRefCreator.createIdentifiers(123456, mappings);
+
+
+			List<GKInstance> sourceReferences = objectCache.getByRefDb(refDBID.get(0), ReactomeJavaConstants.ReferenceGeneProduct);
+			ensMappedEntrezGeneRefCreator.createIdentifiers(123456, mappings, sourceReferences );
 		}
 	}
 }

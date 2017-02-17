@@ -68,7 +68,7 @@
 	
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
-		<constructor-arg index="1" name="lazyLoad" value="true" />
+		<constructor-arg index="1" name="lazyLoad" value="true"/>
 	</bean>
 	
 	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
