@@ -215,7 +215,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedOMIMRefCreator">

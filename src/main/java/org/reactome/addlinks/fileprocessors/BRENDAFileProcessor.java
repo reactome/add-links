@@ -22,13 +22,11 @@ public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 	public BRENDAFileProcessor()
 	{
 		this.pattern = Pattern.compile("BRENDA\\.[^\\.]+\\.csv");
-		//this.fileProcessor = this::processFile;
 	}
 	
 	@Override
-	protected Map<String, List<String>> processFile(Path file)
+	protected void processFile(Path file, Map<String, List<String>> mappings)
 	{
-		//Map<String, List<String>> mappings = new HashMap<String, List<String>>();
 		try
 		{
 			Files.lines(file).sequential().forEach( line -> {
@@ -44,13 +42,13 @@ public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 						String ecNumber = matcher.group(1);
 						String uniProtID = matcher.group(2);
 						
-						if (this.mappings.containsKey(uniProtID))
+						if (mappings.containsKey(uniProtID))
 						{
-							this.mappings.get(uniProtID).add(ecNumber);
+							mappings.get(uniProtID).add(ecNumber);
 						}
 						else
 						{
-							this.mappings.put(uniProtID, new ArrayList<String>(Arrays.asList(ecNumber)));
+							mappings.put(uniProtID, new ArrayList<String>(Arrays.asList(ecNumber)));
 						}
 					}
 					if (matchCount == 0)
@@ -64,8 +62,6 @@ public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 		{
 			throw new Error(e);
 		}
-		//this.mappings = mappings;
-		return this.mappings;
 	}
 
 }
