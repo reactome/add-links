@@ -40,8 +40,9 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>RheaRetriever</value>
+		<value>BrendaRetriever</value>
 		<!--
+		<value>RheaRetriever</value>
 		<value>EnsemblToALL</value>
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
@@ -66,8 +67,10 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>BrendaProcessor</value>
+		<!--
 		<value>RheaFileProcessor</value>
-		<!-- <value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>zincProtFileProcessor</value>
 		<value>KEGGFileProcessor</value>
@@ -90,8 +93,9 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>RheaReferenceCreator</value>
+		<value>BrendaRefCreator</value>
 		<!--
+		<value>RheaReferenceCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
