@@ -546,7 +546,7 @@ public final class ReferenceObjectCache
 	}
 	
 	/**
-	 * Retreive a list of ReferenceGeneProduct shells filtered by Reference Database <em>and</em> Species.
+	 * Retreive a list of <em>className</em> objects  filtered by Reference Database <em>and</em> Species.
 	 * @param refDb
 	 * @param species
 	 * @return

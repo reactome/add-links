@@ -242,6 +242,16 @@
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries*"/>
 			</bean>
 		</entry>
+		
+		<entry key="RheaFileProcessor">
+			<bean id="RheaFileProcessor" class="org.reactome.addlinks.fileprocessors.RHEAFileProcessor">
+				<property name="path">
+					<bean class="java.nio.file.Paths"  factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/rhea2reactome.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 
 </beans>

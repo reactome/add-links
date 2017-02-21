@@ -57,7 +57,7 @@ public class RHEAFileProcessor extends FileProcessor<List<String>>
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		logger.info("Number of Rhea IDs in mapping: {}", mappings.keySet());
+		logger.info("Number of Rhea IDs in mapping: {} map to {} Reactome Stable IDs", mappings.keySet().size(), mappings.values().stream().map(list -> list.size()).reduce(0, (a,b) -> a+b ));
 		return mappings;
 	}
 
