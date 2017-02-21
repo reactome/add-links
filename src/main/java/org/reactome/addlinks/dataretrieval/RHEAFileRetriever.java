@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 /**
- * @deprecated - There is a Rhea2Reactome file that Rhea provides: ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/ 
+ * @deprecated - There is a Rhea2Reactome file that Rhea provides: ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv 
  * and since it seems OK to use the current process of linking to Rhea what they linked to us, a simple FileRetriever pointed at this URL
  * is probably OK.
  * @author sshorser
