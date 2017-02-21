@@ -60,26 +60,6 @@
 			</bean>
 		</entry> -->
 		
-		<entry key="RHEAIdentifierToReactionlikeEvent">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RHEAIdentifierToReactionlikeEvent">
-			<!-- maybe we should use this url instead: http://www.rhea-db.org/rest/1.0/ws/reaction?q=reactome -->
-				<property name="dataURL" value="http://www.ebi.ac.uk/rhea/rest/1.0/ws/reaction?q=REACT*" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/RHEAReactome.xml" />
-				<property name="maxAge" ref="maxFileAge" />
-				<property name="timeout">
-					<bean class="java.time.Duration" factory-method="of">
-						<constructor-arg index="0">
-							<value type="java.lang.Long">20</value>
-						</constructor-arg>
-						<constructor-arg index="1">
-							<value type="java.time.temporal.ChronoUnit">SECONDS</value>
-						</constructor-arg>
-					</bean>
-				</property>
-				<property name="numRetries" value="2" />
-			</bean>
-		</entry>
-
 		<entry key="DOCKBlaster">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="DOCKBlaster">
 				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
@@ -142,6 +122,15 @@
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
+			</bean>
+		</entry>
+		<entry key="BrendaRetriever">
+			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+				<property name="userName" value="${brenda.user}"/>
+				<property name="password" value="${brenda.password}"/>
+				<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA.csv"/>
+				<property name="maxAge" ref="maxFileAge" />
 			</bean>
 		</entry>
 	</util:map>

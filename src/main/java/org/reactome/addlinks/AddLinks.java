@@ -28,6 +28,8 @@ import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
+import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
@@ -105,14 +107,17 @@ public class AddLinks
 			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
-		
-		executeCreateReferenceDatabases();
-		
-		executeSimpleFileRetrievers();
-		executeUniprotFileRetrievers(numUniprotDownloadThreads);
+		// Start by creating ReferenceDatabase objects that we might need later.
+		this.executeCreateReferenceDatabases();
+		// Execute the file retrievers.
+		this.executeSimpleFileRetrievers();
+		// Execute the UniProt file retrievers separately.
+		this.executeUniprotFileRetrievers(numUniprotDownloadThreads);
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
-		executeKeggFileRetriever();
-		
+		this.executeKeggFileRetriever();
+		// Now we will run the Brenda file retriever
+		this.executeBrendaFileRetriever();
+		// Check to see if we should do any Ensembl work/
 		if (this.fileRetrieverFilter.contains("EnsemblToALL"))
 		{
 			EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
@@ -125,7 +130,7 @@ public class AddLinks
 		}
 		
 		logger.info("Finished downloading files.");
-		
+
 		logger.info("Now processing the files...");
 		
 		// TODO: Link the file processors to the file retrievers so that if
@@ -135,7 +140,7 @@ public class AddLinks
 		// Special extra work for ENSEMBL...
 		if (this.fileProcessorFilter.contains("ENSEMBLFileProcessor") || this.fileProcessorFilter.contains("ENSEMBLNonCoreFileProcessor"))
 		{
-			processENSEMBLFiles(dbMappings);
+			this.processENSEMBLFiles(dbMappings);
 		}
 		
 		// Print stats on results of file processing.
@@ -156,11 +161,82 @@ public class AddLinks
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 		
 		//Now we create references.
-		createReferences(personID, dbMappings);
+		this.createReferences(personID, dbMappings);
 		
 		logger.info("Process complete.");
 	}
 
+	private void executeBrendaFileRetriever()
+	{
+		if (this.fileRetrieverFilter.contains("BrendaRetriever"))
+		{
+			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
+			BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
+			
+			// TODO: Maybe move this out to a BRENDASpeciesCache class. 
+			String speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
+			//Normalize the list.
+			List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
+			logger.debug(brendaSpecies.size() + " species known to BRENDA");
+
+			List<String> identifiers = new ArrayList<String>();
+			String originalDestination = brendaRetriever.getFetchDestination();
+			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
+			{
+				String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
+				if (brendaSpecies.contains(speciesName.trim().toUpperCase()))
+				{
+					List<String> uniprotIdentifiers = objectCache.getByRefDbAndSpecies("2", speciesId, ReactomeJavaConstants.ReferenceGeneProduct).stream().map(instance -> {
+						try
+						{
+							return (String)instance.getAttributeValue(ReactomeJavaConstants.identifier);
+						}
+						catch (InvalidAttributeException e)
+						{
+							e.printStackTrace();
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
+						return null;
+					}).collect(Collectors.toList());
+					
+					logger.debug("Species: "+speciesId+"/"+speciesName);
+					identifiers.addAll(uniprotIdentifiers);
+					
+					if (uniprotIdentifiers != null && uniprotIdentifiers.size() > 0)
+					{
+						brendaRetriever.setSpeciesName(speciesName);
+						//brendaRetriever.setIdentifiers(uniprotIdentifiers.subList(0, Math.min(100, uniprotIdentifiers.size())));
+						brendaRetriever.setIdentifiers(uniprotIdentifiers);
+						brendaRetriever.setFetchDestination(originalDestination.replace(".csv","."+speciesName.replace(" ", "_")+".csv"));
+						try
+						{
+							brendaRetriever.fetchData();
+						} catch (Exception e)
+						{
+							logger.error("Error occurred while trying to fetch Brenda data: {}. File may not have been downloaded.", e.getMessage());
+							e.printStackTrace();
+						}
+					}
+					else
+					{
+						logger.debug("No uniprot identifiers for " + speciesName);
+					}
+				}
+				else
+				{
+					logger.debug("Species " + speciesName + " is not in the list of species known to BRENDA.");
+				}
+			}
+		}
+		else
+		{
+			logger.info("Skipping BrendaRetriever");
+		}
+	}
+	
 	private void executeKeggFileRetriever()
 	{
 		if (this.fileRetrieverFilter.contains("KEGGRetriever"))
@@ -265,6 +341,10 @@ public class AddLinks
 			// These jobs are not very CPU intense so it is probably not too serious to them ALL in parallel.
 			ForkJoinPool pool = new ForkJoinPool(keggJobs.size());
 			pool.invokeAll(keggJobs);
+		}
+		else
+		{
+			logger.info("Skipping KEGGRetriever");
 		}
 	}
 
@@ -526,7 +606,7 @@ public class AddLinks
 	private void executeSimpleFileRetrievers()
 	{
 		fileRetrievers.keySet().stream().parallel()
-										.filter(k -> !k.equals("KEGGRetriever"))
+										.filter(k -> !k.equals("KEGGRetriever") && !k.equals("BrendaRetriever"))
 										.forEach(k ->
 		{
 			// KEGGRetreiver is special: it depends on the result of the uniprotToKegg retriever as an input, so we can't execute it here.
