@@ -90,8 +90,15 @@ public final class ReferenceObjectCache
 		
 		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 		
+
 		referenceObjects.stream().parallel().forEach( referenceObject -> 
 		{
+			String identifierAttribute = ReactomeJavaConstants.identifier;
+			if (className.equals(ReactomeJavaConstants.Reaction))
+			{
+				identifierAttribute = ReactomeJavaConstants.stableIdentifier;
+			}
+			
 			MySQLAdaptor localAdapter ;
 			long threadID = Thread.currentThread().getId();
 			if (adapterPool.containsKey(threadID))
@@ -122,15 +129,15 @@ public final class ReferenceObjectCache
 			// Retreive the Identifier because that is an attribute we will want later.
 			try
 			{
-				referenceObject.getAttributeValue(ReactomeJavaConstants.identifier);
+				referenceObject.getAttributeValue(identifierAttribute);
 			}
 			catch (InvalidAttributeException e)
 			{
-				logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, referenceObject);
+				logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", identifierAttribute, referenceObject);
 			}
 			catch (Exception e)
 			{
-				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", identifierAttribute, referenceObject, e.getMessage());
 			}
 
 			// ReferenceMolecules do not have associated species.
@@ -147,11 +154,11 @@ public final class ReferenceObjectCache
 					}
 					catch (InvalidAttributeException e)
 					{
-						logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, referenceObject);
+						logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, referenceObject);
 					}
 					catch (Exception e)
 					{
-						logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+						logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, referenceObject, e.getMessage());
 					}
 					
 					if (null == species)
@@ -170,11 +177,11 @@ public final class ReferenceObjectCache
 								}
 								catch (InvalidAttributeException e)
 								{
-									logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, refTranscript);
+									logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, refTranscript);
 								}
 								catch (Exception e)
 								{
-									logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, refTranscript, e.getMessage());
+									logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, refTranscript, e.getMessage());
 								}
 							}
 						}
@@ -199,11 +206,11 @@ public final class ReferenceObjectCache
 					}
 					catch (InvalidAttributeException e)
 					{
-						logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.identifier, referenceObject);
+						logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, referenceObject);
 					}
 					catch (Exception e)
 					{
-						logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.identifier, referenceObject, e.getMessage());
+						logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, referenceObject, e.getMessage());
 					}
 					
 				}
@@ -261,7 +268,7 @@ public final class ReferenceObjectCache
 		logger.info("\n\tKeys in cache-by-refdb: {};"
 				+ "\n\tkeys in cache-by-species: {};"
 				+ "\n\tkeys in cache-by-id: {};",
-					cacheByRefDB.size(),
+					(cacheByRefDB!=null ? cacheByRefDB.size() : "N/A"),
 					(!className.equals(ReactomeJavaConstants.ReferenceMolecule) ? cacheBySpecies.size() : "N/A"),
 					cacheByID.size()
 				);
@@ -284,7 +291,7 @@ public final class ReferenceObjectCache
 				
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceMolecule, null, moleculeCacheByID, moleculeCacheByRefDB);
 				
-				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.Reaction, reactionCacheBySpecies, reactionCacheByStableID, null);
+				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.Reaction, reactionCacheBySpecies, reactionCacheByDBID, null);
 				
 				// Build up the Reference Database caches.
 				buildReferenceDatabaseCache(adapter);
@@ -367,6 +374,7 @@ public final class ReferenceObjectCache
 		}
 	}
 	
+	
 	private static void buildSpeciesCache(MySQLAdaptor adapter) throws Exception, InvalidAttributeException
 	{
 		buildOneToManyCache(adapter, ReactomeJavaConstants.Species, ReferenceObjectCache.speciesNamesToIds, ReferenceObjectCache.speciesMapping);
@@ -379,7 +387,7 @@ public final class ReferenceObjectCache
 	
 	// TODO: Add a cache for Reactions. Cache should be keyed by Stable ID.
 	// Reaction Cache
-	private static Map<String, GKInstance> reactionCacheByStableID = new ConcurrentHashMap<String, GKInstance>();
+	private static Map<String, GKInstance> reactionCacheByDBID = new ConcurrentHashMap<String, GKInstance>();
 	private static Map<String, List<GKInstance>> reactionCacheBySpecies = new ConcurrentHashMap<String, List<GKInstance>>();
 	
 	// ReferenceMolecule caches
@@ -682,5 +690,18 @@ public final class ReferenceObjectCache
 			}
 		}
 		return ReferenceObjectCache.speciesMapping;
+	}
+	
+	
+	/**
+	 * Returns a map of Reaections, keyed by db_id.
+	 */
+	public Map<String, GKInstance> getReactionsByID()
+	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			buildLazilyLoadedCaches(ReactomeJavaConstants.Reaction, ReferenceObjectCache.reactionCacheBySpecies, ReferenceObjectCache.reactionCacheByDBID, null);
+		}
+		return ReferenceObjectCache.reactionCacheByDBID;
 	}
 }
