@@ -413,6 +413,8 @@
 		<property name="testMode" value="true"/>
 	</bean>
 	
+	
+	
 	<!-- ChEBI to ZINC -->
 	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ZincFileRetriever">
 		<property name="dataURL" value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
@@ -521,10 +523,18 @@
 	</bean>
 	
 	<!-- RHEA testing -->
-	<bean class="org.reactome.addlinks.dataretrieval.RHEAFileRetriever" id="rheaRetriever">
-		<property name="dataURL" value="http://www.ebi.ac.uk/rhea/rest/1.0/ws/reaction?q=" />
-		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea_files/" />
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="rheaRetriever">
+		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 		<property name="maxAge"  ref="maxFileAge"/>
+	</bean>
+	
+	<bean id="rheaFileProcessor" class="org.reactome.addlinks.fileprocessors.RHEAFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths"  factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/rhea2reactome.tsv"/>
+			</bean>
+		</property>
 	</bean>
 	
 </beans>
