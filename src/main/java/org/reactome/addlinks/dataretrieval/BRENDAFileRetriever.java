@@ -6,8 +6,12 @@ import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.namespace.QName;
@@ -123,26 +127,45 @@ public class BRENDAFileRetriever extends FileRetriever
 			logger.info("{} identifiers for species {}", identifiers.size(), speciesName);
 			//for (String uniprotID : identifiers.get(speciesName))
 			
+			List<Callable<Boolean>> jobs = Collections.synchronizedList(new ArrayList<Callable<Boolean>>());
+			
 			//TODO: Maybe run a custom ForkJoinPool to have a higher degree of parallelism to speed things up
-			identifiers.parallelStream().forEach(uniprotID ->
+			identifiers.stream().forEach(uniprotID ->
 			{
-				// BRENDA won't work if there's an underscore in the species name.
-				String s = speciesName.replace("_", " ");
-				String result = client.callBrendaService(this.getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
-				
-				if (result == null || result.trim().equals(""))
+				Callable<Boolean> job = new Callable<Boolean>()
 				{
-					noMapping.incrementAndGet();
-				}
+					@Override
+					public Boolean call() throws Exception
+					{
+						// BRENDA won't work if there's an underscore in the species name.
+						String s = speciesName.replace("_", " ");
+						String result = client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
+						
+						if (result == null || result.trim().equals(""))
+						{
+							noMapping.incrementAndGet();
+						}
 
-				result = uniprotID + "\t" + result + "\n"; 
+						result = uniprotID + "\t" + result + "\n"; 
 
-				sb.append(result);
-				if (requestCounter.incrementAndGet() % 100 == 0)
-				{
-					logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
-				}
+						sb.append(result);
+						if (requestCounter.incrementAndGet() % 100 == 0)
+						{
+							logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
+						}
+						return true;
+					}
+				};
+				jobs.add(job);
 			});
+			//TODO: parameterize degree of parallelisation
+			ForkJoinPool pool = new ForkJoinPool(20);
+			
+			if (pool != null && jobs.size() > 0)
+			{
+				pool.invokeAll(jobs);
+			}
+			
 			Files.write(Paths.get(this.destination), sb.toString().getBytes());
 		}
 	}
