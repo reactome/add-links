@@ -137,6 +137,13 @@
 				<!-- You will need to set UniprotToKEGGFiles at runtime. -->
 			</bean>
 		</entry>
+		<entry key="RheaRetriever">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RheaRetriever">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
+				<property name="maxAge"  ref="maxFileAge"/>
+			</bean>
+		</entry>
 	</util:map>
 	
 </beans>
