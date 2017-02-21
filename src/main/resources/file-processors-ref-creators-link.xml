@@ -33,5 +33,6 @@
 	 	<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
 	 	<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
 	 	<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
+	 	<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
 	 </util:map>
 </beans>

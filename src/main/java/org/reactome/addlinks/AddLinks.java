@@ -41,6 +41,7 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
+import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
 
@@ -112,13 +113,16 @@ public class AddLinks
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		executeKeggFileRetriever();
 		
-		EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
-		ensemblFileRetrieverExecutor.setEnsemblBatchLookup(this.ensemblBatchLookup);
-		ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(this.ensemblFileRetrievers);
-		ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(this.ensemblFileRetrieversNonCore);
-		ensemblFileRetrieverExecutor.setObjectCache(this.objectCache);
-		ensemblFileRetrieverExecutor.setDbAdapter(this.dbAdapter);
-		ensemblFileRetrieverExecutor.execute();
+		if (this.fileRetrieverFilter.contains("EnsemblToALL"))
+		{
+			EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
+			ensemblFileRetrieverExecutor.setEnsemblBatchLookup(this.ensemblBatchLookup);
+			ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(this.ensemblFileRetrievers);
+			ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(this.ensemblFileRetrieversNonCore);
+			ensemblFileRetrieverExecutor.setObjectCache(this.objectCache);
+			ensemblFileRetrieverExecutor.setDbAdapter(this.dbAdapter);
+			ensemblFileRetrieverExecutor.execute();
+		}
 		
 		logger.info("Finished downloading files.");
 		
@@ -129,7 +133,10 @@ public class AddLinks
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
 
 		// Special extra work for ENSEMBL...
-		processENSEMBLFiles(dbMappings);
+		if (this.fileProcessorFilter.contains("ENSEMBLFileProcessor") || this.fileProcessorFilter.contains("ENSEMBLNonCoreFileProcessor"))
+		{
+			processENSEMBLFiles(dbMappings);
+		}
 		
 		// Print stats on results of file processing.
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
@@ -307,7 +314,15 @@ public class AddLinks
 				}
 				else
 				{
-					sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
+					// Rhea reference creator is special - its source references is a simple list of all Reactions.
+					if (refCreator instanceof RHEAReferenceCreator)
+					{
+						sourceReferences = objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
+					}
+					else
+					{
+						sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
+					}
 					logger.debug("{} source references", sourceReferences.size());
 					if (refCreator instanceof OneToOneReferenceCreator)
 					{
@@ -321,6 +336,7 @@ public class AddLinks
 				}
 				
 			}
+			// There is a separate list of reference creators to create UniProt references.
 			else if (uniprotReferenceCreators.containsKey(refCreatorName))
 			{
 				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(refCreatorName);

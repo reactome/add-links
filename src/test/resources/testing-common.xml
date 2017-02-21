@@ -60,6 +60,12 @@
 		</constructor-arg>
 	</bean>
 
+	<bean id="ReactionBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Reaction"/>
+		</constructor-arg>
+	</bean>
+
 	<!-- DB Adapter 
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
