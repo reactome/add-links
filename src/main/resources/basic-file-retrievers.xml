@@ -131,6 +131,7 @@
 				<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA.csv"/>
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="numThreads" value="${numberOfBrendaDownloadThreads}" />
 			</bean>
 		</entry>
 	</util:map>

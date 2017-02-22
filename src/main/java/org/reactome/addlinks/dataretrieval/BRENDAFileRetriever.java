@@ -35,6 +35,7 @@ public class BRENDAFileRetriever extends FileRetriever
 	private String password;
 	private List<String> identifiers;
 	private String speciesName;
+	private int numThreads = 10;
 	
 	public class BRENDASoapClient
 	{
@@ -149,7 +150,11 @@ public class BRENDAFileRetriever extends FileRetriever
 						result = uniprotID + "\t" + result + "\n"; 
 
 						sb.append(result);
-						if (requestCounter.incrementAndGet() % 100 == 0)
+						if (requestCounter.incrementAndGet() % 1000 == 0)
+						{
+							logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
+						}
+						if (requestCounter.get() >= identifiers.size())
 						{
 							logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
 						}
@@ -159,7 +164,7 @@ public class BRENDAFileRetriever extends FileRetriever
 				jobs.add(job);
 			});
 			//TODO: parameterize degree of parallelisation
-			ForkJoinPool pool = new ForkJoinPool(20);
+			ForkJoinPool pool = new ForkJoinPool(numThreads);
 			
 			if (pool != null && jobs.size() > 0)
 			{
@@ -203,6 +208,16 @@ public class BRENDAFileRetriever extends FileRetriever
 	public String getFetchDestination()
 	{
 		return this.destination;
+	}
+
+	public int getNumThreads()
+	{
+		return numThreads;
+	}
+
+	public void setNumThreads(int numThreads)
+	{
+		this.numThreads = numThreads;
 	}
 }
 ;
