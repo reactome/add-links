@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 {
-	private Pattern brendaResultPattern = Pattern.compile("ecNumber\\*([0-9\\.]+)#sequence\\*[A-Z]*#noOfAminoAcids\\*\\d*#firstAccessionCode\\*([^#]+)#");
+	private Pattern brendaResultPattern = Pattern.compile("ecNumber\\*([0-9A-Za-z\\.]+)#sequence\\*[A-Z]*#noOfAminoAcids\\*\\d*#firstAccessionCode\\*([^#]+)#");
 	
 	private static final Logger logger = LogManager.getLogger();
 	
