@@ -163,10 +163,10 @@ public final class ReferenceObjectCache
 					
 					if (null == species)
 					{
-						Collection<GKInstance> referringRefTranscripts;
 						try
 						{
-							referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
+							@SuppressWarnings("unchecked")
+							Collection<GKInstance> referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
 							allSpecies = new ArrayList<>(referringRefTranscripts.size());
 							// Populate a list of species that this ReferenceRNASequence could be cached by.
 							for (GKInstance refTranscript : referringRefTranscripts)

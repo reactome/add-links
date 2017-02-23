@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -108,71 +107,56 @@ public class BRENDAFileRetriever extends FileRetriever
 	@Override
 	protected void downloadData() throws Exception
 	{
-		//TODO: Download to 1 file per species instead of all data into 1 file.
-		
 		AtomicInteger requestCounter = new AtomicInteger(0);
 		// The number of identifiers that returned no mapping from BRENDA.
 		AtomicInteger noMapping = new AtomicInteger(0);
-		//AtomicInteger existsMapping = new AtomicInteger(0);
-		
+
 		BRENDASoapClient client = new BRENDASoapClient(this.userName, this.password);
-		//String result = client.callBrendaService("http://www.brenda-enzymes.org/soap/brenda_server.php", "getSequence", "organism*Bacillus anthracis#firstAccessionCode*Q81PP9");
 		StringBuffer sb = new StringBuffer();
-		//logger.info("{} species to check.", identifiers.keySet().size());
-		//String originalDestination = this.destination;
-		//for (String speciesName : identifiers.keySet())
+		Files.createDirectories(Paths.get(this.destination).getParent());
+		logger.info("{} identifiers for species {}", identifiers.size(), speciesName);
+		List<Callable<Boolean>> jobs = Collections.synchronizedList(new ArrayList<Callable<Boolean>>());
+		identifiers.stream().forEach(uniprotID ->
 		{
-			
-			//String fileDestination = originalDestination.replace(".csv", "."+speciesName.replace(" ", "_")+".csv");
-			Files.createDirectories(Paths.get(this.destination).getParent());
-			logger.info("{} identifiers for species {}", identifiers.size(), speciesName);
-			//for (String uniprotID : identifiers.get(speciesName))
-			
-			List<Callable<Boolean>> jobs = Collections.synchronizedList(new ArrayList<Callable<Boolean>>());
-			
-			//TODO: Maybe run a custom ForkJoinPool to have a higher degree of parallelism to speed things up
-			identifiers.stream().forEach(uniprotID ->
+			Callable<Boolean> job = new Callable<Boolean>()
 			{
-				Callable<Boolean> job = new Callable<Boolean>()
+				@Override
+				public Boolean call() throws Exception
 				{
-					@Override
-					public Boolean call() throws Exception
+					// BRENDA won't work if there's an underscore in the species name.
+					String s = speciesName.replace("_", " ");
+					String result = client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
+					
+					if (result == null || result.trim().equals(""))
 					{
-						// BRENDA won't work if there's an underscore in the species name.
-						String s = speciesName.replace("_", " ");
-						String result = client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
-						
-						if (result == null || result.trim().equals(""))
-						{
-							noMapping.incrementAndGet();
-						}
-
-						result = uniprotID + "\t" + result + "\n"; 
-
-						sb.append(result);
-						if (requestCounter.incrementAndGet() % 1000 == 0)
-						{
-							logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
-						}
-						if (requestCounter.get() >= identifiers.size())
-						{
-							logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
-						}
-						return true;
+						noMapping.incrementAndGet();
 					}
-				};
-				jobs.add(job);
-			});
-			//TODO: parameterize degree of parallelisation
-			ForkJoinPool pool = new ForkJoinPool(numThreads);
-			
-			if (pool != null && jobs.size() > 0)
-			{
-				pool.invokeAll(jobs);
-			}
-			
-			Files.write(Paths.get(this.destination), sb.toString().getBytes());
+
+					result = uniprotID + "\t" + result + "\n"; 
+
+					sb.append(result);
+					if (requestCounter.incrementAndGet() % 1000 == 0)
+					{
+						logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
+					}
+					if (requestCounter.get() >= identifiers.size())
+					{
+						logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
+					}
+					return true;
+				}
+			};
+			jobs.add(job);
+		});
+		ForkJoinPool pool = new ForkJoinPool(numThreads);
+		
+		if (pool != null && jobs.size() > 0)
+		{
+			pool.invokeAll(jobs);
 		}
+		
+		Files.write(Paths.get(this.destination), sb.toString().getBytes());
+	
 	}
 
 	public void setUserName(String userName)

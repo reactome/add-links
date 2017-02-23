@@ -208,7 +208,6 @@ public class AddLinks
 					if (uniprotIdentifiers != null && uniprotIdentifiers.size() > 0)
 					{
 						brendaRetriever.setSpeciesName(speciesName);
-						//brendaRetriever.setIdentifiers(uniprotIdentifiers.subList(0, Math.min(100, uniprotIdentifiers.size())));
 						brendaRetriever.setIdentifiers(uniprotIdentifiers);
 						brendaRetriever.setFetchDestination(originalDestination.replace(".csv","."+speciesName.replace(" ", "_")+".csv"));
 						try
@@ -377,6 +376,7 @@ public class AddLinks
 						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
 						{
 							logger.info("Ensembl cross-references: {}", k);
+							@SuppressWarnings("unchecked")
 							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
 							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
 						}
@@ -387,6 +387,7 @@ public class AddLinks
 						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
 						{
 							logger.info("Ensembl cross-references: {}", k);
+							@SuppressWarnings("unchecked")
 							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
 							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
 						}
