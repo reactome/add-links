@@ -268,7 +268,5 @@
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
-		
-		
 	</util:map>
 </beans>

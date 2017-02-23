@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class DOCKBlasterFileProcessor extends FileProcessor
+public class DOCKBlasterFileProcessor extends FileProcessor<ArrayList<String>>
 {
 	private static final Logger logger = LogManager.getLogger();
 
