@@ -118,7 +118,7 @@ public class TestReferenceCreator
 		}
 		catch (Exception e)
 		{
-			if (adapter.supportsTransactions())
+			if (adapter !=null && adapter.supportsTransactions())
 			{
 				adapter.rollback();
 			}
@@ -127,7 +127,10 @@ public class TestReferenceCreator
 		}
 		finally
 		{
-			adapter.cleanUp();
+			if (adapter !=null)
+			{
+				adapter.cleanUp();
+			}
 		}
 	}
 	
@@ -226,7 +229,7 @@ public class TestReferenceCreator
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			if (adapter.supportsTransactions())
+			if (adapter != null && adapter.supportsTransactions())
 			{
 				adapter.rollback();
 			}
@@ -234,7 +237,10 @@ public class TestReferenceCreator
 		}
 		finally
 		{
-			adapter.cleanUp();
+			if (adapter != null)
+			{
+				adapter.cleanUp();
+			}
 		}
 			
 	}
