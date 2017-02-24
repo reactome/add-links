@@ -301,7 +301,7 @@ public class AddLinks
 					
 				}
 
-				if (uniProtToKeggFiles.size() > 0)
+				if (uniProtToKeggFiles != null && uniProtToKeggFiles.size() > 0)
 				{
 					List<Path> files = uniProtToKeggFiles;
 					Callable<Boolean> job = new Callable<Boolean>()
