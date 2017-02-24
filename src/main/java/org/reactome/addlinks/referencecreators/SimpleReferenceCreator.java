@@ -186,6 +186,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		this.classToCreateName = classToCreateName;
 	}
 
+	@Override
 	public String getClassReferringToRefName()
 	{
 		return this.classReferringToRefName;
@@ -216,6 +217,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		this.targetRefDB = targetRefDB;
 	}
 
+	@Override
 	public String getSourceRefDB()
 	{
 		return this.sourceRefDB;
