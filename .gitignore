@@ -21,3 +21,6 @@ auth.properties
 
 .dbeaver-data-sources.xml
 /misc/
+
+#ignore logging directory
+logs
