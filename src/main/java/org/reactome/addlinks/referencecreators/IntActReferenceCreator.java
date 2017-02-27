@@ -1,6 +1,7 @@
 package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,15 +73,16 @@ public class IntActReferenceCreator extends SimpleReferenceCreator<String>
 		// The object cache will also probably need to be reloaded, and possibly also the sourceReferences variable.
 		this.adapter.commit();
 		
-		for (GKInstance instance : sourceReferences)
+		for (GKInstance refGeneProduct : sourceReferences)
 		{
 			// load the referenceEntitites referring to *instance*. ReferenceGeneProducts could be referred to by an OpenSet, via the OpenSet's referenceEntity attribute.
-			this.adapter.loadInstanceReverseAttributeValues((Collection<GKInstance>)Arrays.asList(instance) , new String[]{ ReactomeJavaConstants.referenceEntity } );
+			this.adapter.loadInstanceReverseAttributeValues((Collection<GKInstance>)Arrays.asList(refGeneProduct) , new String[]{ ReactomeJavaConstants.referenceEntity } );
 			
 			// now look at the PhysicalEntities that were loaded by loadInstanceReverseAttributeValues, put them into an array if they have *this* instance pointed to by their hasMember attribute
 			// We want to get the EntitySet objects (or objects that are subtypes of EntitySet) that refer to this via their hasMember attribute.
 			@SuppressWarnings("unchecked")
-			Collection<GKInstance> referringPhysicalEntities = (Collection<GKInstance>)instance.getReferers(ReactomeJavaConstants.hasMember);
+			Collection<GKInstance> referringPhysicalEntities = (Collection<GKInstance>)refGeneProduct.getReferers(ReactomeJavaConstants.hasMember);
+			List<GKInstance> physicalEntitiesOfInterest = new ArrayList<GKInstance>(referringPhysicalEntities);
 			for (GKInstance physicalEntity : referringPhysicalEntities)
 			{
 				// According to the old Perl code, we're interested in PhysicalEntity referers. TODO: add this as a filter to the lookup above.
@@ -88,7 +90,7 @@ public class IntActReferenceCreator extends SimpleReferenceCreator<String>
 				{
 					// Get the components of this referrer.
 					this.adapter.loadInstanceReverseAttributeValues( (Collection<GKInstance>)Arrays.asList(physicalEntity) , new String[]{ ReactomeJavaConstants.hasComponent });
-					
+					physicalEntitiesOfInterest.addAll( (Collection<GKInstance>) physicalEntity.getReferers(ReactomeJavaConstants.hasComponent) );
 				}
 			}
 		}
