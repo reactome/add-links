@@ -61,6 +61,7 @@
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="maxAge" ref="maxFileAge" />
+		<property name="retrieverName" value="Uniprot"/>
 	</bean>
 
 	

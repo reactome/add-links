@@ -29,6 +29,7 @@
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="userName" value="${orphanet.user}" />
 				<property name="password" value="${orphanet.password}" />
+				<property name="retrieverName" value="OrphanetToUniprotReferenceDNASequence"/>
 			</bean>
 		</entry>
 
@@ -37,6 +38,7 @@
 				<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="PROToReferencePeptideSequence"/>
 			</bean>
 		</entry>
 
@@ -45,6 +47,7 @@
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/current/various/reactome.dat" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/reactome.dat" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="IntActDatabaseIdentifierToComplexOrReactionlikeEvent"/>
 			</bean>
 		</entry>
 		
@@ -65,6 +68,7 @@
 				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="DOCKBlaster"/>
 			</bean>
 		</entry>
 		
@@ -73,6 +77,7 @@
 				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_05.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="FlyBaseToUniprotReferenceDNASequence"/>
 			</bean>
 		</entry>
 
@@ -81,6 +86,7 @@
 				<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_metabolites.zip" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="HmdbMolecules"/>
 			</bean>
 		</entry>
 
@@ -89,6 +95,7 @@
 				<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_proteins.zip" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="HmdbProteins"/>
 			</bean>
 		</entry>
 
@@ -97,7 +104,7 @@
 				<property name="dataURL" value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt" />
 				<property name="maxAge" ref="maxFileAge" />
-
+				<property name="retrieverName" value="OrthologsFromZinc"/>
 			</bean>
 		</entry>
 
@@ -106,6 +113,7 @@
 				<property name="dataURL" value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_chebi_purch.xls" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="Zinc"/>
 			</bean>
 		</entry>
 		
@@ -114,6 +122,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"/>
 				<property name="dataURL" value="http://rest.kegg.jp/get/" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="retrieverName" value="KEGGRetriever"/>
 				<!-- You will need to set UniprotToKEGGFiles at runtime. -->
 			</bean>
 		</entry>
@@ -123,11 +132,13 @@
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
+				<property name="retrieverName" value="RheaRetriever"/>
 			</bean>
 		</entry>
 		
 		<entry key="BrendaRetriever">
 			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+				<constructor-arg name="retrieverName" value="BrendaRetriever"/>
 				<property name="userName" value="${brenda.user}"/>
 				<property name="password" value="${brenda.password}"/>
 				<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>

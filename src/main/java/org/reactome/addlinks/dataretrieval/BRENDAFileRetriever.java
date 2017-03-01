@@ -18,8 +18,7 @@ import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
 ;
 
 /**
@@ -29,12 +28,29 @@ import org.apache.logging.log4j.Logger;
  */
 public class BRENDAFileRetriever extends FileRetriever
 {
-	private static final Logger logger = LogManager.getLogger();
 	private String userName;
 	private String password;
 	private List<String> identifiers;
 	private String speciesName;
 	private int numThreads = 10;
+	
+	public BRENDAFileRetriever()
+	{
+		
+	}
+	
+	public BRENDAFileRetriever(String retrieverName)
+	{
+		this.setRetrieverName(retrieverName);
+		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
+		{
+			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
+		}
+		else
+		{
+			this.logger = this.createLogger("logs/" + retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
+		}
+	}
 	
 	public class BRENDASoapClient
 	{
@@ -135,7 +151,7 @@ public class BRENDAFileRetriever extends FileRetriever
 					result = uniprotID + "\t" + result + "\n"; 
 
 					sb.append(result);
-					if (requestCounter.incrementAndGet() % 1000 == 0)
+					if (requestCounter.incrementAndGet() % 100 == 0)
 					{
 						logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
 					}

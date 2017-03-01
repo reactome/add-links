@@ -23,6 +23,7 @@ import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,13 +34,22 @@ public class FileRetriever implements DataRetriever {
 	protected Duration maxAge;
 	private Duration timeout = Duration.ofSeconds(30);
 	private int numRetries = 1;
-	
-	private static final Logger logger = LogManager.getLogger();
+	protected String retrieverName;
+	protected Logger logger = LogManager.getLogger();
 	
 	
 	@Override
 	public void fetchData() throws Exception 
 	{
+		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
+		{
+			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
+		}
+		else
+		{
+			this.logger = this.createLogger("logs/" + retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
+		}
+		
 		if (this.uri == null)
 		{
 			throw new RuntimeException("You must provide a URI from which the file will be downloaded!");
@@ -219,6 +229,12 @@ public class FileRetriever implements DataRetriever {
 	public void setTimeout(Duration timeout)
 	{
 		this.timeout = timeout;
+	}
+
+	@Override
+	public void setRetrieverName(String retrieverName)
+	{
+		this.retrieverName = retrieverName;
 	}
 	
 }
