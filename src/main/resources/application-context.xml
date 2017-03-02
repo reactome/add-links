@@ -40,9 +40,10 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<!--
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
-		<!--<value>EnsemblToALL</value>
+		<value>EnsemblToALL</value>
 		<value>BrendaRetriever</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -66,13 +67,14 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>KEGGFileProcessor</value>
 		<value>BrendaProcessor</value>
 		<!--
 		<value>RheaFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>zincProtFileProcessor</value>
-		<value>KEGGFileProcessor</value>
+		
 		<value>ZincMoleculesFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>

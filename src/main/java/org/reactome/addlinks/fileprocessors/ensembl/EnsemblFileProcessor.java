@@ -34,8 +34,9 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	
 	private static final Logger logger = LogManager.getLogger();
 	
-	public EnsemblFileProcessor()
+	public EnsemblFileProcessor(String processorName)
 	{
+		super(processorName);
 		this.pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
 	}
 	

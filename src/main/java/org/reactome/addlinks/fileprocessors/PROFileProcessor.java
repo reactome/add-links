@@ -23,7 +23,12 @@ PR:000000010	UniProtKB:Q63148
 */
 public class PROFileProcessor extends FileProcessor<String>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public PROFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	//private static final Logger logger = LogManager.getLogger();
 	
 	@Override
 	public Map<String,String> getIdMappingsFromFile()

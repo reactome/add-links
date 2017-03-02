@@ -18,8 +18,13 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 {
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	
+	public GlobbedFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
 	private Map<String, T> mappings;
 	
 	protected String fileGlob;

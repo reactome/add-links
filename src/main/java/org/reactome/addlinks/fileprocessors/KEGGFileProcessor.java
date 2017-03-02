@@ -30,11 +30,17 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 	
 	private static final Logger logger = LogManager.getLogger();
 	
-	public KEGGFileProcessor()
+//	public KEGGFileProcessor()
+//	{
+//		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
+//	}
+
+	public KEGGFileProcessor(String processorName)
 	{
+		super(processorName);
 		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
 	}
-
+	
 	/**
 	 * Returns UniProt-to-KEGG mappings.
 	 * @param file 

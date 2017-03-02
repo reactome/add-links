@@ -22,8 +22,13 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 {
+	public EnsemblBatchLookupFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
 	private static final String XSL_FILE_NAME = "ensembl-lookup-simplifier.xsl";
-	private static final Logger logger = LogManager.getLogger();
+//	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()

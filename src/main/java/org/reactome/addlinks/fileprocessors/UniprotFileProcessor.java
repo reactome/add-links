@@ -17,8 +17,9 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 {
 	private static final Logger logger = LogManager.getLogger();
 	
-	public UniprotFileProcessor()
+	public UniprotFileProcessor(String processorName)
 	{
+		super(processorName);
 		this.pattern = Pattern.compile("[^.]+\\.([0-9]+)\\.[0-9]+\\.txt");
 		//this.fileProcessor = this::processFile;
 	}

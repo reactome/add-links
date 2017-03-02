@@ -26,10 +26,15 @@ import org.xml.sax.InputSource;
 
 public class HmdbProteinsFileProcessor extends FileProcessor<List<String>>
 {
+	public HmdbProteinsFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
 	private static XPathExpression pathToProteinsList;
 	private static XPathExpression pathToAccession;
 	private static XPathExpression pathToUniprot;
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	static
 	{
 		try
