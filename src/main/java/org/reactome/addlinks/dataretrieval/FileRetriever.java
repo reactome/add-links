@@ -38,9 +38,16 @@ public class FileRetriever implements DataRetriever {
 	protected Logger logger = LogManager.getLogger();
 	
 	
-	@Override
-	public void fetchData() throws Exception 
+	public FileRetriever() {}
+	
+	/**
+	 * This constructor takes a string that will be used to name the logging output file.
+	 * 
+	 * @param retrieverName - the name of this File Retriever - the log file produced by this class will be named "${retrieverName}.log"
+	 */
+	public FileRetriever(String retrieverName)
 	{
+		this.setRetrieverName(retrieverName);
 		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
 		{
 			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
@@ -48,6 +55,20 @@ public class FileRetriever implements DataRetriever {
 		else
 		{
 			this.logger = this.createLogger("logs/" + retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
+		}
+	}
+	
+	@Override
+	public void fetchData() throws Exception 
+	{
+		// If the file retriever name was not set at construction time, set it now.
+		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
+		{
+			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
+		}
+		else
+		{
+			this.logger = this.createLogger("logs/" + retrieverName.replace(".log","-retriever.log") + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
 		}
 		
 		if (this.uri == null)
@@ -237,5 +258,9 @@ public class FileRetriever implements DataRetriever {
 		this.retrieverName = retrieverName;
 	}
 	
+	public String getRetrieverName()
+	{
+		return this.retrieverName;
+	}
 }
 

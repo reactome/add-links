@@ -122,7 +122,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"/>
 				<property name="dataURL" value="http://rest.kegg.jp/get/" />
 				<property name="maxAge" ref="maxFileAge" />
-				<property name="retrieverName" value="KEGGRetriever"/>
+				<constructor-arg name="retrieverName" value="KEGGRetriever"/>
 				<!-- You will need to set UniprotToKEGGFiles at runtime. -->
 			</bean>
 		</entry>

@@ -38,11 +38,18 @@ public class KEGGFileRetriever extends FileRetriever
 	
 	private MySQLAdaptor adapter;
 	
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 
 	// We need to have the lists of uniprot-to-kegg mappings before we attempt to get the KEGG entries.
 	// This file will have the KEGG identifiers that we will look up.
 	private List<Path> uniprotToKEGGFiles;
+	
+	public KEGGFileRetriever(){}
+	
+	public KEGGFileRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
 	
 	@Override
 	protected void downloadData() throws Exception
@@ -128,13 +135,13 @@ public class KEGGFileRetriever extends FileRetriever
 							} 
 							break;
 						case HttpStatus.SC_NOT_FOUND:
-							logger.error("\"NOT FOUND\" response was received: {}", getResponse.getStatusLine().toString());
+							logger.error("\"NOT FOUND\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
 							break;
 						case HttpStatus.SC_BAD_REQUEST:
-							logger.error("\"BAD REQUEST\" response was received: {}", getResponse.getStatusLine().toString());
+							logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
 							break;
 						default:
-							logger.info("Unexpected response code: {} ; full response message: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString());
+							logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), this.uri);
 							break;
 							
 							// From KEGG response: use DEFINITION as name, 

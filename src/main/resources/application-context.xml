@@ -40,19 +40,18 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>BrendaRetriever</value>
-		<!--
-		<value>RheaRetriever</value>
-		<value>EnsemblToALL</value>
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
-		<value>UniProtToEntrez_Gene</value>
+		<!--<value>EnsemblToALL</value>
+		<value>BrendaRetriever</value>
 		<value>UniProtToOMIM</value>
+		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToENSEMBL</value>
 		<value>UniProtToWormbase</value>
+		<value>RheaRetriever</value>
  		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>

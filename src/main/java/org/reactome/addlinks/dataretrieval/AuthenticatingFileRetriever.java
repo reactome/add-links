@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 public class AuthenticatingFileRetriever extends FileRetriever {
 
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	
 	private String userName;
 	private String password;

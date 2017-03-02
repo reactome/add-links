@@ -22,7 +22,7 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblServiceResponseProcess
 public class EnsemblBatchLookup  extends FileRetriever
 {
 	
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	private String species;
 	private List<String> identifiers;
 
@@ -39,6 +39,13 @@ public class EnsemblBatchLookup  extends FileRetriever
 	public void setIdentifiers(List<String> identifiers)
 	{
 		this.identifiers = identifiers;
+	}
+	
+	public EnsemblBatchLookup() { }
+	
+	public EnsemblBatchLookup(String retrieverName)
+	{
+		super(retrieverName);
 	}
 	
 	/**

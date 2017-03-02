@@ -310,7 +310,7 @@ public class AddLinks
 						@Override
 						public Boolean call() throws Exception
 						{
-							KEGGFileRetriever retriever = new KEGGFileRetriever();
+							KEGGFileRetriever retriever = new KEGGFileRetriever(keggFileRetriever.getRetrieverName());
 							retriever.setAdapter(keggFileRetriever.getAdapter());
 							retriever.setDataURL(keggFileRetriever.getDataURL());
 							retriever.setUniprotToKEGGFiles(files);
