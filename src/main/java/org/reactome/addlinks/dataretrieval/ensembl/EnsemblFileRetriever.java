@@ -29,7 +29,7 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblServiceResponseProcess
 
 public class EnsemblFileRetriever extends FileRetriever
 {
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	// Let's assume that initially we can make 10 requests. This will be reset once we get the first actual response from the server.
 	//private static AtomicInteger numRequestsRemaining = new AtomicInteger(10);
 	private String mapFromDb="";
@@ -37,7 +37,13 @@ public class EnsemblFileRetriever extends FileRetriever
 	private String species;
 	private List<String> identifiers;
 
+	public EnsemblFileRetriever() { }
 
+	public EnsemblFileRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
+	
 	public enum EnsemblDB
 	{
 		ENSEMBL("ENSEMBL"),

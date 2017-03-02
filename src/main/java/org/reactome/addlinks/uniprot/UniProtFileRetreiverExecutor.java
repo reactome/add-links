@@ -120,7 +120,7 @@ public class UniProtFileRetreiverExecutor
 											// if we want to execute multiple retrievers in parallel, we need to create a 
 											// NEW retriever and pass in the relevant values from the retriever that came from the original Uniprot file retriever
 											// defined in the spring config file.
-											UniprotFileRetreiver innerRetriever = new UniprotFileRetreiver();
+											UniprotFileRetreiver innerRetriever = new UniprotFileRetreiver(retriever.getRetrieverName());
 											innerRetriever.setMapFromDb(retriever.getMapFromDb());
 											innerRetriever.setMapToDb(retriever.getMapToDb());
 											innerRetriever.setDataURL(retriever.getDataURL());

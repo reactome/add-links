@@ -1,20 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
-
-<!-- 	<Routing name="Routing">
-		<Routes pattern="$${ctx:ROUTINGKEY}">
-			<Route key="special">
-				<RollingRandomAccessFile name="SpecialRollingRandomAccessFile" fileName="logs/${ctx:ROUTINGKEY}.log" filePattern="logs/$${date:yyyy-MM}/${ctx:ROUTINGKEY}-special-%d{MM-dd-yyyy}-%i.log.gz">
-					<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36}#%M - %msg%n" />
-					<Policies>
-						<TimeBasedTriggeringPolicy />
-						<SizeBasedTriggeringPolicy size="250 MB" />
-					</Policies>
-				</RollingRandomAccessFile>
-			</Route>
-		</Routes>
-	</Routing> -->
-	
+<Configuration status="WARN" strict="true" name="XMLConfigTest" packages="org.apache.logging.log4j.test">
 	<Appenders>
 		<!-- STDOUT appender. -->
 		<Console name="Console" target="SYSTEM_OUT">
@@ -31,12 +16,9 @@
 		</RollingRandomAccessFile>
 	</Appenders>
 	<Loggers>
-		<!-- <Logger level="debug" name="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" />
-		<Logger level="debug" name="org.reactome.addlinks.fileprocessors.KEGGFileProcessor" /> -->
 		<Root level="debug">
 			<!-- only write INFO level to the file. -->
 			<AppenderRef ref="RollingRandomAccessFile" level="debug"/>
-			<!-- <AppenderRef ref="SpecialRollingRandomAccessFile" level="debug"/> -->
 			<!-- Console shows everything at DEBUG level-->
 			<AppenderRef ref="Console" level="info" />
 		</Root>

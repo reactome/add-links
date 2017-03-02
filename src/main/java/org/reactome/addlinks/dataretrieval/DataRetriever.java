@@ -28,13 +28,9 @@ public interface DataRetriever {
 		Configuration configuration = context.getConfiguration();
 		Layout<? extends Serializable> oldLayout = configuration.getAppender(oldAppenderName).getLayout();
 		
-		// delete old appender/logger
-		// configuration.getAppender(appender_name).stop();
-		// configuration.removeLogger(package_name);
-
 		// create new appender/logger
 		LoggerConfig loggerConfig = new LoggerConfig(packageName, level, false);
-		FileAppender appender = FileAppender.createAppender(logFileName.replace(".log","-retriever.log"), Boolean.toString(append), "false",
+		FileAppender appender = FileAppender.createAppender(logFileName, Boolean.toString(append), "false",
 															newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
 		appender.start();
 		loggerConfig.addAppender(appender, level, null);

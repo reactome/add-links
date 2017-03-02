@@ -41,15 +41,7 @@ public class BRENDAFileRetriever extends FileRetriever
 	
 	public BRENDAFileRetriever(String retrieverName)
 	{
-		this.setRetrieverName(retrieverName);
-		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
-		{
-			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
-		}
-		else
-		{
-			this.logger = this.createLogger("logs/" + retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
-		}
+		super(retrieverName);
 	}
 	
 	public class BRENDASoapClient
