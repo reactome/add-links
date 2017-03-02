@@ -19,7 +19,12 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, List<String>>>
 {
 
-	private static final Logger logger = LogManager.getLogger();
+	public EnsemblAggregateFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+//	private static final Logger logger = LogManager.getLogger();
 	
 	public enum EnsemblAggregateProcessingMode
 	{

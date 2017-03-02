@@ -26,6 +26,11 @@ import org.xml.sax.InputSource;
 
 public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>>
 {
+	public HmdbMetabolitesFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
 	public enum HMDBFileMappingKeys
 	{
 		CHEBI,
@@ -35,7 +40,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 	private static XPathExpression pathToAccession;
 	private static XPathExpression pathToChebi;
 	private static XPathExpression pathToUniprot;
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	static
 	{
 		try

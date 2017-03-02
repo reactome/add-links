@@ -18,7 +18,12 @@ import org.apache.logging.log4j.Logger;
  */
 public class IntEnzFileProcessor extends FileProcessor<List<String>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public IntEnzFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	//private static final Logger logger = LogManager.getLogger();
 	
 	@Override
 	public Map<String, List<String>> getIdMappingsFromFile()

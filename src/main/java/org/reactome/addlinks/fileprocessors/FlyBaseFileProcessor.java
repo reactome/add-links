@@ -12,7 +12,12 @@ import org.apache.logging.log4j.Logger;
 
 public class FlyBaseFileProcessor extends FileProcessor<String>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public FlyBaseFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	//private static final Logger logger = LogManager.getLogger();
 
 	@Override
 	public Map<String, String> getIdMappingsFromFile()

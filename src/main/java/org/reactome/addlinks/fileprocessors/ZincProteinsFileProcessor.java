@@ -10,7 +10,11 @@ import org.apache.logging.log4j.Logger;
 
 public class ZincProteinsFileProcessor extends FileProcessor<String>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public ZincProteinsFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+	//private static final Logger logger = LogManager.getLogger();
 	@Override
 	public Map<String,String> getIdMappingsFromFile()
 	{
