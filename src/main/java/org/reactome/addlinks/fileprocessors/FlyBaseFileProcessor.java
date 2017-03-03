@@ -12,6 +12,11 @@ import org.apache.logging.log4j.Logger;
 
 public class FlyBaseFileProcessor extends FileProcessor<String>
 {
+	public FlyBaseFileProcessor()
+	{
+		super(null);
+	}
+	
 	public FlyBaseFileProcessor(String processorName)
 	{
 		super(processorName);

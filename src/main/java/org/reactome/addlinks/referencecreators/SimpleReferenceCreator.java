@@ -3,7 +3,9 @@ package org.reactome.addlinks.referencecreators;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -28,7 +30,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	private static final Logger logger = LogManager.getLogger();
+	protected Logger logger = LogManager.getLogger();
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
@@ -38,6 +40,13 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
+		this(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, null);
+	}
+	
+	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		this.logger = this.createLogger("logs/" + refCreatorName + ".log", "RollingRandomAccessFile", refCreatorName, this.getClass().getName(), true, Level.DEBUG, this.logger, "Reference Creator");
+		
 		this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);
 		this.setReferringAttributeName(referringAttribute);
@@ -67,7 +76,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			throw new RuntimeException (e);
 		}
 		 
-		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter);
+		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
 	/**
@@ -79,6 +88,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	 * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome. 
 	 * @throws Exception
 	 */
+	@Override
 	public void createIdentifiers(long personID, Map<String, T> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		int sourceIdentifiersWithNoMapping = 0;
@@ -227,4 +237,5 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	{
 		this.sourceRefDB = sourceRefDB;
 	}
+	
 }

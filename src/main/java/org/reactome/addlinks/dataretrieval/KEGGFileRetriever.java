@@ -44,7 +44,10 @@ public class KEGGFileRetriever extends FileRetriever
 	// This file will have the KEGG identifiers that we will look up.
 	private List<Path> uniprotToKEGGFiles;
 	
-	public KEGGFileRetriever(){}
+	public KEGGFileRetriever()
+	{
+		super(null);
+	}
 	
 	public KEGGFileRetriever(String retrieverName)
 	{

@@ -23,6 +23,11 @@ PR:000000010	UniProtKB:Q63148
 */
 public class PROFileProcessor extends FileProcessor<String>
 {
+	public PROFileProcessor()
+	{
+		super(null);
+	}
+	
 	public PROFileProcessor(String processorName)
 	{
 		super(processorName);

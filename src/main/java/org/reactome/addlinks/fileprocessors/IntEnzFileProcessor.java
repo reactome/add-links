@@ -23,6 +23,11 @@ public class IntEnzFileProcessor extends FileProcessor<List<String>>
 		super(processorName);
 	}
 
+	public IntEnzFileProcessor()
+	{
+		super(null);
+	}
+	
 	//private static final Logger logger = LogManager.getLogger();
 	
 	@Override

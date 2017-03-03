@@ -31,6 +31,11 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 		super(processorName);
 	}
 
+	public HmdbMetabolitesFileProcessor()
+	{
+		super(null);
+	}
+	
 	public enum HMDBFileMappingKeys
 	{
 		CHEBI,

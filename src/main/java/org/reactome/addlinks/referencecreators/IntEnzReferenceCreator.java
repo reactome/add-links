@@ -12,9 +12,15 @@ import org.gk.persistence.MySQLAdaptor;
 public class IntEnzReferenceCreator extends SimpleReferenceCreator<List<String>>
 {
 	private static final Logger logger = LogManager.getLogger();
+	
 	public IntEnzReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+	}
+	
+	public IntEnzReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 
 	@Override

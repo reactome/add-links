@@ -20,6 +20,10 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 {
 	//private static final Logger logger = LogManager.getLogger();
 	
+	public GlobbedFileProcessor()
+	{
+	}
+	
 	public GlobbedFileProcessor(String processorName)
 	{
 		super(processorName);

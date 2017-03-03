@@ -26,6 +26,10 @@ public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, Lis
 
 //	private static final Logger logger = LogManager.getLogger();
 	
+	public EnsemblAggregateFileProcessor()
+	{
+	}
+
 	public enum EnsemblAggregateProcessingMode
 	{
 		ENSP_TO_ENSG,

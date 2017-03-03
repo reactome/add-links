@@ -25,6 +25,11 @@ public class RHEAFileProcessor extends FileProcessor<List<String>>
 		super(processorName);
 	}
 
+	public RHEAFileProcessor()
+	{
+		super(null);
+	}
+	
 	/**
 	 * Will return RHEA IDs that map to a list of Reactome IDs. 
 	 */
