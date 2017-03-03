@@ -20,11 +20,16 @@ import org.gk.schema.GKSchemaAttribute;
 
 public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,List<String>>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+	}
+	
+	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 	
 	/**

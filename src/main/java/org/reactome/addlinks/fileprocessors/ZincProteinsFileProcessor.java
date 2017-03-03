@@ -10,6 +10,11 @@ import org.apache.logging.log4j.Logger;
 
 public class ZincProteinsFileProcessor extends FileProcessor<String>
 {
+	public ZincProteinsFileProcessor()
+	{
+		super(null);
+	}
+	
 	public ZincProteinsFileProcessor(String processorName)
 	{
 		super(processorName);

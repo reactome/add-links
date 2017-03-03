@@ -14,9 +14,9 @@ public class IntActReferenceCreator extends SimpleReferenceCreator<String>
 {
 	private static final Logger logger = LogManager.getLogger();
 	public IntActReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring,
-			String referringAttribute, String sourceDB, String targetDB)
+			String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
-		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 	
 	public void createIdentifiers(long personID, Map<String,String> mappings, List<GKInstance> sourceReferences) throws IOException

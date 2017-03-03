@@ -22,6 +22,11 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
+	
+	public KEGGReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+	}
 
 	@Override
 	public void createIdentifiers(long personID, Map<String, List<Map<KEGGKeys, String>>> mappings, List<GKInstance> sourceReferences) throws Exception

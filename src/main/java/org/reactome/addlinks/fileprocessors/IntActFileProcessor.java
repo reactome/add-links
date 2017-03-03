@@ -14,7 +14,12 @@ public class IntActFileProcessor extends FileProcessor<String>
 	{
 		super(processorName);
 	}
-	//private static final Logger logger = LogManager.getLogger();
+	
+	public IntActFileProcessor()
+	{
+		super(null);
+	}
+	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{

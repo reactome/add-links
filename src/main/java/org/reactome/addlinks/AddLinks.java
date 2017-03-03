@@ -622,7 +622,7 @@ public class AddLinks
 				catch (Exception e)
 				{
 					//TODO: The decision to continue after a failure should be a configurable option. 
-					logger.info("Exception caught while processing {}, message is: {}. Will continue with next file retriever.",k,e.getMessage());
+					logger.warn("Exception caught while processing {}, message is: \"{}\". Will continue with next file retriever.",k,e.getMessage());
 				}
 			}
 			else

@@ -26,6 +26,11 @@ import org.xml.sax.InputSource;
 
 public class HmdbProteinsFileProcessor extends FileProcessor<List<String>>
 {
+	public HmdbProteinsFileProcessor()
+	{
+		super(null);
+	}
+	
 	public HmdbProteinsFileProcessor(String processorName)
 	{
 		super(processorName);

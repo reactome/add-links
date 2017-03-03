@@ -18,6 +18,11 @@ public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 {
 	private Pattern brendaResultPattern = Pattern.compile("ecNumber\\*([0-9A-Za-z\\.]+)#sequence\\*[A-Z]*#noOfAminoAcids\\*\\d*#firstAccessionCode\\*([^#]+)#");
 	
+	public BRENDAFileProcessor()
+	{
+		super(null);
+	}
+	
 	public BRENDAFileProcessor(String processorName)
 	{
 		super(processorName);

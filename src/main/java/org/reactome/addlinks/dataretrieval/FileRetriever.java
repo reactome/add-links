@@ -38,7 +38,10 @@ public class FileRetriever implements DataRetriever {
 	protected Logger logger = LogManager.getLogger();
 	
 	
-	public FileRetriever() {}
+	public FileRetriever()
+	{
+		this(null);
+	}
 	
 	/**
 	 * This constructor takes a string that will be used to name the logging output file.
@@ -48,28 +51,29 @@ public class FileRetriever implements DataRetriever {
 	public FileRetriever(String retrieverName)
 	{
 		this.setRetrieverName(retrieverName);
-		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
-		{
-			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
-		}
-		else
-		{
-			this.logger = this.createLogger("logs/" + retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
-		}
+//		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
+//		{
+//			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
+//		}
+//		else
+//		{
+//			this.logger = this.createLogger(retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
+//		}
+		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG, this.logger, "Data Retriever");
 	}
 	
 	@Override
 	public void fetchData() throws Exception 
 	{
 		// If the file retriever name was not set at construction time, set it now.
-		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
-		{
-			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
-		}
-		else
-		{
-			this.logger = this.createLogger("logs/" + retrieverName.replace(".log","-retriever.log") + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
-		}
+//		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
+//		{
+//			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
+//		}
+//		else
+//		{
+//			this.logger = this.createLogger(retrieverName.replace(".log","-retriever.log") + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
+//		}
 		
 		if (this.uri == null)
 		{
@@ -192,7 +196,9 @@ public class FileRetriever implements DataRetriever {
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
 			if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
 			{
-				throw new Exception("5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString());
+				String errorString = "5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString();
+				logger.error(errorString);
+				throw new Exception(errorString);
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int b = inStream.read();

@@ -27,6 +27,10 @@ public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 		super(processorName);
 	}
 
+	public EnsemblBatchLookupFileProcessor()
+	{
+	}
+
 	private static final String XSL_FILE_NAME = "ensembl-lookup-simplifier.xsl";
 //	private static final Logger logger = LogManager.getLogger();
 	

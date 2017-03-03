@@ -16,6 +16,8 @@ public class DOCKBlasterFileProcessor extends FileProcessor<ArrayList<String>>
 		super(processorName);
 	}
 
+	public DOCKBlasterFileProcessor()
+	{}
 	// private static final Logger logger = LogManager.getLogger();
 
 	@Override

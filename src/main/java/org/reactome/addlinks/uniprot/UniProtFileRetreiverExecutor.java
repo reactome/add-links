@@ -75,7 +75,6 @@ public class UniProtFileRetreiverExecutor
 					int stepSize = pool.getParallelism();
 					logger.debug("Degree of parallelism in the pool: {}", stepSize);
 					
-					
 					for (int i = 0; i < speciesList.size(); i+= stepSize)
 					{
 						List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();

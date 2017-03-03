@@ -41,6 +41,10 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
 	}
 	
+	public KEGGFileProcessor()
+	{
+	}
+
 	/**
 	 * Returns UniProt-to-KEGG mappings.
 	 * @param file 

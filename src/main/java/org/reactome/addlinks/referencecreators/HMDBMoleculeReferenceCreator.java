@@ -14,12 +14,16 @@ import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor.HMDBFil
 
 public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMDBFileMappingKeys, ? extends Collection<String>>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
+	public HMDBMoleculeReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+	}
+	
 	public HMDBMoleculeReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
-	
 
 	@Override
 	public void createIdentifiers(long personID, Map<String,Map<HMDBFileMappingKeys, ? extends Collection<String>>> mapping, List<GKInstance> sourceReferences) throws Exception

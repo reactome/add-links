@@ -22,4 +22,5 @@ public interface BatchReferenceCreator<T> extends CustomLoggable
 	public String getSourceRefDB();
 
 	public String getClassReferringToRefName();
+	
 }

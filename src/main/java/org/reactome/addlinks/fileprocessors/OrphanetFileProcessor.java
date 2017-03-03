@@ -27,6 +27,11 @@ public class OrphanetFileProcessor extends FileProcessor<String>
 		super(processorName);
 	}
 
+	public OrphanetFileProcessor()
+	{
+		super(null);
+	}
+	
 	//private static final Logger logger = LogManager.getLogger();
 	
 	@Override

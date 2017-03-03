@@ -40,6 +40,10 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 		this.pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
 	}
 	
+	public EnsemblFileProcessor()
+	{
+	}
+
 	@Override
 	protected void processFile(Path file, Map<String, Map<String, List<String>>> mapping) throws TransformerFactoryConfigurationError
 	{

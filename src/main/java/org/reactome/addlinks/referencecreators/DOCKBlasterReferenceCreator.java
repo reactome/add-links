@@ -21,11 +21,17 @@ import org.gk.schema.InvalidAttributeException;
  */
 public class DOCKBlasterReferenceCreator  extends SimpleReferenceCreator<ArrayList<String>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 
 	public DOCKBlasterReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+	}
+	
+	
+	public DOCKBlasterReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 
 	/**

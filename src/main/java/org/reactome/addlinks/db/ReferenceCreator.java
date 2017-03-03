@@ -19,7 +19,7 @@ import org.gk.util.GKApplicationUtilities;
 
 public class ReferenceCreator
 {
-	private static final Logger logger = LogManager.getLogger();
+	private Logger logger = LogManager.getLogger();
 
 	//The class of the Reference we will create.
 	private SchemaClass schemaClass;
@@ -32,6 +32,23 @@ public class ReferenceCreator
 	
 	private MySQLAdaptor dbAdapter;
 
+	/**
+	 * 
+	 * @param schemaClass - References that are created by this object will be of type <i>schemaClass</i>.
+	 * @param referringSchemaClass - References that are created by this object will be referred to by existing objects of type <i>referringSchemaClass</i>
+	 * @param referringAttribute - References that are created by this object will be referred to by the <i>referringAttribute</i> of <i>referringSchemaClass</i>
+	 * @param adapter - A database adapter.
+	 * @param logger - The logger - this can be used when other components that create references what the output of *this* class to  be written to *their own* log files.
+	 */
+	public ReferenceCreator( SchemaClass schemaClass, SchemaClass referringSchemaClass, GKSchemaAttribute referringAttribute, MySQLAdaptor adapter, Logger logger)
+	{
+		this.dbAdapter = adapter;
+		this.schemaClass = schemaClass;
+		this.referringToSchemaClass = referringSchemaClass;
+		this.referringAttribute = referringAttribute;
+		this.logger = logger;
+	}
+	
 	/**
 	 * 
 	 * @param schemaClass - References that are created by this object will be of type <i>schemaClass</i>.

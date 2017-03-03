@@ -14,9 +14,15 @@ import org.gk.schema.GKSchemaAttribute;
 public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 {
 	private static final Logger logger = LogManager.getLogger();
+	
 	public BRENDAReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
-		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, null);
+	}
+	
+	public BRENDAReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB,String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 
 	@Override

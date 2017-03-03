@@ -12,11 +12,16 @@ import org.gk.persistence.MySQLAdaptor;
 
 public class HMDBProteinReferenceCreator extends SimpleReferenceCreator<List<String>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	//private static final Logger logger = LogManager.getLogger();
 	
 	public HMDBProteinReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+	}
+	
+	public HMDBProteinReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 
 	/**
