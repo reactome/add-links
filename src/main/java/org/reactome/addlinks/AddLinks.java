@@ -66,7 +66,7 @@ public class AddLinks
 	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
 	
-	private Map<String, FileProcessor> fileProcessors;
+	private Map<String, FileProcessor<?>> fileProcessors;
 	
 	private Map<String,FileRetriever> fileRetrievers;
 	
@@ -676,7 +676,7 @@ public class AddLinks
 		this.ensemblFileRetrieversNonCore = ensemblFileRetrievers;
 	}
 
-	public void setFileProcessors(Map<String, FileProcessor> fileProcessors)
+	public void setFileProcessors(Map<String, FileProcessor<?>> fileProcessors)
 	{
 		this.fileProcessors = fileProcessors;
 	}

@@ -10,10 +10,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 {
 	private Pattern brendaResultPattern = Pattern.compile("ecNumber\\*([0-9A-Za-z\\.]+)#sequence\\*[A-Z]*#noOfAminoAcids\\*\\d*#firstAccessionCode\\*([^#]+)#");

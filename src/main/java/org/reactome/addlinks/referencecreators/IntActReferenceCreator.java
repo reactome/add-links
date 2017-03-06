@@ -4,21 +4,19 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
 public class IntActReferenceCreator extends SimpleReferenceCreator<String>
 {
-	private static final Logger logger = LogManager.getLogger();
 	public IntActReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring,
 			String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 	
+	@Override
 	public void createIdentifiers(long personID, Map<String,String> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
 		for (String intActID : mappings.keySet())

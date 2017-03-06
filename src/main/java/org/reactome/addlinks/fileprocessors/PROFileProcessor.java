@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /* PRO files look like this:
 PR:000000005	UniProtKB:P37173
 PR:000000005	UniProtKB:P38438
@@ -33,8 +30,6 @@ public class PROFileProcessor extends FileProcessor<String>
 		super(processorName);
 	}
 
-	//private static final Logger logger = LogManager.getLogger();
-	
 	@Override
 	public Map<String,String> getIdMappingsFromFile()
 	{
@@ -67,7 +62,6 @@ public class PROFileProcessor extends FileProcessor<String>
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		logger.debug("Number of UniProt IDs in mapping: {}; number of lines processed: {}",mappings.keySet().size(),lineCount.get());

@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -13,7 +11,6 @@ import org.gk.schema.InvalidAttributeException;
 
 public class RHEAReferenceCreator extends SimpleReferenceCreator<List <String>>
 {
-	//private static final Logger logger = LogManager.getLogger();
 	
 	public RHEAReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{

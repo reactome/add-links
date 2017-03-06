@@ -22,8 +22,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.fileprocessors.GlobbedFileProcessor;
 
 public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<String>>>
@@ -31,8 +29,6 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 
 	//A list of databses to search for in the XML file. 
 	private List<String> dbs;
-	
-	private static final Logger logger = LogManager.getLogger();
 	
 	public EnsemblFileProcessor(String processorName)
 	{
@@ -42,6 +38,8 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	
 	public EnsemblFileProcessor()
 	{
+		super();
+		this.pattern = Pattern.compile("[^.]+\\.\\d+\\.xml");
 	}
 
 	@Override

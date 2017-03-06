@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -14,7 +12,6 @@ import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor.HMDBFil
 
 public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMDBFileMappingKeys, ? extends Collection<String>>>
 {
-	//private static final Logger logger = LogManager.getLogger();
 	public HMDBMoleculeReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);

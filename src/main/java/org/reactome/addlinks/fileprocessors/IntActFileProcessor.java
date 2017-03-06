@@ -5,9 +5,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class IntActFileProcessor extends FileProcessor<String>
 {
 	public IntActFileProcessor(String processorName)

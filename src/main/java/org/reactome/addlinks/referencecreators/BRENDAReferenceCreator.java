@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -13,8 +11,6 @@ import org.gk.schema.GKSchemaAttribute;
 
 public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 {
-	private static final Logger logger = LogManager.getLogger();
-	
 	public BRENDAReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, null);

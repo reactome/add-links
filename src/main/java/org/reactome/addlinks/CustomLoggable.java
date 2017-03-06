@@ -18,7 +18,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 
 public interface CustomLoggable
 {
-	default Logger createLogger(String logFileName, String oldAppenderName, String newAppenderName, String packageName, boolean append, Level level)
+	default Logger createLogger(String logFileName, String oldAppenderName, String newAppenderName, boolean append, Level level)
 	{
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration configuration = context.getConfiguration();
@@ -30,25 +30,15 @@ public interface CustomLoggable
 		// create new appender/logger
 		LoggerConfig loggerConfig = new LoggerConfig(logFileName, level, false);
 		
-//		ConfigurationBuilder< BuiltConfiguration > builder = ConfigurationBuilderFactory.newConfigurationBuilder();
-//		LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout");
-//		for (String key : oldLayout.getContentFormat().keySet())
-//		{
-//			layoutBuilder = layoutBuilder.addAttribute(key, oldLayout.getContentFormat().get(key));
-//		}
-//		
-//		builder.newAppender(newAppenderName, oldAppender.getClass().getSimpleName()).add(layoutBuilder);
-//		AppenderComponentBuilder appenderBuilder = builder.newAppender(newAppenderName, oldAppender.getClass().getSimpleName());
-		
-//		FileAppender appender = FileAppender.createAppender(logFileName, Boolean.toString(append), "false",
-//															newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
 		Appender appender ;
+		// TODO: Find a better way to create *any* appender of *any* type and still copy over all the config. This is probably much easier said than done. :(
 		if (oldAppender instanceof RollingRandomAccessFileAppender)
 		{
 			int bufferSize = ((RollingRandomAccessFileAppender)oldAppender).getBufferSize();
 			TriggeringPolicy triggerPolicy = ((RollingRandomAccessFileAppender)oldAppender).getManager().getTriggeringPolicy();
 			RolloverStrategy rollStrategy = ((RollingRandomAccessFileAppender)oldAppender).getManager().getRolloverStrategy();
 			Filter filter = ((RollingRandomAccessFileAppender)oldAppender).getFilter();
+			// Inject new log file name into filePattern so that file rolling will work properly 
 			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{MM-dd-yyyy\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{MM-dd-yyyy}.%i.log.gz");
 			appender = RollingRandomAccessFileAppender.createAppender("logs/" + logFileName + ".log", pattern, Boolean.toString(append), newAppenderName, "true", Integer.toString(bufferSize), triggerPolicy, rollStrategy, oldLayout, filter, "true", "false", "false", configuration);
 		}
@@ -64,7 +54,7 @@ public interface CustomLoggable
 		return context.getLogger(logFileName);
 	}
 	
-	default Logger createLogger(String logFileName, String oldAppenderName, String newAppenderName, String packageName, boolean append, Level level, Logger oldLogger, String loggerContainerClassTypeName)
+	default Logger createLogger(String logFileName, String oldAppenderName, String newAppenderName, boolean append, Level level, Logger oldLogger, String loggerContainerClassTypeName)
 	{
 		if (oldLogger == null)
 		{
@@ -79,7 +69,7 @@ public interface CustomLoggable
 		else
 		{
 			oldLogger.debug("Now creating new logger: {}", logFileName);
-			return this.createLogger(logFileName , oldAppenderName, logFileName, packageName, true, level);
+			return this.createLogger(logFileName , oldAppenderName, logFileName, true, level);
 		}
 		
 	}

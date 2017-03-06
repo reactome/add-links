@@ -3,7 +3,6 @@ package org.reactome.addlinks.referencecreators;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -45,7 +44,8 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
-		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", refCreatorName, this.getClass().getName(), true, Level.TRACE, this.logger, "Reference Creator");
+		// Reference creators run a TRACE level so that we can get ALL the details of what they are creating.
+		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", refCreatorName, true, Level.TRACE, this.logger, "Reference Creator");
 		
 		this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);

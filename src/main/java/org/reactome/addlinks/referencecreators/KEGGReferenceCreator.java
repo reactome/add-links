@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -16,8 +14,6 @@ import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 
 public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
 {
-	private static final Logger logger = LogManager.getLogger();
-	
 	public KEGGReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
@@ -106,40 +102,6 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							extraAttributes.put(ReactomeJavaConstants.name, names);
 							refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID, extraAttributes);
 						}
-						// Not only do we need to create a KEGG reference, we also need to
-						// create a BRENDA reference and an IntEnz reference if there are
-						// EC numbers present
-						// TODO: Remove this once the stand-alone IntEnz and BRENDA code works Ok.
-						/*
-						String ecNumbers = keggData.get(KEGGKeys.EC_NUMBERS);
-						if (ecNumbers != null && !ecNumbers.trim().equals(""))
-						{
-							for (String ecNumber : ecNumbers.split(" "))
-							{
-								if (!ecNumber.contains("-"))
-								{
-									// According to the old Perl code, the BRENDA reference should only be created if there are no dashes in the EC number.
-									if (!this.testMode)
-									{
-										refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "BRENDA", personID, this.getClass().getName(), speciesID);
-									}
-								}
-								else
-								{
-									// According to the old Perl code, dashes should be removed and trailing "." should be removed.
-									if (!this.testMode)
-									{
-										ecNumber = ecNumber.replace("-", "").replaceAll("\\.*$", "");
-									}
-								}
-								// IntEnz reference is always created.
-								if (!this.testMode)
-								{
-									refCreator.createIdentifier(ecNumber, String.valueOf(sourceReference.getDBID()), "IntEnz", personID, this.getClass().getName(), speciesID);
-								}
-							}
-						}
-						*/
 					}
 					else
 					{

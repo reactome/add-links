@@ -5,9 +5,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class ZincProteinsFileProcessor extends FileProcessor<String>
 {
 	public ZincProteinsFileProcessor()
@@ -19,7 +16,7 @@ public class ZincProteinsFileProcessor extends FileProcessor<String>
 	{
 		super(processorName);
 	}
-	//private static final Logger logger = LogManager.getLogger();
+
 	@Override
 	public Map<String,String> getIdMappingsFromFile()
 	{

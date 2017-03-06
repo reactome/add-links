@@ -18,8 +18,6 @@ import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
-import org.apache.logging.log4j.Level;
-;
 
 /**
  * BRENDA File Retriever requires a username and password to connect to the BRENDA SOAP service.
@@ -36,7 +34,7 @@ public class BRENDAFileRetriever extends FileRetriever
 	
 	public BRENDAFileRetriever()
 	{
-		
+		super();
 	}
 	
 	public BRENDAFileRetriever(String retrieverName)
