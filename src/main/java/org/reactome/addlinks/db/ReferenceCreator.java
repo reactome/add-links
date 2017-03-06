@@ -6,14 +6,15 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gk.database.DefaultInstanceEditHelper;
 import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
+import org.gk.model.PersistenceAdaptor;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidAttributeValueException;
+import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.gk.util.GKApplicationUtilities;
 
@@ -100,25 +101,52 @@ public class ReferenceCreator
 			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
 			// Try to see if this Identifier is already in the database.
 			// Ideally, this will not return anything.
+			// Of course, we should only look at cross-references on the source object.
+			// It's possible that the Identifier might already exist but for a different object.
 			@SuppressWarnings("unchecked")
 			Collection<GKInstance> identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
 		
+			// TODO: Maybe have a flag that can turn this functionality (check for pre-existing "new" identifiers) on or off.
 			if (identifiers != null && identifiers.size() > 0)
 			{
+				boolean needToDeleteIdentifier = false;
 				// If the identifiers already exist, they should be deleted and
 				// then re-added.
 				for (GKInstance identifier : identifiers)
 				{
-					logger.warn( "Identifier {} already existed (and has DB_ID {}), but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID));
-					try
+					// If a preexisting instance has the identifier ${identifierValue}, we need to see what it is referred to by. 
+					// If they are the same as referenceToValue then the xref should be deleted and re-inserted. 
+					@SuppressWarnings("unchecked")
+					Map<SchemaAttribute, Collection<GKInstance>> referers = (Map<SchemaAttribute, Collection<GKInstance>>)identifier.getReferers();
+
+					for (SchemaAttribute key : referers.keySet())
 					{
-						this.dbAdapter.deleteInstance(identifier);
+						List<GKInstance> referersByAttrib = (List<GKInstance>) referers.get(key);
+						for (GKInstance inst : referersByAttrib)
+						{
+							// We found an instance in the database that has the same Identifier as what this function was asked to create AND that instance
+							// is *already* referred to by the same DB_ID this function was using for source object...
+							// it means we need to delete that instance and re-create it.
+							if (inst.getDBID() == Long.valueOf(referenceToValue))
+							{
+								logger.warn( "Identifier {} already existed (and has DB_ID {}), *and* was referred to by {}, but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID), referenceToValue);
+								try
+								{
+									needToDeleteIdentifier = true;
+									this.dbAdapter.deleteInstance(identifier);
+								}
+								catch (Exception e)
+								{
+									e.printStackTrace();
+									throw e;
+								}
+							}
+						}
 					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-						throw e;
-					}
+				}
+				if (!needToDeleteIdentifier)
+				{
+					logger.trace("Pre-existing identifier {} did not need to be deleted because it was not already referred to by {}", identifierValue, referenceToValue);
 				}
 			}
 			
@@ -167,7 +195,7 @@ public class ReferenceCreator
 				//Save changes to the new Identifier.
 				InstanceDisplayNameGenerator.setDisplayName(identifierInstance);
 				newInstanceID = this.dbAdapter.storeInstance(identifierInstance);
-				logger.debug("Just created new {} with DB_ID: {}", identifierInstance.getSchemClass().getName(), newInstanceID);
+				//logger.debug("Just created new {} with DB_ID: {}", identifierInstance.getSchemClass().getName(), newInstanceID);
 				//...and then immediately grab it.
 				GKInstance createdIdentifier = this.dbAdapter.fetchInstance(newInstanceID);
 				this.dbAdapter.loadInstanceAttributeValues(createdIdentifier);
@@ -193,6 +221,8 @@ public class ReferenceCreator
 				
 				// Only update the relevant attribute, better than updating the entire instance.
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
+				logger.trace("Object with DB_ID: {} has new reference (via {} attribute): DB_ID: {}, Type: {}, Identifier Value: {}",
+							instanceReferredToByIdentifier.getDBID(), xrefAttrib.getName(), newInstanceID, createdIdentifier.getSchemClass().getName(), identifierValue );
 			}
 			else
 			{
@@ -297,8 +327,7 @@ public class ReferenceCreator
 		GKInstance defaultPerson = dba.fetchInstance(defaultPersonId);
 		if (defaultPerson != null)
 		{
-			DefaultInstanceEditHelper ieHelper = new DefaultInstanceEditHelper();
-			GKInstance newIE = ieHelper.createDefaultInstanceEdit(defaultPerson);
+			GKInstance newIE = ReferenceCreator.createDefaultInstanceEdit(defaultPerson);
 			newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
 			InstanceDisplayNameGenerator.setDisplayName(newIE);
 			if (needStore)
@@ -326,5 +355,33 @@ public class ReferenceCreator
 	public void setReferringAttribute(GKSchemaAttribute referringAttribute)
 	{
 		this.referringAttribute = referringAttribute;
+	}
+	
+	/**
+	 * Create a default IE based on a default Person instance. The returned 
+	 * GKInstance has not filled.
+	 * @param person
+	 */
+	public static GKInstance createDefaultInstanceEdit(GKInstance person)
+	{
+		GKInstance instanceEdit = new GKInstance();
+		PersistenceAdaptor adaptor = person.getDbAdaptor();
+		instanceEdit.setDbAdaptor(adaptor);
+		SchemaClass cls = adaptor.getSchema().getClassByName(ReactomeJavaConstants.InstanceEdit);
+		instanceEdit.setSchemaClass(cls);
+		
+		try
+		{
+			instanceEdit.addAttributeValue(ReactomeJavaConstants.author, person);
+		}
+		catch (InvalidAttributeException | InvalidAttributeValueException e)
+		{
+			e.printStackTrace();
+			// throw this back up the stack - no way to recover from in here. 
+			throw new Error(e);
+		}
+		
+
+		return instanceEdit;
 	}
 }
