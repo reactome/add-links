@@ -50,31 +50,14 @@ public class FileRetriever implements DataRetriever {
 	 */
 	public FileRetriever(String retrieverName)
 	{
+		logger.debug("Setting retrieverName to {}", retrieverName);
 		this.setRetrieverName(retrieverName);
-//		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
-//		{
-//			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
-//		}
-//		else
-//		{
-//			this.logger = this.createLogger(retrieverName + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
-//		}
-		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG, this.logger, "Data Retriever");
+		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", this.retrieverName, this.getClass().getName(), true, Level.DEBUG, this.logger, "Data Retriever");
 	}
 	
 	@Override
 	public void fetchData() throws Exception 
 	{
-		// If the file retriever name was not set at construction time, set it now.
-//		if (this.retrieverName == null || this.retrieverName.trim().equals(""))
-//		{
-//			logger.warn("No retrieverName was set, so this DataRetriever will not use its own log file.");
-//		}
-//		else
-//		{
-//			this.logger = this.createLogger(retrieverName.replace(".log","-retriever.log") + ".log", "RollingRandomAccessFile", retrieverName, this.getClass().getName(), true, Level.DEBUG);
-//		}
-		
 		if (this.uri == null)
 		{
 			throw new RuntimeException("You must provide a URI from which the file will be downloaded!");
