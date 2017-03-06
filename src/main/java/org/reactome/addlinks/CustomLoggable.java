@@ -49,12 +49,12 @@ public interface CustomLoggable
 			TriggeringPolicy triggerPolicy = ((RollingRandomAccessFileAppender)oldAppender).getManager().getTriggeringPolicy();
 			RolloverStrategy rollStrategy = ((RollingRandomAccessFileAppender)oldAppender).getManager().getRolloverStrategy();
 			Filter filter = ((RollingRandomAccessFileAppender)oldAppender).getFilter();
-			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replace("${defaultLogName}", logFileName);
-			appender = RollingRandomAccessFileAppender.createAppender("${baseDir}/" + logFileName + ".log", pattern, Boolean.toString(append), newAppenderName, "true", Integer.toString(bufferSize), triggerPolicy, rollStrategy, oldLayout, filter, "true", "false", "false", configuration);
+			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{MM-dd-yyyy\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{MM-dd-yyyy}.%i.log.gz");
+			appender = RollingRandomAccessFileAppender.createAppender("logs/" + logFileName + ".log", pattern, Boolean.toString(append), newAppenderName, "true", Integer.toString(bufferSize), triggerPolicy, rollStrategy, oldLayout, filter, "true", "false", "false", configuration);
 		}
 		else
 		{
-			appender = FileAppender.createAppender("${baseDir}/" + logFileName + ".log", Boolean.toString(append), "false", newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
+			appender = FileAppender.createAppender("logs/" + logFileName + ".log", Boolean.toString(append), "false", newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
 		}
 		appender.start();
 		loggerConfig.addAppender(appender, level, null);
@@ -78,7 +78,9 @@ public interface CustomLoggable
 		}
 		else
 		{
-			return this.createLogger(logFileName , oldAppenderName, logFileName, packageName, true, Level.DEBUG);
+			oldLogger.debug("Now creating new logger: {}", logFileName);
+			return this.createLogger(logFileName , oldAppenderName, logFileName, packageName, true, level);
 		}
+		
 	}
 }
