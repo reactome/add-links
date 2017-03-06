@@ -35,13 +35,9 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class UniprotFileRetreiver extends FileRetriever
 {
-	//private static final Logger logger = LogManager.getLogger();
-
 	private String mapFromDb="";
 	private String mapToDb="";
 	private BufferedInputStream inStream;
@@ -101,7 +97,7 @@ public class UniprotFileRetreiver extends FileRetriever
 		}
 	}
 	
-	public UniprotFileRetreiver() { }
+	public UniprotFileRetreiver() { super(); }
 
 	public UniprotFileRetreiver(String retrieverName)
 	{

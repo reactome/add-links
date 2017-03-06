@@ -13,13 +13,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 {
-	//private static final Logger logger = LogManager.getLogger();
-	
 	public GlobbedFileProcessor()
 	{
 	}

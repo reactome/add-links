@@ -16,9 +16,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class OrphanetFileProcessor extends FileProcessor<String>
 {
 	
@@ -31,8 +28,6 @@ public class OrphanetFileProcessor extends FileProcessor<String>
 	{
 		super(null);
 	}
-	
-	//private static final Logger logger = LogManager.getLogger();
 	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
@@ -58,18 +53,20 @@ public class OrphanetFileProcessor extends FileProcessor<String>
 		}
 		catch (TransformerConfigurationException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
+			throw new Error(e);
+		}
+		catch (TransformerException e)
+		{
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			throw new Error(e);
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
+			throw new Error(e);
 		}
 		
-		
-		// TODO Auto-generated method stub
 		logger.debug("Number of UniProt IDs in mapping: {}.",uniProtToOrphanet.keySet().size());
 		return uniProtToOrphanet;
 	}

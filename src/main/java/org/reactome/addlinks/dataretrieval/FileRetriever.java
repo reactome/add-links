@@ -52,7 +52,7 @@ public class FileRetriever implements DataRetriever {
 	{
 		logger.debug("Setting retrieverName to {}", retrieverName);
 		this.setRetrieverName(retrieverName);
-		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", this.retrieverName, this.getClass().getName(), true, Level.DEBUG, this.logger, "Data Retriever");
+		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", this.retrieverName, true, Level.DEBUG, this.logger, "Data Retriever");
 	}
 	
 	@Override

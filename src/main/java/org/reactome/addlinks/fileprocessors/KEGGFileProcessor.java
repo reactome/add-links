@@ -12,9 +12,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFileProcessor.KEGGKeys, String>>>
 {
 	public enum KEGGKeys
@@ -28,13 +25,6 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 	
 	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
 	
-	private static final Logger logger = LogManager.getLogger();
-	
-//	public KEGGFileProcessor()
-//	{
-//		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
-//	}
-
 	public KEGGFileProcessor(String processorName)
 	{
 		super(processorName);
@@ -43,6 +33,8 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 	
 	public KEGGFileProcessor()
 	{
+		super();
+		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
 	}
 
 	/**
