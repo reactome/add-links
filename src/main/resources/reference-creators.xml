@@ -20,7 +20,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="PDB"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedPDBRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedPDBRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -32,7 +32,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="OMIM"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedOMIMRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedOMIMRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -44,7 +44,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedENSEMBLGeneRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedENSEMBLGeneRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -56,7 +56,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedEntrezGeneRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedEntrezGeneRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -68,7 +68,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="KEGG"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedKEGGRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedKEGGRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -80,7 +80,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceTranscriptBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="RefSeq"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedRefSeqRNARefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedRefSeqRNARefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -92,7 +92,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="RefSeq"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedRefSeqPeptideRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedRefSeqPeptideRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -104,7 +104,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Wormbase"/>
-				<constructor-arg index="6" name="refCreatorName" value="upMappedWormbaseRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedWormbaseRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -119,7 +119,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Orphanet"/>
-				<constructor-arg index="6" name="refCreatorName" value="OrphanetReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/OrphanetReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -131,7 +131,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="PRO"/>
-				<constructor-arg index="6" name="refCreatorName" value="proRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/proRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -143,7 +143,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="FlyBase"/>
-				<constructor-arg index="6" name="refCreatorName" value="FlyBaseReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/FlyBaseReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
@@ -155,7 +155,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Protein Data Bank"/>
-				<constructor-arg index="6" name="refCreatorName" value="pdbRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/pdbRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -167,7 +167,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="GeneCards"/>
-				<constructor-arg index="6" name="refCreatorName" value="geneCardsRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/geneCardsRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -179,7 +179,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
 				<constructor-arg index="5" name="targetDB" value="ZINC"/>
-				<constructor-arg index="6" name="refCreatorName" value="zincToChEBIReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincToChEBIReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -191,7 +191,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="HMDB"/>
-				<constructor-arg index="6" name="refCreatorName" value="HMDBProtReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/HMDBProtReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -203,7 +203,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="ZINC"/>
-				<constructor-arg index="6" name="refCreatorName" value="zincToUniProtReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincToUniProtReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -215,7 +215,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
 				<constructor-arg index="5" name="targetDB" value="HMDB"/>
-				<constructor-arg index="6" name="refCreatorName" value="HmdbMoleculeReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/HmdbMoleculeReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -227,7 +227,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
 				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
-				<constructor-arg index="6" name="refCreatorName" value="ENSEMBLToEntrezGeneRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLToEntrezGeneRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -239,7 +239,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
 				<constructor-arg index="5" name="targetDB" value="Wormbase"/>
-				<constructor-arg index="6" name="refCreatorName" value="ENSEMBLToWormbaseRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLToWormbaseRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -251,7 +251,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
 				<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
-				<constructor-arg index="6" name="refCreatorName" value="ENSEMBLEnspToEnsgRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLEnspToEnsgRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -263,7 +263,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="KEGG"/>
-				<constructor-arg index="6" name="refCreatorName" value="KEGGReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/KEGGReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -275,7 +275,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="Reactome"/>
 				<constructor-arg index="5" name="targetDB" value="Rhea"/>
-				<constructor-arg index="6" name="refCreatorName" value="RheaReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/RheaReferenceCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
@@ -287,7 +287,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="BRENDA"/>
-				<constructor-arg index="6" name="refCreatorName" value="BrendaRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/BrendaRefCreator"/>
 				<property name="testMode" value="true"/>
 			</bean>
 		</entry>
