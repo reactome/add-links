@@ -77,7 +77,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_ALL.xml" />
 				<property name="mapToDbEnum" ref="EnsemblDB_ALL"/>
 				<property name="dataURL" value="http://rest.ensemblgenomes.org/xrefs/id/" />
-				<constructor-arg name="retrieverName" value="EnsemblNonCore"/>
+				<constructor-arg name="retrieverName" value="retrievers/EnsemblNonCore"/>
 			</bean>
 		</entry>
 		
@@ -87,7 +87,7 @@
 	<util:map id="ensemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
 		<entry key="ensemblToALL" >
 			<bean id="ensemblToALL" parent="ensemblBaseXrefRetriever">
-				<constructor-arg name="retrieverName" value="Ensembl"/>
+				<constructor-arg name="retrieverName" value="retrievers/Ensembl"/>
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensembl_to_ALL.xml" />
 				<property name="mapToDbEnum" ref="EnsemblDB_ALL"/>
 			</bean>

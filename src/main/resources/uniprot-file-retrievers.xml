@@ -61,7 +61,7 @@
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="maxAge" ref="maxFileAge" />
-		<constructor-arg name="retrieverName" value="Uniprot"/>
+		<constructor-arg name="retrieverName" value="retrievers/Uniprot"/>
 	</bean>
 
 	
@@ -75,7 +75,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">OMIM</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToPDB">
@@ -84,7 +83,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">PDB</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToRefSeqPeptide">
@@ -93,7 +91,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqPeptide</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToRefSeqRNA">
@@ -102,7 +99,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqRNA</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToENSEMBL">
@@ -111,7 +107,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">ENSEMBL</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToWormbase">
@@ -120,7 +115,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToEntrez_Gene">
@@ -129,7 +123,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 		<entry key="UniProtToKEGG">
@@ -138,7 +131,6 @@
 				<property name="mapToDbEnum">
 					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">KEGG</value>
 				</property>
-				<constructor-arg name="retrieverName" value="Uniprot"/>
 			</bean>
 		</entry>
 	</util:map>
