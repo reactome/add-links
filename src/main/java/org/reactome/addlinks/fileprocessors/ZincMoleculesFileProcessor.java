@@ -23,15 +23,16 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 		Map<String, String> chebiToZincMapping = new HashMap<String, String>() ;
 		try
 		{
+			this.unzipFile(this.pathToFile);
 			Files.readAllLines(this.pathToFile).stream()
 				// Filter so that only ChEBI lines are processed.
-				.filter(line -> line.matches("ZINC\\d+\\tChEBI.*"))
+				.filter(line -> line.matches("CHEBI:\\d+\\tZINC.*"))
 				.forEach( line ->
 			{
 				String[] parts = line.split("\t");
-				String chebiId = parts[2];
+				String chebiId = parts[0];
 				chebiId = chebiId.replace("CHEBI:", "");
-				String zincId = parts[0];
+				String zincId = parts[1];
 				zincId = zincId.replace("ZINC", "");
 				//if the key is already in the map, append it.
 				if (chebiToZincMapping.containsKey(chebiId))
@@ -42,6 +43,10 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 			});
 		}
 		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
