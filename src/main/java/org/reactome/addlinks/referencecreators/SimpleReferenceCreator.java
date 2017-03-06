@@ -45,7 +45,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
-		this.logger = this.createLogger("logs/" + refCreatorName + ".log", "RollingRandomAccessFile", refCreatorName, this.getClass().getName(), true, Level.DEBUG, this.logger, "Reference Creator");
+		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", refCreatorName, this.getClass().getName(), true, Level.TRACE, this.logger, "Reference Creator");
 		
 		this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);
@@ -123,7 +123,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 				boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
 				if (!xrefAlreadyExists)
 				{
-					logger.trace("\tNeed to create a new identifier!");
+					logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
 					sourceIdentifiersWithNewIdentifier ++;
 					if (!this.testMode)
 					{
