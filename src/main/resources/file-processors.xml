@@ -9,7 +9,7 @@
 
 
 	<bean id="baseUniprotProcessor" abstract="true">
-		<constructor-arg name="processorName" value="uniprotProcessor"/>
+		<constructor-arg name="processorName" value="file-processors/uniprotProcessor"/>
 		<property name="path">
 			<bean class="java.nio.file.Paths" factory-method="get">
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
@@ -23,7 +23,7 @@
 
 		<entry key="DockblasterFileProcessor">
 			<bean id="DockblasterFileProcessor" class="org.reactome.addlinks.fileprocessors.DOCKBlasterFileProcessor">
-				<constructor-arg name="processorName" value="DockblasterFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/DockblasterFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt"/>
@@ -34,7 +34,7 @@
 
 		<entry key="PROFileProcessor">
 			<bean id="PROFileProcessor" class="org.reactome.addlinks.fileprocessors.PROFileProcessor">
-				<constructor-arg name="processorName" value="PROFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/PROFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt"/>
@@ -46,7 +46,7 @@
 
 		<entry key="FlyBaseFileProcessor">
 			<bean id="FlyBaseFileProcessor" class="org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor">
-				<constructor-arg name="processorName" value="FlyBaseFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/FlyBaseFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/FlyBase.tsv.gz"/>
@@ -57,7 +57,7 @@
 
 		<entry key="HmdbProteinsFileProcessor">
 			<bean id="HmdbProteinsFileProcessor" class="org.reactome.addlinks.fileprocessors.HmdbProteinsFileProcessor">
-				<constructor-arg name="processorName" value="HmdbProteinsFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/HmdbProteinsFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/hmdb_proteins.zip"/>
@@ -68,7 +68,7 @@
 
 		<entry key="HmdbMetabolitesFileProcessor">
 			<bean id="HmdbMetabolitesFileProcessor" class="org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor">
-				<constructor-arg name="processorName" value="HmdbMetabolitesFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/HmdbMetabolitesFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/hmdb_metabolites.zip"/>
@@ -79,7 +79,7 @@
 
 		<entry key="OrphanetFileProcessor">
 			<bean id="OrphanetFileProcessor" class="org.reactome.addlinks.fileprocessors.OrphanetFileProcessor">
-				<constructor-arg name="processorName" value="OrphanetFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/OrphanetFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/genes_diseases_external_references.xml"/>
@@ -90,7 +90,7 @@
 		
 		<entry key="IntActFileProcessor">
 			<bean id="IntActFileProcessor" class="org.reactome.addlinks.fileprocessors.IntActFileProcessor">
-				<constructor-arg name="processorName" value="IntActFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/IntActFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/reactome.dat"/>
@@ -101,7 +101,7 @@
 
 		<entry key="ZincMoleculesFileProcessor">
 			<bean id="ZincMoleculesFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor">
-				<constructor-arg name="processorName" value="ZincMoleculesFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/ZincMoleculesFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_chebi_purch.xls"/>
@@ -112,7 +112,7 @@
 
 		<entry key="ENSEMBLFileProcessor">
 			<bean id="ENSEMBLFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
-				<constructor-arg name="processorName" value="ENSEMBLFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/ENSEMBLFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
@@ -130,7 +130,7 @@
 
 		<entry key="ENSEMBLNonCoreFileProcessor">
 			<bean id="ENSEMBLNonCoreFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor">
-				<constructor-arg name="processorName" value="ENSEMBLNonCoreFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/ENSEMBLNonCoreFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/ensembl"/>
@@ -196,7 +196,7 @@
 		
 		<entry key="zincProtFileProcessor">
 			<bean id="zincProtFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor">
-				<constructor-arg name="processorName" value="zincProtFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/zincProtFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt"/>
@@ -207,7 +207,7 @@
 		
 		<entry key="KEGGFileProcessor">
 			<bean id="KEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.KEGGFileProcessor">
-				<constructor-arg name="processorName" value="KEGGFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/KEGGFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/kegg_entries/"/>
@@ -219,7 +219,7 @@
 		
 		<entry key="RheaFileProcessor">
 			<bean id="RheaFileProcessor" class="org.reactome.addlinks.fileprocessors.RHEAFileProcessor">
-				<constructor-arg name="processorName" value="RheaFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/RheaFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths"  factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/rhea2reactome.tsv"/>
@@ -230,7 +230,7 @@
 		
 		<entry key="BrendaProcessor">
 			<bean id="BrendaProcessor" class="org.reactome.addlinks.fileprocessors.BRENDAFileProcessor">
-				<constructor-arg name="processorName" value="BrendaProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/BrendaProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA"/>
