@@ -16,9 +16,11 @@
 			<Policies>
 				<!-- <TimeBasedTriggeringPolicy /> -->
 				<!-- cron triggering policy configured to trigger every day at midnight -->
-				<CronTriggeringPolicy schedule="0 0 0 * * ?"/>
+				<!-- <CronTriggeringPolicy schedule="0 0 0 * * ?"/> -->
+				<TimeBasedTriggeringPolicy  />
 				<SizeBasedTriggeringPolicy size="250 MB" />
 			</Policies>
+			<DefaultRolloverStrategy max="20"/>
 		</RollingRandomAccessFile>
 	</Appenders>
 	<Loggers>
