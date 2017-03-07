@@ -25,7 +25,7 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 		try
 		{
 			String pathToFile = this.unzipFile(this.pathToFile);
-			Files.readAllLines(Paths.get(pathToFile + "/chebi.info.txt")).stream()
+			Files.readAllLines(Paths.get(pathToFile )).stream()
 				// Filter so that only ChEBI lines are processed.
 				.filter(line -> line.matches("CHEBI:\\d+\\tZINC.*"))
 				.forEach( line ->
