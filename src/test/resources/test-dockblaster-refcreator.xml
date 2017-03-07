@@ -10,10 +10,12 @@
 
 	<import resource="testing-common.xml"/>
 
-	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="UniProtToPDBRetriever">
+	<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="UniProtToPDBRetriever">
 		<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
-		<property name="maxAge" ref="maxFileAge" />
+		<property name="userName" value="${dockblaster.user}"/>
+		<property name="password" value="${dockblaster.password}"/>
+		<property name="maxAge" ref="zeroFileAge" />
 	</bean>
 	
 	<bean id="DOCKBlasterFileProcessor"
