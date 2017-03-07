@@ -1,8 +1,6 @@
 package org.reactome.addlinks.dataretrieval;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,13 +9,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 public class AuthenticatingFileRetriever extends FileRetriever
 {
@@ -37,24 +31,35 @@ public class AuthenticatingFileRetriever extends FileRetriever
 	@Override
 	protected void downloadData() throws Exception
 	{
-		HttpGet get = new HttpGet(this.uri);
+		HttpClientContext context = createAuthenticatedContext();
+		logger.trace("Scheme is: "+this.uri.getScheme());
+		Path path = Paths.get(new URI("file://"+this.destination));
+		Files.createDirectories(path.getParent());
+		if (this.uri.getScheme().equals("http"))
+		{
+			doHttpDownload(path, context);
+		}
+		else if (this.uri.getScheme().equals("ftp"))
+		{
+			doFtpDownload(this.userName, this.password);
+		}
+		else
+		{
+			throw new UnsupportedSchemeException("URI "+this.uri.toString()+" uses an unsupported scheme: "+this.uri.getScheme());
+		}
+
+	}
+
+
+	private HttpClientContext createAuthenticatedContext()
+	{
 		Credentials creds = new UsernamePasswordCredentials(userName, password);
 		CredentialsProvider credProvider = new BasicCredentialsProvider();
 		AuthScope authScope = new AuthScope(uri.getHost(), uri.getPort());
 		credProvider.setCredentials(authScope, creds);
 		HttpClientContext context = HttpClientContext.create();
 		context.setCredentialsProvider(credProvider);
-		try( CloseableHttpClient client = HttpClients.createDefault();
-			CloseableHttpResponse response = client.execute(get,context) )
-		{
-			Path path = Paths.get(new URI("file://"+this.destination));
-			Files.write(path, EntityUtils.toByteArray(response.getEntity()));
-		}
-		catch (IOException | URISyntaxException e)
-		{
-			logger.error("Exception caught: {}",e.getMessage());
-			throw e;
-		}
+		return context;
 	}
 	
 	public void setUserName(String userName)
