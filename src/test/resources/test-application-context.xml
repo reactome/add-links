@@ -49,7 +49,7 @@
 		</property>
 		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA*" />
 	</bean>
-	<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="brendaRefCreator">
+	<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="brendaRefCreator" autowire="byName">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -100,7 +100,7 @@
 			</bean>
 		</property>
 	</bean>
-	<bean class="org.reactome.addlinks.referencecreators.IntEnzReferenceCreator" id="intEnzReferenceCreator">
+	<bean class="org.reactome.addlinks.referencecreators.IntEnzReferenceCreator" id="intEnzReferenceCreator" autowire="byName">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -443,8 +443,8 @@
 	
 	<!-- ChEBI to ZINC -->
 	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ZincFileRetriever">
-		<property name="dataURL" value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
-		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_chebi_purch.xls" />
+		<property name="dataURL" value="http://files.docking.org/catalogs/1/chebi/chebi.info.txt.gz" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi.info.txt.gz" />
 		<property name="maxAge">
 			<ref bean="maxFileAge" />
 		</property>
@@ -454,12 +454,12 @@
 		class="org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor">
 		<property name="path">
 			<bean class="java.nio.file.Paths" factory-method="get">
-				<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_chebi_purch.xls"/>
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/chebi.info.txt.gz"/>
 			</bean>
 		</property>
 	</bean>
 	
-	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincToChEBIReferenceCreator">
+	<bean class="org.reactome.addlinks.referencecreators.ZincToChEBIReferenceCreator" id="zincToChEBIReferenceCreator" autowire="byName">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
@@ -512,7 +512,7 @@
 		</property>
 	</bean>
 	
-	<bean class="org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator" id="HMDBProtReferenceCreator">
+	<bean class="org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator" id="HMDBProtReferenceCreator" autowire="byName">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -563,7 +563,7 @@
 		</property>
 	</bean>
 	
-	<bean class="org.reactome.addlinks.referencecreators.RHEAReferenceCreator" id="rheaReferenceCreator">
+	<bean class="org.reactome.addlinks.referencecreators.RHEAReferenceCreator" id="rheaReferenceCreator" autowire="byName">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReactionBean"/>
