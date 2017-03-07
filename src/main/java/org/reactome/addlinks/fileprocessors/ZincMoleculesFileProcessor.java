@@ -3,10 +3,13 @@ package org.reactome.addlinks.fileprocessors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ZincMoleculesFileProcessor extends FileProcessor<String>
+public class ZincMoleculesFileProcessor extends FileProcessor<List<String>>
 {
 
 	public ZincMoleculesFileProcessor()
@@ -19,9 +22,9 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 	}
 
 	@Override
-	public Map<String, String> getIdMappingsFromFile()
+	public Map<String, List<String>> getIdMappingsFromFile()
 	{
-		Map<String, String> chebiToZincMapping = new HashMap<String, String>() ;
+		Map<String, List<String>> chebiToZincMapping = new HashMap<String, List<String>>() ;
 		try
 		{
 			String pathToFile = this.unzipFile(this.pathToFile);
@@ -38,9 +41,12 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 				//if the key is already in the map, append it.
 				if (chebiToZincMapping.containsKey(chebiId))
 				{
-					zincId = chebiToZincMapping.get(chebiId) + "," + zincId ;
+					chebiToZincMapping.get(chebiId).add(zincId);
 				}
-				chebiToZincMapping.put(chebiId, zincId);
+				else
+				{
+					chebiToZincMapping.put(chebiId, new ArrayList<String>(Arrays.asList(zincId)));
+				}
 			});
 		}
 		catch (IOException e)

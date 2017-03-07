@@ -18,6 +18,8 @@ import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.gk.util.GKApplicationUtilities;
 
+import com.mysql.jdbc.MysqlDataTruncation;
+
 public class ReferenceCreator
 {
 	private Logger logger = LogManager.getLogger();
@@ -185,10 +187,7 @@ public class ReferenceCreator
 				{
 					for (String otherAttributeName : otherAttribs.keySet())
 					{
-//						for (String attributeValue : otherAttribs.get(otherAttributeName))
-//						{
-							identifierInstance.setAttributeValue(otherAttributeName, otherAttribs.get(otherAttributeName));
-//						}
+						identifierInstance.setAttributeValue(otherAttributeName, otherAttribs.get(otherAttributeName));
 					}
 				}
 				
@@ -229,7 +228,11 @@ public class ReferenceCreator
 				logger.error("InstanceEdit was null! Could not create Reference because there was no InstanceEdit to associate it with.");
 			}
 		}
-
+		catch (MysqlDataTruncation e)
+		{
+			logger.error("Data truncation error: \"{}\" while trying to insert reference with identifier value: {} ", e.getMessage(), identifierValue);
+			throw new Error(e);
+		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
