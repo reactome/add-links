@@ -10,17 +10,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<String>>>
 {
-	private static final Logger logger = LogManager.getLogger();
-	
 	public UniprotFileProcessor()
 	{
+		super();
 		this.pattern = Pattern.compile("[^.]+\\.([0-9]+)\\.[0-9]+\\.txt");
-		//this.fileProcessor = this::processFile;
+	}
+	
+	public UniprotFileProcessor(String processorName)
+	{
+		super(processorName);
+		this.pattern = Pattern.compile("[^.]+\\.([0-9]+)\\.[0-9]+\\.txt");
 	}
 	
 	@Override

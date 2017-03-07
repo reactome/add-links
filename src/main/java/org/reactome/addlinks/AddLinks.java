@@ -66,7 +66,7 @@ public class AddLinks
 	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
 	
-	private Map<String, FileProcessor> fileProcessors;
+	private Map<String, FileProcessor<?>> fileProcessors;
 	
 	private Map<String,FileRetriever> fileRetrievers;
 	
@@ -310,7 +310,7 @@ public class AddLinks
 						@Override
 						public Boolean call() throws Exception
 						{
-							KEGGFileRetriever retriever = new KEGGFileRetriever();
+							KEGGFileRetriever retriever = new KEGGFileRetriever(keggFileRetriever.getRetrieverName());
 							retriever.setAdapter(keggFileRetriever.getAdapter());
 							retriever.setDataURL(keggFileRetriever.getDataURL());
 							retriever.setUniprotToKEGGFiles(files);
@@ -457,7 +457,7 @@ public class AddLinks
 			EnsemblFileAggregator ensemblAggregator = new EnsemblFileAggregator(speciesID, dbNames, "/tmp/addlinks-downloaded-files/ensembl/");
 			ensemblAggregator.createAggregateFile();
 			
-			EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor();
+			EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor("EnsemblAggregateFileProcessor");
 			aggregateProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/ensembl/"+ "ensembl_p2xref_mapping."+speciesID+".csv") );
 			aggregateProcessor.setMode(EnsemblAggregateProcessingMode.XREF);
 			Map<String, Map<String, List<String>>> xrefMapping = aggregateProcessor.getIdMappingsFromFile();
@@ -622,7 +622,7 @@ public class AddLinks
 				catch (Exception e)
 				{
 					//TODO: The decision to continue after a failure should be a configurable option. 
-					logger.info("Exception caught while processing {}, message is: {}. Will continue with next file retriever.",k,e.getMessage());
+					logger.warn("Exception caught while processing {}, message is: \"{}\". Will continue with next file retriever.",k,e.getMessage());
 				}
 			}
 			else
@@ -676,7 +676,7 @@ public class AddLinks
 		this.ensemblFileRetrieversNonCore = ensemblFileRetrievers;
 	}
 
-	public void setFileProcessors(Map<String, FileProcessor> fileProcessors)
+	public void setFileProcessors(Map<String, FileProcessor<?>> fileProcessors)
 	{
 		this.fileProcessors = fileProcessors;
 	}

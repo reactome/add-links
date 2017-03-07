@@ -23,6 +23,7 @@ import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,9 +34,26 @@ public class FileRetriever implements DataRetriever {
 	protected Duration maxAge;
 	private Duration timeout = Duration.ofSeconds(30);
 	private int numRetries = 1;
+	protected String retrieverName;
+	protected Logger logger = LogManager.getLogger();
 	
-	private static final Logger logger = LogManager.getLogger();
 	
+	public FileRetriever()
+	{
+		this(null);
+	}
+	
+	/**
+	 * This constructor takes a string that will be used to name the logging output file.
+	 * 
+	 * @param retrieverName - the name of this File Retriever - the log file produced by this class will be named "${retrieverName}.log"
+	 */
+	public FileRetriever(String retrieverName)
+	{
+		logger.debug("Setting retrieverName to {}", retrieverName);
+		this.setRetrieverName(retrieverName);
+		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", this.retrieverName, true, Level.DEBUG, this.logger, "Data Retriever");
+	}
 	
 	@Override
 	public void fetchData() throws Exception 
@@ -161,7 +179,9 @@ public class FileRetriever implements DataRetriever {
 			logger.debug("retreive file reply code: {}",client.getReplyCode());
 			if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
 			{
-				throw new Exception("5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString());
+				String errorString = "5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString();
+				logger.error(errorString);
+				throw new Exception(errorString);
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int b = inStream.read();
@@ -220,6 +240,16 @@ public class FileRetriever implements DataRetriever {
 	{
 		this.timeout = timeout;
 	}
+
+	@Override
+	public void setRetrieverName(String retrieverName)
+	{
+		this.retrieverName = retrieverName;
+	}
 	
+	public String getRetrieverName()
+	{
+		return this.retrieverName;
+	}
 }
 

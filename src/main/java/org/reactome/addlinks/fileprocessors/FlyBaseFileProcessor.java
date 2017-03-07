@@ -7,12 +7,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class FlyBaseFileProcessor extends FileProcessor<String>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public FlyBaseFileProcessor()
+	{
+		super(null);
+	}
+	
+	public FlyBaseFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
 
 	@Override
 	public Map<String, String> getIdMappingsFromFile()

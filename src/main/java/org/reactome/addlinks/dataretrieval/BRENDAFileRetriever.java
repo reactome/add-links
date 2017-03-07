@@ -18,9 +18,6 @@ import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-;
 
 /**
  * BRENDA File Retriever requires a username and password to connect to the BRENDA SOAP service.
@@ -29,12 +26,21 @@ import org.apache.logging.log4j.Logger;
  */
 public class BRENDAFileRetriever extends FileRetriever
 {
-	private static final Logger logger = LogManager.getLogger();
 	private String userName;
 	private String password;
 	private List<String> identifiers;
 	private String speciesName;
 	private int numThreads = 10;
+	
+	public BRENDAFileRetriever()
+	{
+		super();
+	}
+	
+	public BRENDAFileRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
 	
 	public class BRENDASoapClient
 	{
@@ -135,7 +141,7 @@ public class BRENDAFileRetriever extends FileRetriever
 					result = uniprotID + "\t" + result + "\n"; 
 
 					sb.append(result);
-					if (requestCounter.incrementAndGet() % 1000 == 0)
+					if (requestCounter.incrementAndGet() % 100 == 0)
 					{
 						logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
 					}
