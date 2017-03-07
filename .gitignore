@@ -24,3 +24,4 @@ auth.properties
 
 #ignore logging directory
 logs
+/logs.old/
