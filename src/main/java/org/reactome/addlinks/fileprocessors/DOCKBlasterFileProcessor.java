@@ -6,12 +6,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class DOCKBlasterFileProcessor extends FileProcessor<ArrayList<String>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public DOCKBlasterFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	public DOCKBlasterFileProcessor()
+	{}
 
 	@Override
 	public Map<String, ArrayList<String>> getIdMappingsFromFile()

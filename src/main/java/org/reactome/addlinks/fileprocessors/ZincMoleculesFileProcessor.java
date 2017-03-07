@@ -2,31 +2,38 @@ package org.reactome.addlinks.fileprocessors;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ZincMoleculesFileProcessor extends FileProcessor<String>
 {
 
-	private static final Logger logger = LogManager.getLogger();
+	public ZincMoleculesFileProcessor()
+	{
+		super(null);
+	}
+	public ZincMoleculesFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
 		Map<String, String> chebiToZincMapping = new HashMap<String, String>() ;
 		try
 		{
-			Files.readAllLines(this.pathToFile).stream()
+			String pathToFile = this.unzipFile(this.pathToFile);
+			Files.readAllLines(Paths.get(pathToFile + "/chebi.info.txt")).stream()
 				// Filter so that only ChEBI lines are processed.
-				.filter(line -> line.matches("ZINC\\d+\\tChEBI.*"))
+				.filter(line -> line.matches("CHEBI:\\d+\\tZINC.*"))
 				.forEach( line ->
 			{
 				String[] parts = line.split("\t");
-				String chebiId = parts[2];
+				String chebiId = parts[0];
 				chebiId = chebiId.replace("CHEBI:", "");
-				String zincId = parts[0];
+				String zincId = parts[1];
 				zincId = zincId.replace("ZINC", "");
 				//if the key is already in the map, append it.
 				if (chebiToZincMapping.containsKey(chebiId))
@@ -37,6 +44,10 @@ public class ZincMoleculesFileProcessor extends FileProcessor<String>
 			});
 		}
 		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}

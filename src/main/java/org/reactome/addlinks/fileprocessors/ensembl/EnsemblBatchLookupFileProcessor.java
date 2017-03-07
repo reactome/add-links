@@ -16,14 +16,20 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class EnsemblBatchLookupFileProcessor extends FileProcessor<String>
 {
+	public EnsemblBatchLookupFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	public EnsemblBatchLookupFileProcessor()
+	{
+	}
+
 	private static final String XSL_FILE_NAME = "ensembl-lookup-simplifier.xsl";
-	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()

@@ -5,12 +5,18 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class IntActFileProcessor extends FileProcessor<String>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public IntActFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+	
+	public IntActFileProcessor()
+	{
+		super(null);
+	}
+	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{

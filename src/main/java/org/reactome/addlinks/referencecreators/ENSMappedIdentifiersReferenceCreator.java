@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -20,11 +18,14 @@ import org.gk.schema.GKSchemaAttribute;
 
 public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,List<String>>>
 {
-	private static final Logger logger = LogManager.getLogger();
-
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
+	}
+	
+	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
 	
 	/**
@@ -116,7 +117,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 								}
 								logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 								// check and make sure the cross refernces don't already exist.
-								Collection<GKInstance> xrefs = (Collection<GKInstance>) inst.getAttributeValuesList(referringAttributeName);
+								List<GKInstance> xrefs = (List<GKInstance>) inst.getAttributeValuesList(referringAttributeName);
 								boolean xrefAlreadyExists = false;
 								
 								for (GKInstance xref : xrefs)

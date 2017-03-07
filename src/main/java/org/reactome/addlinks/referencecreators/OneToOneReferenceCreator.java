@@ -3,20 +3,22 @@ package org.reactome.addlinks.referencecreators;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
 public class OneToOneReferenceCreator extends SimpleReferenceCreator<Object>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public OneToOneReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+	}
+
 	public OneToOneReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
-
+	
 	@Override
 	public void createIdentifiers(long personID, Map<String, Object> mapping, List<GKInstance> sourceReferences) throws Exception
 	{

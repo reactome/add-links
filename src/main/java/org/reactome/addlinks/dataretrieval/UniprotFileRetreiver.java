@@ -35,13 +35,9 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class UniprotFileRetreiver extends FileRetriever
 {
-	private static final Logger logger = LogManager.getLogger();
-
 	private String mapFromDb="";
 	private String mapToDb="";
 	private BufferedInputStream inStream;
@@ -99,6 +95,13 @@ public class UniprotFileRetreiver extends FileRetriever
 		{
 			return mapToEnum.get(uniprotName);
 		}
+	}
+	
+	public UniprotFileRetreiver() { super(); }
+
+	public UniprotFileRetreiver(String retrieverName)
+	{
+		super(retrieverName);
 	}
 	
 	private URIBuilder uriBuilderFromDataLocation(String location) throws URISyntaxException
@@ -302,11 +305,12 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 				HttpGet get = new HttpGet( this.uriBuilderFromDataLocation(location).build() );
 				byte[] result = this.attemptGetFromUniprot(get);
+				Path path = Paths.get(new URI("file://" + this.destination));
 				if (result != null && result.length > 0)
 				{
 					logger.debug(".tab result size: {}", result.length);
 					
-					Path path = Paths.get(new URI("file://" + this.destination));
+					
 					
 					Files.createDirectories(path.getParent());
 					//Files.write(path, result);
@@ -322,7 +326,8 @@ public class UniprotFileRetreiver extends FileRetriever
 				}
 				else
 				{
-					throw new Exception("Result for .tab file was null/empty!");
+					//TODO: download should probably be attempted again in this situation.
+					throw new Exception("Result for .tab file ("+path.toString()+") was null/empty!");
 				}
 
 				URIBuilder builder = uriBuilderFromDataLocation(location);
@@ -359,32 +364,26 @@ public class UniprotFileRetreiver extends FileRetriever
 		}
 		catch (URISyntaxException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (ClientProtocolException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (InterruptedException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

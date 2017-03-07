@@ -71,7 +71,7 @@ public class EnsemblFileRetrieverExecutor
 				ensemblBatchLookup.setIdentifiers(refGeneProdsBySpecies.get(species));
 				ensemblBatchLookup.fetchData();
 				
-				EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor();
+				EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor("EnsemblBatchLookupFileProcessor");
 				enspProcessor.setPath(Paths.get(baseFetchDestination+"ENSP_batch_lookup."+species+".xml"));
 				Map<String, String> enspToEnstMap = enspProcessor.getIdMappingsFromFile();
 				

@@ -18,18 +18,25 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-public class AuthenticatingFileRetriever extends FileRetriever {
-
-	private static final Logger logger = LogManager.getLogger();
-	
+public class AuthenticatingFileRetriever extends FileRetriever
+{
 	private String userName;
 	private String password;
 
+	public AuthenticatingFileRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
+	
+	public AuthenticatingFileRetriever()
+	{
+		super();
+	}
+	
 	@Override
-	protected void downloadData() throws Exception {
+	protected void downloadData() throws Exception
+	{
 		HttpGet get = new HttpGet(this.uri);
 		Credentials creds = new UsernamePasswordCredentials(userName, password);
 		CredentialsProvider credProvider = new BasicCredentialsProvider();
@@ -42,16 +49,20 @@ public class AuthenticatingFileRetriever extends FileRetriever {
 		{
 			Path path = Paths.get(new URI("file://"+this.destination));
 			Files.write(path, EntityUtils.toByteArray(response.getEntity()));
-		} catch (IOException | URISyntaxException e) {
+		}
+		catch (IOException | URISyntaxException e)
+		{
 			logger.error("Exception caught: {}",e.getMessage());
 			throw e;
 		}
 	}
 	
-	public void setUserName(String userName) {
+	public void setUserName(String userName)
+	{
 		this.userName = userName;
 	}
-	public void setPassword(String password) {
+	public void setPassword(String password)
+	{
 		this.password = password;
 	}
 	

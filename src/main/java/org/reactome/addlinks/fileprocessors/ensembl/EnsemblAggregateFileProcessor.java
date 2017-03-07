@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 /**
@@ -19,14 +17,21 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 public class EnsemblAggregateFileProcessor extends FileProcessor<Map<String, List<String>>>
 {
 
-	private static final Logger logger = LogManager.getLogger();
-	
+	public EnsemblAggregateFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	public EnsemblAggregateFileProcessor()
+	{
+		super();
+	}
+
 	public enum EnsemblAggregateProcessingMode
 	{
 		ENSP_TO_ENSG,
 		XREF
 	}
-	
 	
 	private EnsemblAggregateProcessingMode mode;
 	

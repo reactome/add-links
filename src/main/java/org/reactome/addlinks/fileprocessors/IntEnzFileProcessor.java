@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Returns a mapping of UniProt accessions mapped to EC numbers.
  * @author sshorser
@@ -18,7 +15,15 @@ import org.apache.logging.log4j.Logger;
  */
 public class IntEnzFileProcessor extends FileProcessor<List<String>>
 {
-	private static final Logger logger = LogManager.getLogger();
+	public IntEnzFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	public IntEnzFileProcessor()
+	{
+		super(null);
+	}
 	
 	@Override
 	public Map<String, List<String>> getIdMappingsFromFile()
