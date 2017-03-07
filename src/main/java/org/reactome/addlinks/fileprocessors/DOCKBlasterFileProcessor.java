@@ -44,10 +44,11 @@ public class DOCKBlasterFileProcessor extends FileProcessor<ArrayList<String>>
 			});
 			logger.info("Processed {} lines.", lineCount.get());
 			logger.info("Uniprot-to-PDB (for DOCKBlaster) map has {} unique keys.", uniprotsToPdbs.keySet().size());
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new Error(e);
 		}
 		return uniprotsToPdbs;
 	}

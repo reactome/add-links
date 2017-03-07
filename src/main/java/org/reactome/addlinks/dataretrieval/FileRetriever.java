@@ -1,9 +1,11 @@
 package org.reactome.addlinks.dataretrieval;	
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +19,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.UnsupportedSchemeException;
@@ -114,95 +117,119 @@ public class FileRetriever implements DataRetriever {
 		}
 	}
 
-	protected void downloadData() throws Exception {
+	protected void downloadData() throws Exception
+	{
 		logger.trace("Scheme is: "+this.uri.getScheme());
 		Path path = Paths.get(new URI("file://"+this.destination));
 		Files.createDirectories(path.getParent());
 		if (this.uri.getScheme().equals("http"))
 		{
 			
-			HttpGet get = new HttpGet(this.uri);
-			//Need to multiply by 1000 because timeouts are in milliseconds.
-			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-												.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
-												.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
-												.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
-			
-			get.setConfig(config);
-			
-			int retries = this.numRetries;
-			boolean done = retries + 1 <= 0;
-			while(!done)
-			{
-				try( CloseableHttpClient client = HttpClients.createDefault();
-					CloseableHttpResponse response = client.execute(get) )
-				{
-					Files.write(path, EntityUtils.toByteArray(response.getEntity()));
-					done = true;
-				}
-				catch (ConnectTimeoutException e)
-				{
-					// we will only be retrying the connection timeouts, defined as the time required to establish a connection.
-					// we will not handle socket timeouts (inactivity that occurs after the connection has been established).
-					// we will not handle connection manager timeouts (time waiting for connection manager or connection pool).
-					e.printStackTrace();
-					logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", retries);
-					retries--;
-					done = retries + 1 <= 0;
-					if (done)
-					{
-						throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.",e);
-					}
-				}
-				catch (HttpHostConnectException e)
-				{
-					logger.error("Could not connect to host {} !",get.getURI().getHost());
-					e.printStackTrace();
-					throw e;
-				}
-				catch (IOException e) {
-					logger.error("Exception caught: {}",e.getMessage());
-					throw e;
-				}
-			}
+			doHttpDownload(path);
 		}
 		else if (this.uri.getScheme().equals("ftp"))
 		{
-			FTPClient client = new FTPClient();
-			client.connect(this.uri.getHost());
-			client.login("anonymous", ""); //TODO: Extract this to a separate class that takes username/password.
-			logger.debug("connect/login reply code: {}",client.getReplyCode());
-			client.setFileType(FTP.BINARY_FILE_TYPE);
-			client.setFileTransferMode(FTP.COMPRESSED_TRANSFER_MODE);
-			InputStream inStream = client.retrieveFileStream(this.uri.getPath());
-			//Should probably have more/better reply-code checks.
-			logger.debug("retreive file reply code: {}",client.getReplyCode());
-			if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
-			{
-				String errorString = "5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString();
-				logger.error(errorString);
-				throw new Exception(errorString);
-			}
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			int b = inStream.read();
-			while (b!=-1)
-			{
-				baos.write(b);
-				b = inStream.read();
-			}
-			client.logout();
-			client.disconnect();
-			FileOutputStream file = new FileOutputStream(this.destination);
-			baos.writeTo(file);
-			file.flush();
-
-			baos.close();
-			inStream.close();
-			file.close();
+			doFtpDownload();
 		}
 		else
 		{
 			throw new UnsupportedSchemeException("URI "+this.uri.toString()+" uses an unsupported scheme: "+this.uri.getScheme());
+		}
+	}
+
+	protected void doFtpDownload() throws SocketException, IOException, Exception, FileNotFoundException
+	{
+		
+	}
+	
+	protected void doFtpDownload(String user, String password) throws SocketException, IOException, Exception, FileNotFoundException
+	{
+		user = user == null || user.trim().equals("") ? "anonymous" : user;
+		password = password == null || password.trim().equals("") ? "" : password;
+		
+		FTPClient client = new FTPClient();
+		client.connect(this.uri.getHost());
+		client.login(user, password);
+		logger.debug("connect/login reply code: {}",client.getReplyCode());
+		client.setFileType(FTP.BINARY_FILE_TYPE);
+		client.setFileTransferMode(FTP.COMPRESSED_TRANSFER_MODE);
+		InputStream inStream = client.retrieveFileStream(this.uri.getPath());
+		//Should probably have more/better reply-code checks.
+		logger.debug("retreive file reply code: {}",client.getReplyCode());
+		if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
+		{
+			String errorString = "5xx reply code detected (" + client.getReplyCode() + "), reply string is: "+client.getReplyString();
+			logger.error(errorString);
+			throw new Exception(errorString);
+		}
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		int b = inStream.read();
+		while (b!=-1)
+		{
+			baos.write(b);
+			b = inStream.read();
+		}
+		client.logout();
+		client.disconnect();
+		FileOutputStream file = new FileOutputStream(this.destination);
+		baos.writeTo(file);
+		file.flush();
+
+		baos.close();
+		inStream.close();
+		file.close();
+	}
+
+	protected void doHttpDownload(Path path) throws HttpHostConnectException, IOException, Exception
+	{
+		this.doHttpDownload(path, HttpClientContext.create());
+	}
+	
+	protected void doHttpDownload(Path path, HttpClientContext context) throws Exception, HttpHostConnectException, IOException
+	{
+		HttpGet get = new HttpGet(this.uri);
+		//Need to multiply by 1000 because timeouts are in milliseconds.
+		RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
+											.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
+											.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
+											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
+		
+		get.setConfig(config);
+		
+		int retries = this.numRetries;
+		boolean done = retries + 1 <= 0;
+		while(!done)
+		{
+			try( CloseableHttpClient client = HttpClients.createDefault();
+				CloseableHttpResponse response = client.execute(get, context) )
+			{
+				Files.write(path, EntityUtils.toByteArray(response.getEntity()));
+				done = true;
+			}
+			catch (ConnectTimeoutException e)
+			{
+				// we will only be retrying the connection timeouts, defined as the time required to establish a connection.
+				// we will not handle socket timeouts (inactivity that occurs after the connection has been established).
+				// we will not handle connection manager timeouts (time waiting for connection manager or connection pool).
+				e.printStackTrace();
+				logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", retries);
+				retries--;
+				done = retries + 1 <= 0;
+				if (done)
+				{
+					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.",e);
+				}
+			}
+			catch (HttpHostConnectException e)
+			{
+				logger.error("Could not connect to host {} !",get.getURI().getHost());
+				e.printStackTrace();
+				throw e;
+			}
+			catch (IOException e) {
+				logger.error("Exception caught: {}",e.getMessage());
+				throw e;
+			}
 		}
 	}
 
