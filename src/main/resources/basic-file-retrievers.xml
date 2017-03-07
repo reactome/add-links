@@ -110,8 +110,8 @@
 
 		<entry key="Zinc">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="Zinc">
-				<property name="dataURL" value="http://zinc.docking.org/db/byvendor/chebi/chebi_purch.xls" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_chebi_purch.xls" />
+				<property name="dataURL" value="http://files.docking.org/catalogs/1/chebi/chebi.info.txt.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi.info.txt.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/Zinc"/>
 			</bean>
