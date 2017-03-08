@@ -11,6 +11,7 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.RollingRandomAccessFileManager;
 import org.apache.logging.log4j.core.appender.rolling.RolloverStrategy;
 import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -35,16 +36,42 @@ public interface CustomLoggable
 		if (oldAppender instanceof RollingRandomAccessFileAppender)
 		{
 			int bufferSize = ((RollingRandomAccessFileAppender)oldAppender).getBufferSize();
-			TriggeringPolicy triggerPolicy = ((RollingRandomAccessFileAppender)oldAppender).getManager().getTriggeringPolicy();
-			RolloverStrategy rollStrategy = ((RollingRandomAccessFileAppender)oldAppender).getManager().getRolloverStrategy();
+			
+			RollingRandomAccessFileManager oldMananger = (RollingRandomAccessFileManager)((RollingRandomAccessFileAppender) oldAppender).getManager();
+			
+			TriggeringPolicy triggerPolicy = oldMananger.getTriggeringPolicy();
+			RolloverStrategy rollStrategy = oldMananger.getRolloverStrategy();
 			Filter filter = ((RollingRandomAccessFileAppender)oldAppender).getFilter();
 			// Inject new log file name into filePattern so that file rolling will work properly 
-			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{MM-dd-yyyy\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{MM-dd-yyyy}.%i.log.gz");
-			appender = RollingRandomAccessFileAppender.createAppender("logs/" + logFileName + ".log", pattern, Boolean.toString(append), newAppenderName, "true", Integer.toString(bufferSize), triggerPolicy, rollStrategy, oldLayout, filter, "true", "false", "false", configuration);
+			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{yyyy-MM-dd\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{yyyy-MM-dd}.%i.log.gz");
+			//appender = RollingRandomAccessFileAppender.createAppender("logs/" + logFileName + ".log", pattern, Boolean.toString(append), newAppenderName, "true", Integer.toString(bufferSize), triggerPolicy, rollStrategy, oldLayout, filter, "true", "false", "false", configuration);
+			appender = RollingRandomAccessFileAppender.newBuilder().withFileName("logs/" + logFileName + ".log")
+																	.withFilePattern(pattern)
+																	.withAppend(append)
+																	.withName(newAppenderName)
+																	.withBufferSize(bufferSize)
+																	.withPolicy(triggerPolicy)
+																	.withStrategy(rollStrategy)
+																	.withLayout(oldLayout)
+																	.withImmediateFlush(true)
+																	.build();
 		}
 		else
 		{
-			appender = FileAppender.createAppender("logs/" + logFileName + ".log", Boolean.toString(append), "false", newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
+			//appender = FileAppender.createAppender("logs/" + logFileName + ".log", Boolean.toString(append), "false", newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
+			appender = FileAppender.newBuilder().withFileName("logs/" + logFileName + ".log")
+												.withAppend(append)
+												.withName(newAppenderName)
+												.withLayout(oldLayout)
+												.setConfiguration(configuration)
+												.withLocking(false)
+												.withImmediateFlush(true)
+												.withIgnoreExceptions(true)
+												.withBufferSize(8192)
+												.withFilter(null)
+												.withAdvertise(false)
+												.withAdvertiseUri("")
+												.build();
 		}
 		appender.start();
 		loggerConfig.addAppender(appender, level, null);
