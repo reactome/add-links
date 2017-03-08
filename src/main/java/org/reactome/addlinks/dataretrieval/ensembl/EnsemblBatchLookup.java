@@ -110,13 +110,15 @@ public class EnsemblBatchLookup  extends FileRetriever
 				try
 				{
 					boolean requestDone = false;
+					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor();
 					while (!requestDone)
 					{
+						
 						logger.debug("Submitting batch request - {}", index);
 						try (CloseableHttpClient postClient = HttpClients.createDefault();
 								CloseableHttpResponse postResponse = postClient.execute(post);)
 						{
-							EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(postResponse);
+							EnsemblServiceResult result = responseProcessor.processResponse(postResponse);
 							// This means we need to wait, and then retry
 							if (!result.getWaitTime().equals(Duration.ZERO))
 							{
