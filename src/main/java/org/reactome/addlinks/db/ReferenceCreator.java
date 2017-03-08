@@ -34,7 +34,12 @@ public class ReferenceCreator
 	private GKSchemaAttribute referringAttribute;
 	
 	private MySQLAdaptor dbAdapter;
+	
+	// Each reference creator should have an InstanceEdit object - this way all objects created by this object will share the instance edit.
+	private GKInstance instanceEdit = null;
 
+	private ReferenceObjectCache objectCache;
+	
 	/**
 	 * 
 	 * @param schemaClass - References that are created by this object will be of type <i>schemaClass</i>.
@@ -50,6 +55,8 @@ public class ReferenceCreator
 		this.referringToSchemaClass = referringSchemaClass;
 		this.referringAttribute = referringAttribute;
 		this.logger = logger;
+		// create a cache object, lazy-loaded.
+		this.objectCache = new ReferenceObjectCache(adapter, true);
 	}
 	
 	/**
@@ -61,10 +68,7 @@ public class ReferenceCreator
 	 */
 	public ReferenceCreator( SchemaClass schemaClass, SchemaClass referringSchemaClass, GKSchemaAttribute referringAttribute, MySQLAdaptor adapter)
 	{
-		this.dbAdapter = adapter;
-		this.schemaClass = schemaClass;
-		this.referringToSchemaClass = referringSchemaClass;
-		this.referringAttribute = referringAttribute;
+		this(schemaClass, referringSchemaClass, referringAttribute, adapter, LogManager.getLogger());
 	}
 
 	/**
@@ -157,8 +161,13 @@ public class ReferenceCreator
 			
 			//logger.debug("Available attributes: {}", this.schemaClass.getAttributes());
 
-			GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
-			if (instanceEdit != null)
+			//GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
+			if (this.instanceEdit == null)
+			{
+				this.instanceEdit = createInstanceEdit(personID, creatorName);
+			}
+			
+			if (this.instanceEdit != null)
 			{
 				identifierInstance.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
 				//GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
@@ -169,17 +178,18 @@ public class ReferenceCreator
 				// Now we add the species, if it's allowed.
 				@SuppressWarnings("unchecked")
 				Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>)identifierInstance.getSchemClass().getAttributes();
-				for (GKSchemaAttribute attrib : attributes)
+				if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 				{
-					if (attrib.getName().equals(ReactomeJavaConstants.species))
-					{
-						GKInstance species = this.dbAdapter.fetchInstance(ReactomeJavaConstants.Species,speciesID.longValue());
-						identifierInstance.addAttributeValue(ReactomeJavaConstants.species, species);
-					}
+					GKInstance species = this.dbAdapter.fetchInstance(ReactomeJavaConstants.Species,speciesID.longValue());
+					identifierInstance.addAttributeValue(ReactomeJavaConstants.species, species);
 				}
 				
 				// Get the refDB and add it as an attribute.
 				GKInstance refDBInstance = getReferenceDatabase(refDB);
+				if (refDBInstance == null)
+				{
+					throw new Error("Could not retrieve a DatabaseObject for ReferenceDatabase with name " + refDB);
+				}
 				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
 				
 				// If the user wanted to specify any other attributes, add them here. 
@@ -265,13 +275,14 @@ public class ReferenceCreator
 	 */
 	protected GKInstance getReferenceDatabase(String dbName) throws Exception
 	{
-		// Using _displayName can fetch local shell instances.
-		Collection<?> list = this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", dbName);
-		GKInstance refDb = null;
+		List<String> dbIds = this.objectCache.getRefDbNamesToIds().get(dbName);
 		
-		if (list.size() > 0)
+		GKInstance refDb = null;
+
+		if (dbIds.size() > 0)
 		{
-			refDb = (GKInstance) list.iterator().next();
+			logger.trace("{} DB_IDs came back for {}: {}", dbIds.size(), dbName, dbIds);
+			refDb = this.dbAdapter.fetchInstance(Long.valueOf(dbIds.get(0)));
 		}
 		else
 		{
@@ -293,9 +304,8 @@ public class ReferenceCreator
 		GKInstance instanceEdit = null;
 		try
 		{
-			instanceEdit = createDefaultIE(this.dbAdapter, personID, true);
+			instanceEdit = createDefaultIE(this.dbAdapter, personID, true, this.referringToSchemaClass.getClass() + " inserted by " + creatorName);
 			instanceEdit.getDBID();
-			instanceEdit.setAttributeValue(ReactomeJavaConstants.note, "crossReference inserted by " + creatorName);
 			this.dbAdapter.updateInstance(instanceEdit);
 		}
 		catch (InvalidAttributeException e)
@@ -325,13 +335,14 @@ public class ReferenceCreator
 	 * @return an InstanceEdit object.
 	 * @throws Exception
 	 */
-	private static GKInstance createDefaultIE(MySQLAdaptor dba, Long defaultPersonId, boolean needStore) throws Exception
+	private static GKInstance createDefaultIE(MySQLAdaptor dba, Long defaultPersonId, boolean needStore, String note) throws Exception
 	{
 		GKInstance defaultPerson = dba.fetchInstance(defaultPersonId);
 		if (defaultPerson != null)
 		{
 			GKInstance newIE = ReferenceCreator.createDefaultInstanceEdit(defaultPerson);
 			newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
+			newIE.addAttributeValue(ReactomeJavaConstants.note, note);
 			InstanceDisplayNameGenerator.setDisplayName(newIE);
 			if (needStore)
 			{
