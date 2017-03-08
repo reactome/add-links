@@ -12,7 +12,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-final class EnsemblServiceResponseProcessor
+public final class EnsemblServiceResponseProcessor
 {
 
 	class EnsemblServiceResult
@@ -61,7 +61,10 @@ final class EnsemblServiceResponseProcessor
 	
 	private static final Logger logger = LogManager.getLogger();
 	
-	public static EnsemblServiceResult processResponse(HttpResponse response)
+	// This can't be static because each request could have a different timeoutRetries counter.
+	private int timeoutRetriesRemaining = 3;
+	
+	public EnsemblServiceResult processResponse(HttpResponse response)
 	{
 		EnsemblServiceResult result = (new EnsemblServiceResponseProcessor()).new EnsemblServiceResult();
 		result.setStatus(response.getStatusLine().getStatusCode());
@@ -128,8 +131,18 @@ final class EnsemblServiceResponseProcessor
 					okToQuery = false;
 					break;
 				case HttpStatus.SC_GATEWAY_TIMEOUT:
-					logger.error("Request timed out! You should retry it.");
-					okToQuery = true;
+					timeoutRetriesRemaining--;
+					logger.error("Request timed out! {} retries remaining", timeoutRetriesRemaining);
+					if (timeoutRetriesRemaining > 0)
+					{
+						okToQuery = true;
+					}
+					else
+					{
+						logger.error("No more retries remaining.");
+						timeoutRetriesRemaining = 3;
+						okToQuery = false;
+					}
 					break;
 				default:
 					// Log any other kind of response.

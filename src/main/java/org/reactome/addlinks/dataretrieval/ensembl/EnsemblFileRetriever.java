@@ -208,13 +208,14 @@ public class EnsemblFileRetriever extends FileRetriever
 					logger.trace("URI: "+get.getURI());
 					
 					boolean done = false;
-	
+					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor();
 					while (!done)
 					{
+						
 						try (CloseableHttpClient getClient = HttpClients.createDefault();
 								CloseableHttpResponse getResponse = getClient.execute(get);)
 						{
-							EnsemblServiceResult result = EnsemblServiceResponseProcessor.processResponse(getResponse);
+							EnsemblServiceResult result = responseProcessor.processResponse(getResponse);
 							if (!result.getWaitTime().equals(Duration.ZERO))
 							{
 								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
