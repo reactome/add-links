@@ -1,5 +1,6 @@
 package org.reactome.addlinks.referencecreators;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,6 +9,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.gk.schema.SchemaAttribute;
 
 public class RHEAReferenceCreator extends SimpleReferenceCreator<List <String>>
 {
@@ -48,7 +50,7 @@ public class RHEAReferenceCreator extends SimpleReferenceCreator<List <String>>
 							sourceIdentifiersWithNewIdentifier++;
 							if (!this.testMode)
 							{
-								this.refCreator.createIdentifier(rheaID, reactomeID,  this.targetRefDB, personID, this.getClass().getName());
+								this.refCreator.createIdentifier(rheaID, String.valueOf(reaction.getDBID()), this.targetRefDB, personID, this.getClass().getName());
 							}
 						}
 						else
@@ -75,10 +77,31 @@ public class RHEAReferenceCreator extends SimpleReferenceCreator<List <String>>
 	
 	private List<GKInstance> getIdentifiersInList(List<GKInstance> instances, String reactomeID)
 	{
+		@SuppressWarnings("unchecked")
 		List<GKInstance> matchingInstances = instances.parallelStream().filter( instance -> {
 			try
 			{
-				return ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants._displayName).toString().equals(reactomeID);
+				// first we have to see if this instance even *has* a stable identifier. Reaction objects do not, for example. Also ensure that the stableIdentifier is not null.
+				if (((Collection<SchemaAttribute>)instance.getSchemaAttributes())
+															.stream()
+															.filter(attr -> ((SchemaAttribute)attr).getName().equals(ReactomeJavaConstants.stableIdentifier))
+															.findFirst()
+															.isPresent()
+						&& ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)) != null)
+				{
+					GKInstance stId = ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier));
+					String displayName = (String) stId.getAttributeValue(ReactomeJavaConstants._displayName);
+					if (displayName == null || displayName.trim().equals(""))
+					{
+						logger.error("_displayName is null for stableIdentifier {} of {}", stId, instance);
+						return false;
+					}
+					else
+					{
+						return stId.getAttributeValue(ReactomeJavaConstants._displayName).toString().equals(reactomeID);
+					}
+				}
+				return false;
 			}
 			catch (InvalidAttributeException e)
 			{
