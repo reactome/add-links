@@ -20,6 +20,7 @@ import org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor;
 import org.reactome.addlinks.referencecreators.SimpleReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -29,7 +30,6 @@ import org.springframework.test.context.ContextConfiguration;
  */
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
-
 public class TestSimpleReferenceCreator
 {
 	@Autowired
@@ -72,7 +72,8 @@ public class TestSimpleReferenceCreator
 	ZincMoleculesFileProcessor zincMolFileProcessor;
 	
 	@Autowired
-	SimpleReferenceCreator<String> zincToChEBIReferenceCreator;
+	@Qualifier("zincToChEBIReferenceCreator")
+	SimpleReferenceCreator<List<String>> zincToChEBIReferenceCreator;
 	
 	@Autowired
 	FileRetriever OrthologsFromZinc;
@@ -148,7 +149,7 @@ public class TestSimpleReferenceCreator
 		System.out.println("ChEBI ID: "+refDb);
 		List<GKInstance> chebiReferences = objectCache.getByRefDb(refDb, className);
 		ZincFileRetriever.fetchData();
-		Map<String,String> mappings = zincMolFileProcessor.getIdMappingsFromFile();
+		Map<String,List<String>> mappings = zincMolFileProcessor.getIdMappingsFromFile();
 		zincToChEBIReferenceCreator.createIdentifiers(123456, mappings, chebiReferences);
 	}
 	
