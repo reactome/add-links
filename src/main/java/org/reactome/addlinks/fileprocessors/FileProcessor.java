@@ -42,7 +42,12 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	public FileProcessor(String processorName)
 	{
 		this.setProcessorName(processorName);
-		this.logger = this.createLogger( processorName.replace(".log","-retriever.log") , "RollingRandomAccessFile", processorName, true, Level.DEBUG, this.logger, "File Processor");
+		String logName = null;
+		if (this.processorName != null && !this.processorName.trim().equals(""))
+		{
+			logName = processorName.replace(".log","-processor.log");
+		}
+		this.logger = this.createLogger( logName , "RollingRandomAccessFile", processorName, true, Level.DEBUG, this.logger, "File Processor");
 	}
 	
 	/**
