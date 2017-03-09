@@ -44,7 +44,6 @@ public interface CustomLoggable
 			Filter filter = ((RollingRandomAccessFileAppender)oldAppender).getFilter();
 			// Inject new log file name into filePattern so that file rolling will work properly 
 			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{yyyy-MM-dd\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{yyyy-MM-dd}.%i.log.gz");
-			//appender = RollingRandomAccessFileAppender.createAppender("logs/" + logFileName + ".log", pattern, Boolean.toString(append), newAppenderName, "true", Integer.toString(bufferSize), triggerPolicy, rollStrategy, oldLayout, filter, "true", "false", "false", configuration);
 			appender = RollingRandomAccessFileAppender.newBuilder().withFileName("logs/" + logFileName + ".log")
 																	.withFilePattern(pattern)
 																	.withAppend(append)
@@ -54,6 +53,7 @@ public interface CustomLoggable
 																	.withStrategy(rollStrategy)
 																	.withLayout(oldLayout)
 																	.withImmediateFlush(true)
+																	.withFilter(filter)
 																	.build();
 		}
 		else
