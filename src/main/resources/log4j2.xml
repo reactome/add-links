@@ -15,7 +15,7 @@
 			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36}#%M - %msg%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
-				<OnStartupTriggeringPolicy />
+				<OnStartupTriggeringPolicy minSize="5000000"/>
 				<SizeBasedTriggeringPolicy size="250 MB" />
 			</Policies>
 			<DefaultRolloverStrategy max="20"/>

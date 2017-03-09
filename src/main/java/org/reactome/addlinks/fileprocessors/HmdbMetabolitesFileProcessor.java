@@ -1,26 +1,23 @@
 package org.reactome.addlinks.fileprocessors;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>>
 {
@@ -39,25 +36,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 		CHEBI,
 		UNIPROT
 	}
-	
-	private static XPathExpression pathToAccession;
-	private static XPathExpression pathToChebi;
-	private static XPathExpression pathToUniprot;
-	//private static final Logger logger = LogManager.getLogger();
-	static
-	{
-		try
-		{
-			pathToAccession = XPathFactory.newInstance().newXPath().compile("/metabolite/accession/text()");
-			pathToChebi = XPathFactory.newInstance().newXPath().compile("/metabolite/chebi_id/text()");
-			pathToUniprot = XPathFactory.newInstance().newXPath().compile("/metabolite/protein_associations/protein/uniprot_id"); 
-		}
-		catch (XPathExpressionException e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
+
 	/**
 	 * This override will process all the HMDB Molecules files. 
 	 * It will return a map that is keyed by HMDB accession. <br />
@@ -75,59 +54,66 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 			
 			Map<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>> hmdb2ChebiAndUniprot = new ConcurrentHashMap<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>>();
 			
+			// These probably don't need to be atomic anymore since we're no longer processing the "files" in parallel.
 			AtomicInteger fileCounter = new AtomicInteger(0);
 			AtomicInteger totalChEBIMappingCounter = new AtomicInteger(0);
 			AtomicInteger totalUniProtMappingCounter = new AtomicInteger(0);
-			// This consumer will process files.
-			Consumer<? super Path> processHmdbFile = path -> {
-				try
-				{
-					fileCounter.incrementAndGet();
-					String fileContent = new String(Files.readAllBytes(path));
-					InputSource source = new InputSource(new ByteArrayInputStream(fileContent.getBytes("utf-8")));
-					
-					Node root = (Node) XPathFactory.newInstance().newXPath().evaluate("/", source, XPathConstants.NODE);
-					
-					String accession = HmdbMetabolitesFileProcessor.pathToAccession.evaluate(root,XPathConstants.STRING).toString();
-					logger.trace("accession: {}",accession);
-					String chebiId = HmdbMetabolitesFileProcessor.pathToChebi.evaluate(root,XPathConstants.STRING).toString();
-					logger.trace("ChEBI ID: {}",chebiId);
-					NodeList nodeList = (NodeList) HmdbMetabolitesFileProcessor.pathToUniprot.evaluate(root,XPathConstants.NODESET);
-					
-					Collection<String> uniProtList = Collections.synchronizedCollection(new ArrayList<String>());
-					for (int i = 0 ; i < nodeList.getLength() ; i ++)
-					{
-						totalUniProtMappingCounter.getAndIncrement();
-						String uniprotId = nodeList.item(i).getTextContent();
-						uniProtList.add(uniprotId);
-					}
-					logger.trace("# Uniprot mappings: {}",nodeList.getLength());
-
-					// Build the result for THIS file.
-					Map<HMDBFileMappingKeys, Collection<String>> hmdbVals = new ConcurrentHashMap<HMDBFileMappingKeys, Collection<String>>();
-					hmdbVals.put(HMDBFileMappingKeys.UNIPROT, uniProtList);
-					if (chebiId != null && !chebiId.trim().equals(""))
-					{
-						totalChEBIMappingCounter.getAndIncrement();
-					}
-					hmdbVals.put(HMDBFileMappingKeys.CHEBI, Arrays.asList(chebiId));
-					// Add the result from THIS file to the main map.
-					hmdb2ChebiAndUniprot.put(accession, hmdbVals);
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage());
-					
-				}
-			};
 			
-			// Process the HMDB files.
-			Files.list(Paths.get(dirToHmdbFiles))
-				.filter(p -> p.getFileName().toString().startsWith("HMDB") 
-							&& p.getFileName().toString().endsWith(".xml"))
-				.parallel()
-				.forEach(processHmdbFile);
+			TransformerFactory factory = TransformerFactory.newInstance();
+			try
+			{
+				//String dirToFile = this.unzipFile(this.pathToFile);
+				String inputFilename = dirToHmdbFiles + "/" + this.pathToFile.getFileName().toString().replaceAll(".zip", ".xml");
+				
+				//Transform the OrphaNet XML into a more usable CSV file.
+				Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("hmdb_metabolites_transform.xsl"));
+				Transformer transformer = factory.newTransformer(source);
+				Source xmlSource = new StreamSource(inputFilename);
+				String outfileName = inputFilename + ".transformed.tsv";
+				Result outputTarget =  new StreamResult(new File(outfileName));
+				transformer.transform(xmlSource, outputTarget);
+				
+				//Now we need to read the file.
+				Files.readAllLines(Paths.get(outfileName)).stream().forEach(line -> 
+				{
+					String[] parts = line.split("\t");
+					// Map uniprot to accession.
+					Map<HMDBFileMappingKeys, Collection<String>> hmdbVals = new ConcurrentHashMap<HMDBFileMappingKeys, Collection<String>>();
+					if (parts.length >= 2 && parts[1] != null && !parts[1].trim().equals(""))
+					{
+						hmdbVals.put( HMDBFileMappingKeys.CHEBI, Arrays.asList(parts[1]));
+						totalChEBIMappingCounter.incrementAndGet();
+					}
+					
+					if (parts.length >= 3 && parts[2] != null && !parts[2].trim().equals(""))
+					{
+						hmdbVals.put( HMDBFileMappingKeys.UNIPROT, Arrays.asList(Arrays.copyOfRange(parts, 2, parts.length - 1)));
+						totalUniProtMappingCounter.addAndGet(parts.length);
+					}
+					
+					hmdb2ChebiAndUniprot.put(parts[0], hmdbVals);
+				});
+			}
+			catch (TransformerConfigurationException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+			catch (TransformerException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
 			
 			logger.debug("\nHMDB Metabolites file processing Summary:"
 						+ "\n\tNumber of ChEBI mappings: {} ;"
