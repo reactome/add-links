@@ -62,7 +62,7 @@
 		<property name="dataURL" value="http://rest.ensembl.org/lookup/id/" />
 		<property name="fetchDestination"  value="/tmp/addlinks-downloaded-files/ensembl/"/>
 		<property name="maxAge" ref="maxFileAge"/>
-		<constructor-arg name="retrieverName" value="EnsemblBatch"/> 
+		<constructor-arg name="retrieverName" value="retrievers/EnsemblBatch"/> 
 	</bean>
 	
 	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="ensemblBaseXrefRetriever" abstract="true">
