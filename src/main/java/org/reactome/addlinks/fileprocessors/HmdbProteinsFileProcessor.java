@@ -1,28 +1,22 @@
 package org.reactome.addlinks.fileprocessors;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-public class HmdbProteinsFileProcessor extends FileProcessor<List<String>>
+public class HmdbProteinsFileProcessor extends FileProcessor<String>
 {
 	public HmdbProteinsFileProcessor()
 	{
@@ -33,145 +27,56 @@ public class HmdbProteinsFileProcessor extends FileProcessor<List<String>>
 	{
 		super(processorName);
 	}
-
-	private static XPathExpression pathToProteinsList;
-	private static XPathExpression pathToAccession;
-	private static XPathExpression pathToUniprot;
-	//private static final Logger logger = LogManager.getLogger();
-	static
-	{
-		try
-		{
-			pathToProteinsList = XPathFactory.newInstance().newXPath().compile("/protein");
-			pathToAccession = XPathFactory.newInstance().newXPath().compile("accession/text()");
-			pathToUniprot = XPathFactory.newInstance().newXPath().compile("uniprot_id");
-		}
-		catch (XPathExpressionException e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	
-	private static final String XML_DEC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-	
 	
 	@Override
-	//HMDB Proteins (and probably metabolites too) could return a 1:n mapping from the file...
-	public Map<String, List<String>> getIdMappingsFromFile()
+	//HMDB Proteins look like they're a 1:1 mapping. this will be a mapping from 
+	public Map<String, String> getIdMappingsFromFile()
 	{
-		Map<String,List<String>> accesionToUniprots = new HashMap<String,List<String>>();
+		Map<String, String> accesionToUniprots = new HashMap<String, String>();
+		TransformerFactory factory = TransformerFactory.newInstance();
 		try
 		{
-			String dirToHmdbFiles = this.unzipFile(this.pathToFile);
+			String dirToFile = this.unzipFile(this.pathToFile);
+			String inputFilename = dirToFile + "/" + this.pathToFile.getFileName().toString().replaceAll(".zip", ".xml");
 			
-			//The HMDB Proteins file is weird: 
-			// It contains many XML files concatenated into a single file, so 
-			// first we need to deal with this.
-			// Split into separate files at each XML declaration.
-			// Once this is done, the individual XML files can be processed.
+			//Transform the OrphaNet XML into a more usable CSV file.
+			Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("hmdb_protein_transform.xsl"));
+			Transformer transformer = factory.newTransformer(source);
+			Source xmlSource = new StreamSource(inputFilename);
+			String outfileName = inputFilename + ".transformed.tsv";
+			Result outputTarget =  new StreamResult(new File(outfileName));
+			transformer.transform(xmlSource, outputTarget);
 			
-			AtomicInteger counter = new AtomicInteger(0);
-			Files.list(Paths.get(dirToHmdbFiles))
-				//filter for XML files, though we only expect 1 in this case of HMDB Proteins. 
-				.filter(p -> p.getFileName().toString().endsWith(".xml"))
-				.forEach(p -> {
-								//logger.debug("Input XML file: {}", p.getFileName().toString());
-								try(Stream<String> lineStream = Files.lines(p).sequential())
-								{
-									StringBuilder sb = new StringBuilder();
-									
-									lineStream.forEach( s -> {
-										if (s.equals(XML_DEC))
-										{
-											//Dump to a file before emptying the builder.
-											if (sb.length() > 0)
-											{
-												try(FileOutputStream fos = new FileOutputStream( dirToHmdbFiles + "/" + counter.getAndIncrement() + ".xml" ))
-												{
-													fos.write(sb.toString().getBytes());
-												}
-												catch(IOException e)
-												{
-													e.printStackTrace();
-												}
-											}
-											sb.delete(0, sb.length());
-											sb.append(s);
-										}
-										else
-										{
-											sb.append(s).append("\n");
-										}
-									}) ;
-									
-								}
-								catch (IOException e)
-								{
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-							}
-						);
-			logger.info("Number of XML files extracted: {}", counter.get());
-			
-			//Now that we have a well-formed XML document, we can begin setting up the mapping.
-			for (int fileNum = 0; fileNum < counter.get(); fileNum++ )
+			//Now we need to read the file.
+			Files.readAllLines(Paths.get(outfileName)).stream().forEach(line -> 
 			{
-				try
-				{
-					String fileName = dirToHmdbFiles + "/" + fileNum + ".xml" ;
-					InputStream is = new FileInputStream(fileName);
-					//InputSource source = new InputSource(new ByteArrayInputStream(sb.toString().getBytes("utf-8")));
-					InputSource source = new InputSource(is);
-					NodeList root = (NodeList) HmdbProteinsFileProcessor.pathToProteinsList.evaluate(source,XPathConstants.NODESET);
-					
-					//logger.debug("file: {}", fileName);
-					for (int i = 0; i < root.getLength(); i++)
-					{
-						
-						Node n = root.item(i);
-						String accession = HmdbProteinsFileProcessor.pathToAccession.evaluate(n,XPathConstants.STRING).toString();
-						NodeList uniprotIds = (NodeList) HmdbProteinsFileProcessor.pathToUniprot.evaluate(n,XPathConstants.NODESET);
-						ArrayList<String> uniprots = new ArrayList<>(uniprotIds.getLength());
-						for (int j = 0; j < uniprotIds.getLength(); j++)
-						{
-							if (uniprotIds != null && uniprotIds.item(j).hasChildNodes())
-							{
-								//logger.debug("{}",uniprotIds.item(j).toString());
-								String uniprotIdText = (String) XPathFactory.newInstance().newXPath().evaluate("text()", uniprotIds.item(j),XPathConstants.STRING);
-								//logger.debug("uniprotId: {}",uniprotIdText);
-								uniprots.add(uniprotIdText);
-							}
-						}
-						//no, should be mapping uniprot -> accession - and it might NOT be 1:1.
-						accesionToUniprots.put(accession, uniprots);
-					}
-				}
-				catch (XPathExpressionException e)
-				{
-					logger.error("Error processing file {}, Error is: ",counter.get()+".xml", e.getMessage());
-					e.printStackTrace();
-				}
-			}
-			
+				String[] parts = line.split("\t");
+				// Map uniprot to accession.
+				accesionToUniprots.put(parts[1], parts[0]);
+			});
+		}
+		catch (TransformerConfigurationException e)
+		{
+			e.printStackTrace();
+			throw new Error(e);
+		}
+		catch (TransformerException e)
+		{
+			e.printStackTrace();
+			throw new Error(e);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+			throw new Error(e);
 		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new Error(e);
 		}
 
-		int totalUniprotIDs = accesionToUniprots.keySet()
-												.stream()
-												.map( m -> accesionToUniprots.get(m).size() )
-												.reduce(0, (a,b) -> a + b );
 		logger.info("Number of HMDB accessions: {}", accesionToUniprots.keySet().size());
-		logger.info("Total number of all UniProt IDs: {}", totalUniprotIDs);
 		return accesionToUniprots;
 	}
 

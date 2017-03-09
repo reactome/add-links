@@ -139,7 +139,7 @@ public class FileRetriever implements DataRetriever {
 
 	protected void doFtpDownload() throws SocketException, IOException, Exception, FileNotFoundException
 	{
-		
+		doFtpDownload(null, null);
 	}
 	
 	protected void doFtpDownload(String user, String password) throws SocketException, IOException, Exception, FileNotFoundException
