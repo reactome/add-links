@@ -286,7 +286,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="BRENDA"/>
+				<constructor-arg index="5" name="targetDB" value="Brenda"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/BrendaRefCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
