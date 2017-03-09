@@ -12,22 +12,29 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.CustomLoggable;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 
-public class UniProtFileRetreiverExecutor
+public class UniProtFileRetreiverExecutor implements CustomLoggable
 {
-	private static final Logger logger = LogManager.getLogger();
+	private Logger logger = LogManager.getLogger();
 	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	private List<String> fileRetrieverFilter;
 	private ReferenceObjectCache objectCache;
 	private int numberOfUniprotDownloadThreads = 10;
+	
+	public UniProtFileRetreiverExecutor()
+	{
+		this.logger = this.createLogger("retrievers/UniProtFileRetreiverExecutor", "RollingRandomAccessFile", "UniProtFileRetreiverExecutor", true, Level.DEBUG, this.logger, "UniProtFileRetreiverExecutor");
+	}
 	
 	public void execute()
 	{

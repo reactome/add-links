@@ -279,7 +279,7 @@ public class ReferenceCreator
 		
 		GKInstance refDb = null;
 
-		if (dbIds.size() > 0)
+		if (dbIds != null && dbIds.size() > 0)
 		{
 			logger.trace("{} DB_IDs came back for {}: {}", dbIds.size(), dbName, dbIds);
 			refDb = this.dbAdapter.fetchInstance(Long.valueOf(dbIds.get(0)));

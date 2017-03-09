@@ -79,7 +79,7 @@ public class TestHMDB
 	{
 		HmdbProteinsRetriever.fetchData();
 		
-		Map<String, List<String>> mappings = HmdbProteinsFileProcessor.getIdMappingsFromFile();
+		Map<String, String> mappings = HmdbProteinsFileProcessor.getIdMappingsFromFile();
 		
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size() > 0);
@@ -90,7 +90,7 @@ public class TestHMDB
 	{
 		HmdbProteinsRetriever.fetchData();
 		
-		Map<String, List<String>> mappings = HmdbProteinsFileProcessor.getIdMappingsFromFile();
+		Map<String, String> mappings = HmdbProteinsFileProcessor.getIdMappingsFromFile();
 		
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size() > 0);
