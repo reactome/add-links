@@ -8,7 +8,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
-public class HMDBProteinReferenceCreator extends SimpleReferenceCreator<List<String>>
+public class HMDBProteinReferenceCreator extends SimpleReferenceCreator<String>
 {
 	public HMDBProteinReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
@@ -25,7 +25,7 @@ public class HMDBProteinReferenceCreator extends SimpleReferenceCreator<List<Str
 	 * @param mapping - this will be a mapping from an HMDB accession to a list of UniProt IDs.
 	 */
 	@Override
-	public void createIdentifiers(long personID, Map<String, List<String>> mapping, List<GKInstance> sourceReferences) throws Exception
+	public void createIdentifiers(long personID, Map<String, String> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		int sourceIdentifiersWithNoMapping = 0;
 		int sourceIdentifiersWithNewIdentifier = 0;
@@ -42,22 +42,23 @@ public class HMDBProteinReferenceCreator extends SimpleReferenceCreator<List<Str
 		
 		// One HMDB could be mapped to multiple UniProts - I haven't actually seen this happen, myself,
 		// but supposedly it's possible, based on how I interpret the old AddLinks code...
-		for (String hmdbAccession : mapping.keySet())
+		for (String uniprotID : mapping.keySet())
 		{
-			for (String uniprotFromHMDB : mapping.get(hmdbAccession))
+			String hmdbAccession = mapping.get(uniprotID);
+			//for (String uniprotFromHMDB : mapping.get(hmdbAccession))
 			{
 				// We want to make sure that the UniProt ID from HMDB is also in our database.
-				if (sourceRefMap.containsKey(uniprotFromHMDB))
+				if (sourceRefMap.containsKey(uniprotID))
 				{
 					// Check that this HMDB reference hasn't already been created.
-					if (!this.checkXRefExists(sourceRefMap.get(uniprotFromHMDB), hmdbAccession))
+					if (!this.checkXRefExists(sourceRefMap.get(uniprotID), hmdbAccession))
 					{
 						// OK, now we have to create an HMDB reference.
 						logger.trace("\tNeed to create a new identifier!");
 						sourceIdentifiersWithNewIdentifier++;
 						if (!this.testMode)
 						{
-							refCreator.createIdentifier(hmdbAccession, String.valueOf(sourceRefMap.get(uniprotFromHMDB).getDBID()), this.targetRefDB, personID, this.getClass().getName());
+							refCreator.createIdentifier(hmdbAccession, String.valueOf(sourceRefMap.get(uniprotID).getDBID()), this.targetRefDB, personID, this.getClass().getName());
 						}
 					}
 					else
