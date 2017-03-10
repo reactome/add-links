@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,17 +23,18 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
+import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
@@ -40,8 +43,8 @@ import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor.EnsemblAggregateProcessingMode;
-import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
@@ -84,98 +87,98 @@ public class AddLinks
 	
 	private MySQLAdaptor dbAdapter;
 
-	//TODO: Before begining, it might be nice to run a "before" query, to show that the cross-references situation looks like, and then an "after" query, at the end of execution:
-	/*
-select ref_db_names_and_aliases, ref_db_id, object_type, sum(count)
-from
-(
-	select count(*) as count, ReferenceEntity.referenceDatabase as ref_db_id,  ref_db_subq.name as ref_db_names_and_aliases,  DatabaseObject._class as object_type, 'q1'
-	from ReferenceEntity
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = ReferenceEntity.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = ReferenceEntity.db_id
-	group by ReferenceEntity.referenceDatabase,  ref_db_subq.name, DatabaseObject._class
-	union
-	select count(*) as count,  DatabaseIdentifier.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q2'
-	from DatabaseIdentifier
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = DatabaseIdentifier.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = DatabaseIdentifier.db_id
-	group by DatabaseIdentifier.referenceDatabase,  ref_db_subq.name, DatabaseObject._class
-	union
-	select count(*) as count, DatabaseIdentifier.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q3'
-	from PhysicalEntity
-	inner join PhysicalEntity_2_crossReference on PhysicalEntity.DB_ID = PhysicalEntity_2_crossReference.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = PhysicalEntity.DB_ID
-	inner join DatabaseIdentifier on PhysicalEntity_2_crossReference.crossReference = DatabaseIdentifier.db_id
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = DatabaseIdentifier.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	group by DatabaseObject._class, DatabaseIdentifier.referenceDatabase, ref_db_subq.name
-	union
-	select count(*) as count, DatabaseIdentifier.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q4'
-	from Event 
-	inner join Event_2_crossReference on Event.DB_ID = Event_2_crossReference.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = Event.DB_ID
-	inner join DatabaseIdentifier on Event_2_crossReference.crossReference = DatabaseIdentifier.db_id
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = DatabaseIdentifier.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	group by DatabaseObject._class, DatabaseIdentifier.referenceDatabase, ref_db_subq.name
-    union
-	select count(*) as count,  ExternalOntology.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q5'
-	from ExternalOntology
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = ExternalOntology.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = ExternalOntology.db_id
-	group by ExternalOntology.referenceDatabase,  ref_db_subq.name, DatabaseObject._class
-    union
-	select count(*) as count,  GO_CellularComponent.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q6'
-	from GO_CellularComponent
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_CellularComponent.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = GO_CellularComponent.db_id
-	group by GO_CellularComponent.referenceDatabase,  ref_db_subq.name, DatabaseObject._class
-    union
-	select count(*) as count,  GO_MolecularFunction.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q7'
-	from GO_MolecularFunction
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_MolecularFunction.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = GO_MolecularFunction.db_id
-	group by GO_MolecularFunction.referenceDatabase,  ref_db_subq.name, DatabaseObject._class
-    union
-	select count(*) as count,  GO_BiologicalProcess.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q8'
-	from GO_BiologicalProcess
-	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_BiologicalProcess.referenceDatabase
-	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id
-				from ReferenceDatabase_2_name
-				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID
-				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id
-	inner join DatabaseObject on DatabaseObject.db_id = GO_BiologicalProcess.db_id
-	group by GO_BiologicalProcess.referenceDatabase,  ref_db_subq.name, DatabaseObject._class
-	) as subq
--- order by ref_db_names_and_aliases asc, ref_db_id asc, count asc, object_type asc
-group by ref_db_names_and_aliases asc, object_type asc with rollup;
-	 */
+	// Giant SQL query converted to Java string via http://www.buildmystring.com/
+	private String reportSQL = "select ref_db_names_and_aliases, /*ref_db_id,*/ object_type, sum(count)\n" +
+			"from\n" +
+			"(\n" +
+			"	select count(*) as count, ReferenceEntity.referenceDatabase as ref_db_id,  ref_db_subq.name as ref_db_names_and_aliases,  DatabaseObject._class as object_type, 'q1'\n" +
+			"	from ReferenceEntity\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = ReferenceEntity.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = ReferenceEntity.db_id\n" +
+			"	group by ReferenceEntity.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
+			"	union\n" +
+			"	select count(*) as count,  DatabaseIdentifier.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q2'\n" +
+			"	from DatabaseIdentifier\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = DatabaseIdentifier.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = DatabaseIdentifier.db_id\n" +
+			"	group by DatabaseIdentifier.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
+			"	union\n" +
+			"	select count(*) as count, DatabaseIdentifier.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q3'\n" +
+			"	from PhysicalEntity\n" +
+			"	inner join PhysicalEntity_2_crossReference on PhysicalEntity.DB_ID = PhysicalEntity_2_crossReference.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = PhysicalEntity.DB_ID\n" +
+			"	inner join DatabaseIdentifier on PhysicalEntity_2_crossReference.crossReference = DatabaseIdentifier.db_id\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = DatabaseIdentifier.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	group by DatabaseObject._class, DatabaseIdentifier.referenceDatabase, ref_db_subq.name\n" +
+			"	union\n" +
+			"	select count(*) as count, DatabaseIdentifier.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q4'\n" +
+			"	from Event \n" +
+			"	inner join Event_2_crossReference on Event.DB_ID = Event_2_crossReference.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = Event.DB_ID\n" +
+			"	inner join DatabaseIdentifier on Event_2_crossReference.crossReference = DatabaseIdentifier.db_id\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = DatabaseIdentifier.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	group by DatabaseObject._class, DatabaseIdentifier.referenceDatabase, ref_db_subq.name\n" +
+			"    union\n" +
+			"	select count(*) as count,  ExternalOntology.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q5'\n" +
+			"	from ExternalOntology\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = ExternalOntology.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = ExternalOntology.db_id\n" +
+			"	group by ExternalOntology.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
+			"    union\n" +
+			"	select count(*) as count,  GO_CellularComponent.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q6'\n" +
+			"	from GO_CellularComponent\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_CellularComponent.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = GO_CellularComponent.db_id\n" +
+			"	group by GO_CellularComponent.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
+			"    union\n" +
+			"	select count(*) as count,  GO_MolecularFunction.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q7'\n" +
+			"	from GO_MolecularFunction\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_MolecularFunction.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = GO_MolecularFunction.db_id\n" +
+			"	group by GO_MolecularFunction.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
+			"    union\n" +
+			"	select count(*) as count,  GO_BiologicalProcess.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q8'\n" +
+			"	from GO_BiologicalProcess\n" +
+			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_BiologicalProcess.referenceDatabase\n" +
+			"	inner join (select group_concat(ReferenceDatabase_2_name.name order by ReferenceDatabase_2_name.name_rank separator ', ') as name, ReferenceDatabase_2_name.db_id\n" +
+			"				from ReferenceDatabase_2_name\n" +
+			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
+			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
+			"	inner join DatabaseObject on DatabaseObject.db_id = GO_BiologicalProcess.db_id\n" +
+			"	group by GO_BiologicalProcess.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
+			"	) as subq\n" +
+			"-- order by ref_db_names_and_aliases asc, ref_db_id asc, count asc, object_type asc\n" +
+			"group by ref_db_names_and_aliases asc, object_type asc with rollup;\n";
+	
+
 	
 	public void doAddLinks() throws Exception
 	{
@@ -196,7 +199,10 @@ group by ref_db_names_and_aliases asc, object_type asc with rollup;
 
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null
 									? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers"))
-									: false;		
+									: false;
+		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
+		printReport();
+		
 		if (filterRetrievers)
 		{
 			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
@@ -240,13 +246,7 @@ group by ref_db_names_and_aliases asc, object_type asc with rollup;
 				@Override
 				public Boolean call() throws Exception
 				{	
-					EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
-					ensemblFileRetrieverExecutor.setEnsemblBatchLookup(ensemblBatchLookup);
-					ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(ensemblFileRetrievers);
-					ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(ensemblFileRetrieversNonCore);
-					ensemblFileRetrieverExecutor.setObjectCache(objectCache);
-					ensemblFileRetrieverExecutor.setDbAdapter(dbAdapter);
-					ensemblFileRetrieverExecutor.execute();
+					executeEnsemblFileRetriever();
 					return true;
 				}
 			});
@@ -265,7 +265,7 @@ group by ref_db_names_and_aliases asc, object_type asc with rollup;
 				return true;
 			}
 		});
-		// Run the Brenda file retriever
+		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
 		retrieverJobs.add(new Callable<Boolean>()
 		{
 			
@@ -313,9 +313,44 @@ group by ref_db_names_and_aliases asc, object_type asc with rollup;
 		this.createReferences(personID, dbMappings);
 		
 		logger.info("Process complete.");
-		
+	
+		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
+		printReport();
 	}
 
+	private void printReport() throws SQLException
+	{
+		// Guide for Formatter syntax in Java: http://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax
+		//
+		// I really wish there was some modern, well-supported library that could do table formatting. It's not hard to write, but I don't really 
+		// want to write one myself.
+
+		logger.printf(Level.INFO,"%1$-60s | %2$-30s | %3$-10s", "Database name", "Type", "Count & Sum");
+		logger.info("--------------------------------------------------------------------------------------------------------------------");
+		ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
+		while (rs.next())
+		{
+			logger.printf(Level.INFO,"%1$-60s | %2$-30s | %3$-5s %4$10s | ", rs.getString(1) != null ? rs.getString(1) : "Grand Total:",
+																		rs.getString(2) != null ? rs.getString(2) : "",
+																		rs.getString(2) != null ? "" : "Sum: " ,
+																		rs.getString(3));
+		}
+	}
+
+	private void executeEnsemblFileRetriever() throws Exception
+	{
+		if (fileRetrieverFilter.contains("EnsemblToALL"))
+		{
+			EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
+			ensemblFileRetrieverExecutor.setEnsemblBatchLookup(ensemblBatchLookup);
+			ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(ensemblFileRetrievers);
+			ensemblFileRetrieverExecutor.setEnsemblFileRetrieversNonCore(ensemblFileRetrieversNonCore);
+			ensemblFileRetrieverExecutor.setObjectCache(objectCache);
+			ensemblFileRetrieverExecutor.setDbAdapter(dbAdapter);
+			ensemblFileRetrieverExecutor.execute();
+		}
+	}
+	
 	private void executeBrendaFileRetriever()
 	{
 		if (this.fileRetrieverFilter.contains("BrendaRetriever"))
