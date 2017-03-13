@@ -185,7 +185,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedWormbaseRefCreator">
@@ -245,7 +245,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedPDBRefCreator">
@@ -275,7 +275,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqPeptideRefCreator">
@@ -335,7 +335,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedENSEMBLGeneRefCreator">
@@ -366,7 +366,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedEntrezGeneRefCreator">
@@ -426,7 +426,7 @@
 				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
 			</bean>
 		</property>
-		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG" />
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG*" />
 	</bean>
 	
 	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedKEGGRefCreator">
