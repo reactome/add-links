@@ -109,8 +109,14 @@ public class ReferenceCreator
 			// Ideally, this will not return anything.
 			// Of course, we should only look at cross-references on the source object.
 			// It's possible that the Identifier might already exist but for a different object.
-			@SuppressWarnings("unchecked")
-			Collection<GKInstance> identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
+			//@SuppressWarnings("unchecked")
+			//Collection<GKInstance> identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
+			Collection<GKInstance> identifiers = objectCache.getByIdentifier(identifierValue, this.schemaClass.getName());
+//			if (identifiers == null || identifiers.isEmpty())
+//			{
+//				// If lookup in the cache failed, let's try the database - although most things *should* be in the cache.
+//				identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
+//			}
 		
 			// TODO: Maybe have a flag that can turn this functionality (check for pre-existing "new" identifiers) on or off.
 			if (identifiers != null && identifiers.size() > 0)
@@ -281,12 +287,15 @@ public class ReferenceCreator
 
 		if (dbIds != null && dbIds.size() > 0)
 		{
-			logger.trace("{} DB_IDs came back for {}: {}", dbIds.size(), dbName, dbIds);
+			if (dbIds.size() > 1)
+			{
+				logger.trace("{} DB_IDs came back for \"{}\": {}", dbIds.size(), dbName, dbIds);
+			}
 			refDb = this.dbAdapter.fetchInstance(Long.valueOf(dbIds.get(0)));
 		}
 		else
 		{
-			throw new Exception("Unknown database: "+dbName);
+			throw new Error("Unknown database: "+dbName+", known databases: "+this.objectCache.getRefDbNamesToIds());
 		}
 		
 		return refDb;
