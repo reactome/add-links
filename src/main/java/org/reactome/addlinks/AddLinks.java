@@ -300,7 +300,7 @@ public class AddLinks
 			logger.info("DB Key: {} has {} submaps.", k, dbMappings.get(k).keySet().size());
 			for (String subk : dbMappings.get(k).keySet())
 			{
-				if (dbMappings.get(k).get(subk) instanceof Map)
+				if (dbMappings.get(k).get(subk) instanceof Map && !k.equals("HmdbMetabolitesFileProcessor")) // No need to print every single HMDB Metabolites ID.
 				{
 					logger.info("    subkey: {} has {} subkeys", subk, ((Map<String, ?>)dbMappings.get(k).get(subk)).keySet().size() );
 				}
@@ -311,11 +311,10 @@ public class AddLinks
 		
 		//Now we create references.
 		this.createReferences(personID, dbMappings);
-		
-		logger.info("Process complete.");
-	
+
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		printReport();
+		logger.info("Process complete.");
 	}
 
 	private void printReport() throws SQLException
