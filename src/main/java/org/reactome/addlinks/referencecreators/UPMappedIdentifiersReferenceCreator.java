@@ -82,7 +82,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		{
 			for (String speciesID : mappings.keySet())
 			{
-				
+				logger.debug("Creating references for species {}", speciesID);
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
@@ -221,15 +221,13 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 						throw new RuntimeException(e);
 					}
 				} );
-			
-				
-				logger.info("{} Reference creation summary:\n"
-						+ "\t# Identifiers created: {}\n"
-						+ "\t# Identifiers which already existed: {} \n"
-						+ "\t# Identifiers that were not created: {}",
-						this.targetRefDB, 
-						createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 			}
+			logger.info("{} Reference creation summary:\n"
+					+ "\t# Identifiers created: {}\n"
+					+ "\t# Identifiers which already existed: {} \n"
+					+ "\t# Identifiers that were not created: {}",
+					this.targetRefDB, 
+					createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 		}
 		else
 		{
