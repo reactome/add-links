@@ -25,7 +25,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 
 public class UniProtFileRetreiverExecutor implements CustomLoggable
 {
-	private Logger logger = LogManager.getLogger();
+	private Logger logger;
 	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	private List<String> fileRetrieverFilter;
 	private ReferenceObjectCache objectCache;

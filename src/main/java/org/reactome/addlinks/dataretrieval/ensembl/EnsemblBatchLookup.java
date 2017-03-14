@@ -110,7 +110,7 @@ public class EnsemblBatchLookup  extends FileRetriever
 				try
 				{
 					boolean requestDone = false;
-					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor();
+					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor(this.logger);
 					while (!requestDone)
 					{
 						
