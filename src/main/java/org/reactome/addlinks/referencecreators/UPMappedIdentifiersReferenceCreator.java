@@ -27,8 +27,6 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
 	
-	//private static final Logger logger = LogManager.getLogger();
-	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
@@ -42,7 +40,6 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 	 */
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
 		AtomicInteger printCounter = new AtomicInteger(0);
@@ -82,7 +79,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		{
 			for (String speciesID : mappings.keySet())
 			{
-				logger.debug("Creating references for species {}", speciesID);
+				logger.info("Creating references for species {}", speciesID);
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
@@ -129,29 +126,30 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 									// check and make sure the cross refernces don't already exist.
-									Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
-									boolean xrefAlreadyExists = false;
-									
-									for (GKInstance xref : xrefs)
-									{
-										logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-										// We won't add a cross-reference if it already exists
-										if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetIdentifier ))
-										{
-											xrefAlreadyExistsCounter.incrementAndGet();
-											xrefAlreadyExists = true;
-											// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-											// in letting the loop run longer.
-											// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-											break;
-										}
-									}
+//									Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
+//									boolean xrefAlreadyExists = false;
+//									
+//									for (GKInstance xref : xrefs)
+//									{
+//										logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+//										// We won't add a cross-reference if it already exists
+//										if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetIdentifier ))
+//										{
+//											xrefAlreadyExistsCounter.incrementAndGet();
+//											xrefAlreadyExists = true;
+//											// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+//											// in letting the loop run longer.
+//											// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+//											break;
+//										}
+//									}
+									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier);
 									if (!xrefAlreadyExists)
 									{
 										if (!this.testMode)
 										{
 											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
-											thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
+											thingsToCreate.add(targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID);
 										}
 										createdCounter.getAndIncrement();
 										
@@ -195,7 +193,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 				}
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-					String[] parts = newIdentifier.split(":");
+					String[] parts = newIdentifier.split(",");
 					logger.trace("Creating new identifier {} ", parts[0] );
 					try
 					{
