@@ -4,8 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -19,32 +21,42 @@ public class CrossReferenceReporter
 	private Logger logger = LogManager.getLogger();
 	
 	private Map<String,Map<String,Integer>> reportMap = new HashMap<String, Map<String,Integer>>();
-	private Comparator<String> comparator = new Comparator<String>()
-											{
-												@Override
-												public int compare(String o1, String o2)
-												{
-													// if left Operand is Grand Total, then o1 > o2
-													if (o1.trim().contains("Grand Total"))
-														return 1;
-													// if right Operand is Grand Total, then o2 > o1
-													if (o2.trim().contains("Grand Total"))
-														return -1;
-													
-													// At this point, we know we are not dealing with a Grand Total operand.
-													
-													// if left Operand is subtotal, then o1 > o2
-													if (o1.trim().contains("Subtotal"))
-														return 1;
-													// if right Operand is subtotal, then o2 > o1
-													if (o2.trim().contains("Subtotal"))
-														return -1;
-													
-													// use normal string comparison for all other cases.
-													return o1.toLowerCase().compareTo(o2.toLowerCase());
-												}
-											};
+	private Comparator<String> reportRowComparator = new Comparator<String>()
+		{
+			@Override
+			public int compare(String o1, String o2)
+			{
+				// if left Operand is Grand Total, then o1 > o2
+				if (o1.trim().contains("Grand Total"))
+					return 1;
+				// if right Operand is Grand Total, then o2 > o1
+				if (o2.trim().contains("Grand Total"))
+					return -1;
+				
+				// At this point, we know we are not dealing with a Grand Total operand.
+				
+				// if left Operand is subtotal, then o1 > o2
+				if (o1.trim().contains("Subtotal"))
+					return 1;
+				// if right Operand is subtotal, then o2 > o1
+				if (o2.trim().contains("Subtotal"))
+					return -1;
+				
+				// use normal string comparison for all other cases.
+				return o1.toLowerCase().compareTo(o2.toLowerCase());
+			}
+		};
 	
+	private Comparator<Map<reportKeys, String>> diffReportRowComparator = new Comparator<Map<reportKeys, String>>()
+		{
+			@Override
+			public int compare(Map<reportKeys, String> o1, Map<reportKeys, String> o2)
+			{
+				//TODO: Finish this properly.
+				return reportRowComparator.compare(o1.get(reportKeys.oldRefDB), o2.get(reportKeys.oldRefDB));
+			}
+		};										
+											
 	// Giant SQL query converted to Java string via http://www.buildmystring.com/
 	private String reportSQL = "select ref_db_names_and_aliases, /*ref_db_id,*/ object_type, sum(count)\n" +
 			" from\n" +
@@ -141,13 +153,62 @@ public class CrossReferenceReporter
 		this.dbAdapter = adaptor;
 	}
 	
+	enum reportKeys
+	{
+		newRefDB, oldRefDB, newObjectType, oldObjectType, newQuantity, oldQuantity, diff;
+	}
+	
 	public void printReportWithDiffs(Map<String,Map<String,Integer>> oldReport) throws SQLException
 	{
 		//ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
 		
 		Map<String,Map<String,Integer>> newReport = this.createReportMap();
 		
+		//printing the diff in-place is probably too hard, so maybe create an intermediate data structure and then sort/print THAT. 
+		//Intermediate structure: a list of Maps with the following keys: newRefDB, oldRefDB, newObjectType, oldObjectType, newQuantity, oldQuantity, diff.
+		//first, we need to build this thing.
+		List<Map<reportKeys,String>> reportRows = new ArrayList<Map<reportKeys,String>>();
+		for (String oldRefDBName : oldReport.keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+		{
+			for (String oldObjectType : oldReport.get(oldRefDBName).keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+			{
+				Map<reportKeys, String> map = new HashMap<reportKeys, String>(7);
+				map.put(reportKeys.oldRefDB, oldRefDBName);
+				map.put(reportKeys.oldObjectType, oldObjectType);
+				map.put(reportKeys.oldQuantity, String.valueOf(oldReport.get(oldRefDBName).get(oldObjectType)));
+				// need to make sure it's actually in the new report.
+				if (newReport.containsKey(oldRefDBName))
+				{
+					map.put(reportKeys.newRefDB, oldRefDBName);
+					// need to make sure it's actually in the new report.
+					if (newReport.get(oldRefDBName).containsKey(oldObjectType))
+					{
+						map.put(reportKeys.newObjectType, oldObjectType);
+						map.put(reportKeys.newQuantity, String.valueOf(newReport.get(oldRefDBName).get(oldObjectType)));
+						map.put(reportKeys.diff, String.valueOf( newReport.get(oldRefDBName).get(oldObjectType) - oldReport.get(oldRefDBName).get(oldObjectType) ));
+					}
+				}
+				reportRows.add(map);
+			}
+		}
+		// Once that's done, we should go through the NEW report and add in any refdbs/objecttypes that weren't in oldReport
+		for (String newRefDBName : newReport.keySet().stream().filter( k -> !oldReport.containsKey(k)).sorted(this.reportRowComparator).collect(Collectors.toList()))
+		{
+			for (String newObjectType : newReport.get(newRefDBName).keySet().stream().filter(k -> !oldReport.get(newRefDBName).containsKey(k)).sorted(this.reportRowComparator).collect(Collectors.toList()))
+			{
+				Map<reportKeys, String> map = new HashMap<reportKeys, String>(7);
+				map.put(reportKeys.newObjectType, newObjectType);
+				map.put(reportKeys.newRefDB, newRefDBName);
+				map.put(reportKeys.newQuantity, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
+				map.put(reportKeys.diff, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
+				reportRows.add(map);
+			}
+		}
 		
+		for (Map<reportKeys, String> reportRow : reportRows.stream().sequential().sorted().collect(Collectors.toList()))
+		{
+			//TODO: Finish this.
+		}
 	}
 	
 	private Map<String,Map<String,Integer>> createReportMap() throws SQLException
@@ -217,9 +278,9 @@ public class CrossReferenceReporter
 		pstream.printf(" | %1$-"+refDBNameMaxWidth+"s | %2$-"+objectTypeMaxWidth+"s | %3$"+quantityMaxWidth+"s | \n", "Database Name", "Object Type", "Quantity");
 		pstream.print("--------------------------------------------------------------------------------------------------------\n");
 
-		for (String refDBName : this.reportMap.keySet().stream().sorted(this.comparator).collect(Collectors.toList()))
+		for (String refDBName : this.reportMap.keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String objectType : this.reportMap.get(refDBName).keySet().stream().sorted(this.comparator).collect(Collectors.toList()))
+			for (String objectType : this.reportMap.get(refDBName).keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
 			{
 				String quantity = String.valueOf(this.reportMap.get(refDBName).get(objectType));
 				pstream.printf(" | %1$-"+refDBNameMaxWidth+"s | %2$-"+objectTypeMaxWidth+"s | %3$"+quantityMaxWidth+"s | \n", refDBName , !refDBName.contains("Grand Total") ? objectType : "", quantity);		
