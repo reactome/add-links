@@ -266,37 +266,40 @@ public final class ReferenceObjectCache
 			cacheByID.put(String.valueOf(referenceObject.getDBID()), referenceObject);
 			
 			// Identifier cache
-			try
+			if ( !className.equals(ReactomeJavaConstants.Reaction) )
 			{
-				if (referenceObject.getAttributeValue(ReactomeJavaConstants.identifier) != null)
+				try
 				{
-					String identifier = (String) referenceObject.getAttributeValue(ReactomeJavaConstants.identifier);
-					if (!objectCacheByIdentifier.containsKey(identifier))
+					if (referenceObject.getAttributeValue(ReactomeJavaConstants.identifier) != null)
 					{
-						objectCacheByIdentifier.put(identifier, new ArrayList<GKInstance>(Arrays.asList(referenceObject)));
-					}
-					else
-					{
-						objectCacheByIdentifier.get(identifier).add(referenceObject);
+						String identifier = (String) referenceObject.getAttributeValue(ReactomeJavaConstants.identifier);
+						if (!objectCacheByIdentifier.containsKey(identifier))
+						{
+							objectCacheByIdentifier.put(identifier, new ArrayList<GKInstance>(Arrays.asList(referenceObject)));
+						}
+						else
+						{
+							objectCacheByIdentifier.get(identifier).add(referenceObject);
+						}
 					}
 				}
-			}
-			catch (InvalidAttributeException e)
-			{
-				logger.error("Object {} does not have an identifier attribute, error: {}", referenceObject, e.getMessage());
-				e.printStackTrace();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-				throw new Error(e);
+				catch (InvalidAttributeException e)
+				{
+					logger.error("Object {} does not have an identifier attribute, error: {}", referenceObject, e.getMessage());
+					e.printStackTrace();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+					throw new Error(e);
+				}
 			}
 		});
-		logger.debug("Built {} caches: cacheById, cacheByRefDb, and cacheBySpecies caches.",className);
-		logger.info("\n\tKeys in cache-by-refdb: {};"
+		logger.info("Built {} caches:"
+				+ "\n\tKeys in cache-by-refdb: {};"
 				+ "\n\tkeys in cache-by-species: {};"
 				+ "\n\tkeys in cache-by-DB_ID: {};"
-				+ "\n\tkeys in cache-by-identifier: {};",
+				+ "\n\tkeys in cache-by-identifier: {};",className,
 					(cacheByRefDB!=null ? cacheByRefDB.size() : "N/A"),
 					(!className.equals(ReactomeJavaConstants.ReferenceMolecule)
 							&& !className.equals(ReactomeJavaConstants.DatabaseIdentifier)
