@@ -208,7 +208,7 @@ public class EnsemblFileRetriever extends FileRetriever
 					logger.trace("URI: "+get.getURI());
 					
 					boolean done = false;
-					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor();
+					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor(this.logger);
 					while (!done)
 					{
 						

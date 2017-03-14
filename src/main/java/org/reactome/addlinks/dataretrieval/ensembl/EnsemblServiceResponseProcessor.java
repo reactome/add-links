@@ -59,14 +59,19 @@ public final class EnsemblServiceResponseProcessor
 	// Assume a quote of 10 to start. This will get set properly with ever response from the service.
 	private static final AtomicInteger numRequestsRemaining = new AtomicInteger(10);
 	
-	private static final Logger logger = LogManager.getLogger();
+	private Logger logger ;
 	
 	// This can't be static because each request could have a different timeoutRetries counter.
 	private int timeoutRetriesRemaining = 3;
 	
+	public EnsemblServiceResponseProcessor(Logger logger)
+	{
+		this.logger = logger;
+	}
+	
 	public EnsemblServiceResult processResponse(HttpResponse response)
 	{
-		EnsemblServiceResult result = (new EnsemblServiceResponseProcessor()).new EnsemblServiceResult();
+		EnsemblServiceResult result = this.new EnsemblServiceResult();
 		result.setStatus(response.getStatusLine().getStatusCode());
 		boolean okToQuery = false;
 		// First check to see if we got a "Retry-After" header. This is most likely to happen if we send SO many requests

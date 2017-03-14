@@ -15,13 +15,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.CustomLoggable;
 
 public abstract class FileProcessor<T> implements CustomLoggable
 {
-	protected Logger logger = LogManager.getLogger();
+	protected Logger logger;
 	
 	protected Path pathToFile;
 	
