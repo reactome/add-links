@@ -199,9 +199,8 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 				if (attemptCount < this.maxAttemptCount && ! done)
 				{
-					logger.info("Re-trying...");
-					Thread.sleep(Duration.ofSeconds(2).toMillis());
-					
+					logger.info("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+					Thread.sleep(Duration.ofSeconds(5).toMillis());
 				}
 			}
 		}
@@ -219,6 +218,8 @@ public class UniprotFileRetreiver extends FileRetriever
 				{
 					case HttpStatus.SC_SERVICE_UNAVAILABLE:
 					case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+					case HttpStatus.SC_BAD_GATEWAY:
+					case HttpStatus.SC_GATEWAY_TIMEOUT:
 						logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
 						break;
 					
