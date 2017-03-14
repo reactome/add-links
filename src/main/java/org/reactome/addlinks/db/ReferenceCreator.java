@@ -40,6 +40,7 @@ public class ReferenceCreator
 
 	private ReferenceObjectCache objectCache;
 	
+	private GKInstance refDBInstance;
 	/**
 	 * 
 	 * @param schemaClass - References that are created by this object will be of type <i>schemaClass</i>.
@@ -191,8 +192,13 @@ public class ReferenceCreator
 				}
 				
 				// Get the refDB and add it as an attribute.
-				GKInstance refDBInstance = getReferenceDatabase(refDB);
-				if (refDBInstance == null)
+				// Store refDBInstance at the ReferenceCreator *instance* level to speed things up for the reference creation process. 
+				if (this.refDBInstance == null || this.refDBInstance.getDBID() != Long.valueOf(refDB))
+				{
+					this.refDBInstance = getReferenceDatabase(refDB);
+				}
+				// If it's still null, there is a problem!
+				if (this.refDBInstance == null)
 				{
 					throw new Error("Could not retrieve a DatabaseObject for ReferenceDatabase with name " + refDB);
 				}
