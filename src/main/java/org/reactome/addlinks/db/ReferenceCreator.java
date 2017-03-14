@@ -193,7 +193,7 @@ public class ReferenceCreator
 				
 				// Get the refDB and add it as an attribute.
 				// Store refDBInstance at the ReferenceCreator *instance* level to speed things up for the reference creation process. 
-				if (this.refDBInstance == null || this.refDBInstance.getDBID() != Long.valueOf(refDB))
+				if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
 				{
 					this.refDBInstance = getReferenceDatabase(refDB);
 				}
