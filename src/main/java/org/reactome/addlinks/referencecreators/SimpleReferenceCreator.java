@@ -29,7 +29,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	protected Logger logger = LogManager.getLogger();
+	protected Logger logger ;
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
@@ -164,15 +164,18 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
+		StringBuilder xrefsb = new StringBuilder(); 
 		for (GKInstance xref : xrefs)
 		{
-			logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+			xrefsb.append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString()).append(",\t");
 			// We won't add a cross-reference if it already exists
 			if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetRefDBIdentifier ))
 			{
+				logger.trace("\tcross-references include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 				return true;
 			}
 		}
+		logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 		return false;
 	}
 	
