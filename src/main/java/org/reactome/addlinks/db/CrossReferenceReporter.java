@@ -5,10 +5,14 @@ import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,11 +25,25 @@ public class CrossReferenceReporter
 	private Logger logger = LogManager.getLogger();
 	
 	private Map<String,Map<String,Integer>> reportMap = new HashMap<String, Map<String,Integer>>();
-	private Comparator<String> reportRowComparator = new Comparator<String>()
+	private Comparator<REPORT_KEYS> reportKeysComparator = new Comparator<REPORT_KEYS>()
+			{
+				@Override
+				public int compare(REPORT_KEYS o1, REPORT_KEYS o2)
+				{
+					return Integer.compare(o1.getSortOrder(), o2.getSortOrder());
+				}
+			};
+	
+	protected static Comparator<String> reportRowComparator = new Comparator<String>()
 		{
 			@Override
 			public int compare(String o1, String o2)
 			{
+				if (o1 == null)
+					return -1;
+				if (o2 == null)
+					return 1;
+				
 				// if left Operand is Grand Total, then o1 > o2
 				if (o1.trim().contains("Grand Total"))
 					return 1;
@@ -47,16 +65,91 @@ public class CrossReferenceReporter
 			}
 		};
 	
-	private Comparator<Map<reportKeys, String>> diffReportRowComparator = new Comparator<Map<reportKeys, String>>()
+	public class ReportMap<K extends REPORT_KEYS, V extends String> extends HashMap<K, V> implements Comparable<ReportMap<K, V>>
+	{
+		/**
+		 * generated serialVersionUID
+		 */
+		private static final long serialVersionUID = -4567642471909039840L;
+
+		
+		@Override
+		public int compareTo(ReportMap<K, V> o)
 		{
-			@Override
-			public int compare(Map<reportKeys, String> o1, Map<reportKeys, String> o2)
+			// First we have to check if we have any nulls in *this* map.
+			for (K key : this.keySet().stream().filter(k -> this.get(k) == null && o.get(k) != null).collect(Collectors.toList()))
 			{
-				//TODO: Finish this properly.
-				return reportRowComparator.compare(o1.get(reportKeys.oldRefDB), o2.get(reportKeys.oldRefDB));
+				// If there is a key in this map that has no value, but there IS a value in the other, then that other map is *immediately* "greater" than this one.
+				return 1;
 			}
-		};										
-											
+			
+			// Now, we will need to check key by key.
+			for (K key : this.keySet().stream().sorted((Comparator<? super K>) reportKeysComparator).collect(Collectors.toList()))
+			{
+				// If the other does not have a value for key, then *this* map is "greater". 
+				if (o.get(key) == null)
+				{
+					return 1;
+				}
+				
+				int compareResult = reportRowComparator.compare(this.get(key), o.get(key));
+				if (compareResult != 0)
+				{
+					return compareResult;
+				}
+			}
+			
+			return 0;
+		}
+	}
+		
+//	private Comparator<Map<REPORT_KEYS, String>> diffReportRowComparator = new Comparator<Map<REPORT_KEYS, String>>()
+//		{
+//			@Override
+//			public int compare(Map<REPORT_KEYS, String> o1, Map<REPORT_KEYS, String> o2)
+//			{
+//				// If o1 and o2 have the same values for oldRefDB and newRefDB, then we should try to sort by objectType
+//				if ( (o1.get(REPORT_KEYS.OLD_REF_DB) != null && o1.get(REPORT_KEYS.OLD_REF_DB).equals(o2.get(REPORT_KEYS.OLD_REF_DB)))
+//						&& (o1.get(REPORT_KEYS.NEW_REF_DB) != null && o1.get(REPORT_KEYS.NEW_REF_DB).equals(o2.get(REPORT_KEYS.NEW_REF_DB))))
+//				{
+//					//...but if objectType match as well, we will have to sort by Quantity
+//					if ( (o1.get(REPORT_KEYS.OLD_OBJECT_TYPE) != null && o1.get(REPORT_KEYS.OLD_OBJECT_TYPE).equals(o2.get(REPORT_KEYS.OLD_OBJECT_TYPE)))
+//							&& (o1.get(REPORT_KEYS.NEW_OBJECT_TYPE) != null && o1.get(REPORT_KEYS.NEW_OBJECT_TYPE).equals(o2.get(REPORT_KEYS.NEW_OBJECT_TYPE))))
+//					{
+//						return o1.get(REPORT_KEYS.OLD_QUANTITY).compareTo(o2.get(REPORT_KEYS.NEW_QUANTITY));
+//					}
+//					else // the ref db names matched, but the object types are different between these two rows, so sort by object type.
+//					{
+//						String leftOldObjectType = o1.get(REPORT_KEYS.OLD_OBJECT_TYPE) != null ? o1.get(REPORT_KEYS.OLD_OBJECT_TYPE) : "";
+//						String rightNewObjectType = o2.get(REPORT_KEYS.NEW_OBJECT_TYPE) != null ? o2.get(REPORT_KEYS.NEW_OBJECT_TYPE) : "";
+//						int objectTypeSort = leftOldObjectType.compareTo(rightNewObjectType);
+//						if (objectTypeSort < 0)
+//						{
+//							return o1.get(REPORT_KEYS.OLD_QUANTITY).compareTo(o2.get(REPORT_KEYS.NEW_QUANTITY));
+//						}
+//						else
+//						{
+//							return o2.get(REPORT_KEYS.OLD_QUANTITY).compareTo(o1.get(REPORT_KEYS.NEW_QUANTITY));
+//						}
+//					}
+//				}
+//				// If the ref db names do not match between the two rows...
+//				
+//				// If left-row has a value for oldRefDBName and right-row is null, 
+//				// then o1 > o2 
+//				if (o1.get(REPORT_KEYS.OLD_REF_DB)==null && o2.get(REPORT_KEYS.OLD_REF_DB)!=null)
+//					return 1;
+//				
+//				// If left row has null for oldRefDB and right row has a value, then o2 > o1
+//				if (o1.get(REPORT_KEYS.OLD_REF_DB)==null && o2.get(REPORT_KEYS.OLD_REF_DB)!=null)
+//					return -1;
+//				
+//				
+//				//TODO: Finish this properly.
+//				return reportRowComparator.compare(o1.get(REPORT_KEYS.OLD_REF_DB), o2.get(REPORT_KEYS.NEW_REF_DB));
+//			}
+//		};
+
 	// Giant SQL query converted to Java string via http://www.buildmystring.com/
 	private String reportSQL = "select ref_db_names_and_aliases, /*ref_db_id,*/ object_type, sum(count)\n" +
 			" from\n" +
@@ -153,12 +246,29 @@ public class CrossReferenceReporter
 		this.dbAdapter = adaptor;
 	}
 	
-	enum reportKeys
+	public enum REPORT_KEYS
 	{
-		newRefDB, oldRefDB, newObjectType, oldObjectType, newQuantity, oldQuantity, diff;
+		NEW_REF_DB(0), OLD_REF_DB(1), NEW_OBJECT_TYPE(2), DIFFERENCE(3), OLD_OBJECT_TYPE(4), NEW_QUANTITY(5), OLD_QUANTITY(6);
+		
+		private int sortOrder = 0;
+		
+		REPORT_KEYS(int i)
+		{
+			this.sortOrder = i;
+		}
+		
+		public int getSortOrder()
+		{
+			return this.sortOrder;
+		}
 	}
 	
-	public void printReportWithDiffs(Map<String,Map<String,Integer>> oldReport) throws SQLException
+	private String emptyStringIfNull(String s)
+	{
+		return s != null ? s : "";
+	}
+	
+	public String printReportWithDiffs(Map<String,Map<String,Integer>> oldReport) throws SQLException
 	{
 		//ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
 		
@@ -167,48 +277,112 @@ public class CrossReferenceReporter
 		//printing the diff in-place is probably too hard, so maybe create an intermediate data structure and then sort/print THAT. 
 		//Intermediate structure: a list of Maps with the following keys: newRefDB, oldRefDB, newObjectType, oldObjectType, newQuantity, oldQuantity, diff.
 		//first, we need to build this thing.
-		List<Map<reportKeys,String>> reportRows = new ArrayList<Map<reportKeys,String>>();
-		for (String oldRefDBName : oldReport.keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+		List<Map<REPORT_KEYS,String>> reportRows = new ArrayList<Map<REPORT_KEYS,String>>();
+		for (String oldRefDBName : oldReport.keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String oldObjectType : oldReport.get(oldRefDBName).keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+			for (String oldObjectType : oldReport.get(oldRefDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 			{
-				Map<reportKeys, String> map = new HashMap<reportKeys, String>(7);
-				map.put(reportKeys.oldRefDB, oldRefDBName);
-				map.put(reportKeys.oldObjectType, oldObjectType);
-				map.put(reportKeys.oldQuantity, String.valueOf(oldReport.get(oldRefDBName).get(oldObjectType)));
+				Map<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
+				map.put(REPORT_KEYS.OLD_REF_DB, oldRefDBName);
+				map.put(REPORT_KEYS.OLD_OBJECT_TYPE, oldObjectType);
+				map.put(REPORT_KEYS.OLD_QUANTITY, String.valueOf(oldReport.get(oldRefDBName).get(oldObjectType)));
 				// need to make sure it's actually in the new report.
 				if (newReport.containsKey(oldRefDBName))
 				{
-					map.put(reportKeys.newRefDB, oldRefDBName);
+					map.put(REPORT_KEYS.NEW_REF_DB, oldRefDBName);
 					// need to make sure it's actually in the new report.
 					if (newReport.get(oldRefDBName).containsKey(oldObjectType))
 					{
-						map.put(reportKeys.newObjectType, oldObjectType);
-						map.put(reportKeys.newQuantity, String.valueOf(newReport.get(oldRefDBName).get(oldObjectType)));
-						map.put(reportKeys.diff, String.valueOf( newReport.get(oldRefDBName).get(oldObjectType) - oldReport.get(oldRefDBName).get(oldObjectType) ));
+						map.put(REPORT_KEYS.NEW_OBJECT_TYPE, oldObjectType);
+						map.put(REPORT_KEYS.NEW_QUANTITY, String.valueOf(newReport.get(oldRefDBName).get(oldObjectType)));
+						map.put(REPORT_KEYS.DIFFERENCE, String.valueOf( newReport.get(oldRefDBName).get(oldObjectType) - oldReport.get(oldRefDBName).get(oldObjectType) ));
 					}
+					else
+					{
+						// Set null - at least the keys are present so when it comes time to print, we don't need to constantly check for key existence.
+						map.put(REPORT_KEYS.NEW_OBJECT_TYPE, null);
+						map.put(REPORT_KEYS.NEW_QUANTITY, null);
+						map.put(REPORT_KEYS.DIFFERENCE, null);
+					}
+				}
+				else
+				{
+					// Set null - at least the keys are present so when it comes time to print, we don't need to constantly check for key existence.
+					map.put(REPORT_KEYS.NEW_REF_DB, null);
+					map.put(REPORT_KEYS.NEW_OBJECT_TYPE, null);
+					map.put(REPORT_KEYS.NEW_QUANTITY, null);
+					map.put(REPORT_KEYS.DIFFERENCE, null);
 				}
 				reportRows.add(map);
 			}
 		}
 		// Once that's done, we should go through the NEW report and add in any refdbs/objecttypes that weren't in oldReport
+		// for all ref db names in the new report that are not in the old report.
 		for (String newRefDBName : newReport.keySet().stream().filter( k -> !oldReport.containsKey(k)).sorted(this.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String newObjectType : newReport.get(newRefDBName).keySet().stream().filter(k -> !oldReport.get(newRefDBName).containsKey(k)).sorted(this.reportRowComparator).collect(Collectors.toList()))
+			for (String newObjectType : newReport.get(newRefDBName).keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
 			{
-				Map<reportKeys, String> map = new HashMap<reportKeys, String>(7);
-				map.put(reportKeys.newObjectType, newObjectType);
-				map.put(reportKeys.newRefDB, newRefDBName);
-				map.put(reportKeys.newQuantity, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
-				map.put(reportKeys.diff, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
+				Map<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
+				map.put(REPORT_KEYS.NEW_OBJECT_TYPE, newObjectType);
+				map.put(REPORT_KEYS.NEW_REF_DB, newRefDBName);
+				map.put(REPORT_KEYS.NEW_QUANTITY, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
+				map.put(REPORT_KEYS.DIFFERENCE, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
+				
+				// Set null - at least the keys are present so when it comes time to print, we don't need to constantly check for key existence.
+				map.put(REPORT_KEYS.OLD_REF_DB, null);
+				map.put(REPORT_KEYS.OLD_OBJECT_TYPE, null);
+				map.put(REPORT_KEYS.OLD_QUANTITY, null);
 				reportRows.add(map);
 			}
 		}
 		
-		for (Map<reportKeys, String> reportRow : reportRows.stream().sequential().sorted().collect(Collectors.toList()))
+		int oldRefDBNameMaxWidth = 0;
+		int oldObjectTypeMaxWidth = 0;
+		int oldQuantityMaxWidth = 0;
+		int newRefDBNameMaxWidth = 0;
+		int newObjectTypeMaxWidth = 0;
+		int newQuantityMaxWidth = 0;
+		int diffMaxWidth = 0;
+		
+		List<List<String>> rows = new ArrayList<List<String>>(reportRows.size()+1);
+		//rows.add(Arrays.asList("Pre-AddLinks DB Name", "Object Type", "Quantity", "Difference", "Post-AddLinks DB Name", "Object Type", "Quantity"));
+		for (Map<REPORT_KEYS, String> reportRow : reportRows.stream().sequential().sorted().collect(Collectors.toList()))
 		{
-			//TODO: Finish this.
+			rows.add(Arrays.asList( reportRow.get(REPORT_KEYS.OLD_REF_DB), reportRow.get(REPORT_KEYS.OLD_OBJECT_TYPE), reportRow.get(REPORT_KEYS.OLD_QUANTITY),
+									reportRow.get(REPORT_KEYS.DIFFERENCE),
+									reportRow.get(REPORT_KEYS.NEW_REF_DB), reportRow.get(REPORT_KEYS.NEW_OBJECT_TYPE), reportRow.get(REPORT_KEYS.NEW_QUANTITY)));
+			
+			//Function<String, String> emptyStringIfNull = (s) -> s != null ? s : ""; // had to make this into a function because PowerMock kept choking on it.
+			oldRefDBNameMaxWidth = Math.max(oldRefDBNameMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.OLD_REF_DB)).length());
+			oldObjectTypeMaxWidth = Math.max(oldObjectTypeMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.OLD_OBJECT_TYPE)).length());
+			oldQuantityMaxWidth = Math.max(oldQuantityMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.OLD_QUANTITY)).length());
+			newRefDBNameMaxWidth = Math.max(newRefDBNameMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.NEW_REF_DB)).length());
+			newObjectTypeMaxWidth = Math.max(newObjectTypeMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.NEW_OBJECT_TYPE)).length());
+			newQuantityMaxWidth = Math.max(newQuantityMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.NEW_QUANTITY)).length());
+			diffMaxWidth = Math.max(diffMaxWidth, emptyStringIfNull(reportRow.get(REPORT_KEYS.DIFFERENCE)).length());
 		}
+		
+		oldRefDBNameMaxWidth = Math.max("Pre-AddLinks DB Name".length(), oldRefDBNameMaxWidth);
+		oldObjectTypeMaxWidth = Math.max("Object Type".length(), oldObjectTypeMaxWidth);
+		oldQuantityMaxWidth = Math.max("Quantity".length(), oldQuantityMaxWidth);
+		newRefDBNameMaxWidth = Math.max("Post-AddLinks DB Name".length(), newRefDBNameMaxWidth);
+		newObjectTypeMaxWidth = Math.max("Object Type".length(), newObjectTypeMaxWidth);
+		newQuantityMaxWidth = Math.max("Quantity".length(), newQuantityMaxWidth);
+		diffMaxWidth = Math.max("Difference".length(), diffMaxWidth);
+		int lineWidth = oldRefDBNameMaxWidth + oldObjectTypeMaxWidth + oldQuantityMaxWidth + newRefDBNameMaxWidth + newObjectTypeMaxWidth + newQuantityMaxWidth + diffMaxWidth;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream pstream = new PrintStream(baos);
+		
+		pstream.printf(" | %1$-"+oldRefDBNameMaxWidth+"s | %2$-"+oldObjectTypeMaxWidth+"s | %3$"+oldQuantityMaxWidth+"s | %4$"+diffMaxWidth+"s | %5$-"+newRefDBNameMaxWidth+"s | %6$-"+newObjectTypeMaxWidth+"s | %7$"+newQuantityMaxWidth+"s |\n", "Pre-AddLinks DB Name", "Object Type", "Quantity", "Difference", "Post-AddLinks DB Name", "Object Type", "Quantity");
+		// the "3*7" is because there are three extra characters (padding: " | ") for 7 columns.
+		pstream.print( new String(new char[lineWidth + (3*7)]).replace("\0", "-") + "\n" );
+		for (List<String> row : rows)
+		{
+			pstream.printf(" | %1$-"+oldRefDBNameMaxWidth+"s | %2$-"+oldObjectTypeMaxWidth+"s | %3$"+oldQuantityMaxWidth+"s | %4$"+diffMaxWidth+"s | %5$-"+newRefDBNameMaxWidth+"s | %6$-"+newObjectTypeMaxWidth+"s | %7$"+newQuantityMaxWidth+"s |\n"
+							, row.get(0), row.get(1), row.get(2), row.get(3), row.get(4), row.get(5), row.get(6));
+		}
+		
+		return baos.toString();
 	}
 	
 	private Map<String,Map<String,Integer>> createReportMap() throws SQLException
