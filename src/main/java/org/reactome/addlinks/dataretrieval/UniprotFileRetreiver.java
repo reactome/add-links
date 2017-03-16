@@ -164,14 +164,11 @@ public class UniprotFileRetreiver extends FileRetriever
 					case HttpStatus.SC_BAD_GATEWAY:
 					case HttpStatus.SC_GATEWAY_TIMEOUT:
 						logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
-						// logger.error("File: \"{}\" was not written! Re-execute the File Retriever to try again.", this.destination);
-						attemptCount++;
 						break;
 	
 					case HttpStatus.SC_OK:
 					case HttpStatus.SC_MOVED_PERMANENTLY:
 					case HttpStatus.SC_MOVED_TEMPORARILY:
-						attemptCount++; 
 						logger.debug("HTTP Status: {}",getResponse.getStatusLine().toString());
 						result = EntityUtils.toByteArray(getResponse.getEntity());
 						if (result != null)
@@ -185,11 +182,10 @@ public class UniprotFileRetreiver extends FileRetriever
 						break;
 	
 					default:
-						attemptCount++;
 						logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
 						break;
-	
 				}
+				attemptCount++;
 			}
 			if (attemptCount > this.maxAttemptCount)
 			{
@@ -210,33 +206,65 @@ public class UniprotFileRetreiver extends FileRetriever
 	
 	private String attemptPostToUniprot(HttpPost post) throws ClientProtocolException, IOException, InterruptedException
 	{
+		boolean done = false;
+		int attemptCount = 0;
 		String mappingLocationURI = null;
+		while(!done)
 		{
-			try (CloseableHttpClient postClient = HttpClients.createDefault();
-					CloseableHttpResponse postResponse = postClient.execute(post);)
+			
 			{
-				switch (postResponse.getStatusLine().getStatusCode())
+				try (CloseableHttpClient postClient = HttpClients.createDefault();
+						CloseableHttpResponse postResponse = postClient.execute(post);)
 				{
-					case HttpStatus.SC_SERVICE_UNAVAILABLE:
-					case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-					case HttpStatus.SC_BAD_GATEWAY:
-					case HttpStatus.SC_GATEWAY_TIMEOUT:
-						logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
-						break;
-					
-					case HttpStatus.SC_OK:
-					case HttpStatus.SC_MOVED_PERMANENTLY:
-					case HttpStatus.SC_MOVED_TEMPORARILY:
-						if (postResponse.containsHeader("Location"))
-						{
-							mappingLocationURI = postResponse.getHeaders("Location")[0].getValue();
-							logger.debug("Location of data: {}",mappingLocationURI);
-						}
-						else
-						{
-							logger.debug("Status was {}, \"Location\" header was not prsent. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
-						}
-						break;
+					switch (postResponse.getStatusLine().getStatusCode())
+					{
+						case HttpStatus.SC_SERVICE_UNAVAILABLE:
+						case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+						case HttpStatus.SC_BAD_GATEWAY:
+						case HttpStatus.SC_GATEWAY_TIMEOUT:
+							logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
+							break;
+						
+						case HttpStatus.SC_OK:
+						case HttpStatus.SC_MOVED_PERMANENTLY:
+						case HttpStatus.SC_MOVED_TEMPORARILY:
+							if (postResponse.containsHeader("Location"))
+							{
+								mappingLocationURI = postResponse.getHeaders("Location")[0].getValue();
+								logger.debug("Location of data: {}", mappingLocationURI);
+								if (mappingLocationURI != null && !mappingLocationURI.equals("http://www.uniprot.org/502.htm"))
+								{
+									done = true;
+								}
+								else
+								{
+									logger.warn("Response did not contain data.");
+								}
+							}
+							else
+							{
+								logger.warn("Status was {}, \"Location\" header was not prsent. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
+							}
+							break;
+						default:
+							logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",postResponse.getStatusLine().getStatusCode(), postResponse.getStatusLine());
+							break;
+					}
+					attemptCount++;
+
+				}
+				if (attemptCount > this.maxAttemptCount)
+				{
+					logger.error("Reached max attempt count! No more attempts.");
+					done = true;
+				}
+				else
+				{
+					if (attemptCount < this.maxAttemptCount && ! done)
+					{
+						logger.info("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+						Thread.sleep(Duration.ofSeconds(5).toMillis());
+					}
 				}
 			}
 		}
