@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -85,7 +86,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			}
 			mapToEnum.put(s, this);
 		}
-//		
+		
 		public String getUniprotName()
 		{
 			return this.uniprotName;
@@ -284,14 +285,24 @@ public class UniprotFileRetreiver extends FileRetriever
 						.build();
 				post.setEntity(attachment);
 				
-				location = this.attemptPostToUniprot(post);
+				try
+				{
+					location = this.attemptPostToUniprot(post);
+				}
+				catch (NoHttpResponseException e)
+				{
+					// If we don't catch this here, but let it go to "catch (IOException e)" in the outer try-block,
+					// then we won't be able to retry. Catching it here lets us continue processing: increment the attempt counter, and loop through again.
+					logger.error("No HTTP Response! Message: {}", e.getMessage());
+					e.printStackTrace();
+				}
 				attemptCount++;
 				if (location == null)
 				{
 					if (attemptCount > 0 && attemptCount < maxAttemptCount)
 					{
 						Random r = new Random(System.nanoTime());
-						long delay = (long) (1000 + (attemptCount * r.nextFloat()));
+						long delay = (long) (3000 + (attemptCount * r.nextFloat()));
 						logger.debug("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
 						Thread.sleep( delay );
 					}
@@ -363,28 +374,19 @@ public class UniprotFileRetreiver extends FileRetriever
 				logger.error("We could not determine the location of the data, file was not downloaded.");
 			}
 		}
-		catch (URISyntaxException e)
+		catch (URISyntaxException | UnsupportedEncodingException | ClientProtocolException | InterruptedException e)
 		{
-			e.printStackTrace();
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClientProtocolException e)
-		{
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
-		}
-		catch (InterruptedException e)
-		{
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		catch (Exception e)
 		{
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 	}
