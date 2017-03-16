@@ -8,11 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -93,14 +90,7 @@ public class CrossReferenceReporter
 		@Override
 		public int compareTo(ReportMap<K, V> o)
 		{
-			// First we have to check if we have any nulls in *this* map.
-//			for (K key : this.keySet().stream().filter(k -> this.get(k) == null && o.get(k) != null).collect(Collectors.toList()))
-//			{
-//				// If there is a key in this map that has no value, but there IS a value in the other, then that other map is *immediately* "greater" than this one.
-//				return -1;
-//			}
-			
-			// Now, we will need to check key by key.
+			// we will need to check key-by-key.
 			for (K key : this.keySet().stream().sorted((Comparator<? super K>) reportKeysComparator).collect(Collectors.toList()))
 			{
 				// if we found the Grand Total, it is ALWAYS greater (should appear near the end of the report).
@@ -116,35 +106,15 @@ public class CrossReferenceReporter
 				
 				if (o.get(key) != null && o.get(key).contains("Subtotal"))
 					return -1;
+
+				// Ok let's compare non subtotal/grand total keys. Use the ALT sort value in cases where *key* maps to NULL (that's what it's there for!)
+				String leftValue = this.get(key) != null ? this.get(key) : this.get(REPORT_KEYS.ALT_SORT_VALUE) ;
+				String rightValue = o.get(key) != null ? o.get(key) : o.get(REPORT_KEYS.ALT_SORT_VALUE) ;
 				
-				// If *this* has a value for key and the other does not have a value for key... 
-				int compareResult = 0;
-				if (this.get(key) !=null && o.get(key) == null)
-				{
-					compareResult = reportRowComparator.compare(this.get(key), o.get(REPORT_KEYS.ALT_SORT_VALUE));
-					if (compareResult != 0)
-					{
-						return compareResult;
-					}
-				}
-				
-				if (o.get(key) !=null && this.get(key) == null)
-				{
-					compareResult = reportRowComparator.compare(this.get(REPORT_KEYS.ALT_SORT_VALUE), o.get(key));
-					if (compareResult != 0)
-					{
-						return compareResult;
-					}
-				}
-				
-				compareResult = reportRowComparator.compare(this.get(key), o.get(key));
-				if (compareResult != 0)
-				{
-					return compareResult;
-				}
+				return reportRowComparator.compare(leftValue, rightValue);
 			}
-			
-			return 0;
+			// If the function STILL hasn't reutnred by this point, it means that THIS had no keys, so it is "less than" the other map.
+			return -1;
 		}
 	}
 
@@ -267,7 +237,8 @@ public class CrossReferenceReporter
 				map.put(REPORT_KEYS.OLD_REF_DB, oldRefDBName);
 				map.put(REPORT_KEYS.OLD_OBJECT_TYPE, oldObjectType);
 				map.put(REPORT_KEYS.OLD_QUANTITY, String.valueOf(oldReport.get(oldRefDBName).get(oldObjectType)));
-				map.put(REPORT_KEYS.ALT_SORT_VALUE, oldRefDBName);
+				// prepend with 1 if this is a subtotal, to force the alt sort value to be larger, and thus appear further down the list.
+				map.put(REPORT_KEYS.ALT_SORT_VALUE, (oldObjectType.contains("Subtotal") ? "1":"0")+oldRefDBName);
 				// need to make sure it's actually in the new report.
 				if (newReport.containsKey(oldRefDBName))
 				{
@@ -300,13 +271,13 @@ public class CrossReferenceReporter
 		}
 		// Once that's done, we should go through the NEW report and add in any refdbs/objecttypes that weren't in oldReport
 		// for all ref db names in the new report that are not in the old report.
-		for (String newRefDBName : newReport.keySet().stream().filter( k -> !oldReport.containsKey(k)).sorted(this.reportRowComparator).collect(Collectors.toList()))
+		for (String newRefDBName : newReport.keySet().stream().filter( k -> !oldReport.containsKey(k)).sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String newObjectType : newReport.get(newRefDBName).keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+			for (String newObjectType : newReport.get(newRefDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 			{
 				Map<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
 				map.put(REPORT_KEYS.NEW_OBJECT_TYPE, newObjectType);
-				map.put(REPORT_KEYS.ALT_SORT_VALUE, newRefDBName);
+				map.put(REPORT_KEYS.ALT_SORT_VALUE, (newObjectType.contains("Subtotal") ? "1" : "0")+newRefDBName);
 				map.put(REPORT_KEYS.NEW_REF_DB, newRefDBName);
 				map.put(REPORT_KEYS.NEW_QUANTITY, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
 				map.put(REPORT_KEYS.DIFFERENCE, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
@@ -398,12 +369,9 @@ public class CrossReferenceReporter
 	
 	public String printReport() throws SQLException
 	{
-		// Guide for Formatter syntax in Java: http://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax
-		//
 		// I really wish there was some modern, well-supported library that could do table formatting. It's not hard to write, but I don't really 
 		// want to write one myself.
 		
-
 		int refDBNameMaxWidth = 0;
 		int objectTypeMaxWidth = 0;
 		int quantityMaxWidth = 0;
@@ -435,12 +403,13 @@ public class CrossReferenceReporter
 			}
 		}
 		quantityMaxWidth = Math.max(quantityMaxWidth, "Quantity".length());
+		// Guide for Formatter syntax in Java: http://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax
 		pstream.printf(" | %1$-"+refDBNameMaxWidth+"s | %2$-"+objectTypeMaxWidth+"s | %3$"+quantityMaxWidth+"s | \n", "Database Name", "Object Type", "Quantity");
 		pstream.print("--------------------------------------------------------------------------------------------------------\n");
 
-		for (String refDBName : this.reportMap.keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+		for (String refDBName : this.reportMap.keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String objectType : this.reportMap.get(refDBName).keySet().stream().sorted(this.reportRowComparator).collect(Collectors.toList()))
+			for (String objectType : this.reportMap.get(refDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 			{
 				String quantity = String.valueOf(this.reportMap.get(refDBName).get(objectType));
 				pstream.printf(" | %1$-"+refDBNameMaxWidth+"s | %2$-"+objectTypeMaxWidth+"s | %3$"+quantityMaxWidth+"s | \n", refDBName , !refDBName.contains("Grand Total") ? objectType : "", quantity);		
