@@ -12,16 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
 
 public class CrossReferenceReporter
 {
 	private MySQLAdaptor dbAdapter;
-	private Logger logger = LogManager.getLogger();
-	
-	private Map<String,Map<String,Integer>> reportMap = new HashMap<String, Map<String,Integer>>();
+
+	/**
+	 * This comparator is used for comparing two REPORT_KEYS. It just compares them based on sortOrder.
+	 */
 	private Comparator<REPORT_KEYS> reportKeysComparator = new Comparator<REPORT_KEYS>()
 		{
 			@Override
@@ -31,6 +30,9 @@ public class CrossReferenceReporter
 			}
 		};
 	
+	/**
+	 * This comparator is used to compare rows in a report. It ensures that "Subtotal" and "Grand Total" lines appear "lower down" in the report.
+	 */
 	protected static Comparator<String> reportRowComparator = new Comparator<String>()
 		{
 			@Override
@@ -62,6 +64,11 @@ public class CrossReferenceReporter
 			}
 		};
 	
+	/**
+	 * Keys for the columns of the report.
+	 * @author sshorser
+	 *
+	 */
 	public enum REPORT_KEYS
 	{
 		NEW_REF_DB(0), OLD_REF_DB(1), NEW_OBJECT_TYPE(2), DIFFERENCE(3), OLD_OBJECT_TYPE(4), NEW_QUANTITY(5), OLD_QUANTITY(6), ALT_SORT_VALUE(8);
@@ -73,12 +80,23 @@ public class CrossReferenceReporter
 			this.sortOrder = i;
 		}
 		
+		/**
+		 * Sort order can be used to determine what order to process the keys in.
+		 * @return
+		 */
 		public int getSortOrder()
 		{
 			return this.sortOrder;
 		}
 	}
-		
+	
+	/**
+	 * A specialized Map that is keyed by REPORT_KEYS and is comparable for the purpose of generating reports.
+	 * @author sshorser
+	 *
+	 * @param <K>
+	 * @param <V>
+	 */
 	public class ReportMap<K extends REPORT_KEYS, V extends String> extends HashMap<K, V> implements Comparable<ReportMap<K, V>>
 	{
 		/**
@@ -214,17 +232,25 @@ public class CrossReferenceReporter
 		this.dbAdapter = adaptor;
 	}
 	
+	/**
+	 * Return the empty string if the input is null. I think it's cleaner to call function than use "?:" SO MANY times.
+	 * @param s
+	 * @return
+	 */
 	private String emptyStringIfNull(String s)
 	{
 		return s != null ? s : "";
 	}
 	
-	public String printReportWithDiffs(Map<String,Map<String,Integer>> oldReport) throws SQLException
+	/**
+	 * Generates a report that shows differences between two cross-reference reports.
+	 * @param oldReport - An older report.
+	 * @param newReport - A report generated after oldReport.
+	 * @return The diff report, as a string.
+	 * @throws SQLException
+	 */
+	public String printReportWithDiffs(Map<String,Map<String,Integer>> oldReport, Map<String,Map<String,Integer>> newReport) throws SQLException
 	{
-		//ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
-		
-		Map<String,Map<String,Integer>> newReport = this.createReportMap();
-		
 		//printing the diff in-place is probably too hard, so maybe create an intermediate data structure and then sort/print THAT. 
 		//Intermediate structure: a list of Maps with the following keys: newRefDB, oldRefDB, newObjectType, oldObjectType, newQuantity, oldQuantity, diff.
 		//first, we need to build this thing.
@@ -328,8 +354,9 @@ public class CrossReferenceReporter
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream pstream = new PrintStream(baos);
 		
-		pstream.printf(" | %1$-"+oldRefDBNameMaxWidth+"s | %2$-"+oldObjectTypeMaxWidth+"s | %3$"+oldQuantityMaxWidth+"s | %4$"+diffMaxWidth+"s | %5$-"+newRefDBNameMaxWidth+"s | %6$-"+newObjectTypeMaxWidth+"s | %7$"+newQuantityMaxWidth+"s |\n", "Pre-AddLinks DB Name", "Object Type", "Quantity", "Difference", "Post-AddLinks DB Name", "Object Type", "Quantity");
-		// the "3*7" is because there are three extra characters (padding: " | ") for 7 columns.
+		pstream.printf(" | %1$-"+oldRefDBNameMaxWidth+"s | %2$-"+oldObjectTypeMaxWidth+"s | %3$"+oldQuantityMaxWidth+"s | %4$"+diffMaxWidth+"s | %5$-"+newRefDBNameMaxWidth+"s | %6$-"+newObjectTypeMaxWidth+"s | %7$"+newQuantityMaxWidth+"s |\n",
+						"Pre-AddLinks DB Name", "Object Type", "Quantity", "Difference", "Post-AddLinks DB Name", "Object Type", "Quantity");
+		// the "3*7" is because there are three extra characters (padding: " | ") for 7 columns, the +2 is for leading/trailing chars of the header line.
 		pstream.print( new String(new char[lineWidth + (3*7) + 2]).replace("\0", "-") + "\n" );
 		for (List<String> row : rows)
 		{
@@ -342,14 +369,32 @@ public class CrossReferenceReporter
 		return baos.toString();
 	}
 	
-	private Map<String,Map<String,Integer>> createReportMap() throws SQLException
+	/**
+	 * Generates a report that shows differences between two cross-reference reports. The diff will be between a new report that is generated when this function is called,
+	 * and oldReport.
+	 * @param oldReport - An older report to compare to the *current* state of the database.
+	 * @return The diff report, as a string.
+	 * @throws SQLException
+	 */
+	public String printReportWithDiffs(Map<String,Map<String,Integer>> oldReport) throws SQLException
+	{
+		Map<String,Map<String,Integer>> newReport = this.createReportMap();
+		return this.printReportWithDiffs(oldReport, newReport);
+	}
+	
+	/**
+	 * Queries the database a produces a Map containing information about the current state of cross-references.
+	 * @return Returns the data as a Map. You can use this to give to printReportWithDiffs later.
+	 * @throws SQLException
+	 */
+	public Map<String,Map<String,Integer>> createReportMap() throws SQLException
 	{
 		Map<String,Map<String,Integer>> report = new HashMap<String, Map<String,Integer>>();
 		ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
 		while (rs.next())
 		{
-			String refDBName = rs.getString(1) != null ? rs.getString(1) : "Grand Total:";//rs.getString(1);
-			String objectType = rs.getString(2) != null ? rs.getString(2) : "    Subtotal:" ; //rs.getString(2);
+			String refDBName = rs.getString(1) != null ? rs.getString(1) : "Grand Total:";
+			String objectType = rs.getString(2) != null ? rs.getString(2) : "    Subtotal:";
 			String quantity = rs.getString(3);
 			
 			if (report.containsKey(refDBName))
@@ -366,57 +411,77 @@ public class CrossReferenceReporter
 		return report;
 	}
 	
-	
-	public String printReport() throws SQLException
+	/**
+	 * Formats and prints an existing report map.
+	 * @param reportMap - The report, as a map, to print.
+	 * @return The report, as a formatted string.
+	 */
+	public String printReport(Map<String,Map<String,Integer>> reportMap)
 	{
-		// I really wish there was some modern, well-supported library that could do table formatting. It's not hard to write, but I don't really 
-		// want to write one myself.
-		
 		int refDBNameMaxWidth = 0;
 		int objectTypeMaxWidth = 0;
 		int quantityMaxWidth = 0;
-		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream pstream = new PrintStream(baos);
 		
-		
-		ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
-		while (rs.next())
+		for (String dbName : reportMap.keySet())
 		{
-			String refDBName = rs.getString(1) != null ? rs.getString(1) : "Grand Total:";//rs.getString(1);
-			String objectType = rs.getString(2) != null ? rs.getString(2) : "    Subtotal:" ; //rs.getString(2);
-			String quantity = rs.getString(3);
-			
-			refDBNameMaxWidth = Math.max(refDBNameMaxWidth, refDBName.length());
-			objectTypeMaxWidth = Math.max(objectTypeMaxWidth, objectType.length());
-			quantityMaxWidth = Math.max(quantityMaxWidth, quantity.length());
-			
-			if (this.reportMap.containsKey(refDBName))
+			for (String objectType : reportMap.get(dbName).keySet())
 			{
-				this.reportMap.get(refDBName).put(objectType, Integer.valueOf(quantity));
-			}
-			else
-			{
-				Map<String, Integer> map = new HashMap<String,Integer>();
-				map.put(objectType, Integer.valueOf(quantity));
-				this.reportMap.put(refDBName, map);
+				refDBNameMaxWidth = Math.max(dbName.length(), refDBNameMaxWidth);
+				objectTypeMaxWidth = Math.max(objectType.length(), objectTypeMaxWidth);
+				quantityMaxWidth = Math.max(String.valueOf(reportMap.get(dbName).get(objectType)).length(), quantityMaxWidth);
 			}
 		}
+		
 		quantityMaxWidth = Math.max(quantityMaxWidth, "Quantity".length());
+		// I really wish there was some modern, well-supported library that could do table formatting. It's not hard to write, but I don't really 
+		// want to write one myself.
 		// Guide for Formatter syntax in Java: http://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax
 		pstream.printf(" | %1$-"+refDBNameMaxWidth+"s | %2$-"+objectTypeMaxWidth+"s | %3$"+quantityMaxWidth+"s | \n", "Database Name", "Object Type", "Quantity");
 		pstream.print("--------------------------------------------------------------------------------------------------------\n");
 
-		for (String refDBName : this.reportMap.keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
+		for (String refDBName : reportMap.keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String objectType : this.reportMap.get(refDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
+			for (String objectType : reportMap.get(refDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 			{
-				String quantity = String.valueOf(this.reportMap.get(refDBName).get(objectType));
+				String quantity = String.valueOf(reportMap.get(refDBName).get(objectType));
 				pstream.printf(" | %1$-"+refDBNameMaxWidth+"s | %2$-"+objectTypeMaxWidth+"s | %3$"+quantityMaxWidth+"s | \n", refDBName , !refDBName.contains("Grand Total") ? objectType : "", quantity);		
 			}
 		}
 		
 		return baos.toString();
 	}
-
+	
+	/**
+	 * Queries the database and produces a report about the current state of cross-references.
+	 * @return The report, as a string.
+	 * @throws SQLException
+	 */
+	public String printReport() throws SQLException
+	{
+		Map<String,Map<String,Integer>> reportMap = new HashMap<String, Map<String,Integer>>();
+		ResultSet rs = this.dbAdapter.executeQuery(this.reportSQL, null);
+		while (rs.next())
+		{
+			// If there is no object type, it means this is the Grand Total line (because the SQL query uses ROLL UP and so there will be a NULL value in this field for the roll-up summary)
+			String refDBName = rs.getString(1) != null ? rs.getString(1) : "Grand Total:";
+			// If there is no ref db name, it means this is a subtotal line (again - roll-up will put NULL in the field when it is being summarized)
+			String objectType = rs.getString(2) != null ? rs.getString(2) : "    Subtotal:" ;
+			String quantity = rs.getString(3);
+			
+			if (reportMap.containsKey(refDBName))
+			{
+				reportMap.get(refDBName).put(objectType, Integer.valueOf(quantity));
+			}
+			else
+			{
+				Map<String, Integer> map = new HashMap<String,Integer>();
+				map.put(objectType, Integer.valueOf(quantity));
+				reportMap.put(refDBName, map);
+			}
+		}
+		
+		return this.printReport(reportMap);
+	}
 }
