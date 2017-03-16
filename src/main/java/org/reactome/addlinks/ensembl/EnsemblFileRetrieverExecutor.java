@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -17,14 +17,15 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidClassException;
+import org.reactome.addlinks.CustomLoggable;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
 
-public class EnsemblFileRetrieverExecutor
+public class EnsemblFileRetrieverExecutor implements CustomLoggable
 {
-	private static final Logger logger = LogManager.getLogger();
+	private Logger logger;
 	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
@@ -32,6 +33,11 @@ public class EnsemblFileRetrieverExecutor
 	private ReferenceObjectCache objectCache;
 
 	private MySQLAdaptor dbAdapter;
+	
+	public EnsemblFileRetrieverExecutor()
+	{
+		this.logger = this.createLogger("EnsemblFileRetrieverExecutor", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+	}
 	
 	public void execute() throws Exception
 	{
