@@ -15,9 +15,13 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
+import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 
 public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,List<String>>>
 {
+	private static ReferenceObjectCache objectCache;
+	
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
@@ -41,6 +45,11 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
 	
+		if (objectCache == null)
+		{
+			objectCache = new ReferenceObjectCache(this.adapter, true);
+		}
+		
 		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 		Map<Long,MySQLAdaptor> adapterPool = Collections.synchronizedMap( new HashMap<Long,MySQLAdaptor>() );
 
@@ -165,14 +174,25 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 				{
 					if (!this.testMode)
 					{
+						// The string had a species-part.
 						if (parts[2] != null && !parts[2].trim().equals(""))
 						{
-							// The string had a species-part.
-							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							String targetRefDBName = this.targetRefDB;
+							// If target is ENSEMBL, we need to figure out *which* ENSEMBL target database to use.
+							if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
+							{
+								String speciesName = objectCache.getSpeciesNamesByID().get(parts[2]).get(0);
+								// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
+								// Since we're not mapping to Transcript, we don't need to worry about that here.
+								targetRefDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")
+													+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
+							}
+							
+							this.refCreator.createIdentifier(parts[0], parts[1], targetRefDBName, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 						}
+						// The string did NOT have a species-part.
 						else
 						{
-							// The string did NOT have a species-part.
 							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
 						}
 					}
