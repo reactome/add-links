@@ -360,10 +360,9 @@ public class CrossReferenceReporter
 		pstream.print( new String(new char[lineWidth + (3*7) + 2]).replace("\0", "-") + "\n" );
 		for (List<String> row : rows)
 		{
-			pstream.printf(" | %1$-"+oldRefDBNameMaxWidth+"s | %2$-"+oldObjectTypeMaxWidth+"s | %3$"+oldQuantityMaxWidth+"s | %4$"+diffMaxWidth+"s | %5$-"+newRefDBNameMaxWidth+"s | %6$-"+newObjectTypeMaxWidth+"s | %7$"+newQuantityMaxWidth+"s | %8$s\n"
+			pstream.printf(" | %1$-"+oldRefDBNameMaxWidth+"s | %2$-"+oldObjectTypeMaxWidth+"s | %3$"+oldQuantityMaxWidth+"s | %4$"+diffMaxWidth+"s | %5$-"+newRefDBNameMaxWidth+"s | %6$-"+newObjectTypeMaxWidth+"s | %7$"+newQuantityMaxWidth+"s | \n"
 							, emptyStringIfNull(row.get(0)), emptyStringIfNull(row.get(1)), emptyStringIfNull(row.get(2)),
-							emptyStringIfNull(row.get(3)), emptyStringIfNull(row.get(4)), emptyStringIfNull(row.get(5)), emptyStringIfNull(row.get(6)),
-							emptyStringIfNull(row.get(7) ));
+							emptyStringIfNull(row.get(3)), emptyStringIfNull(row.get(4)), emptyStringIfNull(row.get(5)), emptyStringIfNull(row.get(6)));
 		}
 		
 		return baos.toString();
