@@ -110,7 +110,8 @@ public class AddLinks
 									: false;
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		CrossReferenceReporter reporter = new CrossReferenceReporter(this.dbAdapter);
-		reporter.printReport();
+		Map<String, Map<String,Integer>> preAddLinksReport = reporter.createReportMap();
+		logger.info(reporter.printReport(preAddLinksReport));
 		
 		if (filterRetrievers)
 		{
@@ -222,7 +223,14 @@ public class AddLinks
 		this.createReferences(personID, dbMappings);
 
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		reporter.printReport();
+		//reporter.printReport();
+		Map<String, Map<String,Integer>> postAddLinksReport = reporter.createReportMap();
+		logger.info(reporter.printReport(postAddLinksReport));
+		
+		logger.info("Differences");
+		
+		logger.info(reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport));
+		
 		logger.info("Process complete.");
 	}
 
@@ -531,7 +539,7 @@ public class AddLinks
 			EnsemblFileAggregator ensemblAggregator = new EnsemblFileAggregator(speciesID, dbNames, "/tmp/addlinks-downloaded-files/ensembl/");
 			ensemblAggregator.createAggregateFile();
 			
-			EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor("EnsemblAggregateFileProcessor");
+			EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor("file-processors/EnsemblAggregateFileProcessor");
 			aggregateProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/ensembl/"+ "ensembl_p2xref_mapping."+speciesID+".csv") );
 			aggregateProcessor.setMode(EnsemblAggregateProcessingMode.XREF);
 			Map<String, Map<String, List<String>>> xrefMapping = aggregateProcessor.getIdMappingsFromFile();
