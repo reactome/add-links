@@ -237,8 +237,8 @@ public class CrossReferenceReporter
 				map.put(REPORT_KEYS.OLD_REF_DB, oldRefDBName);
 				map.put(REPORT_KEYS.OLD_OBJECT_TYPE, oldObjectType);
 				map.put(REPORT_KEYS.OLD_QUANTITY, String.valueOf(oldReport.get(oldRefDBName).get(oldObjectType)));
-				// prepend with 1 if this is a subtotal, to force the alt sort value to be larger, and thus appear further down the list.
-				map.put(REPORT_KEYS.ALT_SORT_VALUE, (oldObjectType.contains("Subtotal") ? "1":"0")+oldRefDBName);
+				// append with 1 if this is a subtotal, to force the alt sort value to be larger, and thus appear further down the list.
+				map.put(REPORT_KEYS.ALT_SORT_VALUE, oldRefDBName+(oldObjectType.contains("Subtotal") ? "1":"0"));
 				// need to make sure it's actually in the new report.
 				if (newReport.containsKey(oldRefDBName))
 				{
@@ -277,7 +277,7 @@ public class CrossReferenceReporter
 			{
 				Map<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
 				map.put(REPORT_KEYS.NEW_OBJECT_TYPE, newObjectType);
-				map.put(REPORT_KEYS.ALT_SORT_VALUE, (newObjectType.contains("Subtotal") ? "1" : "0")+newRefDBName);
+				map.put(REPORT_KEYS.ALT_SORT_VALUE, newRefDBName+(newObjectType.contains("Subtotal") ? "1" : "0"));
 				map.put(REPORT_KEYS.NEW_REF_DB, newRefDBName);
 				map.put(REPORT_KEYS.NEW_QUANTITY, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
 				map.put(REPORT_KEYS.DIFFERENCE, String.valueOf(newReport.get(newRefDBName).get(newObjectType)));
