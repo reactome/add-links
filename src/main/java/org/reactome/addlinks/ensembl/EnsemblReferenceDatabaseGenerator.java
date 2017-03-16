@@ -80,6 +80,7 @@ public final class EnsemblReferenceDatabaseGenerator
 			NodeList nodeList = (NodeList) EnsemblReferenceDatabaseGenerator.pathToSpeciesNames.evaluate(source, XPathConstants.NODESET);
 			if (nodeList.getLength() > 0)
 			{
+				logger.info("{} ENSEMBL species to attempt to create refDBs for.",nodeList.getLength());
 				for (int i = 0 ; i < nodeList.getLength() ; i ++)
 				{
 					String speciesName = nodeList.item(i).getTextContent();
@@ -91,8 +92,11 @@ public final class EnsemblReferenceDatabaseGenerator
 						//and only create a ReferenceDatbase object when it's discovered that one is needed.
 						String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
 						logger.debug("Adding an ENSEMBL ReferenceDatabase for species: {} with accessURL: {}", speciesName, speciesURL);
-						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, speciesName, speciesName.replaceAll(" ", "_"));
-					} catch (Exception e)
+						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN");
+						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE");
+						//EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_TRANSCRIPT");
+					}
+					catch (Exception e)
 					{
 						logger.error("An error occurred while trying to create an Ensembl species-specific URL: {}",e.getMessage());
 						e.printStackTrace();

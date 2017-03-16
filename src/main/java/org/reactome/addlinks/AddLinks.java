@@ -41,6 +41,7 @@ import org.reactome.addlinks.db.CrossReferenceReporter;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
+import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor.EnsemblAggregateProcessingMode;
@@ -108,11 +109,6 @@ public class AddLinks
 		boolean filterRetrievers = applicationProps.containsKey("filterFileRetrievers") && applicationProps.getProperty("filterFileRetrievers") != null
 									? Boolean.valueOf(applicationProps.getProperty("filterFileRetrievers"))
 									: false;
-		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		CrossReferenceReporter reporter = new CrossReferenceReporter(this.dbAdapter);
-		Map<String, Map<String,Integer>> preAddLinksReport = reporter.createReportMap();
-		logger.info(reporter.printReport(preAddLinksReport));
-		
 		if (filterRetrievers)
 		{
 			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
@@ -120,7 +116,12 @@ public class AddLinks
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases();
-		
+
+		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
+		CrossReferenceReporter reporter = new CrossReferenceReporter(this.dbAdapter);
+		Map<String, Map<String,Integer>> preAddLinksReport = reporter.createReportMap();
+		logger.info("\n"+(reporter.printReport(preAddLinksReport)));
+
 		ExecutorService execSrvc = Executors.newFixedThreadPool(5);
 		
 		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
@@ -225,11 +226,11 @@ public class AddLinks
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		//reporter.printReport();
 		Map<String, Map<String,Integer>> postAddLinksReport = reporter.createReportMap();
-		logger.info(reporter.printReport(postAddLinksReport));
+		logger.info("\n"+reporter.printReport(postAddLinksReport));
 		
 		logger.info("Differences");
 		
-		logger.info(reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport));
+		logger.info("\n"+reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport));
 		
 		logger.info("Process complete.");
 	}
@@ -663,6 +664,17 @@ public class AddLinks
 				logger.error("Error while trying to create ReferenceDatabase record: {}", e.getMessage());
 				e.printStackTrace();
 			}
+		}
+		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
+		try
+		{
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases();
+		}
+		catch (Exception e)
+		{
+			logger.error("Error while creating ENSEMBL species-specific ReferenceDatabase objects: {}", e.getMessage());
+			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
