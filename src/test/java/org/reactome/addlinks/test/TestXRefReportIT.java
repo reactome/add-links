@@ -12,7 +12,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.powermock.reflect.Whitebox;
+//import org.powermock.reflect.Whitebox;
 import org.reactome.addlinks.db.CrossReferenceReporter;
 import org.reactome.addlinks.db.CrossReferenceReporter.REPORT_KEYS;
 import org.reactome.addlinks.db.CrossReferenceReporter.ReportMap;
@@ -48,8 +48,8 @@ public class TestXRefReportIT
 		CrossReferenceReporter reporter =  new CrossReferenceReporter(dbAdapter);
 		
 		//CrossReferenceReporter reporter = PowerMock.createPartialMock(CrossReferenceReporter.class, "createReportMap");
-		Map<String,Map<String,Integer>> reportMap = Whitebox.invokeMethod(reporter, "createReportMap");
-		
+		//Map<String,Map<String,Integer>> reportMap = Whitebox.invokeMethod(reporter, "createReportMap");
+		Map<String,Map<String,Integer>> reportMap = reporter.createReportMap();
 		//reportMap.remove("ENSEMBL");
 		
 		CrossReferenceReporter reporter2 =  new CrossReferenceReporter(new MySQLAdaptor(dbAdapter.getDBHost(), "test_reactome_60_post_orthoinference", dbAdapter.getDBUser(), dbAdapter.getDBPwd(), dbAdapter.getDBPort()));
