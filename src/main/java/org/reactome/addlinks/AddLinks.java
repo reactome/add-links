@@ -625,26 +625,32 @@ public class AddLinks
 			
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
 			String url = null, accessUrl = null;
-			List<String> names = new ArrayList<String>();
+			List<String> aliases = new ArrayList<String>();
+			String primaryName = null;
 			for(String attributeKey : refDB.keySet())
 			{
 				switch (attributeKey)
 				{
-					case "Name":
+					case "PrimaryName":
 						if (refDB.get(attributeKey) instanceof String )
 						{
-							names.add((String) refDB.get(attributeKey));
-						}
-						else if (refDB.get(attributeKey) instanceof List )
-						{
-							names.addAll((Collection<? extends String>) refDB.get(attributeKey));
+							primaryName = (String) refDB.get(attributeKey);
 						}
 						else
 						{
 							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
 						}
 						break;
-	
+					case "Aliases":
+						if (refDB.get(attributeKey) instanceof List )
+						{
+							aliases.addAll((Collection<? extends String>) refDB.get(attributeKey));
+						}
+						else
+						{
+							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
+						}
+						break;
 					case "AccessURL":
 						accessUrl = (String) refDB.get(attributeKey) ;
 						break;
@@ -657,7 +663,7 @@ public class AddLinks
 			}
 			try
 			{
-				creator.createReferenceDatabase(url, accessUrl, (String[]) names.toArray(new String[names.size()]) );
+				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, (String[]) aliases.toArray(new String[aliases.size()]) );
 			}
 			catch (Exception e)
 			{
