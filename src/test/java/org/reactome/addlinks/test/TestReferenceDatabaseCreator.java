@@ -17,6 +17,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 
 
@@ -298,8 +299,9 @@ public class TestReferenceDatabaseCreator
 		{
 			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
 			EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
-			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases();
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache );
 		}
 		catch (Exception e)
 		{

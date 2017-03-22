@@ -674,7 +674,7 @@ public class AddLinks
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 		try
 		{
-			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases();
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 		}
 		catch (Exception e)
 		{

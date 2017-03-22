@@ -125,16 +125,26 @@ public class ReferenceDatabaseCreator
 				// This is tricky: If there is an existing ReferenceDatabase that has a name match, we should probably ADD the other names to that ReferenceDatabase,
 				// Rather than create new ones. Unless the URLs don't match then maybe we should create new ReferenceDatabases? This needsa bit more thought.
 				@SuppressWarnings("unchecked")
-				Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", name);
+				Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.accessUrl, "=", accessUrl);
 				
 				// Add to the list if the name is not yet in the database.
-				if (preexistingReferenceDBs.size() == 0)
+				if (preexistingReferenceDBs.size() == 0 /*&& preexistingReferenceDBs.stream().map( inst -> {
+								try
+								{
+									return (inst.getAttributeValuesList(ReactomeJavaConstants.name));
+								}
+								catch (Exception e)
+								{
+									e.printStackTrace();
+								}
+								return null;
+							}  ).reduce(new ArrayList<String>(), (a,b) -> { a.addAll(b); return a; } ).contains(name)*/ )
 				{
 					namesNotYetInDB.add(name);
 				}
 				else
 				{
-					logger.info("It looks like there were already {} Reference Databases with the name {}, so no new Reference Databases with this name will be created.", preexistingReferenceDBs.size(), name);
+					logger.info("It looks like there were already {} Reference Databases with the name {} for accessURL {}, so no new Reference Databases with *this* name will be created.", preexistingReferenceDBs.size(), name, accessUrl);
 					// I really don't expect preexistingReferenceDBs to have more than 1 element, but just in case it does...
 					instancesInDB.addAll(preexistingReferenceDBs);
 				}
@@ -155,6 +165,7 @@ public class ReferenceDatabaseCreator
 				newReferenceDB.setDbAdaptor(this.adapter);
 				InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
 				this.adapter.storeInstance(newReferenceDB);
+				logger.info("New ReferenceDatabase has been created: {}", newReferenceDB);
 			}
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
 			else
@@ -166,10 +177,10 @@ public class ReferenceDatabaseCreator
 					// the names to add: everything that is in the input parameter "names" but not in "preexistingNames"
 					List<String> namesToAdd = (Arrays.asList(names)).stream().filter(p -> !preexistingNames.contains(p)).collect(Collectors.toList());
 					
-					for (String n : namesToAdd)
+					for (String name : namesToAdd)
 					{
-						logger.info("Adding the name {} to the existing ReferenceDatabase {}",n,preexistingRefDB);
-						preexistingRefDB.addAttributeValue(dbNameAttrib, n);
+						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB);
+						preexistingRefDB.addAttributeValue(dbNameAttrib, name);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
 					}
 				}

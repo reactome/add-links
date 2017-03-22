@@ -20,6 +20,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
@@ -33,6 +34,7 @@ import org.xml.sax.InputSource;
  */
 public final class EnsemblReferenceDatabaseGenerator
 {
+	private static final String ENSEMBL_URL = "http://www.ensembl.org";
 	private static final Logger logger = LogManager.getLogger();
 	private static ReferenceDatabaseCreator dbCreator;
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
@@ -63,7 +65,7 @@ public final class EnsemblReferenceDatabaseGenerator
 	}
 	
 	
-	public static void generateSpeciesSpecificReferenceDatabases() throws URISyntaxException, ClientProtocolException, IOException, XPathExpressionException, Exception
+	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) throws URISyntaxException, ClientProtocolException, IOException, XPathExpressionException, Exception
 	{
 		URI uri = new URI(EnsemblReferenceDatabaseGenerator.speciesURL);
 		HttpGet get = new HttpGet(uri );
@@ -91,9 +93,15 @@ public final class EnsemblReferenceDatabaseGenerator
 						//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
 						//and only create a ReferenceDatbase object when it's discovered that one is needed.
 						String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
-						logger.debug("Adding an ENSEMBL ReferenceDatabase for species: {} with accessURL: {}", speciesName, speciesURL);
-						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN");
-						EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE");
+						
+						// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
+						String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";
+						String oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_PROTEIN";
+						createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
+
+						newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE";
+						oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_GENE";
+						createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
 						//EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_TRANSCRIPT");
 					}
 					catch (Exception e)
@@ -106,6 +114,21 @@ public final class EnsemblReferenceDatabaseGenerator
 				}
 			}
 			
+		}
+	}
+
+
+	private static void createReferenceDB(ReferenceObjectCache objectCache, String speciesName, String speciesURL, String newDBName, String oldStyleDBName) throws Exception
+	{
+		if (objectCache.getRefDbNamesToIds().keySet().contains(oldStyleDBName))
+		{
+			logger.debug("Adding alias {} to existing ReferenceDatabase {} for species {} with accessURL: {}", newDBName, oldStyleDBName, speciesName, speciesURL);
+			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName, newDBName);
+		}
+		else
+		{
+			logger.debug("Adding an ENSEMBL ReferenceDatabase {} for species: {} with accessURL: {}", newDBName, speciesName, speciesURL);
+			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(ENSEMBL_URL, speciesURL, newDBName);
 		}
 	}
 
