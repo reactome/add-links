@@ -79,7 +79,14 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		{
 			for (String speciesID : mappings.keySet())
 			{
-				logger.info("Creating references for species {}", speciesID);
+				if (mappings.get(speciesID).keySet().size() > 0)
+				{
+					logger.info("Creating (up to) {} references for species {}", mappings.get(speciesID).keySet().size(), speciesID);
+				}
+				else
+				{
+					logger.info("No references to create for species {}", speciesID);
+				}
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
