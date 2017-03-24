@@ -11,6 +11,7 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaAttribute;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -27,12 +28,21 @@ import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 				org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator.class })
 public class TestReferenceDatabaseCreator
 {
-
+	
+	MySQLAdaptor adapter ; 
+	
+	@Before
+	public void setup() throws SQLException
+	{
+		if (adapter==null)
+		{
+			adapter=new MySQLAdaptor("localhost", "test_reactome_60_post_orthoinference","root","", 3306);
+		}
+	}
+	
 	@Test
 	public void testCreateRefDBWithAliases() throws SQLException, InvalidAttributeException, Exception
 	{
-		MySQLAdaptor adapter = null;
-		adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 		
 		String refDBName = "TestReferenceDatabase";
 		String refDBAlias1 = "TestRefDB_alias_1";
@@ -96,8 +106,6 @@ public class TestReferenceDatabaseCreator
 	@Test
 	public void testCreatePreexistingRefDBWithAliases() throws SQLException, InvalidAttributeException, Exception
 	{
-		MySQLAdaptor adapter = null;
-		adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 		
 		String refDBName = "TestReferenceDatabase";
 		String refDBAlias1 = "TestRefDB_alias_1";
@@ -164,8 +172,6 @@ public class TestReferenceDatabaseCreator
 	@Test
 	public void testCreateSimpleReferenceDatabase() throws SQLException, InvalidAttributeException, Exception
 	{
-		MySQLAdaptor adapter = null;
-		adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 		
 		String refDBName = "TestReferenceDatabase";
 		String refDBAlias = "TestRefDB";
@@ -228,8 +234,6 @@ public class TestReferenceDatabaseCreator
 	@Test
 	public void testPreexistingReferenceDatabaseCreation() throws SQLException, InvalidAttributeException, Exception
 	{
-		MySQLAdaptor adapter = null;
-		adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 		
 		String refDBName = "TestReferenceDatabase";
 		String refDBAlias = "TestRefDB";
@@ -294,10 +298,8 @@ public class TestReferenceDatabaseCreator
 	@Test
 	public void testEnsemblRefDBCreator() throws SQLException, InvalidAttributeException, Exception
 	{
-		MySQLAdaptor adapter = null;
 		try
 		{
-			adapter = new MySQLAdaptor("localhost", "test_reactome_58","root","", 3306);
 			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
 			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
 			EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
