@@ -56,8 +56,8 @@ public class ReferenceDatabaseCreator
 					List<String> names = (List<String>) refDBInst.getAttributeValuesList(ReactomeJavaConstants.name);
 					
 					// if primaryName is not already in use...
-					if (names==null || names.size() == 0
-						|| !(names.get(0).equals(primaryName)) )
+					if ( (names==null || names.size() == 0)
+						&& (names !=null && !names.get(0).equals(primaryName)) )
 					{
 						createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 					}
