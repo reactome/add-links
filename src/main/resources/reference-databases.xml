@@ -76,7 +76,12 @@
 		
 		<entry key="FlyBase">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry key="PrimaryName" value="FlyBase"/>
+				<entry key="PrimaryName" value="Flybase"/>
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>FlyBase</value>
+					</list>
+				</entry>
 				<entry key="URL" value="http://flybase.org" />
 				<entry key="AccessURL" value="http://flybase.org/.bin/fbidq.html?###ID###" />
 			</map>
