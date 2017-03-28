@@ -122,23 +122,11 @@ public class ReferenceDatabaseCreator
 			List<GKInstance> instancesInDB = new ArrayList<GKInstance>();
 			for (String name : names)
 			{
-				// This is tricky: If there is an existing ReferenceDatabase that has a name match, we should probably ADD the other names to that ReferenceDatabase,
-				// Rather than create new ones. Unless the URLs don't match then maybe we should create new ReferenceDatabases? This needsa bit more thought.
 				@SuppressWarnings("unchecked")
-				Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.accessUrl, "=", accessUrl);
+				Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
 				
 				// Add to the list if the name is not yet in the database.
-				if (preexistingReferenceDBs.size() == 0 /*&& preexistingReferenceDBs.stream().map( inst -> {
-								try
-								{
-									return (inst.getAttributeValuesList(ReactomeJavaConstants.name));
-								}
-								catch (Exception e)
-								{
-									e.printStackTrace();
-								}
-								return null;
-							}  ).reduce(new ArrayList<String>(), (a,b) -> { a.addAll(b); return a; } ).contains(name)*/ )
+				if (preexistingReferenceDBs.size() == 0  )
 				{
 					namesNotYetInDB.add(name);
 				}
@@ -179,7 +167,7 @@ public class ReferenceDatabaseCreator
 					
 					for (String name : namesToAdd)
 					{
-						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB);
+						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB + "( " + preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.name).toString() + " )");
 						preexistingRefDB.addAttributeValue(dbNameAttrib, name);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
 					}
