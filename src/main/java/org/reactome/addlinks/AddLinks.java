@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,7 +21,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -116,7 +113,8 @@ public class AddLinks
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases();
-
+		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
+		ReferenceObjectCache.clearAndRebuildAllCaches();
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		CrossReferenceReporter reporter = new CrossReferenceReporter(this.dbAdapter);
 		Map<String, Map<String,Integer>> preAddLinksReport = reporter.createReportMap();
@@ -625,26 +623,32 @@ public class AddLinks
 			
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
 			String url = null, accessUrl = null;
-			List<String> names = new ArrayList<String>();
+			List<String> aliases = new ArrayList<String>();
+			String primaryName = null;
 			for(String attributeKey : refDB.keySet())
 			{
 				switch (attributeKey)
 				{
-					case "Name":
+					case "PrimaryName":
 						if (refDB.get(attributeKey) instanceof String )
 						{
-							names.add((String) refDB.get(attributeKey));
-						}
-						else if (refDB.get(attributeKey) instanceof List )
-						{
-							names.addAll((Collection<? extends String>) refDB.get(attributeKey));
+							primaryName = (String) refDB.get(attributeKey);
 						}
 						else
 						{
 							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
 						}
 						break;
-	
+					case "Aliases":
+						if (refDB.get(attributeKey) instanceof List )
+						{
+							aliases.addAll((Collection<? extends String>) refDB.get(attributeKey));
+						}
+						else
+						{
+							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
+						}
+						break;
 					case "AccessURL":
 						accessUrl = (String) refDB.get(attributeKey) ;
 						break;
@@ -657,7 +661,7 @@ public class AddLinks
 			}
 			try
 			{
-				creator.createReferenceDatabase(url, accessUrl, (String[]) names.toArray(new String[names.size()]) );
+				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, (String[]) aliases.toArray(new String[aliases.size()]) );
 			}
 			catch (Exception e)
 			{
@@ -668,7 +672,7 @@ public class AddLinks
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 		try
 		{
-			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases();
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 		}
 		catch (Exception e)
 		{
