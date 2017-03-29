@@ -123,7 +123,7 @@ public class EnsemblBatchLookup  extends FileRetriever
 							if (!result.getWaitTime().equals(Duration.ZERO))
 							{
 								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
-								Thread.currentThread().wait(result.getWaitTime().toMillis());
+								Thread.sleep(result.getWaitTime().toMillis());
 							}
 							else
 							{

@@ -165,6 +165,21 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 				}
 			});
 		});
+		
+		// empty the pool.
+		for (Long k : adapterPool.keySet())
+		{
+			try
+			{
+				adapterPool.get(k).cleanUp();
+			} 
+			catch (Exception e)
+			{
+				logger.error("Could not clean up the database adapter: {}",e.getMessage());
+				throw new Error(e);
+			}
+		}
+		
 		thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 			if (newIdentifier != null)
 			{
@@ -184,7 +199,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 								String speciesName = objectCache.getSpeciesNamesByID().get(parts[2]).get(0);
 								// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 								// Since we're not mapping to Transcript, we don't need to worry about that here.
-								targetRefDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")
+								targetRefDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase()
 													+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
 							}
 							
