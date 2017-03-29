@@ -27,7 +27,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class FileRetriever implements DataRetriever {
@@ -38,7 +37,7 @@ public class FileRetriever implements DataRetriever {
 	private Duration timeout = Duration.ofSeconds(30);
 	private int numRetries = 1;
 	protected String retrieverName;
-	protected Logger logger = LogManager.getLogger();
+	protected Logger logger;
 	
 	
 	public FileRetriever()
@@ -53,9 +52,9 @@ public class FileRetriever implements DataRetriever {
 	 */
 	public FileRetriever(String retrieverName)
 	{
-		logger.debug("Setting retrieverName to {}", retrieverName);
+		//logger.trace("Setting retrieverName to {}", retrieverName);
 		this.setRetrieverName(retrieverName);
-		this.logger = this.createLogger(retrieverName, "RollingRandomAccessFile", this.retrieverName, true, Level.DEBUG, this.logger, "Data Retriever");
+		this.logger = this.createLogger(this.retrieverName, "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, this.logger, "Data Retriever");
 	}
 	
 	@Override
