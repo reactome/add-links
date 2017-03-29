@@ -83,6 +83,27 @@ public interface CustomLoggable
 	
 	default Logger createLogger(String logFileName, String oldAppenderName, String newAppenderName, boolean append, Level level, Logger oldLogger, String loggerContainerClassTypeName)
 	{
+//		String loggerName;
+//		if (oldLogger == null)
+//		{
+//			loggerName = newAppenderName;
+//			oldLogger = LogManager.getLogger();
+//		}
+//		else
+//		{
+//			loggerName = oldLogger.getName();
+//		}
+//		
+//		if (logFileName == null || logFileName.trim().equals(""))
+//		{
+//			oldLogger.warn("No custom log file name was set, so this " + loggerContainerClassTypeName + " will not use its own log file.");
+//			return oldLogger;
+//		}
+//		else
+//		{
+//			oldLogger.trace("Now creating new logger {}, logging to file {}", loggerName, logFileName);
+//			return this.createLogger(logFileName , oldAppenderName, loggerName, true, level);
+//		}
 		if (oldLogger == null)
 		{
 			oldLogger = LogManager.getLogger();
@@ -95,9 +116,8 @@ public interface CustomLoggable
 		}
 		else
 		{
-			oldLogger.debug("Now creating new logger: {}", logFileName);
+			oldLogger.trace("Now creating new logger: {}", logFileName);
 			return this.createLogger(logFileName , oldAppenderName, logFileName, true, level);
 		}
-		
 	}
 }

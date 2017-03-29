@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -29,7 +28,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	protected Logger logger ;
+	protected Logger logger;// = LogManager.getLogger();
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
@@ -45,7 +44,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		// Reference creators run a TRACE level so that we can get ALL the details of what they are creating.
-		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", refCreatorName, true, Level.TRACE, this.logger, "Reference Creator");
+		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", this.getClass().getName(), true, Level.TRACE, this.logger, "Reference Creator");
 		
 		this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);
