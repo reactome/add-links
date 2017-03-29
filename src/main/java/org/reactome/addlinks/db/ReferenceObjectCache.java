@@ -31,6 +31,7 @@ public final class ReferenceObjectCache
 	private static boolean lazyLoad = true;
 	private static boolean cacheInitializedMessageHasBeenPrinted = false;
 	private static MySQLAdaptor adapter;
+	private static Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 	
 	/**
 	 * Sets up the internal caches.
@@ -77,9 +78,6 @@ public final class ReferenceObjectCache
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> referenceObjects = (Collection<GKInstance>) ReferenceObjectCache.adapter.fetchInstancesByClass(className);
 		
-		Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
-		
-
 		referenceObjects.stream().parallel().forEach( referenceObject -> 
 		{
 			String identifierAttribute = ReactomeJavaConstants.identifier;
@@ -99,11 +97,9 @@ public final class ReferenceObjectCache
 				logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
 				try
 				{
-					localAdapter = new MySQLAdaptor( ((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBHost(),
-													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBName(),
-													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBUser(),
-													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBPwd(),
-													((MySQLAdaptor)referenceObject.getDbAdaptor()).getDBPort());
+					localAdapter = new MySQLAdaptor( ReferenceObjectCache.adapter.getDBHost(), ReferenceObjectCache.adapter.getDBName(),
+													ReferenceObjectCache.adapter.getDBUser(), ReferenceObjectCache.adapter.getDBPwd(),
+													ReferenceObjectCache.adapter.getDBPort());
 					adapterPool.put(threadID, localAdapter);
 				}
 				catch (SQLException e)
