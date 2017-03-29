@@ -165,6 +165,21 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 				}
 			});
 		});
+		
+		// empty the pool.
+		for (Long k : adapterPool.keySet())
+		{
+			try
+			{
+				adapterPool.get(k).cleanUp();
+			} 
+			catch (Exception e)
+			{
+				logger.error("Could not clean up the database adapter: {}",e.getMessage());
+				throw new Error(e);
+			}
+		}
+		
 		thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 			if (newIdentifier != null)
 			{
