@@ -96,12 +96,26 @@ public final class EnsemblReferenceDatabaseGenerator
 						
 						// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
 						String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";
+						// OLD style: Capitalization and spaces.
 						String oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_PROTEIN";
+						// Less common: Capitalization AND_underscores
+						String oldStyleDBName2 = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace(" ", "_")+"_PROTEIN";
 						createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
+						if (objectCache.getRefDbNamesToIds().containsKey(oldStyleDBName2))
+						{
+							// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
+							EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
+						}
 
 						newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE";
 						oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_GENE";
+						oldStyleDBName2 = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace(" ", "_")+"_GENE";
 						createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
+						if (objectCache.getRefDbNamesToIds().containsKey(oldStyleDBName2))
+						{
+							// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
+							EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
+						}
 						//EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_TRANSCRIPT");
 					}
 					catch (Exception e)
