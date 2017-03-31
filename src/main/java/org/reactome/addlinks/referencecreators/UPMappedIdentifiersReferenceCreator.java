@@ -14,6 +14,8 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 
 /*
  * Creates references for identifiers that were mapped from one database (usually UniProt) to another by the UniProt web service.
@@ -42,6 +44,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 	@Override
 	public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
+		ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter, true);
 		AtomicInteger printCounter = new AtomicInteger(0);
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
@@ -198,6 +201,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 						throw new Error(e);
 					}
 				}
+				
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 					String[] parts = newIdentifier.split(",");
@@ -207,9 +211,19 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 						// The string had a species-part.
 						if (parts[2] != null && !parts[2].trim().equals(""))
 						{
+							String targetDB = this.targetRefDB;
+							if (this.targetRefDB.contains("KEGG"))
+							{
+								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
+								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, parts[2]);
+								if (targetDB == null)
+								{
+									targetDB = this.targetRefDB;
+								}
+							}
 							if (!this.testMode)
 							{
-								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+								this.refCreator.createIdentifier(parts[0], parts[1], targetDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 							}
 						}
 						// The string did NOT have a species-part.
