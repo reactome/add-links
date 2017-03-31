@@ -10,7 +10,9 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 
 public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
 {
@@ -27,6 +29,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 	@Override
 	public void createIdentifiers(long personID, Map<String, List<Map<KEGGKeys, String>>> mappings, List<GKInstance> sourceReferences) throws Exception
 	{
+		ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter, true);
 		int sourceIdentifiersWithNoMapping = 0;
 		int sourceIdentifiersWithNewIdentifier = 0;
 		int sourceIdentifiersWithExistingIdentifier = 0;
@@ -99,7 +102,16 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						extraAttributes.put(ReactomeJavaConstants.name, names);
 						if (!this.testMode)
 						{
-							refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+							String targetDB = this.targetRefDB;
+							targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, String.valueOf(speciesID));
+							if (targetDB == null)
+							{
+								targetDB = this.targetRefDB;
+							}
+							if (!this.testMode)
+							{
+								refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+							}
 						}
 					}
 					else
@@ -122,5 +134,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				this.sourceRefDB, this.targetRefDB, sourceIdentifiersWithExistingIdentifier,
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
 	}
+
+
 	
 }

@@ -61,4 +61,23 @@ public class KEGGReferenceDatabaseGenerator
 			}
 		}
 	}
+	
+	public static String generateKeggDBName(ReferenceObjectCache objectCache, String speciesID)
+	{
+		String targetDB = null;
+		if (speciesID != null && objectCache.getSpeciesNamesByID().get(speciesID) != null)
+		{
+			String speciesName = objectCache.getSpeciesNamesByID().get(speciesID).stream()
+															.filter(s ->
+															{
+																return KEGGSpeciesCache.getKEGGCode(s) != null;
+															})
+															.findFirst().orElse(null);
+			if (speciesName != null)
+			{
+				targetDB = "KEGG Gene_" + speciesName.replace(" ", "_");
+			}
+		}
+		return targetDB;
+	}
 }
