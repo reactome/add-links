@@ -39,15 +39,14 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
 			// if we want new identifiers to have the same species of the thing which they refer to.
 			Long speciesID = null;
-			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>) sourceReference.getSchemaAttributes())
+			@SuppressWarnings("unchecked")
+			GKSchemaAttribute speciesAttribute = ((Collection<GKSchemaAttribute>) sourceReference.getSchemaAttributes()).stream().filter(a -> a.getName().equals(ReactomeJavaConstants.species)).findFirst().orElse(null);
+			if (speciesAttribute!=null)
 			{
-				if (attrib.getName().equals(ReactomeJavaConstants.species) )
+				GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+				if (speciesInst != null)
 				{
-					GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
-					if (speciesInst != null)
-					{
-						speciesID = new Long(speciesInst.getDBID());
-					}
+					speciesID = new Long(speciesInst.getDBID());
 				}
 			}
 
