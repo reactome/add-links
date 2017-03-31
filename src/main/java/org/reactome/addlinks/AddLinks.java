@@ -43,6 +43,7 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcessor.EnsemblAggregateProcessingMode;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
@@ -670,9 +671,11 @@ public class AddLinks
 			}
 		}
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
+		KEGGReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
 			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
+			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 		}
 		catch (Exception e)
 		{
