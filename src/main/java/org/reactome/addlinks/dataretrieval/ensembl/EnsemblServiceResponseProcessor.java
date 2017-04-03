@@ -3,13 +3,14 @@ package org.reactome.addlinks.dataretrieval.ensembl;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class EnsemblServiceResponseProcessor
@@ -56,6 +57,8 @@ public final class EnsemblServiceResponseProcessor
 		}
 	}
 	
+	private int waitMultiplier = 1;
+	
 	// Assume a quote of 10 to start. This will get set properly with ever response from the service.
 	private static final AtomicInteger numRequestsRemaining = new AtomicInteger(10);
 	
@@ -78,12 +81,28 @@ public final class EnsemblServiceResponseProcessor
 		// that we used up our quota with the service, and need to wait for it to reset.
 		if ( response.containsHeader("Retry-After") )
 		{
-			logger.debug("Response code: {}", response.getStatusLine().getReasonPhrase() );
+			logger.debug("Response message: {} ; Reason code: {}; Headers: {}", response.getStatusLine().toString(),
+																				response.getStatusLine().getReasonPhrase(),
+										Arrays.stream(response.getAllHeaders()).map( h -> h.toString()).collect(Collectors.toList()));
+			
+			
 			Duration waitTime = Duration.ofSeconds(Integer.valueOf(response.getHeaders("Retry-After")[0].getValue().toString()));
-			logger.info("The server told us to wait, so we will wait for {} before trying again.",waitTime);
-			result.setWaitTime(waitTime);
-			// It's ok to re-query the sevice, as long as you wait for the time the server wants you to wait.
-			okToQuery = true;
+			
+			logger.warn("The server told us to wait, so we will wait for {} * {} before trying again.",waitTime, waitMultiplier);
+			
+			result.setWaitTime(waitTime.multipliedBy(this.waitMultiplier));
+			this.waitMultiplier ++;
+			// If we get told to wait > 5 times, let's just take the hint and stop trying.
+			if (this.waitMultiplier >= 5)
+			{
+				logger.error("I've already waited {} times and I'm STILL getting told to wait. This will be the LAST attempt.");
+				okToQuery = false;
+			}
+			else
+			{
+				// It's ok to re-query the sevice, as long as you wait for the time the server wants you to wait.
+				okToQuery = true;
+			}
 		}
 		// Else... no "Retry-After" so we haven't gone over our quota.
 		else
@@ -174,6 +193,15 @@ public final class EnsemblServiceResponseProcessor
 		{
 			int numRequestsRemaining = Integer.valueOf(response.getHeaders("X-RateLimit-Remaining")[0].getValue().toString());
 			EnsemblServiceResponseProcessor.numRequestsRemaining.set(numRequestsRemaining);
+			numRequestsRemaining = EnsemblServiceResponseProcessor.numRequestsRemaining.get();
+			if (numRequestsRemaining % 1000 == 0)
+			{
+				logger.debug("{} requests remaining", numRequestsRemaining);
+			}
+		}
+		else
+		{
+			logger.warn("No X-RateLimit-Remaining was returned. This is odd. Response message: {} ; Headers returned are: {}\nLast known value for remaining was {}", response.getStatusLine().toString(), Arrays.stream(response.getAllHeaders()).map( h -> h.toString()).collect(Collectors.toList()), EnsemblServiceResponseProcessor.numRequestsRemaining);
 		}
 		return result;
 	}
