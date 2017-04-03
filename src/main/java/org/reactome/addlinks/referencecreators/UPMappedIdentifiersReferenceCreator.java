@@ -168,15 +168,15 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 								logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
 								notCreatedCounter.getAndIncrement();
 							}
-							if (printCounter.get() >= 99)
-							{
-								logger.debug("{} ; {} ; {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
-								printCounter.set(0);
-							}
-							else
-							{
-								printCounter.incrementAndGet();
-							}
+//							if (printCounter.get() >= 499)
+//							{
+//								logger.debug("{} ; {} ; {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
+//								printCounter.set(0);
+//							}
+//							else
+//							{
+//								printCounter.incrementAndGet();
+//							}
 						}
 						catch (Exception e)
 						{
