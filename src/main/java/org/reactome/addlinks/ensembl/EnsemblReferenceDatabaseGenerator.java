@@ -88,46 +88,52 @@ public final class EnsemblReferenceDatabaseGenerator
 					String speciesName = nodeList.item(i).getTextContent();
 					
 					//Now that we have a species name, we can create a species-specific ReferenceDatabase.
-					try
-					{
-						//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
-						//and only create a ReferenceDatbase object when it's discovered that one is needed.
-						String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
-						
-						// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
-						String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";
-						// OLD style: Capitalization and spaces.
-						String oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_PROTEIN";
-						// Less common: Capitalization AND_underscores
-						String oldStyleDBName2 = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace(" ", "_")+"_PROTEIN";
-						createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
-						if (objectCache.getRefDbNamesToIds().containsKey(oldStyleDBName2))
-						{
-							// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
-							EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
-						}
-
-						newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE";
-						oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_GENE";
-						oldStyleDBName2 = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace(" ", "_")+"_GENE";
-						createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
-						if (objectCache.getRefDbNamesToIds().containsKey(oldStyleDBName2))
-						{
-							// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
-							EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
-						}
-						//EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_TRANSCRIPT");
-					}
-					catch (Exception e)
-					{
-						logger.error("An error occurred while trying to create an Ensembl species-specific URL: {}",e.getMessage());
-						e.printStackTrace();
-						// Throw this back up the stack: there's probably no good way to recover from this without more information.
-						throw e;
-					}
+					createReferenceDatabase(objectCache, speciesName);
 				}
 			}
 			
+		}
+	}
+
+
+	private static void createReferenceDatabase(ReferenceObjectCache objectCache, String speciesName) throws Exception
+	{
+		try
+		{
+			//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
+			//and only create a ReferenceDatbase object when it's discovered that one is needed.
+			String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
+			
+			// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
+			String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";
+			// OLD style: Capitalization and spaces.
+			String oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_PROTEIN";
+			// Less common: Capitalization AND_underscores
+			String oldStyleDBName2 = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace(" ", "_")+"_PROTEIN";
+			createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
+			if (objectCache.getRefDbNamesToIds().containsKey(oldStyleDBName2))
+			{
+				// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
+				EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
+			}
+
+			newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE";
+			oldStyleDBName = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace("_", " ")+"_GENE";
+			oldStyleDBName2 = "ENSEMBL_"+speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1).replace(" ", "_")+"_GENE";
+			createReferenceDB(objectCache, speciesName, speciesURL, newDBName, oldStyleDBName);
+			if (objectCache.getRefDbNamesToIds().containsKey(oldStyleDBName2))
+			{
+				// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
+				EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
+			}
+			//EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_TRANSCRIPT");
+		}
+		catch (Exception e)
+		{
+			logger.error("An error occurred while trying to create an Ensembl species-specific URL: {}",e.getMessage());
+			e.printStackTrace();
+			// Throw this back up the stack: there's probably no good way to recover from this without more information.
+			throw e;
 		}
 	}
 

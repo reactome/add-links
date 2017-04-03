@@ -20,6 +20,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*","javax.security.*"})
@@ -304,6 +305,23 @@ public class TestReferenceDatabaseCreator
 			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
 			EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache );
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testKEGGRefDBCreator()
+	{
+		try
+		{
+			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
+			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+			KEGGReferenceDatabaseGenerator.setDBCreator(creator);
+			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 		}
 		catch (Exception e)
 		{
