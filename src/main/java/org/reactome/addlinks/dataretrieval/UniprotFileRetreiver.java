@@ -153,7 +153,7 @@ public class UniprotFileRetreiver extends FileRetriever
 		int attemptCount = 0;
 		while(!done)
 		{
-			logger.debug("getting from: {}",get.getURI());
+			logger.trace("getting from: {}",get.getURI());
 			try (CloseableHttpClient getClient = HttpClients.createDefault();
 					CloseableHttpResponse getResponse = getClient.execute(get);)
 			{
@@ -169,7 +169,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					case HttpStatus.SC_OK:
 					case HttpStatus.SC_MOVED_PERMANENTLY:
 					case HttpStatus.SC_MOVED_TEMPORARILY:
-						logger.debug("HTTP Status: {}",getResponse.getStatusLine().toString());
+						logger.trace("HTTP Status: {}",getResponse.getStatusLine().toString());
 						result = EntityUtils.toByteArray(getResponse.getEntity());
 						if (result != null)
 						{
@@ -196,7 +196,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 				if (attemptCount < this.maxAttemptCount && ! done)
 				{
-					logger.info("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+					logger.warn("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
 					Thread.sleep(Duration.ofSeconds(5).toMillis());
 				}
 			}
@@ -231,7 +231,7 @@ public class UniprotFileRetreiver extends FileRetriever
 							if (postResponse.containsHeader("Location"))
 							{
 								mappingLocationURI = postResponse.getHeaders("Location")[0].getValue();
-								logger.debug("Location of data: {}", mappingLocationURI);
+								logger.trace("Location of data: {}", mappingLocationURI);
 								if (mappingLocationURI != null && !mappingLocationURI.equals("http://www.uniprot.org/502.htm"))
 								{
 									done = true;
@@ -243,7 +243,7 @@ public class UniprotFileRetreiver extends FileRetriever
 							}
 							else
 							{
-								logger.warn("Status was {}, \"Location\" header was not prsent. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
+								logger.warn("Status was {}, \"Location\" header was not present. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
 							}
 							break;
 						default:
@@ -304,7 +304,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 				InputStream fileData = new ByteArrayInputStream(baos.toByteArray());
 				HttpPost post = new HttpPost(this.uri);
-				logger.debug("URI: {}", post.getURI().toURL());
+				logger.trace("URI: {}", post.getURI().toURL());
 				HttpEntity attachment = MultipartEntityBuilder.create()
 						.addBinaryBody("file", fileData, ContentType.TEXT_PLAIN, "uniprot_ids.txt")
 						.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
@@ -331,7 +331,7 @@ public class UniprotFileRetreiver extends FileRetriever
 					{
 						Random r = new Random(System.nanoTime());
 						long delay = (long) (3000 + (attemptCount * r.nextFloat()));
-						logger.debug("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
+						logger.warn("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
 						Thread.sleep( delay );
 					}
 					else if (attemptCount >= maxAttemptCount)
