@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -29,7 +28,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	protected Logger logger = LogManager.getLogger();
+	protected Logger logger;// = LogManager.getLogger();
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
@@ -45,7 +44,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		// Reference creators run a TRACE level so that we can get ALL the details of what they are creating.
-		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", refCreatorName, true, Level.TRACE, this.logger, "Reference Creator");
+		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", this.getClass().getName(), true, Level.TRACE, this.logger, "Reference Creator");
 		
 		this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);
@@ -164,14 +163,20 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
-		for (GKInstance xref : xrefs)
+		StringBuilder xrefsb = new StringBuilder();
+		if (xrefs.size() > 0)
 		{
-			logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-			// We won't add a cross-reference if it already exists
-			if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetRefDBIdentifier ))
+			for (GKInstance xref : xrefs)
 			{
-				return true;
+				xrefsb.append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString()).append(",\t");
+				// We won't add a cross-reference if it already exists
+				if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetRefDBIdentifier ))
+				{
+					logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
+					return true;
+				}
 			}
+			logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 		}
 		return false;
 	}

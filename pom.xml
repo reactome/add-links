@@ -4,9 +4,12 @@
 	<groupId>org.reactome.release</groupId>
 	<artifactId>AddLinks</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	
 	<properties>
 		<spring.version>4.3.5.RELEASE</spring.version>
 	</properties>
+	
+	
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
@@ -68,22 +71,26 @@
 			<version>1.1</version>
 		</dependency>
 <!-- https://mvnrepository.com/artifact/commons-discovery/commons-discovery -->
-<dependency>
-    <groupId>commons-discovery</groupId>
-    <artifactId>commons-discovery</artifactId>
-    <version>0.4</version>
-</dependency>
-
+		<dependency>
+			<groupId>commons-discovery</groupId>
+			<artifactId>commons-discovery</artifactId>
+			<version>0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.40</version>
+		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.6.5</version>
+			<version>1.6.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.6.5</version>
+			<version>1.6.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -92,6 +99,7 @@
 			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>

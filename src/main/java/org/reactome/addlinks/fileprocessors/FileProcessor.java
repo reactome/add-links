@@ -15,13 +15,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.CustomLoggable;
 
 public abstract class FileProcessor<T> implements CustomLoggable
 {
-	protected Logger logger = LogManager.getLogger();
+	protected Logger logger;// = LogManager.getLogger();
 	
 	protected Path pathToFile;
 	
@@ -47,7 +46,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 		{
 			logName = processorName.replace(".log","-processor.log");
 		}
-		this.logger = this.createLogger( logName , "RollingRandomAccessFile", processorName, true, Level.DEBUG, this.logger, "File Processor");
+		this.logger = this.createLogger( logName , "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, this.logger, "File Processor");
 	}
 	
 	/**

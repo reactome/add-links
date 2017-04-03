@@ -14,6 +14,8 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 
 /*
  * Creates references for identifiers that were mapped from one database (usually UniProt) to another by the UniProt web service.
@@ -26,8 +28,6 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
-	
-	//private static final Logger logger = LogManager.getLogger();
 	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
@@ -42,9 +42,9 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 	 */
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
+		ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter, true);
 		AtomicInteger printCounter = new AtomicInteger(0);
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
@@ -82,7 +82,14 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		{
 			for (String speciesID : mappings.keySet())
 			{
-				logger.debug("Creating references for species {}", speciesID);
+				if (mappings.get(speciesID).keySet().size() > 0)
+				{
+					logger.info("Creating (up to) {} references for species {}", mappings.get(speciesID).keySet().size(), speciesID);
+				}
+				else
+				{
+					logger.info("No references to create for species {}", speciesID);
+				}
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
@@ -129,29 +136,30 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 									// check and make sure the cross refernces don't already exist.
-									Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
-									boolean xrefAlreadyExists = false;
-									
-									for (GKInstance xref : xrefs)
-									{
-										logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-										// We won't add a cross-reference if it already exists
-										if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetIdentifier ))
-										{
-											xrefAlreadyExistsCounter.incrementAndGet();
-											xrefAlreadyExists = true;
-											// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-											// in letting the loop run longer.
-											// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-											break;
-										}
-									}
+//									Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
+//									boolean xrefAlreadyExists = false;
+//									
+//									for (GKInstance xref : xrefs)
+//									{
+//										logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+//										// We won't add a cross-reference if it already exists
+//										if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetIdentifier ))
+//										{
+//											xrefAlreadyExistsCounter.incrementAndGet();
+//											xrefAlreadyExists = true;
+//											// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+//											// in letting the loop run longer.
+//											// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+//											break;
+//										}
+//									}
+									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier);
 									if (!xrefAlreadyExists)
 									{
 										if (!this.testMode)
 										{
 											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
-											thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
+											thingsToCreate.add(targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID);
 										}
 										createdCounter.getAndIncrement();
 										
@@ -163,15 +171,15 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 								logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
 								notCreatedCounter.getAndIncrement();
 							}
-							if (printCounter.get() >= 99)
-							{
-								logger.debug("{} ; {} ; {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
-								printCounter.set(0);
-							}
-							else
-							{
-								printCounter.incrementAndGet();
-							}
+//							if (printCounter.get() >= 499)
+//							{
+//								logger.debug("{} ; {} ; {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
+//								printCounter.set(0);
+//							}
+//							else
+//							{
+//								printCounter.incrementAndGet();
+//							}
 						}
 						catch (Exception e)
 						{
@@ -193,18 +201,29 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 						throw new Error(e);
 					}
 				}
+				
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-					String[] parts = newIdentifier.split(":");
+					String[] parts = newIdentifier.split(",");
 					logger.trace("Creating new identifier {} ", parts[0] );
 					try
 					{
 						// The string had a species-part.
 						if (parts[2] != null && !parts[2].trim().equals(""))
 						{
+							String targetDB = this.targetRefDB;
+							if (this.targetRefDB.contains("KEGG"))
+							{
+								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
+								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, parts[2]);
+								if (targetDB == null)
+								{
+									targetDB = this.targetRefDB;
+								}
+							}
 							if (!this.testMode)
 							{
-								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+								this.refCreator.createIdentifier(parts[0], parts[1], targetDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 							}
 						}
 						// The string did NOT have a species-part.

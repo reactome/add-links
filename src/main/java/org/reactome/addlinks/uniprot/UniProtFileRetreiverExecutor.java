@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -25,7 +24,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 
 public class UniProtFileRetreiverExecutor implements CustomLoggable
 {
-	private Logger logger = LogManager.getLogger();
+	private Logger logger;// = LogManager.getLogger();
 	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
 	private List<String> fileRetrieverFilter;
 	private ReferenceObjectCache objectCache;
@@ -33,7 +32,7 @@ public class UniProtFileRetreiverExecutor implements CustomLoggable
 	
 	public UniProtFileRetreiverExecutor()
 	{
-		this.logger = this.createLogger("retrievers/UniProtFileRetreiverExecutor", "RollingRandomAccessFile", "UniProtFileRetreiverExecutor", true, Level.DEBUG, this.logger, "UniProtFileRetreiverExecutor");
+		this.logger = this.createLogger("retrievers/Uniprot", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, this.logger, "UniProtFileRetreiverExecutor");
 	}
 	
 	public void execute()
