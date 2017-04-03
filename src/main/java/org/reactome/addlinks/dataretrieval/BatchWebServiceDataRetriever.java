@@ -4,9 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Makes a batch of webservice calls to an endpoint to get data.
  * @author sshorser
@@ -17,7 +14,6 @@ public class BatchWebServiceDataRetriever extends FileRetriever {
 	private String name;
 	private String dataUrl;
 	private Supplier<List<String>> sourceForWSCalls;
-	private static final Logger logger = LogManager.getLogger();
 	
 	@Override
 	public void fetchData() throws Exception  {

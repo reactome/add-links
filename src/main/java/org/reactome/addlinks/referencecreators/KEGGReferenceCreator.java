@@ -10,7 +10,9 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
+import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 
 public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
 {
@@ -27,6 +29,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 	@Override
 	public void createIdentifiers(long personID, Map<String, List<Map<KEGGKeys, String>>> mappings, List<GKInstance> sourceReferences) throws Exception
 	{
+		ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter, true);
 		int sourceIdentifiersWithNoMapping = 0;
 		int sourceIdentifiersWithNewIdentifier = 0;
 		int sourceIdentifiersWithExistingIdentifier = 0;
@@ -39,15 +42,14 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
 			// if we want new identifiers to have the same species of the thing which they refer to.
 			Long speciesID = null;
-			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>) sourceReference.getSchemaAttributes())
+			@SuppressWarnings("unchecked")
+			GKSchemaAttribute speciesAttribute = ((Collection<GKSchemaAttribute>) sourceReference.getSchemaAttributes()).stream().filter(a -> a.getName().equals(ReactomeJavaConstants.species)).findFirst().orElse(null);
+			if (speciesAttribute!=null)
 			{
-				if (attrib.getName().equals(ReactomeJavaConstants.species) )
+				GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+				if (speciesInst != null)
 				{
-					GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
-					if (speciesInst != null)
-					{
-						speciesID = new Long(speciesInst.getDBID());
-					}
+					speciesID = new Long(speciesInst.getDBID());
 				}
 			}
 
@@ -100,7 +102,16 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						extraAttributes.put(ReactomeJavaConstants.name, names);
 						if (!this.testMode)
 						{
-							refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+							String targetDB = this.targetRefDB;
+							targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, String.valueOf(speciesID));
+							if (targetDB == null)
+							{
+								targetDB = this.targetRefDB;
+							}
+							if (!this.testMode)
+							{
+								refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+							}
 						}
 					}
 					else
@@ -123,5 +134,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				this.sourceRefDB, this.targetRefDB, sourceIdentifiersWithExistingIdentifier,
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
 	}
+
+
 	
 }

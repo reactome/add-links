@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -85,7 +86,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			}
 			mapToEnum.put(s, this);
 		}
-//		
+		
 		public String getUniprotName()
 		{
 			return this.uniprotName;
@@ -152,7 +153,7 @@ public class UniprotFileRetreiver extends FileRetriever
 		int attemptCount = 0;
 		while(!done)
 		{
-			logger.debug("getting from: {}",get.getURI());
+			logger.trace("getting from: {}",get.getURI());
 			try (CloseableHttpClient getClient = HttpClients.createDefault();
 					CloseableHttpResponse getResponse = getClient.execute(get);)
 			{
@@ -163,15 +164,12 @@ public class UniprotFileRetreiver extends FileRetriever
 					case HttpStatus.SC_BAD_GATEWAY:
 					case HttpStatus.SC_GATEWAY_TIMEOUT:
 						logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
-						// logger.error("File: \"{}\" was not written! Re-execute the File Retriever to try again.", this.destination);
-						attemptCount++;
 						break;
 	
 					case HttpStatus.SC_OK:
 					case HttpStatus.SC_MOVED_PERMANENTLY:
 					case HttpStatus.SC_MOVED_TEMPORARILY:
-						attemptCount++; 
-						logger.debug("HTTP Status: {}",getResponse.getStatusLine().toString());
+						logger.trace("HTTP Status: {}",getResponse.getStatusLine().toString());
 						result = EntityUtils.toByteArray(getResponse.getEntity());
 						if (result != null)
 						{
@@ -184,11 +182,10 @@ public class UniprotFileRetreiver extends FileRetriever
 						break;
 	
 					default:
-						attemptCount++;
 						logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
 						break;
-	
 				}
+				attemptCount++;
 			}
 			if (attemptCount > this.maxAttemptCount)
 			{
@@ -199,9 +196,8 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 				if (attemptCount < this.maxAttemptCount && ! done)
 				{
-					logger.info("Re-trying...");
-					Thread.sleep(Duration.ofSeconds(2).toMillis());
-					
+					logger.warn("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+					Thread.sleep(Duration.ofSeconds(5).toMillis());
 				}
 			}
 		}
@@ -210,31 +206,65 @@ public class UniprotFileRetreiver extends FileRetriever
 	
 	private String attemptPostToUniprot(HttpPost post) throws ClientProtocolException, IOException, InterruptedException
 	{
+		boolean done = false;
+		int attemptCount = 0;
 		String mappingLocationURI = null;
+		while(!done)
 		{
-			try (CloseableHttpClient postClient = HttpClients.createDefault();
-					CloseableHttpResponse postResponse = postClient.execute(post);)
+			
 			{
-				switch (postResponse.getStatusLine().getStatusCode())
+				try (CloseableHttpClient postClient = HttpClients.createDefault();
+						CloseableHttpResponse postResponse = postClient.execute(post);)
 				{
-					case HttpStatus.SC_SERVICE_UNAVAILABLE:
-					case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-						logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
-						break;
-					
-					case HttpStatus.SC_OK:
-					case HttpStatus.SC_MOVED_PERMANENTLY:
-					case HttpStatus.SC_MOVED_TEMPORARILY:
-						if (postResponse.containsHeader("Location"))
-						{
-							mappingLocationURI = postResponse.getHeaders("Location")[0].getValue();
-							logger.debug("Location of data: {}",mappingLocationURI);
-						}
-						else
-						{
-							logger.debug("Status was {}, \"Location\" header was not prsent. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
-						}
-						break;
+					switch (postResponse.getStatusLine().getStatusCode())
+					{
+						case HttpStatus.SC_SERVICE_UNAVAILABLE:
+						case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+						case HttpStatus.SC_BAD_GATEWAY:
+						case HttpStatus.SC_GATEWAY_TIMEOUT:
+							logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
+							break;
+						
+						case HttpStatus.SC_OK:
+						case HttpStatus.SC_MOVED_PERMANENTLY:
+						case HttpStatus.SC_MOVED_TEMPORARILY:
+							if (postResponse.containsHeader("Location"))
+							{
+								mappingLocationURI = postResponse.getHeaders("Location")[0].getValue();
+								logger.trace("Location of data: {}", mappingLocationURI);
+								if (mappingLocationURI != null && !mappingLocationURI.equals("http://www.uniprot.org/502.htm"))
+								{
+									done = true;
+								}
+								else
+								{
+									logger.warn("Response did not contain data.");
+								}
+							}
+							else
+							{
+								logger.warn("Status was {}, \"Location\" header was not present. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
+							}
+							break;
+						default:
+							logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",postResponse.getStatusLine().getStatusCode(), postResponse.getStatusLine());
+							break;
+					}
+					attemptCount++;
+
+				}
+				if (attemptCount > this.maxAttemptCount)
+				{
+					logger.error("Reached max attempt count! No more attempts.");
+					done = true;
+				}
+				else
+				{
+					if (attemptCount < this.maxAttemptCount && ! done)
+					{
+						logger.info("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+						Thread.sleep(Duration.ofSeconds(5).toMillis());
+					}
 				}
 			}
 		}
@@ -274,7 +304,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			{
 				InputStream fileData = new ByteArrayInputStream(baos.toByteArray());
 				HttpPost post = new HttpPost(this.uri);
-				logger.debug("URI: {}", post.getURI().toURL());
+				logger.trace("URI: {}", post.getURI().toURL());
 				HttpEntity attachment = MultipartEntityBuilder.create()
 						.addBinaryBody("file", fileData, ContentType.TEXT_PLAIN, "uniprot_ids.txt")
 						.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
@@ -283,15 +313,25 @@ public class UniprotFileRetreiver extends FileRetriever
 						.build();
 				post.setEntity(attachment);
 				
-				location = this.attemptPostToUniprot(post);
+				try
+				{
+					location = this.attemptPostToUniprot(post);
+				}
+				catch (NoHttpResponseException e)
+				{
+					// If we don't catch this here, but let it go to "catch (IOException e)" in the outer try-block,
+					// then we won't be able to retry. Catching it here lets us continue processing: increment the attempt counter, and loop through again.
+					logger.error("No HTTP Response! Message: {}", e.getMessage());
+					e.printStackTrace();
+				}
 				attemptCount++;
 				if (location == null)
 				{
 					if (attemptCount > 0 && attemptCount < maxAttemptCount)
 					{
 						Random r = new Random(System.nanoTime());
-						long delay = (long) (1000 + (attemptCount * r.nextFloat()));
-						logger.debug("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
+						long delay = (long) (3000 + (attemptCount * r.nextFloat()));
+						logger.warn("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
 						Thread.sleep( delay );
 					}
 					else if (attemptCount >= maxAttemptCount)
@@ -362,28 +402,19 @@ public class UniprotFileRetreiver extends FileRetriever
 				logger.error("We could not determine the location of the data, file was not downloaded.");
 			}
 		}
-		catch (URISyntaxException e)
+		catch (URISyntaxException | UnsupportedEncodingException | ClientProtocolException | InterruptedException e)
 		{
-			e.printStackTrace();
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClientProtocolException e)
-		{
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
-		}
-		catch (InterruptedException e)
-		{
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		catch (Exception e)
 		{
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 	}
