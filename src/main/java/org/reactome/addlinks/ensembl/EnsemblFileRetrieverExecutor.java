@@ -3,10 +3,13 @@ package org.reactome.addlinks.ensembl;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
@@ -127,23 +130,45 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 
 	private void executeEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> retrievers, String species, String speciesName, List<String> identifiers)
 	{
-		retrievers.keySet().parallelStream().forEach( ensemblRetrieverName -> {
+		List<Callable<Boolean>> jobs = Collections.synchronizedList(new ArrayList<Callable<Boolean>>());
+		
+		retrievers.keySet().parallelStream().forEach( ensemblRetrieverName ->
 		{
-			logger.info("Executing file retriever: {}",ensemblRetrieverName);
-			EnsemblFileRetriever retriever = retrievers.get(ensemblRetrieverName);
-			retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
-			retriever.setSpecies(speciesName);
-			retriever.setIdentifiers(identifiers);
-			try
+			Callable<Boolean> job = new Callable<Boolean>()
 			{
-				retriever.fetchData();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
+				@Override
+				public Boolean call() throws Exception
+				{
+					logger.info("Executing file retriever: {}",ensemblRetrieverName);
+					EnsemblFileRetriever retriever = retrievers.get(ensemblRetrieverName);
+					retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
+					retriever.setSpecies(speciesName);
+					retriever.setIdentifiers(identifiers);
+					try
+					{
+						retriever.fetchData();
+						return true;
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+						return false;
+					}
+				}
+			};
+			jobs.add(job);
 		});
+
+		logger.info("{} EnsemblFileRetrievers to execute.", jobs.size());
+		// ENSEMBL doesn't like > 15 requests per second, so let's keep our pool smaller than that.
+		// Don't forget: each EnsemblFileRetriever will execute *n* threads as well, each as big as
+		// stream().parallel() will allow, so we should only try to run 2 retrievers at at time.
+		ForkJoinPool pool = new ForkJoinPool(2);
+		if (pool != null && jobs.size() > 0)
+		{
+			pool.invokeAll(jobs);
+		}
+
 	}
 
 	private Map<String, List<String>> getRefGeneProdsBySpecies(List<GKInstance> refGeneProducts)
