@@ -45,7 +45,6 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 	public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
 		ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter, true);
-		AtomicInteger printCounter = new AtomicInteger(0);
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
@@ -135,24 +134,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 									}
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
-									// check and make sure the cross refernces don't already exist.
-//									Collection<GKInstance> xrefs = inst.getAttributeValuesList(referringAttributeName);
-//									boolean xrefAlreadyExists = false;
-//									
-//									for (GKInstance xref : xrefs)
-//									{
-//										logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-//										// We won't add a cross-reference if it already exists
-//										if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetIdentifier ))
-//										{
-//											xrefAlreadyExistsCounter.incrementAndGet();
-//											xrefAlreadyExists = true;
-//											// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-//											// in letting the loop run longer.
-//											// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-//											break;
-//										}
-//									}
+									
 									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier);
 									if (!xrefAlreadyExists)
 									{
@@ -171,15 +153,6 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 								logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
 								notCreatedCounter.getAndIncrement();
 							}
-//							if (printCounter.get() >= 499)
-//							{
-//								logger.debug("{} ; {} ; {}", createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
-//								printCounter.set(0);
-//							}
-//							else
-//							{
-//								printCounter.incrementAndGet();
-//							}
 						}
 						catch (Exception e)
 						{
