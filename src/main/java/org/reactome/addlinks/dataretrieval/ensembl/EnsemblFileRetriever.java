@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+//import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -147,6 +147,9 @@ public class EnsemblFileRetriever extends FileRetriever
 	@Override
 	public void downloadData()
 	{
+		//TODO: migrate to Unirest client: https://github.com/Ensembl/ensembl-rest/wiki/Example-Java-Client-with-Unirest
+		// (I kinda wish I'd known about this sooner!) 
+		
 		// Check inputs:
 		/*if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
 		{
@@ -189,10 +192,11 @@ public class EnsemblFileRetriever extends FileRetriever
 			StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
 			logger.info("");
 			//int i = 0;
-			AtomicInteger i = new AtomicInteger(0);
+			//AtomicInteger i = new AtomicInteger(0);
+			logger.debug("{} identifiers to look up.", identifiers.size());
 			//for (String identifier : identifiers)
-			identifiers.parallelStream().forEach( identifier -> { 
-			{
+			identifiers.parallelStream().forEach( identifier ->
+			{ 
 				URIBuilder builder = new URIBuilder();
 
 				builder.setHost(this.uri.getHost())
@@ -262,13 +266,6 @@ public class EnsemblFileRetriever extends FileRetriever
 					e.printStackTrace();
 					throw new Error(e);
 				}
-
-				if (i.incrementAndGet() % 100 == 0)
-				{
-					// of course, this only works if the Identifiers list is > 100 ...
-					logger.info("{} requests remaining.", EnsemblServiceResponseProcessor.getNumRequestsRemaining());
-				}
-			}
 			});
 			Files.createDirectories(path.getParent());
 			String xml10pattern = "[^"
