@@ -10,7 +10,7 @@
 	<!-- 
 	This file is a mapping that maps file processors to reference creators.
 	 -->
-	 <util:map id="processorCreatorLink" key-type="java.lang.String" value-type="java.lang.String">
+	 <util:map id="processorCreatorLink" key-type="java.lang.String">
 	 	<entry key="DockblasterFileProcessor" value="pdbRefCreator"/>
 	 	<entry key="PROFileProcessor" value="proRefCreator"/>
 	 	<entry key="FlyBaseFileProcessor" value="FlyBaseReferenceCreator"/>
@@ -35,5 +35,17 @@
 	 	<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
 	 	<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
 	 	<entry key="BrendaProcessor" value="BrendaRefCreator"/>
+	 	
+	 	<entry key="zincOrthologFileProcessor">
+ 			<list>
+ 				<value>zincSubstancesReferenceCreator</value>
+ 				<value>zincFDAReferenceCreator</value>
+ 				<value>zincWorldDrugsReferenceCreator</value>
+ 				<value>zincMetabolitesReferenceCreator</value>
+ 				<value>zincBiogenicReferenceCreator</value>
+ 				<value>zincInvestigationalReferenceCreator</value>
+ 				<value>zincPurchasablePredictionsReferenceCreator</value>
+ 			</list>
+	 	</entry>
 	 </util:map>
 </beans>

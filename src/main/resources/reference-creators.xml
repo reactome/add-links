@@ -207,6 +207,92 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
+		<!-- Create references to other ZINC resources -->
+		<entry key="zincSubstancesReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincSubstancesReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_Substances"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincSubstancesReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincFDAReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincFDAReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_FDA_approved"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincFDAReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincWorldDrugsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincWorldDrugsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_World_Drugs"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincWorldDrugsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincMetabolitesReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincMetabolitesReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_Metabolites"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincMetabolitesReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincBiogenicReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincBiogenicReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_Biogenic"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincBiogenicReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincInvestigationalReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincInvestigationalReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_Biogenic"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincInvestigationalReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincPurchasablePredictionsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincPurchasablePredictionsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC_Predictions_Purchasable"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincPurchasablePredictionsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		
 		<entry key="HmdbMoleculeReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator" id="HmdbMoleculeReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
