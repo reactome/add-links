@@ -13,6 +13,11 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 		super(null);
 	}
 	
+	public ZincOrthologsFileProcessor(String processorName)
+	{
+		this.processorName = processorName;
+	}
+	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
