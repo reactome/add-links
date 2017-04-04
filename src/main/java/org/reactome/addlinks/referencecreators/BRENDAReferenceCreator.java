@@ -33,18 +33,17 @@ public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 		{
 			String sourceReferenceIdentifier = (String) instance.getAttributeValue(ReactomeJavaConstants.identifier);
 			Long speciesID = null;
-			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>)instance.getSchemaAttributes())
+			@SuppressWarnings("unchecked")
+			Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) instance.getSchemClass().getAttributes();
+			if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 			{
-				if (attrib.getName().equals(ReactomeJavaConstants.species) )
+				GKInstance speciesInst = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
+				if (speciesInst != null)
 				{
-					GKInstance speciesInst = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
-					if (speciesInst != null)
-					{
-						speciesID = new Long(speciesInst.getDBID());
-					}
+					speciesID = new Long(speciesInst.getDBID());
 				}
 			}
-			
+		
 			if (mapping.containsKey(sourceReferenceIdentifier))
 			{
 				sourceIdentifiersWithNewIdentifier ++;

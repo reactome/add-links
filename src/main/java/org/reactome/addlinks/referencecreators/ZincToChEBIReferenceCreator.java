@@ -39,15 +39,14 @@ public class ZincToChEBIReferenceCreator extends SimpleReferenceCreator<List<Str
 			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
 			// if we want new identifiers to have the same species of the thing which they refer to.
 			Long speciesID = null;
-			for (GKSchemaAttribute attrib : (Collection<GKSchemaAttribute>)sourceReference.getSchemaAttributes())
+			@SuppressWarnings("unchecked")
+			Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
+			if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 			{
-				if (attrib.getName().equals(ReactomeJavaConstants.species) )
+				GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+				if (speciesInst != null)
 				{
-					GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
-					if (speciesInst != null)
-					{
-						speciesID = new Long(speciesInst.getDBID());
-					}
+					speciesID = new Long(speciesInst.getDBID());
 				}
 			}
 			 
