@@ -88,6 +88,7 @@ public class AddLinks
 	
 	private MySQLAdaptor dbAdapter;
 
+	@SuppressWarnings("unchecked")
 	public void doAddLinks() throws Exception
 	{
 		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
@@ -238,6 +239,7 @@ public class AddLinks
 	{
 		if (fileRetrieverFilter.contains("EnsemblToALL"))
 		{
+			logger.info("Executing ENSEMBL file retrievers");
 			EnsemblFileRetrieverExecutor ensemblFileRetrieverExecutor = new EnsemblFileRetrieverExecutor();
 			ensemblFileRetrieverExecutor.setEnsemblBatchLookup(ensemblBatchLookup);
 			ensemblFileRetrieverExecutor.setEnsemblFileRetrievers(ensemblFileRetrievers);
@@ -252,6 +254,7 @@ public class AddLinks
 	{
 		if (this.fileRetrieverFilter.contains("BrendaRetriever"))
 		{
+			logger.info("Executing BRENDA file retrievers");
 			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
 			BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 			
@@ -322,6 +325,7 @@ public class AddLinks
 	{
 		if (this.fileRetrieverFilter.contains("KEGGRetriever"))
 		{
+			logger.info("Executing KEGG retriever");
 			UniprotFileRetreiver uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
 			KEGGFileRetriever keggFileRetriever = (KEGGFileRetriever) this.fileRetrievers.get("KEGGRetriever");
 			
@@ -436,6 +440,7 @@ public class AddLinks
 	 * @throws IOException
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	private void createReferences(long personID, Map<String, Map<String, ?>> dbMappings) throws IOException, Exception
 	{
 		for (String refCreatorName : this.referenceCreatorFilter)
@@ -458,7 +463,6 @@ public class AddLinks
 						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
 						{
 							logger.info("Ensembl cross-references: {}", k);
-							@SuppressWarnings("unchecked")
 							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
 							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
 						}
@@ -469,7 +473,6 @@ public class AddLinks
 						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
 						{
 							logger.info("Ensembl cross-references: {}", k);
-							@SuppressWarnings("unchecked")
 							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
 							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
 						}
@@ -615,6 +618,7 @@ public class AddLinks
 	/**
 	 * Create ReferenceDatabase objects, in case they done yet exist in this database. 
 	 */
+	@SuppressWarnings("unchecked")
 	private void executeCreateReferenceDatabases()
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter);
@@ -739,6 +743,7 @@ public class AddLinks
 	 */
 	private void executeUniprotFileRetrievers(int numberOfUniprotDownloadThreads)
 	{
+		logger.info("Executing UniProt file retrievers");
 		UniProtFileRetreiverExecutor executor = new UniProtFileRetreiverExecutor();
 		executor.setFileRetrieverFilter(fileRetrieverFilter);
 		executor.setObjectCache(objectCache);
