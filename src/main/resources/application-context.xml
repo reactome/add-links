@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<context:property-placeholder location="classpath:*.properties" />
+	<context:property-placeholder location="file:resources/*.properties"  />
 	
 <!-- 	<context:annotation-config/>
 	
@@ -35,20 +35,18 @@
 	
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
-		<constructor-arg index="1" name="lazyLoad" value="true" />
+		<constructor-arg index="1" type="boolean" name="lazyLoad" value="${lazyLoadCache}" />
 	</bean>
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+ 		<value>UniProtToKEGG</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
-		<!--
+ 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>Zinc</value>
 		<value>OrthologsFromZinc</value>
-		<value>UniProtToKEGG</value>
-		<value>KEGGRetriever</value>
 		<value>RheaRetriever</value>
 		<value>EnsemblToALL</value>
-		<value>BrendaRetriever</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToPDB</value>
@@ -61,29 +59,27 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
-		<value>OrphanetToUniprotReferenceDNASequence</value>
-		<value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value>
-		<value>RHEAIdentifierToReactionlikeEvent</value>
-		 -->
+		<value>RHEAIdentifierToReactionlikeEvent</value> 
+		<value>KEGGRetriever</value>
+		<value>BrendaRetriever</value>
+ 		<!-- <value>IntActDatabaseIdentifierToComplexOrReactionlikeEvent</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>KEGGFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
+
+ 		<value>RheaFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
-		<!--
 		<value>ZincMoleculesFileProcessor</value>
 		<value>zincProtFileProcessor</value>
-		<value>KEGGFileProcessor</value>
-		<value>RheaFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
-		<value>BrendaProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>PROFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
-		<value>IntActFileProcessor</value>
  		<value>UniprotToEnsemblFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
@@ -91,19 +87,14 @@
 		<value>UniprotToOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		 -->
+		<value>BrendaProcessor</value>
+		<!-- <value>IntActFileProcessor</value> -->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>FlyBaseReferenceCreator</value>
-		<!--
-		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value>
-		<value>RheaReferenceCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
-		<value>BrendaRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		
 		<value>upMappedPDBRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
@@ -111,13 +102,23 @@
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
+		
+		<value>FlyBaseReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>zincToChEBIReferenceCreator</value> 
+		<value>RheaReferenceCreator</value>
+		
+		
+		<value>BrendaRefCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		
 		<value>OrphanetReferenceCreator</value>
 		<value>proRefCreator</value>
 		<value>pdbRefCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value> -->
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
