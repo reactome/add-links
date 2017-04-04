@@ -1,3 +1,6 @@
 #! /bin/bash
 
-java -cp ./resources/ -Dlog4j.configurationFile=resources/log4j2.xml -jar AddLinks.jar ./resources/application-context.xml
+java -cp "$(pwd)/resources" \
+	-Dlog4j.configurationFile=$(pwd)/resources/log4j2.xml \
+	-Dconfig.location=$(pwd)/resources/addlinks.properties \
+	-jar AddLinks.jar file://$(pwd)/resources/application-context.xml

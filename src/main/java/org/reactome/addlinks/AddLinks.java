@@ -1,5 +1,6 @@
 package org.reactome.addlinks;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,11 +96,10 @@ public class AddLinks
 			throw new Error("ObjectCache cannot be null.");
 		}
 		
-		//TODO: Command line arguments:
-		// - paths to spring config and addlinks.properties files.
-		
 		Properties applicationProps = new Properties();
-		applicationProps.load(AddLinks.class.getClassLoader().getResourceAsStream("addlinks.properties"));
+		String propertiesLocation = System.getProperty("config.location");
+		
+		applicationProps.load(new FileInputStream(propertiesLocation));
 		
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
 		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
