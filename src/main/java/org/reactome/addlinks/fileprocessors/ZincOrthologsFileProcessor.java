@@ -15,7 +15,7 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 	
 	public ZincOrthologsFileProcessor(String processorName)
 	{
-		this.processorName = processorName;
+		super(processorName);
 	}
 	
 	@Override
@@ -30,7 +30,8 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 		// We need name (as ZINC Ortholog) and uniprot.
 		try
 		{
-			Files.readAllLines(this.pathToFile).stream().sequential().forEach(line -> {
+			// skip the first line - it is a header line.
+			Files.readAllLines(this.pathToFile).stream().sequential().skip(1).forEach(line -> {
 				// We want to map from UniProt to ZINC Ortholog
 				String[] parts = line.split(",");
 				mappings.put(parts[2], parts[0]);
@@ -41,7 +42,7 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		logger.info("{} values extracted from ZINC Orthologs file.", mappings.keySet().size());
+		this.logger.info("{} values extracted from ZINC Orthologs file.", mappings.keySet().size());
 		return mappings;
 	}
 
