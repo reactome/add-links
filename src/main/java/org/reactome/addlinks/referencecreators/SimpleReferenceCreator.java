@@ -167,12 +167,24 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		{
 			for (GKInstance xref : xrefs)
 			{
-				xrefsb.append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString()).append(",\t");
+				xrefsb.append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+				GKInstance xrefRefDB = (GKInstance) xref.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
+				xrefsb.append("@").append(xrefRefDB.getAttributeValue(ReactomeJavaConstants._displayName)).append(",\t");
 				// We won't add a cross-reference if it already exists
 				if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( targetRefDBIdentifier ))
 				{
-					logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-					return true;
+					// We found a cross-reference with the same identifiers, but it's possible this identifier is used by more than one Ref DB. Need to check...
+					// Found a cross reference with the same identifer AND the same ref db displayname.
+					if (xrefRefDB.getAttributeValue(ReactomeJavaConstants._displayName).equals(this.targetRefDB))
+					{
+						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
+						return true;	
+					}
+					else
+					{
+						logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, xrefRefDB.getAttributeValue(ReactomeJavaConstants._displayName), this.targetRefDB);
+					}
+					
 				}
 			}
 			logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
