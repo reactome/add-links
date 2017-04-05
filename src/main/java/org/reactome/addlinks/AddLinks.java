@@ -48,6 +48,7 @@ import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
+import org.reactome.addlinks.referencecreators.IntActReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
@@ -499,6 +500,11 @@ public class AddLinks
 					if (refCreator instanceof RHEAReferenceCreator)
 					{
 						sourceReferences = objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
+					}
+					if (refCreator instanceof IntActReferenceCreator)
+					{
+						// The IntActReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
+						sourceReferences = new ArrayList<GKInstance>();
 					}
 					else
 					{
