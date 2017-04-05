@@ -93,7 +93,7 @@
 				<constructor-arg name="processorName" value="file-processors/IntActFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/reactome.dat"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_to_reactome.dat"/>
 					</bean>
 				</property>
 			</bean>
