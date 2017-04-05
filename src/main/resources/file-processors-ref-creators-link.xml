@@ -10,7 +10,7 @@
 	<!-- 
 	This file is a mapping that maps file processors to reference creators.
 	 -->
-	<util:list id="zincCreators">
+	<util:list id="zincCreators" value-type="java.lang.String" list-class="java.util.ArrayList">
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
 		<value>zincWorldDrugsReferenceCreator</value>
