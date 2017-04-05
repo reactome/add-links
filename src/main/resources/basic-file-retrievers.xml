@@ -42,12 +42,12 @@
 			</bean>
 		</entry>
 
-		<entry key="IntActDatabaseIdentifierToComplexOrReactionlikeEvent">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntActDatabaseIdentifierToComplexOrReactionlikeEvent">
+		<entry key="IntActComplexPortal">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntActComplexPortal">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/current/various/reactome.dat" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/reactome.dat" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_to_reactome.dat" />
 				<property name="maxAge" ref="maxFileAge" />
-				<constructor-arg name="retrieverName" value="retrievers/IntActDatabaseIdentifierToComplexOrReactionlikeEvent"/>
+				<constructor-arg name="retrieverName" value="retrievers/IntActComplexPortal"/>
 			</bean>
 		</entry>
 		
