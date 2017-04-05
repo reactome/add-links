@@ -501,7 +501,7 @@ public class AddLinks
 					{
 						sourceReferences = objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
 					}
-					if (refCreator instanceof IntActReferenceCreator)
+					else if (refCreator instanceof IntActReferenceCreator)
 					{
 						// The IntActReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
 						sourceReferences = new ArrayList<GKInstance>();
@@ -735,7 +735,7 @@ public class AddLinks
 	private Map<String, Map<String, ?>> executeFileProcessors()
 	{
 		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
-		logger.info("{} file processors to execute.", this.fileProcessors.keySet().size());
+		logger.info("{} file processors to execute.", this.fileProcessorFilter.size());
 		this.fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
 			{
 				logger.info("Executing file processor: {}", k);
