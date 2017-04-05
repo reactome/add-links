@@ -205,6 +205,17 @@
 			</bean>
 		</entry>
 		
+		<entry key="zincOrthologFileProcessor">
+			<bean id="zincOrthologFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincOrthologsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/zincOrthologFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.csv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		
 		<entry key="KEGGFileProcessor">
 			<bean id="KEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.KEGGFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/KEGGFileProcessor"/>
