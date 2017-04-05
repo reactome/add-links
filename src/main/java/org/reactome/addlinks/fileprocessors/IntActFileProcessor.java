@@ -36,7 +36,7 @@ public class IntActFileProcessor extends FileProcessor<List<String>>
 				}
 				else
 				{
-					reactomeToIntActMapping.put(parts[0], new ArrayList<String>(Arrays.asList(parts[1])));
+					reactomeToIntActMapping.put(parts[1], new ArrayList<String>(Arrays.asList(parts[0])));
 				}
 			});
 		}
