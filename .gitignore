@@ -28,3 +28,5 @@ logs
 
 #ignore generated jar files
 AddLinks*jar
+
+scripts/resources
