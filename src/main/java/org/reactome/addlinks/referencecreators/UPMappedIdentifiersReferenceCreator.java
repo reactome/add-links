@@ -1,6 +1,7 @@
 package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,9 +51,9 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
 
 		// First, we need a map of sourceReferences.
-		Map<String, List<GKInstance>> sourceRefMap = new HashMap<String, List<GKInstance>>(sourceReferences.size());
+		Map<String, List<GKInstance>> sourceRefMap = Collections.synchronizedMap(new HashMap<String, List<GKInstance>>(sourceReferences.size()));
 		
-		sourceReferences.stream().forEach(sourceRef -> {
+		sourceReferences.parallelStream().forEach(sourceRef -> {
 			try
 			{
 				String identifier = (String) ((GKInstance) sourceRef).getAttributeValue(ReactomeJavaConstants.identifier);
@@ -92,31 +93,36 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
-				mappings.get(speciesID).keySet().stream().parallel().forEach(uniprotID -> 
+				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
 				{
-
+					try
+					{
+						MySQLAdaptor localAdapter ;
+						long threadID = Thread.currentThread().getId();
+						if (adapterPool.containsKey(threadID))
+						{
+							localAdapter = adapterPool.get(threadID);
+						}
+						else
+						{
+							logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+							localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
+							adapterPool.put(threadID, localAdapter);
+						}
+					}
+					catch (SQLException e)
+					{
+						e.printStackTrace();
+						throw new Error(e);
+					}
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
 					
 						String sourceIdentifier = uniprotID;
 						String targetIdentifier = otherIdentifierID;
-						
 						try
 						{
-							MySQLAdaptor localAdapter ;
-							long threadID = Thread.currentThread().getId();
-							if (adapterPool.containsKey(threadID))
-							{
-								localAdapter = adapterPool.get(threadID);
-							}
-							else
-							{
-								logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
-								localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
-								adapterPool.put(threadID, localAdapter);
-							}
 							// Now we need to get the DBID of the pre-existing identifier.
-
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
 							if (sourceInstances != null && sourceInstances.size() > 0)
 							{
