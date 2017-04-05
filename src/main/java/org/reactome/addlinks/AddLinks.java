@@ -78,7 +78,7 @@ public class AddLinks
 	
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
 	
-	private Map<String, String> processorCreatorLink;
+	private Map<String, Object> processorCreatorLink;
 	
 	private Map<String, UPMappedIdentifiersReferenceCreator> uniprotReferenceCreators;
 	
@@ -448,7 +448,22 @@ public class AddLinks
 			logger.info("Executing reference creator: {}", refCreatorName);
 			List<GKInstance> sourceReferences = new ArrayList<GKInstance>();
 			// Try to get the processor name, except for E
-			Optional<String> fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> this.processorCreatorLink.get(k).equals(refCreatorName) ).map( m -> m).findFirst();
+			Optional<?> fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> {
+				if (this.processorCreatorLink.get(k) instanceof String)
+				{
+					return this.processorCreatorLink.get(k).equals(refCreatorName);
+				}
+				else if (this.processorCreatorLink.get(k) instanceof List)
+				{
+					List<String> sublist = ((List<String>)this.processorCreatorLink.get(k)); 
+					return sublist.stream().filter( element -> element.equals(refCreatorName) ).findFirst().isPresent();
+				}
+				else // if not a list and not a string, something is wrong.
+				{
+					return false;
+				}
+					
+			} ).map( m -> m ).findFirst();
 			if (referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")
@@ -497,7 +512,25 @@ public class AddLinks
 					}
 					else
 					{
-						refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName.get()), sourceReferences);
+						if (fileProcessorName.isPresent())
+						{
+							if (fileProcessorName.get() instanceof String)
+							{
+								refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fileProcessorName.get()), sourceReferences);
+							}
+							// For all the extra ZINC references, they all use the same file processor so it's a string-to-list mapping.
+							else if (fileProcessorName.get() instanceof List<?>)
+							{
+								for (String fpName : (List<String>)fileProcessorName.get())
+								{
+									refCreator.createIdentifiers(personID, (Map<String, ?>) dbMappings.get(fpName), sourceReferences);
+								}
+							}
+						}
+						else
+						{
+							logger.warn("Reference Creator name \"{}\" could not be found it mapping between file processors and reference creators, so it will not be executed and references will not be created.", refCreatorName);
+						}
 					}
 				}
 				
@@ -807,7 +840,7 @@ public class AddLinks
 		this.ensemblBatchLookup = ensemblBatchLookup;
 	}
 
-	public void setProcessorCreatorLink(Map<String, String> processorCreatorLink)
+	public void setProcessorCreatorLink(Map<String, Object> processorCreatorLink)
 	{
 		this.processorCreatorLink = processorCreatorLink;
 	}
