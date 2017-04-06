@@ -59,7 +59,8 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 		
 		String dbName = "ENSEMBL_%_PROTEIN";
 		logger.debug("Trying to find database with name {}", dbName);
-		Set<GKInstance> databases = getRefDatabaseObjects(dbName, "%www.ensembl.org%", " LIKE ");
+		String url = "%www.ensembl.org%";
+		Set<GKInstance> databases = getRefDatabaseObjects(dbName, url, " LIKE ");
 		if (databases.size() > 0)
 		{
 			logger.debug("Database {} exists ({} matches), now trying to find entities that reference it.", dbName, databases.size());
@@ -111,8 +112,13 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 				}
 			}
 		}
-		// TODO: Add code to handle non-"core" ENSEMBL databases, such as the database at plants.ensembl.org.
-		databases = getRefDatabaseObjects(dbName, "%www.ensembl.org%", " NOT LIKE ");
+		else
+		{
+			logger.debug("Could not find a database with name = {} and url like {}", dbName, url);
+		}
+		
+		url = "%www.ensembl.org%";
+		databases = getRefDatabaseObjects(dbName, url, " NOT LIKE ");
 		logger.debug("{} databases found for non-core ENSEMBL databases.", databases.size());
 		if (databases.size() > 0)
 		{
@@ -125,6 +131,10 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
 				executeEnsemblFileRetrievers(ensemblFileRetrieversNonCore, species, speciesName, refGeneProdsBySpecies.get(species));
 			}
+		}
+		else
+		{
+			logger.debug("Could not find a database with name = {} and url NOT LIKE {}", dbName, url);
 		}
 	}
 
@@ -139,7 +149,7 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 				@Override
 				public Boolean call() throws Exception
 				{
-					logger.info("Executing file retriever: {}",ensemblRetrieverName);
+					logger.info("Executing file retriever: {}; for species {}; for {} identifiers",ensemblRetrieverName, speciesName, identifiers.size());
 					EnsemblFileRetriever retriever = retrievers.get(ensemblRetrieverName);
 					retriever.setFetchDestination(retriever.getFetchDestination().replaceAll("(\\.*[0-9])*\\.xml", "." + species + ".xml"));
 					retriever.setSpecies(speciesName);
