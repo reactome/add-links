@@ -141,7 +141,7 @@ public class BRENDAFileRetriever extends FileRetriever
 					result = uniprotID + "\t" + result + "\n"; 
 
 					sb.append(result);
-					if (requestCounter.incrementAndGet() % 100 == 0)
+					if (requestCounter.incrementAndGet() % 1000 == 0)
 					{
 						logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
 					}
