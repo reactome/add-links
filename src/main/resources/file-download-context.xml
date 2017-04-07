@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<context:property-placeholder location="file:resources/*.properties"  />
+	
+<!-- 	<context:annotation-config/>
+	
+	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
+ -->	
+	<import resource="reference-databases.xml"/>
+	<import resource="basic-file-retrievers.xml"/>
+	<import resource="uniprot-file-retrievers.xml"/>
+	<import resource="ensembl-file-retrievers.xml"/>
+	<import resource="file-processors.xml"/>
+	<import resource="file-processors-ref-creators-link.xml"/>
+	<import resource="reference-creators.xml"/>
+
+	<!-- DB Adapter 
+	public MySQLAdaptor(String host,String database,String username,String password,int port)
+	-->
+	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
+		<constructor-arg name="host" index="0" value="${database.host}"/>
+		<constructor-arg name="database" index="1" value="${database.name}"/>
+		<constructor-arg name="username" index="2" value="${database.user}"/>
+		<constructor-arg name="password" index="3" value="${database.password}"/>
+		<constructor-arg name="port" index="4" value="${database.port}"/>
+	</bean>
+	
+	
+	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
+		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" type="boolean" name="lazyLoad" value="${lazyLoadCache}" />
+	</bean>
+	
+
+	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>OrthologsCSVFromZinc</value>
+ 		<value>UniProtToKEGG</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+ 		<value>OrphanetToUniprotReferenceDNASequence</value>
+		<value>Zinc</value>
+		<value>OrthologsFromZinc</value>
+		<value>RheaRetriever</value>
+		<value>EnsemblToALL</value>
+		<value>UniProtToOMIM</value>
+		<value>UniProtToEntrez_Gene</value>
+		<value>UniProtToPDB</value>
+		<value>UniProtToRefSeqPeptide</value>
+		<value>UniProtToRefSeqRNA</value>
+		<value>UniProtToENSEMBL</value>
+		<value>UniProtToWormbase</value>
+ 		<value>PROToReferencePeptideSequence</value>
+		<value>EntrezGeneToUniprotReference</value>
+		<value>HmdbProteins</value>
+		<value>HmdbMolecules</value>
+		<value>DOCKBlaster</value>
+		<value>RHEAIdentifierToReactionlikeEvent</value> 
+		<value>KEGGRetriever</value>
+		<value>BrendaRetriever</value>
+ 		<value>IntActComplexPortal</value>
+	</util:list>
+
+	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		 
+	</util:list>
+
+	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		 
+	</util:list>
+
+	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
+		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">
+		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
+		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
+		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
+		<property name="processorCreatorLink" ref="processorCreatorLink"/>
+	</bean>
+	
+	
+</beans>
