@@ -201,6 +201,7 @@ public final class EnsemblServiceResponseProcessor
 		}
 		else
 		{
+			// actually, this is not so strange - I think that http://rest.ensemblgenomes.org/ *never* returns X-RateLimit-Remaining; I think that header *only* comes from rest.ensembl.org
 			logger.warn("No X-RateLimit-Remaining was returned. This is odd. Response message: {} ; Headers returned are: {}\nLast known value for remaining was {}", response.getStatusLine().toString(), Arrays.stream(response.getAllHeaders()).map( h -> h.toString()).collect(Collectors.toList()), EnsemblServiceResponseProcessor.numRequestsRemaining);
 		}
 		return result;

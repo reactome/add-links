@@ -94,34 +94,16 @@ public class EnsemblFileRetriever extends FileRetriever
 		}
 	}
 	
-	@Deprecated
-	public String getMapFromDb()
-	{
-		return this.mapFromDb;
-	}
-	
 	public String getMapToDb()
 	{
 		return this.mapToDb;
 	}
 	
-	@Deprecated
-	public void setMapFromDbEnum(EnsemblDB mapFromDb)
-	{
-		this.mapFromDb = mapFromDb.getEnsemblName();
-	}
-
 	public void setMapToDbEnum(EnsemblDB mapToDb)
 	{
 		this.mapToDb = mapToDb.getEnsemblName();
 	}
 	
-	@Deprecated
-	public void setMapFromDb(String mapFromDb)
-	{
-		this.mapFromDb = mapFromDb;
-	}
-
 	public void setMapToDb(String mapToDb)
 	{
 		this.mapToDb = mapToDb;

@@ -38,7 +38,7 @@
 	<!-- ENSEMBL -->
 	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="ENSEMBLToEntrezGene">
 		<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
-		<property name="mapFromDbEnum" ref="EnsemblDB_ALL"/>
+		<!-- <property name="mapFromDbEnum" ref="EnsemblDB_ALL"/> -->
 			<!--  the fromDB doesn't really matter... eventually it should be removed. -->
 		<property name="maxAge" ref="maxFileAge" />
 		

@@ -163,7 +163,6 @@ public class TestEnsemblFileRetrievalIT
 		EnsemblFileRetriever xrefRetriever = new EnsemblFileRetriever();
 		xrefRetriever.setDataURL(new URI("http://rest.ensembl.org/xrefs/id/"));
 		xrefRetriever.setFetchDestination("/tmp/addlinks-downloaded-files/ensembl-mappings/ensembl_to_EntrezGene.xml");
-		xrefRetriever.setMapFromDbEnum(EnsemblDB.ENSEMBLProtein);
 		xrefRetriever.setMapToDbEnum(EnsemblDB.EntrezGene);
 		List<String> ensgList = new ArrayList<String>(mappings2.values());
 		xrefRetriever.setIdentifiers(ensgList);
