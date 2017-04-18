@@ -13,8 +13,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-//import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,10 +25,6 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblServiceResponseProcess
 
 public class EnsemblFileRetriever extends FileRetriever
 {
-	//private static final Logger logger = LogManager.getLogger();
-	// Let's assume that initially we can make 10 requests. This will be reset once we get the first actual response from the server.
-	//private static AtomicInteger numRequestsRemaining = new AtomicInteger(10);
-	private String mapFromDb="";
 	private String mapToDb="";
 	private String species;
 	private List<String> identifiers;
@@ -124,20 +118,13 @@ public class EnsemblFileRetriever extends FileRetriever
 		this.identifiers = identifiers;
 	}
 	
-
-	
 	@Override
 	public void downloadData()
 	{
 		//TODO: migrate to Unirest client: https://github.com/Ensembl/ensembl-rest/wiki/Example-Java-Client-with-Unirest
 		// (I kinda wish I'd known about this sooner!) 
 		
-		// Check inputs:
-		/*if (this.mapFromDb == null || this.mapFromDb.trim().length() == 0)
-		{
-			throw new RuntimeException("You must provide a database name to map from!");
-		}
-		else */if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
+		if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map to!");
 		}
@@ -172,11 +159,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
 			StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
-			logger.info("");
-			//int i = 0;
-			//AtomicInteger i = new AtomicInteger(0);
 			logger.debug("{} identifiers to look up.", identifiers.size());
-			//for (String identifier : identifiers)
 			identifiers.parallelStream().forEach( identifier ->
 			{ 
 				URIBuilder builder = new URIBuilder();
@@ -192,12 +175,10 @@ public class EnsemblFileRetriever extends FileRetriever
 				{
 					HttpGet get = new HttpGet(builder.build());
 					logger.trace("URI: "+get.getURI());
-					
 					boolean done = false;
 					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor(this.logger);
 					while (!done)
 					{
-						
 						try (CloseableHttpClient getClient = HttpClients.createDefault();
 								CloseableHttpResponse getResponse = getClient.execute(get);)
 						{
@@ -206,7 +187,6 @@ public class EnsemblFileRetriever extends FileRetriever
 							{
 								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
 								Thread.sleep(result.getWaitTime().toMillis());
-								
 								done = false;
 							}
 							else
@@ -231,7 +211,6 @@ public class EnsemblFileRetriever extends FileRetriever
 							
 						} 
 					}
-					//i++;
 				}
 				catch (URISyntaxException e)
 				{
@@ -268,7 +247,6 @@ public class EnsemblFileRetriever extends FileRetriever
 		{
 			e.printStackTrace();
 			throw new Error(e);
-
 		}
 	}
 }
