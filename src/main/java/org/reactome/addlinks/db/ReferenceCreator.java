@@ -233,6 +233,7 @@ public class ReferenceCreator
 				try
 				{
 					instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
+					instanceReferredToByIdentifier.addAttributeValue(ReactomeJavaConstants.modified, this.instanceEdit);
 				}
 				catch (InvalidAttributeValueException e)
 				{
@@ -319,7 +320,7 @@ public class ReferenceCreator
 		GKInstance instanceEdit = null;
 		try
 		{
-			instanceEdit = createDefaultIE(this.dbAdapter, personID, true, this.referringToSchemaClass.getClass() + " inserted by " + creatorName);
+			instanceEdit = createDefaultIE(this.dbAdapter, personID, true, this.referringToSchemaClass.getName() + " inserted by " + creatorName);
 			instanceEdit.getDBID();
 			this.dbAdapter.updateInstance(instanceEdit);
 		}
