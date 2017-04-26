@@ -129,14 +129,14 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 								if (sourceInstances.size() > 1)
 								{
 									//Actually, it's OK to have > 1 instances. This just means that the SOURCE ID has multiple entities that will be references, such as a ReferenceGeneProduct and a ReferenceIsoform.
-									logger.info("Got {} elements when fetching instances by attribute value: {}.{} {} \"{}\"",sourceInstances.size(),this.classReferringToRefName, this.referringAttributeName, "=", sourceIdentifier);
+									logger.info("Fetch instance by attribute ({}.{}={})yields {} items  {}",this.classReferringToRefName, this.referringAttributeName, sourceIdentifier,sourceInstances.size());
 								}
 			
 								for (GKInstance inst : sourceInstances)
 								{
 									if (sourceInstances.size() > 1)
 									{
-										logger.trace("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
+										logger.trace("\tDealing with duplicate instances (w.r.t. Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 									}
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
