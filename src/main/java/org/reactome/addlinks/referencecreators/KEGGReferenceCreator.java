@@ -72,9 +72,10 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					{
 						keggIdentifier = keggGeneIdentifier;
 					}
+					StringBuilder xrefsSb = new StringBuilder();
 					for (GKInstance xref : xrefs)
 					{
-						logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+						xrefsSb.append(" ").append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
 						// We won't add a cross-reference if it already exists
 						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( keggIdentifier ))
 						{
@@ -85,6 +86,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							break;
 						}
 					}
+					logger.trace("xrefs:{}",xrefsSb.toString());
 					if (!xrefAlreadyExists)
 					{
 						String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
