@@ -54,7 +54,7 @@ public class BRENDAFileRetriever extends FileRetriever
 			this.password = p;
 		}
 		
-		public String callBrendaService(String endpoint, String operation, String wsArgs)
+		public String callBrendaService(String endpoint, String operation, String wsArgs) throws MalformedURLException, ServiceException, NoSuchAlgorithmException, RemoteException
 		{
 			//String endpoint = "http://www.brenda-enzymes.org/soap/brenda_server.php";
 			String password = this.password;
@@ -85,22 +85,22 @@ public class BRENDAFileRetriever extends FileRetriever
 			catch (MalformedURLException e)
 			{
 				logger.error("Bad URL! URL: {} Message: {}", endpoint, e.getMessage());
-				throw new Error(e);
+				throw e;
 			}
 			catch (ServiceException e)
 			{
 				logger.error("Could not create Service Call: {}", e.getMessage());
-				throw new Error(e);
+				throw e;
 			}
 			catch (NoSuchAlgorithmException e)
 			{
 				logger.error("Could not generate Digest: {}", e.getMessage());
-				throw new Error(e);
+				throw e;
 			}
 			catch (RemoteException e)
 			{
 				logger.error("Error occurred while making webservice call: {}", e.getMessage());
-				throw new Error(e);
+				throw e;
 			}
 		}
 	}
@@ -131,8 +131,17 @@ public class BRENDAFileRetriever extends FileRetriever
 				{
 					// BRENDA won't work if there's an underscore in the species name.
 					String s = speciesName.replace("_", " ");
-					String result = client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
-					
+					String result = null;
+					try
+					{
+						client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
+					}
+					catch (Exception e)
+					{
+						//e.printStackTrace();
+						logger.error("Error was caught when trying to call the BRENDA service! Uniprot ID: {}; Species: {}; Error message: {}", uniprotID, speciesName, e.getMessage());
+						throw new Error(e);
+					}
 					if (result == null || result.trim().equals(""))
 					{
 						noMapping.incrementAndGet();
@@ -149,6 +158,8 @@ public class BRENDAFileRetriever extends FileRetriever
 					{
 						logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
 					}
+	
+					
 					return true;
 				}
 			};
