@@ -28,6 +28,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.gk.schema.SchemaAttribute;
 import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
 import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -233,7 +234,50 @@ public class AddLinks
 		
 		logger.info("\n"+reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport));
 		
+		logger.info("Purging unused ReferenceDatabse objects.");
+		
+		this.purgeUnusedRefDBs();
+		
 		logger.info("Process complete.");
+	}
+
+	@SuppressWarnings("unchecked")
+	private void purgeUnusedRefDBs()
+	{
+		try
+		{
+			@SuppressWarnings("unchecked")
+			Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
+			for (GKInstance refDB : refDBs)
+			{
+				this.dbAdapter.loadInstanceAttributeValues(refDB);
+				@SuppressWarnings("unchecked")
+				List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> refMap = new ArrayList<GKInstance> ();
+				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
+//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.crossReference));
+//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.refer));
+				
+				int refCount = 0;
+				if (refMap != null)
+				{
+					refCount = refMap.size();
+				}
+				logger.info("ReferenceDatabase: {} ({}); # referrers: {}", refDB.getDBID(), names.toString(), refCount);
+				if (refCount == 0)
+				{
+					logger.info("NOTHING refers to ReferenceDatabase DB ID {} ({}) so it will now be deleted.", refDB.getDBID(), names.toString());
+					this.dbAdapter.deleteByDBID(refDB.getDBID());
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			throw new Error(e);
+		}
+		
 	}
 
 	private void executeEnsemblFileRetriever() throws Exception
