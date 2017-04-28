@@ -146,7 +146,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.genome.jp/" />
-				<entry key="AccessURL" value="http://www.genome.jp/dbget-bin/www_bget?###SP3###+###ID###" />
+				<entry key="AccessURL" value="http://www.genome.jp/dbget-bin/www_bget?###SP3######ID###" />
 			</map>
 		</entry>
 		
