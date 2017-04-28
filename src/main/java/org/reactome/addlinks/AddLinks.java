@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +35,6 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
-import org.gk.schema.SchemaAttribute;
 import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
 import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -236,9 +237,12 @@ public class AddLinks
 		logger.info("\n"+reporter.printReport(postAddLinksReport));
 		
 		logger.info("Differences");
-		
-		logger.info("\n"+reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport));
-		
+		String diffReport = reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
+		// Save the diff report to a file for future reference.uinm
+		String diffReportName = "diffReport" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
+		logger.info("\n"+diffReport);
+		logger.info("(Differences report can also be found in the file: " + diffReportName);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		
 		this.purgeUnusedRefDBs();
