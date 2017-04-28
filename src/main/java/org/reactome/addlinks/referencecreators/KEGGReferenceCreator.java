@@ -66,7 +66,10 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				{
 					// Use the KEGG Identifier (from the NAME line). If there is none, use the KEGG gene id, example: "hsa:12345"
 					String keggIdentifier = keggData.get(KEGGKeys.KEGG_IDENTIFIER);
-					String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
+					//String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
+					// No longer need to include the species code here because it will be a part of the URL. See in KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases
+					// That's where we create the URLs with the species code built-in to the URL.
+					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID);
 					
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
