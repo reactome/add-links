@@ -233,14 +233,27 @@ public class ReferenceCreator
 				try
 				{
 					instanceReferredToByIdentifier.addAttributeValue(xrefAttrib, createdIdentifier);
-					instanceReferredToByIdentifier.addAttributeValue(ReactomeJavaConstants.modified, this.instanceEdit);
 				}
 				catch (InvalidAttributeValueException e)
 				{
 					logger.error("Invalid Attribute: {} added to object: {}", xrefAttrib, instanceReferredToByIdentifier);
 					throw new Error(e);
 				}
-				
+				//SchemaAttribute modifiedAttribute = this.dbAdapter.getSchema().getClassByName(instanceReferredToByIdentifier.getSchemClass().getName()).getAttribute(ReactomeJavaConstants.modified);
+//				@SuppressWarnings("unchecked")
+//				List<GKInstance> modifieds = (List<GKInstance>)instanceReferredToByIdentifier.getAttributeValuesList(ReactomeJavaConstants.modified);
+//				modifieds.add(this.instanceEdit);
+				try
+				{
+					//instanceReferredToByIdentifier.setAttributeValue(ReactomeJavaConstants.modified, modifieds);
+					instanceReferredToByIdentifier.addAttributeValue(ReactomeJavaConstants.modified, this.instanceEdit);
+					this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, ReactomeJavaConstants.modified);
+				}
+				catch (InvalidAttributeValueException e)
+				{
+					logger.error("Invalid Attribute: {} with value {} was added to object: {}", ReactomeJavaConstants.modified,  this.instanceEdit, instanceReferredToByIdentifier);
+					throw new Error(e);
+				}
 				// Only update the relevant attribute, better than updating the entire instance.
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
 				logger.trace("Object with DB_ID: {} has new reference (via {} attribute): DB_ID: {}, Type: {}, Identifier Value: {}",
@@ -360,6 +373,8 @@ public class ReferenceCreator
 			newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
 			newIE.addAttributeValue(ReactomeJavaConstants.note, note);
 			InstanceDisplayNameGenerator.setDisplayName(newIE);
+			String newDisplayName = newIE.getDisplayName().replaceAll(" Unknown$", "");
+			newIE.setDisplayName(newDisplayName);
 			if (needStore)
 			{
 				dba.storeInstance(newIE);
