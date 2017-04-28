@@ -8,7 +8,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 public class KEGGReferenceDatabaseGenerator
 {
 	private static final Logger logger = LogManager.getLogger();
-	private static final String ENSEMBL_URL = "http://www.genome.jp/dbget-bin/www_bget?###SP3###+###ID###";
+	private static final String KEGG_URL = "http://www.genome.jp/dbget-bin/www_bget?###SP3######ID###";
 	private static ReferenceDatabaseCreator dbCreator;
 	
 	private KEGGReferenceDatabaseGenerator()
@@ -30,7 +30,7 @@ public class KEGGReferenceDatabaseGenerator
 		else
 		{
 			logger.debug("Adding a KEGG ReferenceDatabase {} for species: {} with accessURL: {}", dbName, speciesName, speciesURL);
-			KEGGReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(ENSEMBL_URL, speciesURL, dbName, "KEGG", "KEGG Gene");
+			KEGGReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(KEGG_URL, speciesURL, dbName, "KEGG", "KEGG Gene");
 			
 		}
 
@@ -45,8 +45,8 @@ public class KEGGReferenceDatabaseGenerator
 			{
 				try
 				{
-					String speciesURL = ENSEMBL_URL.replace("###SP3###", keggCode + ":");
-					String newDBName = "KEGG Gene_"+speciesName.replace(" ", "_");
+					String speciesURL = KEGG_URL.replace("###SP3###", keggCode + ":");
+					String newDBName = "KEGG Gene ("+speciesName + ")";
 					createReferenceDatabase(newDBName, speciesName, speciesURL, objectCache);
 				}
 				catch(Exception e)
@@ -75,7 +75,7 @@ public class KEGGReferenceDatabaseGenerator
 															.findFirst().orElse(null);
 			if (speciesName != null)
 			{
-				targetDB = "KEGG Gene_" + speciesName.replace(" ", "_");
+				targetDB = "KEGG Gene (" + speciesName + ")";
 			}
 		}
 		return targetDB;
