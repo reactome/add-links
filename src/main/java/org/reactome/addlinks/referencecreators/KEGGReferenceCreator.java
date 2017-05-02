@@ -69,7 +69,11 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					//String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
 					// No longer need to include the species code here because it will be a part of the URL. See in KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases
 					// That's where we create the URLs with the species code built-in to the URL.
-					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID);
+					//
+					// If the data we extracted already begins with a species code such as "hsa:" then we can remove it because
+					// the ReferenceDatabase will contain a species code prefix in its accessUrl. If we *don't*
+					// remove it, we'll end up with URLs like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
+					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID).replaceAll("^[a-z0-9]{3}:", "");
 					
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
