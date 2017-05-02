@@ -250,7 +250,7 @@
 		
 		<entry key="ZINC_target">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_target" />
+				<entry key="PrimaryName" value="ZINC target" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/?uniprot=###ID###" />
 			</map>
@@ -270,49 +270,49 @@
 		-->
 		<entry key="ZINC_Substances">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_Substances" />
+				<entry key="PrimaryName" value="ZINC - Substances" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/substances/" />
 			</map>
 		</entry>
 		<entry key="ZINC_FDA_approved">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_FDA_approved" />
+				<entry key="PrimaryName" value="ZINC - FDA approved" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/substances/subsets/fda/" />
 			</map>
 		</entry>
 		<entry key="ZINC_World_Drugs">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_World_Drugs" />
+				<entry key="PrimaryName" value="ZINC - World Drugs" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/substances/subsets/world/" />
 			</map>
 		</entry>
 		<entry key="ZINC_Metabolites">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_Metabolites" />
+				<entry key="PrimaryName" value="ZINC - Metabolites" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/substances/subsets/metabolites/" />
 			</map>
 		</entry>
 		<entry key="ZINC_Biogenic">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_Biogenic" />
+				<entry key="PrimaryName" value="ZINC - Biogenic" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/substances/subsets/biogenic/" />
 			</map>
 		</entry>
 		<entry key="ZINC_Investigational">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_Investigational" />
+				<entry key="PrimaryName" value="ZINC - Investigational" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/substances/subsets/investigational-only/" />
 			</map>
 		</entry>
 		<entry key="ZINC_Predictions_Purchasable">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="ZINC_Predictions_Purchasable" />
+				<entry key="PrimaryName" value="ZINC - Predictions - Purchasable" />
 				<entry key="URL" value="http://zinc.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/orthologs/###ID###/predictions/subsets/purchasable/" />
 			</map>
@@ -320,7 +320,7 @@
 		
 		<entry key="HMDB_protein">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry key="PrimaryName" value="HMDB_protein" />
+				<entry key="PrimaryName" value="HMDB Protein" />
 				<entry key="URL" value="http://www.hmdb.ca/" />
 				<entry key="AccessURL" value="http://www.hmdb.ca/proteins/###ID###" />
 			</map>
@@ -328,7 +328,7 @@
 		
 		<entry key="HMDB_metabolite">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<entry key="PrimaryName" value="HMDB_metabolite" />
+				<entry key="PrimaryName" value="HMDB Metabolite" />
 				<entry key="URL" value="http://www.hmdb.ca/" />
 				<entry key="AccessURL" value="http://www.hmdb.ca/metabolites/###ID###" />
 			</map>
