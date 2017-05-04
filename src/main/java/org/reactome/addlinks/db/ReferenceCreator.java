@@ -105,20 +105,40 @@ public class ReferenceCreator
 		Long newInstanceID = null;
 		try
 		{
+			// Get the refDB and add it as an attribute.
+			// Store refDBInstance at the ReferenceCreator *instance* level to speed things up for the reference creation process. 
+			if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
+			{
+				this.refDBInstance = getReferenceDatabase(refDB);
+			}
+			// If it's still null, there is a problem!
+			if (this.refDBInstance == null)
+			{
+				throw new Error("Could not retrieve a DatabaseObject for ReferenceDatabase with name " + refDB);
+			}
+
+			// Special case if the incoming identifierValue is going to be conencted with a KEGG database:
+			// If the identifierValue begins with a species code that is ALSO in the accessUrl, we need to remove 
+			// the species code to avoid generating URLs with two species codes such as "hsa:hsa:1234", since KEGG
+			// won't accept that. So far, I think the only situation that could cause this is the Uniprot-to-KEGG
+			// reference creator. Since UniProt references are downloaded, processed, and created in a fairly generic fashion,
+			// there is no easy way to integrate this sort of check in the UniProt-related classes.
+			boolean needToRemoveSpeciesCode = this.refDBInstance.getAttributeValue(ReactomeJavaConstants.name).toString().startsWith("KEGG")
+											&& this.refDBInstance.getAttributeValue(ReactomeJavaConstants.accessUrl).toString().contains(identifierValue.substring(0, 3));
+			if ( needToRemoveSpeciesCode )
+			{
+				identifierValue = identifierValue.substring(4);
+			}
+			
 			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
 			// Try to see if this Identifier is already in the database.
 			// Ideally, this will not return anything.
 			// Of course, we should only look at cross-references on the source object.
-			// It's possible that the Identifier might already exist but for a different object.
-			//@SuppressWarnings("unchecked")
-			//Collection<GKInstance> identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
+			// It's possible that the Identifier might already exist but for a different object. Note that by querying the cache-by-identifier cache,
+			// objects created *during* the execution of AddLinks will not be found since they won't have been added to the cache which gets populated 
+			// when the application starts.
 			Collection<GKInstance> identifiers = objectCache.getByIdentifier(identifierValue, this.schemaClass.getName());
-//			if (identifiers == null || identifiers.isEmpty())
-//			{
-//				// If lookup in the cache failed, let's try the database - although most things *should* be in the cache.
-//				identifiers = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(identifierAttribute, "=", identifierValue);
-//			}
-		
+
 			// TODO: Maybe have a flag that can turn this functionality (check for pre-existing "new" identifiers) on or off.
 			if (identifiers != null && identifiers.size() > 0)
 			{
@@ -165,10 +185,8 @@ public class ReferenceCreator
 			
 			// Create a new instance of the necessary type.
 			GKInstance identifierInstance = new GKInstance(this.schemaClass,null,this.dbAdapter);
-			
-			//logger.debug("Available attributes: {}", this.schemaClass.getAttributes());
+			identifierInstance.addAttributeValue(identifierAttribute, identifierValue);
 
-			//GKInstance instanceEdit = createInstanceEdit(personID, creatorName);
 			if (this.instanceEdit == null)
 			{
 				this.instanceEdit = createInstanceEdit(personID, creatorName);
@@ -177,11 +195,9 @@ public class ReferenceCreator
 			if (this.instanceEdit != null)
 			{
 				identifierInstance.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
-				//GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
 				
 				GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
-				identifierInstance.addAttributeValue(identifierAttribute, identifierValue);
-
+				
 				// Now we add the species, if it's allowed.
 				@SuppressWarnings("unchecked")
 				Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>)identifierInstance.getSchemClass().getAttributes();
@@ -191,19 +207,8 @@ public class ReferenceCreator
 					identifierInstance.addAttributeValue(ReactomeJavaConstants.species, species);
 				}
 				
-				// Get the refDB and add it as an attribute.
-				// Store refDBInstance at the ReferenceCreator *instance* level to speed things up for the reference creation process. 
-				if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
-				{
-					this.refDBInstance = getReferenceDatabase(refDB);
-				}
-				// If it's still null, there is a problem!
-				if (this.refDBInstance == null)
-				{
-					throw new Error("Could not retrieve a DatabaseObject for ReferenceDatabase with name " + refDB);
-				}
 				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
-				
+								
 				// If the user wanted to specify any other attributes, add them here. 
 				if (otherAttribs != null && otherAttribs.keySet().size() > 0)
 				{
@@ -212,22 +217,43 @@ public class ReferenceCreator
 						identifierInstance.setAttributeValue(otherAttributeName, otherAttribs.get(otherAttributeName));
 					}
 				}
-				
-				//Save changes to the new Identifier.
-				InstanceDisplayNameGenerator.setDisplayName(identifierInstance);
-				newInstanceID = this.dbAdapter.storeInstance(identifierInstance);
-				//logger.debug("Just created new {} with DB_ID: {}", identifierInstance.getSchemClass().getName(), newInstanceID);
-				//...and then immediately grab it.
-				GKInstance createdIdentifier = this.dbAdapter.fetchInstance(newInstanceID);
-				this.dbAdapter.loadInstanceAttributeValues(createdIdentifier);
-				//logger.debug(createdIdentifier);
-	
-				//Set up references between original RefGeneProduc and new RefDNASeq.
+
 				GKInstance instanceReferredToByIdentifier = this.dbAdapter.fetchInstance(this.referringToSchemaClass.getName(), new Long(referenceToValue));
 				if (instanceReferredToByIdentifier == null)
 				{
 					throw new Exception("Could not find the instance of type " + this.referringToSchemaClass.getName() + " with ID "+referenceToValue );
 				}
+
+				// Try to set the geneName based on geneName of referred-to object.
+				if ( ((Collection<GKSchemaAttribute>) instanceReferredToByIdentifier.getSchemaAttributes())
+													.parallelStream()
+													.filter( attrib -> attrib.getName().equals(ReactomeJavaConstants.geneName) )
+													.findFirst()
+													.isPresent()
+					&& instanceReferredToByIdentifier.getAttributeValue(ReactomeJavaConstants.geneName) != null)
+				{
+					// If we found a geneName in the referred-to object, we should try to apply it to the new Identifier if possible.
+					if (this.schemaClass.isValidAttribute(ReactomeJavaConstants.geneName))
+					{
+						identifierInstance.addAttributeValue(ReactomeJavaConstants.geneName, instanceReferredToByIdentifier.getAttributeValue(ReactomeJavaConstants.geneName));
+					}
+				}
+
+				
+				InstanceDisplayNameGenerator.setDisplayName(identifierInstance);
+				// If there is no geneName attribute or name attribute, then the _displayName will end with " Unknown" but
+				// this looks bad in the UI, so remove it. The old Perl code didn't do this, it used an empty string in
+				// that situation
+				String newDisplayName = identifierInstance.getDisplayName().replaceAll(" Unknown$", "");
+				identifierInstance.setDisplayName(newDisplayName);
+
+				//Save changes to the new Identifier.
+				newInstanceID = this.dbAdapter.storeInstance(identifierInstance);
+				//Retreieve newly created Instance from the database.
+				GKInstance createdIdentifier = this.dbAdapter.fetchInstance(newInstanceID);
+				this.dbAdapter.loadInstanceAttributeValues(createdIdentifier);
+	
+				//Set up references between original RefGeneProduc and new RefDNASeq.
 				GKSchemaAttribute xrefAttrib = this.referringAttribute;
 				//logger.debug("referringToSchemaClass Available attributes: {}", this.referringToSchemaClass.getAttributes());
 				try
@@ -239,13 +265,12 @@ public class ReferenceCreator
 					logger.error("Invalid Attribute: {} added to object: {}", xrefAttrib, instanceReferredToByIdentifier);
 					throw new Error(e);
 				}
-				//SchemaAttribute modifiedAttribute = this.dbAdapter.getSchema().getClassByName(instanceReferredToByIdentifier.getSchemClass().getName()).getAttribute(ReactomeJavaConstants.modified);
-//				@SuppressWarnings("unchecked")
-//				List<GKInstance> modifieds = (List<GKInstance>)instanceReferredToByIdentifier.getAttributeValuesList(ReactomeJavaConstants.modified);
-//				modifieds.add(this.instanceEdit);
+
 				try
 				{
-					//instanceReferredToByIdentifier.setAttributeValue(ReactomeJavaConstants.modified, modifieds);
+					// make sure the "modified" list is loaded.
+					instanceReferredToByIdentifier.getAttributeValuesList(ReactomeJavaConstants.modified);
+					// add this instanceEdit to the "modified" list, and update.
 					instanceReferredToByIdentifier.addAttributeValue(ReactomeJavaConstants.modified, this.instanceEdit);
 					this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, ReactomeJavaConstants.modified);
 				}
@@ -266,6 +291,7 @@ public class ReferenceCreator
 		}
 		catch (MysqlDataTruncation e)
 		{
+			// This could happen if a string from an external source is too long for the field you are trying to fit it into.
 			logger.error("Data truncation error: \"{}\" while trying to insert reference with identifier value: {} ", e.getMessage(), identifierValue);
 			throw new Error(e);
 		}
@@ -337,19 +363,9 @@ public class ReferenceCreator
 			instanceEdit.getDBID();
 			this.dbAdapter.updateInstance(instanceEdit);
 		}
-		catch (InvalidAttributeException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (InvalidAttributeValueException e)
-		{
-			
-			e.printStackTrace();
-		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
+			logger.error("Exception caught while trying to create an InstanceEdit: {}", e.getMessage());
 			e.printStackTrace();
 		}
 
@@ -373,8 +389,7 @@ public class ReferenceCreator
 			newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
 			newIE.addAttributeValue(ReactomeJavaConstants.note, note);
 			InstanceDisplayNameGenerator.setDisplayName(newIE);
-			String newDisplayName = newIE.getDisplayName().replaceAll(" Unknown$", "");
-			newIE.setDisplayName(newDisplayName);
+
 			if (needStore)
 			{
 				dba.storeInstance(newIE);
