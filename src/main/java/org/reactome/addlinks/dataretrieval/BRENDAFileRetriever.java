@@ -134,7 +134,7 @@ public class BRENDAFileRetriever extends FileRetriever
 					String result = null;
 					try
 					{
-						client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
+						result = client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
 					}
 					catch (Exception e)
 					{
