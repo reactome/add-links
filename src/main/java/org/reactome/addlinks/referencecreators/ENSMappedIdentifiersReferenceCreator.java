@@ -20,6 +20,8 @@ import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 
 public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,List<String>>>
 {
+	private List<EntrezGeneBasedReferenceCreator> entrezGeneReferenceCreators;
+	
 	private static ReferenceObjectCache objectCache;
 	
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
@@ -30,6 +32,12 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+	}
+	
+	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName, List<EntrezGeneBasedReferenceCreator> entrezGeneRefCreators)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+		this.entrezGeneReferenceCreators = entrezGeneRefCreators;
 	}
 	
 	/**
@@ -202,8 +210,15 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 								targetRefDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase()
 													+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
 							}
-							
 							this.refCreator.createIdentifier(parts[0], parts[1], targetRefDBName, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
+							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE"))
+							{
+								for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
+								{
+									entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+								}
+							}
 						}
 						// The string did NOT have a species-part.
 						else

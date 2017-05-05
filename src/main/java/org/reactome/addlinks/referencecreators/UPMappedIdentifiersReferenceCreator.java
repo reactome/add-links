@@ -25,6 +25,8 @@ import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator< Map<String,List<String>> >
 {
 
+	private List<EntrezGeneBasedReferenceCreator> entrezGeneReferenceCreators;
+	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
@@ -33,6 +35,12 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+	}
+
+	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName, List<EntrezGeneBasedReferenceCreator> entrezGeneRefCreators)
+	{
+		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
+		this.entrezGeneReferenceCreators = entrezGeneRefCreators;
 	}
 	
 	/**
@@ -97,6 +105,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 				{
 					try
 					{
+						// actually, are these adaptors even necessary anymore? I think they were at one time but not now.
 						MySQLAdaptor localAdapter ;
 						long threadID = Thread.currentThread().getId();
 						if (adapterPool.containsKey(threadID))
@@ -203,6 +212,14 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 							if (!this.testMode)
 							{
 								this.refCreator.createIdentifier(parts[0], parts[1], targetDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							}
+							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
+							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE"))
+							{
+								for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
+								{
+									entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+								}
 							}
 						}
 						// The string did NOT have a species-part.
