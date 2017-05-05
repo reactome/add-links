@@ -1,6 +1,7 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Arrays;
@@ -72,7 +73,7 @@ public final class EnsemblServiceResponseProcessor
 		this.logger = logger;
 	}
 	
-	public EnsemblServiceResult processResponse(HttpResponse response)
+	public EnsemblServiceResult processResponse(HttpResponse response, URI originalURI)
 	{
 		EnsemblServiceResult result = this.new EnsemblServiceResult();
 		result.setStatus(response.getStatusLine().getStatusCode());
@@ -202,7 +203,11 @@ public final class EnsemblServiceResponseProcessor
 		else
 		{
 			// actually, this is not so strange - I think that http://rest.ensemblgenomes.org/ *never* returns X-RateLimit-Remaining; I think that header *only* comes from rest.ensembl.org
-			logger.warn("No X-RateLimit-Remaining was returned. This is odd. Response message: {} ; Headers returned are: {}\nLast known value for remaining was {}", response.getStatusLine().toString(), Arrays.stream(response.getAllHeaders()).map( h -> h.toString()).collect(Collectors.toList()), EnsemblServiceResponseProcessor.numRequestsRemaining);
+			// So only log a message if we didn't get a rate limit from rest.ensembl.org - if it didn't come from rest.ensemblGENOMES.org, that's OK.
+			if (!originalURI.toString().contains("rest.ensemblgenomes.org"))
+			{
+				logger.warn("No X-RateLimit-Remaining was returned. This is odd. Response message: {} ; Headers returned are: {}\nLast known value for remaining was {}", response.getStatusLine().toString(), Arrays.stream(response.getAllHeaders()).map( h -> h.toString()).collect(Collectors.toList()), EnsemblServiceResponseProcessor.numRequestsRemaining);
+			}
 		}
 		return result;
 	}

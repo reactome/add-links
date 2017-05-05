@@ -94,18 +94,21 @@ public class EnsemblFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 			}
 			catch (TransformerConfigurationException e)
 			{
+				logger.error("TransformerConfigurationException occurred. File: {} ; Error: : {}", file.toString(), e.getMessage());
 				e.printStackTrace();
-				throw new RuntimeException(e);
+				throw new Error(e);
 			}
 			catch (TransformerException e)
 			{
+				logger.error("Transformation error occurred.  File: {} ; Error: : {}", file.toString(), e.getMessage());
 				e.printStackTrace();
-				throw new RuntimeException(e);
+				throw new Error(e);
 			}
 			catch (IOException e)
 			{
+				logger.error("I/O error ocurred. File: {}; Error: {}",file.toString(),e.getMessage());
 				e.printStackTrace();
-				throw new RuntimeException(e);
+				throw new Error(e);
 			}
 			logger.info("Processed {} records.",counter.get());
 			mapping.put(dbName, ensemblToOther);
