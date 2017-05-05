@@ -182,7 +182,7 @@ public class EnsemblFileRetriever extends FileRetriever
 						try (CloseableHttpClient getClient = HttpClients.createDefault();
 								CloseableHttpResponse getResponse = getClient.execute(get);)
 						{
-							EnsemblServiceResult result = responseProcessor.processResponse(getResponse);
+							EnsemblServiceResult result = responseProcessor.processResponse(getResponse, get.getURI());
 							if (!result.getWaitTime().equals(Duration.ZERO))
 							{
 								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
