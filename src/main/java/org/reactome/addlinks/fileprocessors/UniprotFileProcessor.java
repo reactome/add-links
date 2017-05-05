@@ -57,7 +57,6 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 		 */
 		Matcher matcher = this.pattern.matcher(file.getFileName().toString());
 		matcher.matches();
-		logger.info(matcher.groupCount());
 		String speciesId = matcher.group(1);
 		if (mapping.containsKey(speciesId))
 		{

@@ -2,9 +2,14 @@ package org.reactome.addlinks;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,6 +26,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.xml.rpc.ServiceException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -230,10 +237,56 @@ public class AddLinks
 		logger.info("\n"+reporter.printReport(postAddLinksReport));
 		
 		logger.info("Differences");
+		String diffReport = reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
+		// Save the diff report to a file for future reference.uinm
+		String diffReportName = "diffReport" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
+		logger.info("\n"+diffReport);
+		logger.info("(Differences report can also be found in the file: " + diffReportName);
+		logger.info("Purging unused ReferenceDatabse objects.");
 		
-		logger.info("\n"+reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport));
+		this.purgeUnusedRefDBs();
 		
 		logger.info("Process complete.");
+	}
+
+	@SuppressWarnings("unchecked")
+	private void purgeUnusedRefDBs()
+	{
+		try
+		{
+			@SuppressWarnings("unchecked")
+			Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
+			for (GKInstance refDB : refDBs)
+			{
+				this.dbAdapter.loadInstanceAttributeValues(refDB);
+				@SuppressWarnings("unchecked")
+				List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> refMap = new ArrayList<GKInstance> ();
+				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
+//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.crossReference));
+//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.refer));
+				
+				int refCount = 0;
+				if (refMap != null)
+				{
+					refCount = refMap.size();
+				}
+				logger.info("ReferenceDatabase: {} ({}); # referrers: {}", refDB.getDBID(), names.toString(), refCount);
+				if (refCount == 0)
+				{
+					logger.info("NOTHING refers to ReferenceDatabase DB ID {} ({}) so it will now be deleted.", refDB.getDBID(), names.toString());
+					this.dbAdapter.deleteByDBID(refDB.getDBID());
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			throw new Error(e);
+		}
+		
 	}
 
 	private void executeEnsemblFileRetriever() throws Exception
@@ -260,7 +313,17 @@ public class AddLinks
 			BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 			
 			// TODO: Maybe move this out to a BRENDASpeciesCache class. 
-			String speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
+			String speciesResult;
+			try
+			{
+				speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
+			}
+			catch (MalformedURLException | NoSuchAlgorithmException | RemoteException |ServiceException e)
+			{
+				logger.error("Exception caught while trying to get BRENDA species list: {}",e.getMessage());
+				e.printStackTrace();
+				throw new Error(e);
+			}
 			//Normalize the list.
 			List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
 			logger.debug(brendaSpecies.size() + " species known to BRENDA");
@@ -602,11 +665,14 @@ public class AddLinks
 	{
 		List<GKInstance> identifiers = new ArrayList<GKInstance>();
 		
-		List<String> ensemblDBNames = objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().contains("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
+		List<String> ensemblDBNames = objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
 		
 		for (String dbName : ensemblDBNames)
 		{
-			identifiers.addAll(objectCache.getByRefDb(objectCache.getRefDbNamesToIds().get(dbName).get(0), "ReferenceGeneProduct"));
+			for (String s : objectCache.getRefDbNamesToIds().get(dbName))
+			{
+				identifiers.addAll(objectCache.getByRefDb(s, "ReferenceGeneProduct"));
+			}
 		}
 		
 		return identifiers;

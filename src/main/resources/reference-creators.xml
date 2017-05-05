@@ -190,7 +190,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="HMDB_protein"/>
+				<constructor-arg index="5" name="targetDB" value="HMDB Protein"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/HMDBProtReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -202,7 +202,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_target"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC target"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincToUniProtReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -215,7 +215,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_Substances"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Substances"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincSubstancesReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -227,7 +227,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_FDA_approved"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - FDA approved"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincFDAReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -239,7 +239,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_World_Drugs"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - World Drugs"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincWorldDrugsReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -251,7 +251,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_Metabolites"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Metabolites"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincMetabolitesReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -263,7 +263,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_Biogenic"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Biogenic"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincBiogenicReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -275,7 +275,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_Biogenic"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Biogenic"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincInvestigationalReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -287,7 +287,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="ZINC_Predictions_Purchasable"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Predictions - Purchasable"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincPurchasablePredictionsReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
@@ -300,7 +300,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
-				<constructor-arg index="5" name="targetDB" value="HMDB_metabolite"/>
+				<constructor-arg index="5" name="targetDB" value="HMDB Metabolite"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/HmdbMoleculeReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>

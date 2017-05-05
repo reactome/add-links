@@ -66,15 +66,23 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				{
 					// Use the KEGG Identifier (from the NAME line). If there is none, use the KEGG gene id, example: "hsa:12345"
 					String keggIdentifier = keggData.get(KEGGKeys.KEGG_IDENTIFIER);
-					String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
+					//String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
+					// No longer need to include the species code here because it will be a part of the URL. See in KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases
+					// That's where we create the URLs with the species code built-in to the URL.
+					//
+					// If the data we extracted already begins with a species code such as "hsa:" then we can remove it because
+					// the ReferenceDatabase will contain a species code prefix in its accessUrl. If we *don't*
+					// remove it, we'll end up with URLs like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
+					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID).replaceAll("^[a-z0-9]{3}:", "");
 					
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
 						keggIdentifier = keggGeneIdentifier;
 					}
+					StringBuilder xrefsSb = new StringBuilder();
 					for (GKInstance xref : xrefs)
 					{
-						logger.trace("\tcross-reference: {}",xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+						xrefsSb.append(" ").append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
 						// We won't add a cross-reference if it already exists
 						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( keggIdentifier ))
 						{
@@ -85,6 +93,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							break;
 						}
 					}
+					logger.trace("xrefs:{}",xrefsSb.toString());
 					if (!xrefAlreadyExists)
 					{
 						String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
