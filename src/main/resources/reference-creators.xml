@@ -9,7 +9,39 @@
 						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<import resource="reactome-java-constants4spring.xml"/>
-
+	
+	<util:list id="entrezGeneBasedReferenceCreators">
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="BioGPSRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="4" name="sourceDB" value="EntrezGene"/>
+			<constructor-arg index="5" name="targetDB" value="BioGPS Gene"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/BioGPSRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="CTDRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="4" name="sourceDB" value="EntrezGene"/>
+			<constructor-arg index="5" name="targetDB" value="CTD Gene"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/CTDRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="dbSNPRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="4" name="sourceDB" value="EntrezGene"/>
+			<constructor-arg index="5" name="targetDB" value="dbSNP Gene"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/dbSNPRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+	</util:list>
 
 	<util:map id="uniprotReferenceCreators" key-type="java.lang.String" value-type="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator">
 		<entry key="upMappedPDBRefCreator">
@@ -57,6 +89,7 @@
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="Entrez Gene"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedEntrezGeneRefCreator"/>
+				<constructor-arg index="7" name="entrezGeneRefCreators" ref="entrezGeneBasedReferenceCreators"/>
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
@@ -314,6 +347,7 @@
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
 				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLToEntrezGeneRefCreator"/>
+				<constructor-arg index="7" name="entrezGeneRefCreators" ref="entrezGeneBasedReferenceCreators"/>
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
@@ -390,6 +424,5 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
-		
 	</util:map>
 </beans>
