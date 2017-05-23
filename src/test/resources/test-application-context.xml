@@ -573,4 +573,18 @@
 		<property name="testMode" value="true"/>
 	</bean>
 	
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HGNCRetriever">
+		<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
+		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	<bean id="HGNCProcessor" class="org.reactome.addlinks.fileprocessors.HGNCFileProcessor">
+		<constructor-arg name="processorName" value="file-processors/HGNCProcessor"/>
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/hgnc_complete_set.txt"/>
+			</bean>
+		</property>
+	</bean>
 </beans>
