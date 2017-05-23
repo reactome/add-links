@@ -343,7 +343,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.genenames.org/" />
-				<entry key="AccessURL" value="http://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=HGNC:###ID###" />
+				<entry key="AccessURL" value="http://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=###ID###" />
 			</map>
 		</entry>
 	</util:map>
