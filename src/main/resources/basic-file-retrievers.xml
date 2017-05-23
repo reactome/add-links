@@ -158,5 +158,14 @@
 				<property name="numThreads" value="${numberOfBrendaDownloadThreads}" />
 			</bean>
 		</entry>
+		
+		<entry key="HGNC">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HGNC">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
