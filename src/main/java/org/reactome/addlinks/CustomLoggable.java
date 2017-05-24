@@ -23,9 +23,10 @@ public interface CustomLoggable
 	{
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration configuration = context.getConfiguration();
-		
 		Appender oldAppender = configuration.getAppender(oldAppenderName);
-		
+
+		String baseDirVar = configuration.getStrSubstitutor().getVariableResolver().lookup("baseDir");
+		String baseDir = configuration.getStrSubstitutor().replace(baseDirVar);
 		Layout<? extends Serializable> oldLayout = oldAppender.getLayout();
 		
 		// create new appender/logger
@@ -44,7 +45,7 @@ public interface CustomLoggable
 			Filter filter = ((RollingRandomAccessFileAppender)oldAppender).getFilter();
 			// Inject new log file name into filePattern so that file rolling will work properly 
 			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{yyyy-MM-dd\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{yyyy-MM-dd}.%i.log.gz");
-			appender = RollingRandomAccessFileAppender.newBuilder().withFileName("logs/" + logFileName + ".log")
+			appender = RollingRandomAccessFileAppender.newBuilder().withFileName(baseDir + "/" + logFileName + ".log")
 																	.withFilePattern(pattern)
 																	.withAppend(append)
 																	.withName(newAppenderName)
