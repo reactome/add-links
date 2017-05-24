@@ -32,3 +32,5 @@ AddLinks*jar
 scripts/resources
 
 diffReport*.txt
+/test-logs/
+.springBeans
