@@ -250,5 +250,16 @@
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA*" />
 			</bean>
 		</entry>
+		
+		<entry key="HGNCProcessor">
+			<bean id="HGNCProcessor" class="org.reactome.addlinks.fileprocessors.HGNCFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/HGNCProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/hgnc_complete_set.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

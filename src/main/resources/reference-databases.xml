@@ -333,5 +333,18 @@
 				<entry key="AccessURL" value="http://www.hmdb.ca/metabolites/###ID###" />
 			</map>
 		</entry>
+		
+		<entry key="HGNC">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="HGNC" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Genenames.org</value>
+					</list>
+				</entry>
+				<entry key="URL" value="http://www.genenames.org/" />
+				<entry key="AccessURL" value="http://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=###ID###" />
+			</map>
+		</entry>
 	</util:map>
 </beans>
