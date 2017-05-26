@@ -23,9 +23,11 @@ public interface CustomLoggable
 	{
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration configuration = context.getConfiguration();
-		
 		Appender oldAppender = configuration.getAppender(oldAppenderName);
-		
+
+		// Get base directory for logs, so we know what to use when creating the new appender.
+		String baseDirVar = configuration.getStrSubstitutor().getVariableResolver().lookup("baseDir");
+		String baseDir = configuration.getStrSubstitutor().replace(baseDirVar);
 		Layout<? extends Serializable> oldLayout = oldAppender.getLayout();
 		
 		// create new appender/logger
@@ -44,7 +46,7 @@ public interface CustomLoggable
 			Filter filter = ((RollingRandomAccessFileAppender)oldAppender).getFilter();
 			// Inject new log file name into filePattern so that file rolling will work properly 
 			String pattern = ((RollingRandomAccessFileAppender)oldAppender).getFilePattern().replaceAll("/[^/]*-\\%d\\{yyyy-MM-dd\\}\\.\\%i\\.log\\.gz", "/"+logFileName+"-%d{yyyy-MM-dd}.%i.log.gz");
-			appender = RollingRandomAccessFileAppender.newBuilder().withFileName("logs/" + logFileName + ".log")
+			appender = RollingRandomAccessFileAppender.newBuilder().withFileName(baseDir + "/" + logFileName + ".log")
 																	.withFilePattern(pattern)
 																	.withAppend(append)
 																	.withName(newAppenderName)
@@ -58,8 +60,7 @@ public interface CustomLoggable
 		}
 		else
 		{
-			//appender = FileAppender.createAppender("logs/" + logFileName + ".log", Boolean.toString(append), "false", newAppenderName, "true", "true", "true", "8192", oldLayout, null, "false", "", configuration);
-			appender = FileAppender.newBuilder().withFileName("logs/" + logFileName + ".log")
+			appender = FileAppender.newBuilder().withFileName(baseDir + "/" + logFileName + ".log")
 												.withAppend(append)
 												.withName(newAppenderName)
 												.withLayout(oldLayout)
@@ -83,27 +84,6 @@ public interface CustomLoggable
 	
 	default Logger createLogger(String logFileName, String oldAppenderName, String newAppenderName, boolean append, Level level, Logger oldLogger, String loggerContainerClassTypeName)
 	{
-//		String loggerName;
-//		if (oldLogger == null)
-//		{
-//			loggerName = newAppenderName;
-//			oldLogger = LogManager.getLogger();
-//		}
-//		else
-//		{
-//			loggerName = oldLogger.getName();
-//		}
-//		
-//		if (logFileName == null || logFileName.trim().equals(""))
-//		{
-//			oldLogger.warn("No custom log file name was set, so this " + loggerContainerClassTypeName + " will not use its own log file.");
-//			return oldLogger;
-//		}
-//		else
-//		{
-//			oldLogger.trace("Now creating new logger {}, logging to file {}", loggerName, logFileName);
-//			return this.createLogger(logFileName , oldAppenderName, loggerName, true, level);
-//		}
 		if (oldLogger == null)
 		{
 			oldLogger = LogManager.getLogger();

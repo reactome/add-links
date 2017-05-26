@@ -40,42 +40,43 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<!-- <value>OrthologsCSVFromZinc</value>
- 		<value>UniProtToKEGG</value>
+		<value>HGNC</value>
+		<value>UniProtToENSEMBL</value>
+		<value>EnsemblToALL</value>
+		<value>BrendaRetriever</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>UniProtToKEGG</value>
+		<value>KEGGRetriever</value>
+		<value>OrthologsCSVFromZinc</value>
  		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>Zinc</value>
 		<value>OrthologsFromZinc</value>
 		<value>RheaRetriever</value>
-		<value>EnsemblToALL</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
-		<value>UniProtToENSEMBL</value>
 		<value>UniProtToWormbase</value>
  		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
-		<value>RHEAIdentifierToReactionlikeEvent</value> 
-		<value>KEGGRetriever</value>
-		<value>BrendaRetriever</value> -->
+		<value>RHEAIdentifierToReactionlikeEvent</value>
  		<value>IntActComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<!-- <value>zincOrthologFileProcessor</value>
 		<value>KEGGFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
- 		<value>RheaFileProcessor</value>
-		<value>FlyBaseFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
+ 		<value>UniprotToKEGGFileProcessor</value>
+ 		<value>ZincMoleculesFileProcessor</value>
 		<value>zincProtFileProcessor</value>
+		<value>zincOrthologFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
+ 		<value>RheaFileProcessor</value>
+		<value>FlyBaseFileProcessor</value>		
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -88,40 +89,44 @@
 		<value>UniprotToOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>BrendaProcessor</value> -->
+		<value>BrendaProcessor</value>
 		<value>IntActFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<!-- <value>zincSubstancesReferenceCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
+		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
 		<value>zincWorldDrugsReferenceCreator</value>
 		<value>zincMetabolitesReferenceCreator</value>
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
-		<value>KEGGReferenceCreator</value>
-		<value>upMappedKEGGRefCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>zincToChEBIReferenceCreator</value> 
+
+		
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		
 		<value>upMappedPDBRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
-		<value>upMappedEntrezGeneRefCreator</value>
+		
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
 		<value>FlyBaseReferenceCreator</value>
-		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value> 
 		<value>RheaReferenceCreator</value>
 		<value>BrendaRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>proRefCreator</value>
 		<value>pdbRefCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value> -->
 		<value>IntActComplexPortalRefCreator</value>
 	</util:list>
 
