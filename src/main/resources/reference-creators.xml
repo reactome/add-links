@@ -426,12 +426,12 @@
 		</entry>
 		
 		<entry key="HGNCReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.IntActReferenceCreator" id="HGNCReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.HGNCReferenceCreator" id="HGNCReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
-				<constructor-arg index="4" name="sourceDB" value="Uniprot"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="HGNC"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/HGNCReferenceCreator"/>
 				<property name="testMode" value="false"/>
