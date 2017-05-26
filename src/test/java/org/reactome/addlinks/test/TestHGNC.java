@@ -74,7 +74,7 @@ public class TestHGNC
 	@Test
 	public void testHGNCReferenceCreation() throws Exception
 	{
-		objectCache.rebuildAllCachesWithoutClearing();
+		ReferenceObjectCache.rebuildAllCachesWithoutClearing();
 		this.HGNCRetriever.fetchData();
 		Map<String, List<String>> mappings = this.HGNCProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
