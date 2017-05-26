@@ -23,9 +23,16 @@ public class LinkChecker
 
 	private static final Logger logger = LogManager.getLogger();
 	
+	private String keyword;
 	private URI uri;
 	private int numRetries = 5;
 	private Duration timeout = Duration.ofSeconds(30);
+	
+	public LinkChecker(URI uri, String keyword)
+	{
+		this.uri = uri;
+		this.keyword = keyword;
+	}
 	
 	/**
 	 * Tries to GET a URL and then checks that the result contains a keyword.
@@ -34,7 +41,7 @@ public class LinkChecker
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public void checkLink(String keyword) throws HttpHostConnectException, IOException, Exception
+	public void checkLink() throws HttpHostConnectException, IOException, Exception
 	{
 		//TODO: maybe look into refactoring this with some of the FileRetriever code. Maybe a new  higher-up class could be used to get the data and let FileRetriever and
 		// *this* class do what they want with the resulting bytestring.
@@ -97,7 +104,7 @@ public class LinkChecker
 					// If response was OK, check the body to make sure the string we are checking for is there.
 					case HttpStatus.SC_OK:
 					{
-						if (responseBody.contains(keyword))
+						if (responseBody.contains(this.keyword))
 						{
 							// then the link is OK.
 						}
@@ -110,7 +117,7 @@ public class LinkChecker
 					default:
 					{
 						// log the status code
-						if (responseBody.contains(keyword))
+						if (responseBody.contains(this.keyword))
 						{
 							// The response contains the keyword but *did* not have an "OK" status. strange...
 						}
