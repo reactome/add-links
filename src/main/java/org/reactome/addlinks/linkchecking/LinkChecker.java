@@ -3,6 +3,7 @@ package org.reactome.addlinks.linkchecking;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -25,13 +26,20 @@ public class LinkChecker
 	
 	private String keyword;
 	private URI uri;
-	private int numRetries = 5;
+	private static final int MAX_NUM_RETRIES = 5;
+	private int numRetries = 0;
 	private Duration timeout = Duration.ofSeconds(30);
 	
 	public LinkChecker(URI uri, String keyword)
 	{
 		this.uri = uri;
 		this.keyword = keyword;
+	}
+	
+	public LinkChecker(CheckableLink link)
+	{
+		this.uri = link.getURI();
+		this.keyword = link.getSearchKeyword();
 	}
 	
 	/**
@@ -41,7 +49,7 @@ public class LinkChecker
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public void checkLink() throws HttpHostConnectException, IOException, Exception
+	public LinkCheckInfo checkLink() throws HttpHostConnectException, IOException, Exception
 	{
 		//TODO: maybe look into refactoring this with some of the FileRetriever code. Maybe a new  higher-up class could be used to get the data and let FileRetriever and
 		// *this* class do what they want with the resulting bytestring.
@@ -58,26 +66,35 @@ public class LinkChecker
 											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
 		get.setConfig(config);
 		
-		int retries = this.numRetries;
-		boolean done = retries + 1 <= 0;
+		boolean done = this.numRetries + 1 <= 0;
+		
+		LinkCheckInfo linkCheckInfo = new LinkCheckInfo();
+		linkCheckInfo.setLinkData(this.uri, this.keyword);
 		while(!done)
 		{
+			Duration responseTime = Duration.ZERO;
+			long startTime = System.currentTimeMillis();
 			try( CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get,  HttpClientContext.create()) )
+				CloseableHttpResponse response = client.execute(get,  HttpClientContext.create()); )
 			{
+				long endtime = System.currentTimeMillis();
+				responseTime = Duration.ofMillis(endtime - startTime);
+				
+				linkCheckInfo.setResponseTime(responseTime);
+				linkCheckInfo.setStatusCode(response.getStatusLine().getStatusCode());
 				responseBody = EntityUtils.toString(response.getEntity());
 				responseStatus = response.getStatusLine();
 				done = true;
 			}
 			catch (ConnectTimeoutException e)
 			{
-				// we will only be retrying the connection timeouts, defined as the time required to establish a connection.
-				// we will not handle socket timeouts (inactivity that occurs after the connection has been established).
-				// we will not handle connection manager timeouts (time waiting for connection manager or connection pool).
+				// we will ONLY be retrying the connection timeouts, defined as the time required to establish a connection.
+				// we will *not* handle socket timeouts (inactivity that occurs after the connection has been established).
+				// we will *not* handle connection manager timeouts (time waiting for connection manager or connection pool).
 				e.printStackTrace();
-				logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", retries);
-				retries--;
-				done = retries + 1 <= 0;
+				this.numRetries++;
+				logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", MAX_NUM_RETRIES - this.numRetries);
+				done = this.numRetries > MAX_NUM_RETRIES;
 				if (done)
 				{
 					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.",e);
@@ -94,7 +111,7 @@ public class LinkChecker
 				throw e;
 			}
 		}
-		
+		linkCheckInfo.setNumRetries(this.numRetries);
 		if (responseBody != null)
 		{
 			if (responseStatus != null)
@@ -107,10 +124,12 @@ public class LinkChecker
 						if (responseBody.contains(this.keyword))
 						{
 							// then the link is OK.
+							linkCheckInfo.setKeywordFound(true);
 						}
 						else
 						{
 							// Record the fact that the link is valid but does not contain the keyword.
+							linkCheckInfo.setKeywordFound(false);
 						}
 					}
 					break;
@@ -120,15 +139,18 @@ public class LinkChecker
 						if (responseBody.contains(this.keyword))
 						{
 							// The response contains the keyword but *did* not have an "OK" status. strange...
+							linkCheckInfo.setKeywordFound(true);
 						}
 						else
 						{
 							// record the fact that: the link is not valid; the response does not contain the keyword (which is expected).
+							linkCheckInfo.setKeywordFound(false);
 						}
 					}
 					break;
 				}
 			}
 		}
+		return linkCheckInfo;
 	}
 }
