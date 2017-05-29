@@ -2,37 +2,17 @@ package org.reactome.addlinks.linkchecking;
 
 import java.net.URI;
 import java.util.List;
+import java.util.function.Function;
+
+import org.apache.http.HttpStatus;
 
 public class LinkCheckManager
 {
 
-	class LinkData
+
+	public void checkLinks(List<CheckableLink> linksData)
 	{
-		private URI uri;
-		private String searchKeyword;
-		
-		public LinkData(URI uri, String searchKeyword)
-		{
-			this.uri = uri;
-			this.searchKeyword = searchKeyword;
-		}
-		
-		public URI getURI()
-		{
-			return this.getURI();
-		}
-		
-		public String getSearchKeyword()
-		{
-			return this.searchKeyword;
-		}
-	}
-	
-	
-	
-	public void checkLinks(List<LinkData> linksData)
-	{
-		for (LinkData ld : linksData)
+		for (CheckableLink ld : linksData)
 		{
 			LinkChecker checker = new LinkChecker(ld.getURI(), ld.getSearchKeyword());
 			
