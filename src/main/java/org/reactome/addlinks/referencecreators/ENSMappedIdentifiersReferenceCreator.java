@@ -16,7 +16,6 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
-import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
 
 public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,List<String>>>
 {
