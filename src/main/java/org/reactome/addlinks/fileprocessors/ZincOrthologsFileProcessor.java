@@ -31,7 +31,7 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 		try
 		{
 			// skip the first line - it is a header line.
-			Files.readAllLines(this.pathToFile).stream().sequential().skip(1).forEach(line -> {
+			Files.readAllLines(this.pathToFile).stream().skip(1).sequential().forEach(line -> {
 				// We want to map from UniProt to ZINC Ortholog
 				String[] parts = line.split(",");
 				mappings.put(parts[2], parts[0]);
