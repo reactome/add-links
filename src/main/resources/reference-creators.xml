@@ -242,7 +242,7 @@
 		</entry>
 		<!-- Create references to other ZINC resources -->
 		<entry key="zincSubstancesReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincSubstancesReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincSubstancesReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -254,7 +254,7 @@
 			</bean>
 		</entry>
 		<entry key="zincFDAReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincFDAReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincFDAReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -266,7 +266,7 @@
 			</bean>
 		</entry>
 		<entry key="zincWorldDrugsReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincWorldDrugsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincWorldDrugsReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -278,7 +278,7 @@
 			</bean>
 		</entry>
 		<entry key="zincMetabolitesReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincMetabolitesReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincMetabolitesReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -290,7 +290,7 @@
 			</bean>
 		</entry>
 		<entry key="zincBiogenicReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincBiogenicReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincBiogenicReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -302,7 +302,7 @@
 			</bean>
 		</entry>
 		<entry key="zincInvestigationalReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincInvestigationalReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincInvestigationalReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -314,7 +314,7 @@
 			</bean>
 		</entry>
 		<entry key="zincPurchasablePredictionsReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincPurchasablePredictionsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincPurchasablePredictionsReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
