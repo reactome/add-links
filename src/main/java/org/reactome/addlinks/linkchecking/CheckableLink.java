@@ -15,7 +15,7 @@ class CheckableLink
 	
 	public URI getURI()
 	{
-		return this.getURI();
+		return this.uri;
 	}
 	
 	public String getSearchKeyword()

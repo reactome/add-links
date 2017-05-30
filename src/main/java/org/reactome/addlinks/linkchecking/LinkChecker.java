@@ -1,9 +1,9 @@
 package org.reactome.addlinks.linkchecking;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -86,18 +86,20 @@ public class LinkChecker
 				responseStatus = response.getStatusLine();
 				done = true;
 			}
-			catch (ConnectTimeoutException e)
+			catch (ConnectTimeoutException | SocketTimeoutException e)
 			{
 				// we will ONLY be retrying the connection timeouts, defined as the time required to establish a connection.
 				// we will *not* handle socket timeouts (inactivity that occurs after the connection has been established).
 				// we will *not* handle connection manager timeouts (time waiting for connection manager or connection pool).
+				long endtime = System.currentTimeMillis();
 				e.printStackTrace();
 				this.numRetries++;
-				logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", MAX_NUM_RETRIES - this.numRetries);
+				this.timeout = this.timeout.plus(Duration.ofSeconds(30));
+				logger.info("Failed after {} due to cause \"{}\", but will retry {} more time(s) with a longer timeout of {}.", Duration.ofMillis(endtime - startTime), e.getCause(), MAX_NUM_RETRIES - this.numRetries, this.timeout);
 				done = this.numRetries > MAX_NUM_RETRIES;
 				if (done)
 				{
-					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.",e);
+					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
 				}
 			}
 			catch (HttpHostConnectException e)

@@ -19,14 +19,14 @@ import java.time.Duration;
  */
 public class LinkCheckInfo
 {
-	CheckableLink linkData;
-	int statusCode;
-	boolean keywordFound;
-	Duration responseTime;
-	int numRetries;
-	String referenceDatabaseDBID;
-	String referenceDatabaseName;
-	String identifierDBID;
+	private CheckableLink linkData;
+	private int statusCode;
+	private boolean keywordFound;
+	private Duration responseTime;
+	private int numRetries;
+	private String referenceDatabaseDBID;
+	private String referenceDatabaseName;
+	private String identifierDBID;
 
 	public int getStatusCode()
 	{
@@ -111,5 +111,20 @@ public class LinkCheckInfo
 	public void setLinkData(URI uri, String keyword)
 	{
 		this.linkData = new CheckableLink(uri, keyword);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "[DBID: " + this.getIdentifierDBID() + "; " +
+				"URI: " + this.getURI().toString() + "; " +
+				"RefDBID: " + this.getReferenceDatabaseDBID() + "; " + 
+				"RefDB Name: " + this.getReferenceDatabaseName() + "; " + 
+				"# of Retries: " + this.getNumRetries() + "; " +
+				"Keyword: " + this.getSearchKeyword() + "; " +
+				"Keyword Found: " + this.isKeywordFound() + "; " +
+				"Response Time: " + this.getResponseTime() + "; " +
+				"Status code: " + this.getStatusCode() +
+				"]";
 	}
 }
