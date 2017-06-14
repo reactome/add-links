@@ -1,16 +1,20 @@
 package org.reactome.addlinks.linkchecking;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 
 
 public class LinkCheckManager
@@ -22,6 +26,58 @@ public class LinkCheckManager
 	public void setDbAdaptor(MySQLAdaptor adaptor)
 	{
 		this.dbAdaptor = adaptor;	
+	}
+	
+	public Map<String, LinkCheckInfo> checkLinks(GKInstance refDBInst, List<GKInstance> instances, float proportionToCheck, int maxToCheck)
+	{
+		Map<String, LinkCheckInfo> linkCheckResults = Collections.synchronizedMap( new HashMap<String, LinkCheckInfo>(instances.size()) );
+		
+		int numberOfInstancesToCheck = Math.min( Math.min( (int)(instances.size() * proportionToCheck) , instances.size()), maxToCheck);
+		
+		Collections.shuffle(instances);
+		List<GKInstance> instancesToCheck = instances.subList(0, numberOfInstancesToCheck);
+		
+		logger.info("Checking links for {}; requested proportion of links to check: {}; max allows links to check: {}; Total # of possible links to check: {}; {}*{}: {}; *actual* number of links to check: {}",
+				refDBInst, proportionToCheck, maxToCheck, instances.size(), proportionToCheck , instances.size(), (int)(instances.size() * proportionToCheck), instancesToCheck.size());
+		
+		String refDBID = refDBInst.getDBID().toString();
+		//for (GKInstance inst : instancesToCheck)
+		instancesToCheck.parallelStream().forEach( inst -> {
+			try
+			{
+				String identifierString = (String) inst.getAttributeValue("identifier");
+				//get the reference DB from the database (if it's not in local cache)
+				String accessURL = ((String)refDBInst.getAttributeValue("accessUrl"));
+				String referenceDatabaseName = refDBInst.getDisplayName();
+				
+				checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
+			}
+			catch (URISyntaxException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InterruptedException r)
+			{
+				r.printStackTrace();
+			}
+			catch (HttpHostConnectException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+		return linkCheckResults;
 	}
 	
 	/**
@@ -58,24 +114,8 @@ public class LinkCheckManager
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBCache.get(refDBID).getAttributeValue("accessUrl"));
 				String referenceDatabaseName = ((String)refDBCache.get(refDBID).getDisplayName());
-				URI uri = new URI(  accessURL.replace("###ID###", identifierString) );
-				LinkChecker checker = new LinkChecker(uri, identifierString);
-			
-				LinkCheckInfo info = checker.checkLink();
-				if (!(info.isKeywordFound() && info.getStatusCode() == 200))
-				{
-					LinkCheckManager.logger.warn("Link {} produced status code: {} ; keyword {} was not found.",uri.toString(), info.getStatusCode(), identifierString );
-				}
-				else
-				{
-					LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
-				}
-				info.setReferenceDatabaseDBID(refDBID);
-				info.setIdentifierDBID(inst.getDBID().toString());
-				info.setReferenceDatabaseName(referenceDatabaseName);
-				linkCheckResults.put(inst.getDBID().toString(), info);
-				// Sleep for 2 seconds so that the server we're talking to doesn't think we're trying to DOS them.
-				Thread.sleep(Duration.ofSeconds(2).toMillis());
+				
+				checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
 			}
 			catch (Exception e)
 			{
@@ -86,5 +126,28 @@ public class LinkCheckManager
 			
 		});
 		return linkCheckResults;
+	}
+	
+	private void checkTheLink(Map<String, LinkCheckInfo> linkCheckResults, String refDBID, GKInstance inst, String identifierString, String accessURL, String referenceDatabaseName)
+			throws URISyntaxException, HttpHostConnectException, IOException, Exception, InterruptedException
+	{
+		URI uri = new URI(  accessURL.replace("###ID###", identifierString) );
+		LinkChecker checker = new LinkChecker(uri, identifierString);
+		LinkCheckInfo info = checker.checkLink();
+		if (!(info.isKeywordFound() && info.getStatusCode() == 200))
+		{
+			LinkCheckManager.logger.warn("Link {} produced status code: {} ; keyword {} was not found.",uri.toString(), info.getStatusCode(), identifierString );
+		}
+		else
+		{
+			LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
+		}
+		
+		info.setReferenceDatabaseDBID(refDBID);
+		info.setIdentifierDBID(inst.getDBID().toString());
+		info.setReferenceDatabaseName(referenceDatabaseName);
+		linkCheckResults.put(inst.getDBID().toString(), info);
+		// Sleep for 2 seconds between requests so that the server we're talking to doesn't think we're trying to DOS them.
+		Thread.sleep(Duration.ofSeconds(2).toMillis());
 	}
 }
