@@ -55,6 +55,24 @@ public class TestLinkCheckManagerIT
 	}
 	
 	@Test
+	public void testLinkCheckManager2() throws Exception
+	{
+		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("UniProt").get(0)) );
+		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
+		List<GKInstance> instances = new ArrayList<GKInstance> (this.dbAdapter.fetchInstanceByAttribute(att1 , " = ", refDBInst.getDBID()));
+		float proportionToCheck = 0.25f;
+		int maxToCheck = 10;
+		
+		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
+		assertTrue(results.keySet().size() == 10);
+		for(String k : results.keySet())
+		{
+			assertTrue(results.get(k).isKeywordFound());
+			System.out.println(results.get(k));
+		}
+	}
+	
+	@Test
 	public void testLinkCheckManagerAllDBs() throws InvalidAttributeException, Exception
 	{
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
