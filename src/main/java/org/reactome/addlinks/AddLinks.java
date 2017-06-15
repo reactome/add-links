@@ -53,6 +53,9 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcesso
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
+import org.reactome.addlinks.linkchecking.LinkCheckInfo;
+import org.reactome.addlinks.linkchecking.LinkCheckManager;
+import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.IntActReferenceCreator;
@@ -244,8 +247,31 @@ public class AddLinks
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
 		logger.info("Purging unused ReferenceDatabse objects.");
-		
 		this.purgeUnusedRefDBs();
+		
+		// Now, check the links that were created to ensure that they are all valid.
+		LinkCheckManager linkCheckManager = new LinkCheckManager();
+		linkCheckManager.setDbAdaptor(dbAdapter);
+		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet())
+		{
+			// TODO: parameterize the proportion and max limit for links to check.
+			Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), 0.1f, 10);
+			// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
+			for (String k : results.keySet())
+			{
+				if (!results.get(k).isKeywordFound())
+				{
+					if (results.get(k).getStatusCode() == 200)
+					{
+						logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+					}
+					else
+					{
+						logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+					}
+				}
+			}
+		}
 		
 		logger.info("Process complete.");
 	}
@@ -255,18 +281,16 @@ public class AddLinks
 	{
 		try
 		{
-			@SuppressWarnings("unchecked")
+			//@SuppressWarnings("unchecked")
 			Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
 			for (GKInstance refDB : refDBs)
 			{
 				this.dbAdapter.loadInstanceAttributeValues(refDB);
-				@SuppressWarnings("unchecked")
+				//@SuppressWarnings("unchecked")
 				List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
-				@SuppressWarnings("unchecked")
+				//@SuppressWarnings("unchecked")
 				Collection<GKInstance> refMap = new ArrayList<GKInstance> ();
 				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
-//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.crossReference));
-//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.refer));
 				
 				int refCount = 0;
 				if (refMap != null)
