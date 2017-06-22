@@ -45,7 +45,7 @@
 		<value>OrthologsCSVFromZinc</value>
 		<value>BrendaRetriever</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
-<!-- 		<value>UniProtToENSEMBL</value>
+		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
 		
 		<value>UniProtToKEGG</value>
@@ -65,7 +65,7 @@
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
- 		<value>IntActComplexPortal</value> -->
+ 		<value>IntActComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -73,7 +73,7 @@
 		<value>zincOrthologFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
 		<value>BrendaProcessor</value>
-		<!-- <value>KEGGFileProcessor</value>
+		<value>KEGGFileProcessor</value>
  		<value>UniprotToKEGGFileProcessor</value>
  		<value>ZincMoleculesFileProcessor</value>
 		<value>zincProtFileProcessor</value>
@@ -95,7 +95,7 @@
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		
-		<value>IntActFileProcessor</value> -->
+		<value>IntActFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -108,7 +108,8 @@
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-<!-- 		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>BrendaRefCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		
 		<value>upMappedEntrezGeneRefCreator</value>
 		<value>upMappedKEGGRefCreator</value>
@@ -132,7 +133,7 @@
 		<value>geneCardsRefCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>IntActComplexPortalRefCreator</value> -->
+		<value>IntActComplexPortalRefCreator</value>
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -140,6 +141,37 @@
 		<value>UniProt</value>
 		<value>Flybase</value>
 		<value>Brenda</value>
+		<value>BioGPS Gene</value>
+		<value>BioModels</value>
+		<value>CTD Gene</value>
+		<value>dbSNP Gene</value>
+		<value>NCBI Gene</value>
+		<value>Flybase</value>
+		<value>GeneCards</value>
+		<value>Gene Ontology</value>
+		<value>HapMap</value>
+		<value>ComplexPortal</value>
+		<value>IntEnz</value>
+		<value>KEGG</value>
+		<value>OMIM</value>
+		<value>Orphanet</value>
+		<value>PDB</value>
+		<value>PRO</value>
+		<value>RefSeq</value>
+		<value>Rhea</value>
+		<value>UCSC human</value>
+		<value>Wormbase</value>
+		<value>ZINC target</value>
+		<value>ZINC</value>
+		<value>ZINC - Substances</value>
+		<value>ZINC - FDA approved</value>
+		<value>ZINC - World Drugs</value>
+		<value>ZINC - Metabolites</value>
+		<value>ZINC - Biogenic</value>
+		<value>ZINC - Investigational</value>
+		<value>ZINC - Predictions - Purchasable</value>
+		<value>HMDB Protein</value>
+		<value>HMDB Metabolite</value>
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
