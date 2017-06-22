@@ -287,12 +287,13 @@ public class AddLinks
 						numLinkOK++;
 					}
 				}
+				logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
 			}
 			else
 			{
 				logger.info("ReferenceDatabase with name \"{}\" will *not* be link-checked because it was not in the list.", refDBInst.getDisplayName());
 			}
-			logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
+			
 		}
 		
 		logger.info("Process complete.");
