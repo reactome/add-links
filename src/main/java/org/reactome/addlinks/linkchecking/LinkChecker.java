@@ -70,6 +70,7 @@ public class LinkChecker
 		
 		LinkCheckInfo linkCheckInfo = new LinkCheckInfo();
 		linkCheckInfo.setLinkData(this.uri, this.keyword);
+		logger.trace("Checking link: {}", this.uri);
 		while(!done)
 		{
 			Duration responseTime = Duration.ZERO;
