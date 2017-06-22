@@ -95,6 +95,12 @@ public class AddLinks
 	
 	private Map<String, BatchReferenceCreator<?>> referenceCreators;
 	
+	private List<String> referenceDatabasesToLinkCheck;
+	
+	private float proportionToLinkCheck = 0.1f;
+	
+	private int maxNumberLinksToCheck = 100;
+	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
@@ -252,25 +258,41 @@ public class AddLinks
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
 		linkCheckManager.setDbAdaptor(dbAdapter);
-		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet())
+		// Filter by references database name.
+		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
 		{
-			// TODO: parameterize the proportion and max limit for links to check.
-			Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), 0.1f, 10);
-			// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
-			for (String k : results.keySet())
+			int numLinkOK = 0;
+			int numLinkNotOK = 0;
+			if (this.referenceDatabasesToLinkCheck.contains(refDBInst.getDisplayName()))
 			{
-				if (!results.get(k).isKeywordFound())
+				logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
+				Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+				// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
+				for (String k : results.keySet())
 				{
-					if (results.get(k).getStatusCode() == 200)
+					if (!results.get(k).isKeywordFound())
 					{
-						logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+						if (results.get(k).getStatusCode() == 200)
+						{
+							logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+						}
+						else
+						{
+							logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+						}
+						numLinkNotOK++;
 					}
 					else
 					{
-						logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+						numLinkOK++;
 					}
 				}
 			}
+			else
+			{
+				logger.info("ReferenceDatabase with name \"{}\" will *not* be link-checked because it was not in the list.", refDBInst.getDisplayName());
+			}
+			logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
 		}
 		
 		logger.info("Process complete.");
@@ -954,5 +976,20 @@ public class AddLinks
 	public void setReferenceCreatorFilter(List<String> referenceCreatorFilter)
 	{
 		this.referenceCreatorFilter = referenceCreatorFilter;
+	}
+	
+	public void setReferenceDatabasesToLinkCheck(List<String> referenceDatabasesToLinkCheck)
+	{
+		this.referenceDatabasesToLinkCheck = referenceDatabasesToLinkCheck;
+	}
+
+	public void setProportionToLinkCheck(float proportionToLinkCheck)
+	{
+		this.proportionToLinkCheck = proportionToLinkCheck;
+	}
+
+	public void setMaxNumberLinksToCheck(int maxNumberLinksToCheck)
+	{
+		this.maxNumberLinksToCheck = maxNumberLinksToCheck;
 	}
 }

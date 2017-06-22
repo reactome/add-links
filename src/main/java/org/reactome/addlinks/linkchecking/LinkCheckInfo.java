@@ -27,6 +27,7 @@ public class LinkCheckInfo
 	private String referenceDatabaseDBID;
 	private String referenceDatabaseName;
 	private String identifierDBID;
+	private String identifier;
 
 	public int getStatusCode()
 	{
@@ -117,6 +118,7 @@ public class LinkCheckInfo
 	public String toString()
 	{
 		return "[DBID: " + this.getIdentifierDBID() + "; " +
+				"Identifier: " + this.getIdentifier() + "; " +
 				"URI: " + this.getURI().toString() + "; " +
 				"RefDBID: " + this.getReferenceDatabaseDBID() + "; " + 
 				"RefDB Name: " + this.getReferenceDatabaseName() + "; " + 
@@ -126,5 +128,15 @@ public class LinkCheckInfo
 				"Response Time: " + this.getResponseTime() + "; " +
 				"Status code: " + this.getStatusCode() +
 				"]";
+	}
+
+	public String getIdentifier()
+	{
+		return this.identifier;
+	}
+
+	public void setIdentifier(String identifier)
+	{
+		this.identifier = identifier;
 	}
 }

@@ -142,7 +142,7 @@ public class LinkCheckManager
 		{
 			LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
 		}
-		
+		info.setIdentifier(identifierString);
 		info.setReferenceDatabaseDBID(refDBID);
 		info.setIdentifierDBID(inst.getDBID().toString());
 		info.setReferenceDatabaseName(referenceDatabaseName);
