@@ -265,29 +265,36 @@ public class AddLinks
 			int numLinkNotOK = 0;
 			if (this.referenceDatabasesToLinkCheck.contains(refDBInst.getDisplayName()))
 			{
-				logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
-				Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
-				// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
-				for (String k : results.keySet())
+				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
 				{
-					if (!results.get(k).isKeywordFound())
+					logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
+					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
+					for (String k : results.keySet())
 					{
-						if (results.get(k).getStatusCode() == 200)
+						if (!results.get(k).isKeywordFound())
 						{
-							logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+							if (results.get(k).getStatusCode() == 200)
+							{
+								logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+							}
+							else
+							{
+								logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+							}
+							numLinkNotOK++;
 						}
 						else
 						{
-							logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+							numLinkOK++;
 						}
-						numLinkNotOK++;
 					}
-					else
-					{
-						numLinkOK++;
-					}
+					logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
 				}
-				logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
+				else
+				{
+					logger.info("Could not check links for {} because there no *new* links for this reference database.", refDBInst.getDisplayName());
+				}
 			}
 			else
 			{
