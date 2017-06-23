@@ -32,7 +32,15 @@ public class LinkCheckManager
 	{
 		Map<String, LinkCheckInfo> linkCheckResults = Collections.synchronizedMap( new HashMap<String, LinkCheckInfo>(instances.size()) );
 		
-		int numberOfInstancesToCheck = Math.min( Math.min( (int)(instances.size() * proportionToCheck) , instances.size()), maxToCheck);
+		int numberOfInstancesToCheck ;
+		if (instances.size() < maxToCheck)
+		{
+			numberOfInstancesToCheck = instances.size();
+		}
+		else
+		{
+			numberOfInstancesToCheck = Math.min( Math.min( (int)(instances.size() * proportionToCheck) , instances.size()), maxToCheck);
+		}
 		
 		Collections.shuffle(instances);
 		List<GKInstance> instancesToCheck = instances.subList(0, numberOfInstancesToCheck);
