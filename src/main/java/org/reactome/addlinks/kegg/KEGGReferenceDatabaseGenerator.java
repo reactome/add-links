@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 
 public class KEGGReferenceDatabaseGenerator
 {
@@ -48,6 +49,7 @@ public class KEGGReferenceDatabaseGenerator
 					String speciesURL = KEGG_URL.replace("###SP3###", keggCode + ":");
 					String newDBName = "KEGG Gene ("+speciesName + ")";
 					createReferenceDatabase(newDBName, speciesName, speciesURL, objectCache);
+					LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 				}
 				catch(Exception e)
 				{

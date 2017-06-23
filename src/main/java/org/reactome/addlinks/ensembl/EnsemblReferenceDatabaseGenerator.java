@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
@@ -115,6 +116,7 @@ public final class EnsemblReferenceDatabaseGenerator
 			{
 				// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
 				EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
+				LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 			}
 
 			newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_GENE";
@@ -125,6 +127,7 @@ public final class EnsemblReferenceDatabaseGenerator
 			{
 				// Only create an alias of newDBName to oldStyleDBName2 if oldStyleDBName2 actually exists in the database.
 				EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName2, newDBName);
+				LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 			}
 			//EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabase("http://www.ensembl.org", speciesURL, "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_TRANSCRIPT");
 		}

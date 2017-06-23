@@ -108,6 +108,12 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	public void doAddLinks() throws Exception
 	{
+		// This list will be used at the very end when we are checking links but we need to
+		// seed it in the LinksToCheckCache now, because species-specific reference databases will only 
+		// be created at run-time and we can't anticipate them now. They will be added to
+		// LinksToCheckCache's list of reference DBs as they are created.
+		LinksToCheckCache.setRefDBsToCheck(this.referenceDatabasesToLinkCheck);
+		
 		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
 		if (objectCache == null)
 		{
@@ -255,6 +261,8 @@ public class AddLinks
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
+		
+		
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
 		linkCheckManager.setDbAdaptor(dbAdapter);
@@ -263,7 +271,9 @@ public class AddLinks
 		{
 			int numLinkOK = 0;
 			int numLinkNotOK = 0;
-			if (this.referenceDatabasesToLinkCheck.contains(refDBInst.getDisplayName()))
+			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
+			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
+			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName()))
 			{
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
 				{
