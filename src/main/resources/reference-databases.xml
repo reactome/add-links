@@ -61,14 +61,14 @@
 			</map>
 		</entry>
 		
-		<entry key="Entrez Gene">
+		<entry key="NCBI Gene">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="PrimaryName" value="Entrez Gene"/>
-				<entry key="Aliases">
+				<entry key="PrimaryName" value="NCBI Gene"/>
+				<!-- <entry key="Aliases">
 					<list value-type="java.lang.String">
 						<value>EntrezGene</value>
 					</list>
-				</entry>
+				</entry> -->
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/sites/entrez?db=gene" />
 				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&amp;Cmd=ShowDetailView&amp;TermToSearch=###ID###" />
 			</map>
@@ -91,7 +91,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="GeneCards"/>
 				<entry key="URL" value="http://www.genecards.org" />
-				<entry key="AccessURL" value="http://www.genecards.org/cgi-bin/carddisp.pl?id=###ID###&amp;id_type=&amp;&quot;uniprot&quot;" />
+				<entry key="AccessURL" value="http://www.genecards.org/cgi-bin/carddisp.pl?id=###ID###&amp;id_type=&quot;uniprot&quot;" />
 			</map>
 		</entry>
 		

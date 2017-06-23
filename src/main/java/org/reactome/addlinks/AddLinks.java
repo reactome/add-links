@@ -53,6 +53,9 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcesso
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
+import org.reactome.addlinks.linkchecking.LinkCheckInfo;
+import org.reactome.addlinks.linkchecking.LinkCheckManager;
+import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.IntActReferenceCreator;
@@ -92,6 +95,12 @@ public class AddLinks
 	
 	private Map<String, BatchReferenceCreator<?>> referenceCreators;
 	
+	private List<String> referenceDatabasesToLinkCheck;
+	
+	private float proportionToLinkCheck = 0.1f;
+	
+	private int maxNumberLinksToCheck = 100;
+	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
@@ -99,6 +108,12 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	public void doAddLinks() throws Exception
 	{
+		// This list will be used at the very end when we are checking links but we need to
+		// seed it in the LinksToCheckCache now, because species-specific reference databases will only 
+		// be created at run-time and we can't anticipate them now. They will be added to
+		// LinksToCheckCache's list of reference DBs as they are created.
+		LinksToCheckCache.setRefDBsToCheck(this.referenceDatabasesToLinkCheck);
+		
 		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
 		if (objectCache == null)
 		{
@@ -244,8 +259,59 @@ public class AddLinks
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
 		logger.info("Purging unused ReferenceDatabse objects.");
-		
 		this.purgeUnusedRefDBs();
+		
+		
+		
+		// Now, check the links that were created to ensure that they are all valid.
+		LinkCheckManager linkCheckManager = new LinkCheckManager();
+		linkCheckManager.setDbAdaptor(dbAdapter);
+		// Filter by references database name.
+		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
+		{
+			int numLinkOK = 0;
+			int numLinkNotOK = 0;
+			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
+			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
+			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName()))
+			{
+				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
+				{
+					logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
+					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
+					for (String k : results.keySet())
+					{
+						if (!results.get(k).isKeywordFound())
+						{
+							if (results.get(k).getStatusCode() == 200)
+							{
+								logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+							}
+							else
+							{
+								logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+							}
+							numLinkNotOK++;
+						}
+						else
+						{
+							numLinkOK++;
+						}
+					}
+					logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
+				}
+				else
+				{
+					logger.info("Could not check links for {} because there no *new* links for this reference database.", refDBInst.getDisplayName());
+				}
+			}
+			else
+			{
+				logger.info("ReferenceDatabase with name \"{}\" will *not* be link-checked because it was not in the list.", refDBInst.getDisplayName());
+			}
+			
+		}
 		
 		logger.info("Process complete.");
 	}
@@ -255,18 +321,16 @@ public class AddLinks
 	{
 		try
 		{
-			@SuppressWarnings("unchecked")
+			//@SuppressWarnings("unchecked")
 			Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.ReferenceDatabase);
 			for (GKInstance refDB : refDBs)
 			{
 				this.dbAdapter.loadInstanceAttributeValues(refDB);
-				@SuppressWarnings("unchecked")
+				//@SuppressWarnings("unchecked")
 				List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
-				@SuppressWarnings("unchecked")
+				//@SuppressWarnings("unchecked")
 				Collection<GKInstance> refMap = new ArrayList<GKInstance> ();
 				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
-//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.crossReference));
-//				refMap.putAll((Map<? extends SchemaAttribute, ? extends Collection<GKInstance>>) refDB.getReferers(ReactomeJavaConstants.refer));
 				
 				int refCount = 0;
 				if (refMap != null)
@@ -930,5 +994,20 @@ public class AddLinks
 	public void setReferenceCreatorFilter(List<String> referenceCreatorFilter)
 	{
 		this.referenceCreatorFilter = referenceCreatorFilter;
+	}
+	
+	public void setReferenceDatabasesToLinkCheck(List<String> referenceDatabasesToLinkCheck)
+	{
+		this.referenceDatabasesToLinkCheck = referenceDatabasesToLinkCheck;
+	}
+
+	public void setProportionToLinkCheck(float proportionToLinkCheck)
+	{
+		this.proportionToLinkCheck = proportionToLinkCheck;
+	}
+
+	public void setMaxNumberLinksToCheck(int maxNumberLinksToCheck)
+	{
+		this.maxNumberLinksToCheck = maxNumberLinksToCheck;
 	}
 }
