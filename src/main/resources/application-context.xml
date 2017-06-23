@@ -41,16 +41,17 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>HGNC</value>
-		<value>UniProtToENSEMBL</value>
-		<value>EnsemblToALL</value>
+		<value>OrthologsFromZinc</value>
+		<value>OrthologsCSVFromZinc</value>
 		<value>BrendaRetriever</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>UniProtToENSEMBL</value>
+		<value>EnsemblToALL</value>
+		
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
-		<value>OrthologsCSVFromZinc</value>
- 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>Zinc</value>
-		<value>OrthologsFromZinc</value>
+ 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>UniProtToOMIM</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -68,15 +69,19 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>HGNCProcessor</value>
+		<value>zincOrthologFileProcessor</value>
+		<value>FlyBaseFileProcessor</value>
+		<value>BrendaProcessor</value>
 		<value>KEGGFileProcessor</value>
  		<value>UniprotToKEGGFileProcessor</value>
  		<value>ZincMoleculesFileProcessor</value>
 		<value>zincProtFileProcessor</value>
-		<value>zincOrthologFileProcessor</value>
+		
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
  		<value>RheaFileProcessor</value>
-		<value>FlyBaseFileProcessor</value>		
+		
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -89,15 +94,12 @@
 		<value>UniprotToOMIMFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>BrendaProcessor</value>
+		
 		<value>IntActFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
-		<value>upMappedEntrezGeneRefCreator</value>
-		<value>upMappedKEGGRefCreator</value>
-		<value>KEGGReferenceCreator</value>
+		
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
 		<value>zincWorldDrugsReferenceCreator</value>
@@ -105,16 +107,20 @@
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
+		<value>HGNCReferenceCreator</value>
+		<value>BrendaRefCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
+		
 		<value>zincToUniProtReferenceCreator</value>
 		<value>zincToChEBIReferenceCreator</value> 
-
-		
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
-		
 		<value>upMappedPDBRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
-		
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
@@ -129,6 +135,50 @@
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>IntActComplexPortalRefCreator</value>
 	</util:list>
+	
+	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>HGNC</value>
+		<value>UniProt</value>
+		<value>Flybase</value>
+		<value>Brenda</value>
+		<value>BioGPS Gene</value>
+		<value>BioModels</value>
+		<value>CTD Gene</value>
+		<value>dbSNP Gene</value>
+		<value>NCBI Gene</value>
+		<value>Flybase</value>
+		<value>GeneCards</value>
+		<value>Gene Ontology</value>
+		<value>HapMap</value>
+		<value>ComplexPortal</value>
+		<value>IntEnz</value>
+		<value>KEGG</value>
+		<value>Orphanet</value>
+		<value>PDB</value>
+		<value>PRO</value>
+		<value>RefSeq</value>
+		<value>Rhea</value>
+		<value>UCSC human</value>
+		<value>Wormbase</value>
+		<value>ZINC target</value>
+		<value>ZINC</value>
+		<value>ZINC - Substances</value>
+		<value>ZINC - FDA approved</value>
+		<value>ZINC - World Drugs</value>
+		<value>ZINC - Metabolites</value>
+		<value>ZINC - Biogenic</value>
+		<value>ZINC - Investigational</value>
+		<value>ZINC - Predictions - Purchasable</value>
+		<value>HMDB Protein</value>
+		<value>HMDB Metabolite</value>
+		
+		<!--
+		Don't bother testing OMIM - they will return a 403 each time you hit their page.
+		It probably has something to do with the JavaScript pop-over asking for donations...
+		If they change the way their pages load it might be worth re-activating link checking
+		for OMIM. Or... try to code around it, if you're feeling REALLY ambitious.
+		<value>OMIM</value> -->
+	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
 		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">
@@ -136,6 +186,8 @@
 		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
 		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
 		<property name="processorCreatorLink" ref="processorCreatorLink"/>
+		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
+		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
 	</bean>
 	
 	

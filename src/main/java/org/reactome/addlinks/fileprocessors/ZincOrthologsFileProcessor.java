@@ -36,6 +36,7 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 				String[] parts = line.split(",");
 				mappings.put(parts[2], parts[0]);
 			});
+			// NOTE: Should also check http://zinc15.docking.org/orthologs/SRC_CHICK/predictions/subsets/purchasable.csv (example link) and if line count > 1 (meaning: more than 1 header line) the link is valid!
 		}
 		catch (IOException e)
 		{

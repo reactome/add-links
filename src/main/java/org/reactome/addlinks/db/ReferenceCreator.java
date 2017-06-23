@@ -17,6 +17,7 @@ import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.gk.util.GKApplicationUtilities;
+import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 
 import com.mysql.jdbc.MysqlDataTruncation;
 
@@ -283,6 +284,10 @@ public class ReferenceCreator
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
 				logger.trace("Object with DB_ID: {} has new reference (via {} attribute): DB_ID: {}, Type: {}, Identifier Value: {}",
 							instanceReferredToByIdentifier.getDBID(), xrefAttrib.getName(), newInstanceID, createdIdentifier.getSchemClass().getName(), identifierValue );
+				// Only now that the reference has been created, we will update the Links-to-check cache. This cache will be used later to ensure
+				// that the external links we created are valid.
+				LinksToCheckCache.addLinkToCache(this.refDBInstance, createdIdentifier);
+				
 			}
 			else
 			{
