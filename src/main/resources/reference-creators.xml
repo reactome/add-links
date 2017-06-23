@@ -16,7 +16,7 @@
 			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
-			<constructor-arg index="4" name="sourceDB" value="EntrezGene"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="BioGPS Gene"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/BioGPSRefCreator"/>
 			<property name="testMode" value="false"/>
@@ -26,7 +26,7 @@
 			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
-			<constructor-arg index="4" name="sourceDB" value="EntrezGene"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="CTD Gene"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/CTDRefCreator"/>
 			<property name="testMode" value="false"/>
@@ -36,7 +36,7 @@
 			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
-			<constructor-arg index="4" name="sourceDB" value="EntrezGene"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="dbSNP Gene"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/dbSNPRefCreator"/>
 			<property name="testMode" value="false"/>
@@ -87,7 +87,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="Entrez Gene"/>
+				<constructor-arg index="5" name="targetDB" value="NCBI Gene"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedEntrezGeneRefCreator"/>
 				<constructor-arg index="7" name="entrezGeneRefCreators" ref="entrezGeneBasedReferenceCreators"/>
 				<property name="testMode" value="false"/>
@@ -345,7 +345,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
-				<constructor-arg index="5" name="targetDB" value="EntrezGene"/>
+				<constructor-arg index="5" name="targetDB" value="NCBI Gene"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLToEntrezGeneRefCreator"/>
 				<constructor-arg index="7" name="entrezGeneRefCreators" ref="entrezGeneBasedReferenceCreators"/>
 				<property name="testMode" value="false"/>
