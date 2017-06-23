@@ -153,7 +153,6 @@
 		<value>ComplexPortal</value>
 		<value>IntEnz</value>
 		<value>KEGG</value>
-		<value>OMIM</value>
 		<value>Orphanet</value>
 		<value>PDB</value>
 		<value>PRO</value>
@@ -172,6 +171,13 @@
 		<value>ZINC - Predictions - Purchasable</value>
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
+		
+		<!--
+		Don't bother testing OMIM - they will return a 403 each time you hit their page.
+		It probably has something to do with the JavaScript pop-over asking for donations...
+		If they change the way their pages load it might be worth re-activating link checking
+		for OMIM. Or... try to code around it, if you're feeling REALLY ambitious.
+		<value>OMIM</value> -->
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
