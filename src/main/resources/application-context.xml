@@ -99,7 +99,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		
+		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
 		<value>zincWorldDrugsReferenceCreator</value>
@@ -130,7 +130,7 @@
 		<value>OrphanetReferenceCreator</value>
 		<value>proRefCreator</value>
 		<value>pdbRefCreator</value>
-		<value>geneCardsRefCreator</value>
+		
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>IntActComplexPortalRefCreator</value>
@@ -147,7 +147,7 @@
 		<value>dbSNP Gene</value>
 		<value>NCBI Gene</value>
 		<value>Flybase</value>
-		<value>GeneCards</value>
+		
 		<value>Gene Ontology</value>
 		<value>HapMap</value>
 		<value>ComplexPortal</value>
@@ -171,7 +171,10 @@
 		<value>ZINC - Predictions - Purchasable</value>
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
-		
+		<!--
+		GeneCards returns a 403 for every request.
+		<value>GeneCards</value> 
+		-->
 		<!--
 		Don't bother testing OMIM - they will return a 403 each time you hit their page.
 		It probably has something to do with the JavaScript pop-over asking for donations...
