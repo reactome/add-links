@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.gk.model.GKInstance;
@@ -35,6 +34,7 @@ public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< Strin
 		AtomicInteger sourceIdentifiersWithNewIdentifier = new AtomicInteger(0);
 		AtomicInteger sourceIdentifiersWithExistingIdentifier = new AtomicInteger(0);
 		
+		@SuppressWarnings("unchecked")
 		GKInstance refDB = (new ArrayList<GKInstance>(((Collection<GKInstance>) this.adapter.fetchInstanceByAttribute("ReferenceDatabase", "name", "=", this.targetRefDB)))).get(0);
 		List<String> thingsToCreate = new ArrayList<String>(mapping.keySet().size());
 		//for (GKInstance sourceReference : sourceReferences)

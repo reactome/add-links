@@ -193,7 +193,7 @@
 			</bean>
 		</entry>
 		<entry key="geneCardsRefCreator">
-			<bean class="org.reactome.addlinks.referencecreators.OneToOneReferenceCreator" id="geneCardsRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.GeneCardsReferenceCreators" id="geneCardsRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
