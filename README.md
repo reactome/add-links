@@ -10,10 +10,10 @@ AddLinks is a program whose purpose is to create links to external resources fro
 
 At a high-level, AddLinks runs in four phases:
 
- 1. [Data file retrieval](./README.md#3)
- 2. [Data file processing](./README.md#4)
- 3. [Reference creation](./README.md#5)
- 4. [Link-checking](./README.md#6)
+ 1. [Data file retrieval](./README.md#data-file-retrieval)
+ 2. [Data file processing](./README.md#data-file-processing)
+ 3. [Reference creation](./README.md#reference-creation)
+ 4. [Link-checking](./README.md#link-checking)
  
 #### Data file retrieval
 
