@@ -98,3 +98,40 @@ In this example below, only the file retrievers named "HGNC", "OrthologsFromZinc
 
  9. Link-checking
    AddLinks will attempt to check the links from the references it created to ensure that they are all OK. The list of ReferenceDatabases to perform link-checking on can be configured in the application-context.xml file. Some databases should not have link-checking performed as they will not provide the correct response. Some websites seem to return a 403 error code if they are not accessed with a web browser. Some load their content via JavaScript so it is impossible to verify the links without actually executing the JavaScript.
+
+## Configuration
+
+AddLinks gets configuration values from Spring XML files. There are also some properties files that contain configuration settings.
+
+### XML configuration
+By default, the XML files that contain configuration are:
+
+ - [application-context.xml](src/main/resources/application-context.xml) - This file contains the main configuration. It contains
+   - A list of data retrievers. These must be in a list bean named "fileRetrieverFilter".
+   - A list of data processors. These must be in a list bean named "fileProcessorFilter".
+   - A list of reference creators. These must be in a list bean named "referenceCreatorFilter".
+   - A list of reference database names that will be link-checked. These must be in a bean named "referenceDatabasesToLinkCheck".
+   This file also contains database connector configuration, in a bean named "dbAdapter". This bean will get its values from a properties file.
+  
+ - [addlinks.properties](src/main/resources/addlinks.properties) - This file contains some property values, some of which will be used by the XML configuration.
+   - filterFileRetrievers - This setting is used to determine if file retrievers will be filtered based on the fileRetrieverFilter bean in the XML file. Consider this deprecated!
+   - executeAsPersonID - This is the ID of the Person entity that new data will be associated with.
+   - numberOfUniprotDownloadThreads - Number of threads that will be created to download Uniprot data.
+   - numberOfBrendaDownloadThreads - Number of threads that will be created to download Brenda data.
+   - lazyLoadCache - determines if all of the object caches will be fully-loaded the first time *any* cache is referenced, or if caches will only be loaded the first time they are references (not all caches will be loaded - only the referenced cache will be loaded!)
+   - proportionToLinkCheck - the proportion of new links to perform link-checking on, on a per-ReferenceDatabase basis. 0 means no new links will be checked. 1.0 means all new links will be checked. 0.5 means that half of the new links will be checked.
+   - maxNumberLinksToCheck - the maximum number of new links to check. This overrides proportionToLinkCheck. For example, if 10 000 new links are created and proportionToLinkCheck == 0.5, that means that link-checking should check 5 000 links. If this is too many links to check in a reasonable amount of time (or if you don't want to send too many requests to someone's server) you can set maxNumberLinksToCheck to a more reasonable number (50, or 200, or something like that) and maxNumberLinksToCheck will act as as cap on the number of links that can be checked, on a per-ReferenceDatabase basis.
+   
+ - [db.properties](src/main/resources/db.properties) - This file contains database connection configuration information.
+   - database.host - the name of the host machine which is hosting the database.
+   - database.name - the name of the database to connect to.
+   - database.user - the username to connect to the database.
+   - database.password - the password for `database.user`.
+   - database.port - the port to connect to.
+   
+ - auth.properties - This file will contain usernames and passwords for other sites that you will connect to.
+ 
+ - [logging.properties](src/main/resources/logging.properties) - This file contains basic settings to configure logging.
+   - baseDir - This is the base directory where log files will be created. Log files will be grouped into subdirectories based on what type of logs they are. The subdirectories for logging will be `retrievers` for data retrievers, `file-processors` for data processors, and `refCreators` for reference creators. More generic log messages may go to `addlinks.log`. Logs will also be archived in subdirectries named with the date.
+   
+ - [log4j2.xml](src/main/resources/log4j2.xml) - This is the log4j2 configuration file. It is strongly recommended to not touch this file, unless you have a good understanding of log4j2 configuration.
