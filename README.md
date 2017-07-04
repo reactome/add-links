@@ -135,3 +135,18 @@ By default, the XML files that contain configuration are:
    - baseDir - This is the base directory where log files will be created. Log files will be grouped into subdirectories based on what type of logs they are. The subdirectories for logging will be `retrievers` for data retrievers, `file-processors` for data processors, and `refCreators` for reference creators. More generic log messages may go to `addlinks.log`. Logs will also be archived in subdirectries named with the date.
    
  - [log4j2.xml](src/main/resources/log4j2.xml) - This is the log4j2 configuration file. It is strongly recommended to not touch this file, unless you have a good understanding of log4j2 configuration.
+ 
+
+## Building & Running
+
+### Building AddLinks
+
+Building AddLinks should be very simple. You should be able to perform these steps:
+```bash
+$ git clone https://github.com/reactome/AddLinks.git
+$ cd AddLinks
+$ mvn clean package -DskipTest=true
+```
+If you want to build and execute tests, make sure you have a Reactome database that AddLinks can connect to, and configure [src/test/resources/db.properties](src/test/resources/db.properties) with the correct values.
+
+
