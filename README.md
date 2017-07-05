@@ -7,7 +7,7 @@ This is the AddLinks component of the Release system
    - [High-level](./README.md#high-level)
    - [Detailed](./README.md#a-little-more-detail)
  - [Configuration](./README.md#configuration)
- - [Building & Running](./README#building--running)
+ - [Building & Running](./README.md#building--running)
 
 
 ## Overview
