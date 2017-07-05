@@ -137,7 +137,7 @@ By default, the XML files that contain configuration are:
    - database.password - the password for `database.user`.
    - database.port - the port to connect to.
    
- - auth.properties - This file will contain usernames and passwords for other sites that you will connect to.
+ - [auth.properties](src/main/resources/auth.properties) - This file will contain usernames and passwords for other sites that you will connect to.
  
  - [logging.properties](src/main/resources/logging.properties) - This file contains basic settings to configure logging.
    - baseDir - This is the base directory where log files will be created. Log files will be grouped into subdirectories based on what type of logs they are. The subdirectories for logging will be `retrievers` for data retrievers, `file-processors` for data processors, and `refCreators` for reference creators. More generic log messages may go to `addlinks.log`. Logs will also be archived in subdirectries named with the date.
