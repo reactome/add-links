@@ -142,6 +142,7 @@ By default, the XML files that contain configuration are:
 ### Building AddLinks
 
 Building AddLinks should be very simple. You should be able to perform these steps:
+
 ```bash
 $ git clone https://github.com/reactome/AddLinks.git
 $ cd AddLinks
@@ -149,4 +150,14 @@ $ mvn clean package -DskipTest=true
 ```
 If you want to build and execute tests, make sure you have a Reactome database that AddLinks can connect to, and configure [src/test/resources/db.properties](src/test/resources/db.properties) with the correct values.
 
+### Running AddLinks
 
+Running AddLinks can be done like this:
+
+```bash
+java -cp "$(pwd)/resources" \
+	-Dconfig.location=$(pwd)/resources/addlinks.properties \
+	-jar AddLinks.jar file://$(pwd)/resources/application-context.xml
+```
+
+You will need to execute this command from a directory which has a subdirectory named "resources", such that "resources" contains all of the necessary configuration files described above, as well as the application properties file (defined with the `-Dconfig.location` VM setting) and the logging configuration files (defined with the `-Dlog4j.configuration` VM setting). The AddLinks application itself takes one argument: the path to the Spring context file (application-context.xml).

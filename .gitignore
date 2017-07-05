@@ -34,3 +34,5 @@ scripts/resources
 diffReport*.txt
 /test-logs/
 .springBeans
+
+*.md.html
