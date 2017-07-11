@@ -64,7 +64,10 @@ public class COSMICReferenceCreator extends SimpleReferenceCreator<String>
 							{
 								logger.warn("Found a COSMIC gene with COSMIC Gene ID: {} and mismatching HGNC ID: {} - we'll create the reference to COSMIC using the COSMIC Gene ID.", geneName, mapping.get(geneName));
 							}
-							this.refCreator.createIdentifier(geneName, String.valueOf(inst.getDBID()), this.targetRefDB, personID, this.getClass().getName());
+							if (!this.testMode)
+							{
+								this.refCreator.createIdentifier(geneName, String.valueOf(inst.getDBID()), this.targetRefDB, personID, this.getClass().getName());
+							}
 							addedToReactome.add(geneName);
 							sourceIdentifiersWithNewIdentifier++;
 						}

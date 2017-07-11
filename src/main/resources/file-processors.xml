@@ -261,5 +261,17 @@
 				</property>
 			</bean>
 		</entry>
+		
+		<entry key="COSMICProcessor">
+			<bean id="COSMICProcessor" class="org.reactome.addlinks.fileprocessors.COSMICFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/COSMICProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		
 	</util:map>
 </beans>
