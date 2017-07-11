@@ -598,4 +598,9 @@
 		<constructor-arg index="6" name="refCreatorName" value="refCreators/HGNCReferenceCreator"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<bean class="org.reactome.addlinks.linkchecking.LinkCheckManager" id="linkCheckManager">
+		<property name="dbAdaptor" ref="dbAdapter"/>
+	</bean>
+	
 </beans>
