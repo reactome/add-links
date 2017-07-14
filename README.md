@@ -102,10 +102,12 @@ In this example below, only the file retrievers named "HGNC", "OrthologsFromZinc
  7. After references are created, a report is run to show the current counts of external resources in the different databases. Additionally, a difference report will also be generated and saved to a file (named with a datestring, like this: "diffReport<DATETIME>.txt").
  
  8. Purging unused ReferenceDatabases
-   ReferenceDatabase objects are created at the very begining of AddLinks. At that point in time, it is not yet known if all of those ReferenceDatabase objects will have references that make use of them. After all of the references have been created, any ReferenceDatabase objects that are unused (not external resources reference them) are removed from the database.
+ 
+    ReferenceDatabase objects are created at the very begining of AddLinks. At that point in time, it is not yet known if all of those ReferenceDatabase objects will have references that make use of them. After all of the references have been created, any ReferenceDatabase objects that are unused (not external resources reference them) are removed from the database.
 
  9. Link-checking
-   AddLinks will attempt to check the links from the references it created to ensure that they are all OK. The list of ReferenceDatabases to perform link-checking on can be configured in the application-context.xml file. Some databases should not have link-checking performed as they will not provide the correct response. Some websites seem to return a 403 error code if they are not accessed with a web browser. Some load their content via JavaScript so it is impossible to verify the links without actually executing the JavaScript.
+ 
+    AddLinks will attempt to check the links from the references it created to ensure that they are all OK. The list of ReferenceDatabases to perform link-checking on can be configured in the application-context.xml file. Some databases should not have link-checking performed as they will not provide the correct response. Some websites seem to return a 403 error code if they are not accessed with a web browser. Some load their content via JavaScript so it is impossible to verify the links without actually executing the JavaScript.
 
 ## Configuration
 
