@@ -66,7 +66,6 @@ public class OMIMFileProcessor extends UniprotFileProcessor
 						// If the OMIM ID is in the list of genes, add it to the new list.
 						if ( omimGenes.contains(omimID) )
 						{
-							//mapping.get(species).get(uniprotID).remove(omimID);
 							if (!newMapping.containsKey(species))
 							{
 								newMapping.put(species, Collections.synchronizedMap(new HashMap<String,List<String>>()));
@@ -75,7 +74,7 @@ public class OMIMFileProcessor extends UniprotFileProcessor
 							{
 								newMapping.get(species).put(uniprotID, Collections.synchronizedList(new ArrayList<String>()));
 							}
-							// add the 
+							// add the omim id to the new mapping
 							newMapping.get(species).get(uniprotID).add(omimID);
 							
 							logger.debug("Including OMIM ID: {}", omimID);
