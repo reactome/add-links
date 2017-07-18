@@ -37,7 +37,8 @@
 	 	<entry key="UniprotToRefSeqPeptideFileProcessor" value="upMappedRefSeqPeptideRefCreator"/>
 	 	<entry key="UniprotToRefSeqRNAFileProcessor" value="upMappedRefSeqRNARefCreator"/>
 	 	<entry key="UniprotToEntrezGeneFileProcessor" value="upMappedEntrezGeneRefCreator"/>
-	 	<entry key="UniprotToOMIMFileProcessor" value="upMappedOMIMRefCreator"/>
+	 	<!-- <entry key="UniprotToOMIMFileProcessor" value="upMappedOMIMRefCreator"/> -->
+	 	<entry key="OMIMProcessor" value="upMappedOMIMRefCreator"/>
 	 	<entry key="UniprotToWormbaseFileProcessor" value="upMappedWormbaseRefCreator"/>
 	 	<entry key="UniprotToKEGGFileProcessor" value="upMappedKEGGRefCreator" />
 	 	<entry key="zincProtFileProcessor" value="zincToUniProtReferenceCreator" />
