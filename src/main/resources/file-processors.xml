@@ -175,13 +175,7 @@
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene*" />
 			</bean>
 		</entry>
-		<!--
-		<entry key="UniprotToOMIMFileProcessor">
-			<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor" parent="baseUniprotProcessor">
-				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
-			</bean>
-		</entry>
-		-->
+
 		<entry key="UniprotToWormbaseFileProcessor">
 			<bean id="UniprotToWormbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor" parent="baseUniprotProcessor">
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase*" />
