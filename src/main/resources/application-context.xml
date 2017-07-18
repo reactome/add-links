@@ -91,7 +91,8 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
-		<value>UniprotToOMIMFileProcessor</value>
+		<!-- <value>UniprotToOMIMFileProcessor</value> -->
+		<value>OMIMProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		
