@@ -27,7 +27,7 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 	@Override
 	protected void processFile(Path file, Map<String, Map<String,List<String>>> mapping)
 	{
-		//The returned structure looks like this:
+		//The updated mapping structure looks like this:
 		/*
 		 * ROOT MAP
 		 *   |

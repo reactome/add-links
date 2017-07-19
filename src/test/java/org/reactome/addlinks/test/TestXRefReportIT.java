@@ -50,9 +50,9 @@ public class TestXRefReportIT
 		//CrossReferenceReporter reporter = PowerMock.createPartialMock(CrossReferenceReporter.class, "createReportMap");
 		//Map<String,Map<String,Integer>> reportMap = Whitebox.invokeMethod(reporter, "createReportMap");
 		Map<String,Map<String,Integer>> reportMap = reporter.createReportMap();
-		//reportMap.remove("ENSEMBL");
+		reportMap.get("OMIM").remove("ReferenceDNASequence");
 		
-		CrossReferenceReporter reporter2 =  new CrossReferenceReporter(new MySQLAdaptor(dbAdapter.getDBHost(), "test_reactome_60_post_orthoinference", dbAdapter.getDBUser(), dbAdapter.getDBPwd(), dbAdapter.getDBPort()));
+		CrossReferenceReporter reporter2 =  new CrossReferenceReporter(new MySQLAdaptor(dbAdapter.getDBHost(), "test_reactome_61", dbAdapter.getDBUser(), dbAdapter.getDBPwd(), dbAdapter.getDBPort()));
 		
 		String report = reporter2.printReportWithDiffs(reportMap);
 		

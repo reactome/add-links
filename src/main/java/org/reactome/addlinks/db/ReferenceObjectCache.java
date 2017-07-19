@@ -495,7 +495,7 @@ public final class ReferenceObjectCache
 	 */
 	private void buildLazilyLoadedCaches(String objectClass, Map<String, List<GKInstance>> objectCacheBySpecies, Map<String, GKInstance> objectCacheByDBID, Map<String, List<GKInstance>> objectCacheByIdentifier, Map<String, List<GKInstance>> objectCacheByRefDB, boolean lazyLoad)
 	{
-		if (!lazyLoad)
+		//if (!lazyLoad)
 		{
 			// not every class-cache will populate all caches, so only load if they are ALL empty.
 			if ( (objectCacheBySpecies == null || objectCacheBySpecies.size() == 0)
