@@ -12,8 +12,10 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.addlinks.fileprocessors.OMIMFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,11 @@ public class TestUniProtMappedRefCreator
 	
 	@Autowired
 	UniprotFileProcessor UniprotToOMIMFileProcessor;
+	
+	// *New* OMIM
+	@Autowired FileRetriever OMIMFileRetriever;
+	
+	@Autowired OMIMFileProcessor OMIMProcessor;
 	
 	// For PDB
 	@Autowired
@@ -191,6 +198,25 @@ public class TestUniProtMappedRefCreator
 		refCreator.createIdentifiers(123456, mappings, identifiers );
 	}
 	
+	private void testReferenceCreation(String refDb, String species, String className, UniprotFileRetreiver retriever, FileRetriever altRetriever, UniprotFileProcessor processor, UPMappedIdentifiersReferenceCreator refCreator) throws Exception, IOException
+	{
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		List<GKInstance> identifiers = getIdentifiersList(refDb, species, className);
+		assertTrue(identifiers.size()>0);
+		System.out.println("Number of identifiers to look up: " + identifiers.size());
+		retriever.setFetchDestination(retriever.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
+		BufferedInputStream inStream = indentifiersAsStream(identifiers);
+		retriever.setDataInputStream(inStream);
+		System.out.println("Fetching data...");
+		retriever.fetchData();
+		altRetriever.fetchData();
+		Map<String,Map<String,List<String>>> mappings = (Map<String, Map<String, List<String>>>) processor.getIdMappingsFromFile();
+		assertTrue(mappings.keySet().size() > 0);
+		refCreator.setTestMode(true);
+		refCreator.createIdentifiers(123456, mappings, identifiers );
+	}
+	
 	@Test
 	public void testUPRefCreatorWormbase() throws Exception
 	{
@@ -207,6 +233,15 @@ public class TestUniProtMappedRefCreator
 		String species = "Homo sapiens";
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToOMIM, UniprotToOMIMFileProcessor, upMappedOMIMRefCreator);
+	}
+	
+	@Test
+	public void testUPRefCreatorOMIMNewFileProcessor() throws Exception
+	{
+		String refDb = "UniProt";
+		String species = "Homo sapiens";
+		String className = "ReferenceGeneProduct";
+		testReferenceCreation(refDb, species, className, UniProtToOMIM, OMIMFileRetriever, OMIMProcessor, upMappedOMIMRefCreator);
 	}
 	
 	@Test

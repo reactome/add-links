@@ -54,6 +54,7 @@
  		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>UniProtToOMIM</value>
+		<value>OMIM</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
@@ -91,7 +92,7 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
-		<value>UniprotToOMIMFileProcessor</value>
+		<value>OMIMProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		

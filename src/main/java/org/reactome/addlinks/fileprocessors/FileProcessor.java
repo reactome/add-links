@@ -33,6 +33,10 @@ public abstract class FileProcessor<T> implements CustomLoggable
 		this.processorName = processorName;
 	}
 	
+	/**
+	 * Sets the path to the file that will be processed.
+	 * @param p
+	 */
 	public void setPath(Path p)
 	{
 		this.pathToFile = p;

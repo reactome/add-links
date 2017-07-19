@@ -176,12 +176,6 @@
 			</bean>
 		</entry>
 
-		<entry key="UniprotToOMIMFileProcessor">
-			<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor" parent="baseUniprotProcessor">
-				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
-			</bean>
-		</entry>
-		
 		<entry key="UniprotToWormbaseFileProcessor">
 			<bean id="UniprotToWormbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor" parent="baseUniprotProcessor">
 				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase*" />
@@ -257,6 +251,23 @@
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/hgnc_complete_set.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		
+		<entry key="OMIMProcessor">
+			<bean id="OMIMProcessor" class="org.reactome.addlinks.fileprocessors.OMIMFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/OMIMProcessor"/>
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+					</bean>
+				</property>
+				<property name="OMIMPath">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/mim2gene.txt"/>
 					</bean>
 				</property>
 			</bean>

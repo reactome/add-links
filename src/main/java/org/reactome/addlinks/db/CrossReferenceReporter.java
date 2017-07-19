@@ -71,7 +71,7 @@ public class CrossReferenceReporter
 	 */
 	public enum REPORT_KEYS
 	{
-		NEW_REF_DB(0), OLD_REF_DB(1), NEW_OBJECT_TYPE(2), DIFFERENCE(3), OLD_OBJECT_TYPE(4), NEW_QUANTITY(5), OLD_QUANTITY(6), ALT_SORT_VALUE(8);
+		NEW_REF_DB(0), OLD_REF_DB(1), NEW_OBJECT_TYPE(2), OLD_OBJECT_TYPE(3), DIFFERENCE(4), NEW_QUANTITY(5), OLD_QUANTITY(6), ALT_SORT_VALUE(8);
 		
 		private int sortOrder = 0;
 		
@@ -106,30 +106,42 @@ public class CrossReferenceReporter
 
 		
 		@Override
-		public int compareTo(ReportMap<K, V> o)
+		public int compareTo(ReportMap<K, V> other)
 		{
 			// we will need to check key-by-key.
 			for (K key : this.keySet().stream().sorted((Comparator<? super K>) reportKeysComparator).collect(Collectors.toList()))
 			{
 				// if we found the Grand Total, it is ALWAYS greater (should appear near the end of the report).
-				if (this.get(key) != null && this.get(key).contains("Grand Total"))
+				if (this.get(key) != null && this.get(key).trim().contains("Grand Total"))
 					return 1;
 				
-				if (o.get(key) != null && o.get(key).contains("Grand Total"))
+				if (other.get(key) != null && other.get(key).trim().contains("Grand Total"))
 					return -1;
 				
 				// if we found the Subtotal, it is ALWAYS greater (should appear near the end the section).
-				if (this.get(key) != null && this.get(key).contains("Subtotal"))
+				if (this.get(key) != null && this.get(key).trim().contains("Subtotal"))
 					return 1;
 				
-				if (o.get(key) != null && o.get(key).contains("Subtotal"))
+				if (other.get(key) != null && other.get(key).trim().contains("Subtotal"))
 					return -1;
-
+				
+				// if this key IS null and the other has a subtotal, then the *other* should appear lower down. 
+				if (this.get(key) == null && other.get(REPORT_KEYS.NEW_OBJECT_TYPE).trim().contains("Subtotal"))
+					return -1;
+				// Same as above condition, but "this" and "other" are reversed.
+				if (other.get(key) == null && this.get(REPORT_KEYS.NEW_OBJECT_TYPE).trim().contains("Subtotal"))
+					return 1;
+				
+				
 				// Ok let's compare non subtotal/grand total keys. Use the ALT sort value in cases where *key* maps to NULL (that's what it's there for!)
 				String leftValue = this.get(key) != null ? this.get(key) : this.get(REPORT_KEYS.ALT_SORT_VALUE) ;
-				String rightValue = o.get(key) != null ? o.get(key) : o.get(REPORT_KEYS.ALT_SORT_VALUE) ;
+				String rightValue = other.get(key) != null ? other.get(key) : other.get(REPORT_KEYS.ALT_SORT_VALUE) ;
 				
-				return reportRowComparator.compare(leftValue, rightValue);
+				int rowCompareResult = reportRowComparator.compare(leftValue, rightValue);
+				if (rowCompareResult!=0)
+				{
+					return rowCompareResult;
+				}
 			}
 			// If the function STILL hasn't reutnred by this point, it means that THIS had no keys, so it is "less than" the other map.
 			return -1;
@@ -225,7 +237,7 @@ public class CrossReferenceReporter
 			"	group by GO_BiologicalProcess.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
 			"	) as subq\n" +
 			" group by ref_db_names_and_aliases asc, object_type asc with rollup;\n";
-	
+
 
 	public CrossReferenceReporter(MySQLAdaptor adaptor)
 	{
@@ -254,12 +266,12 @@ public class CrossReferenceReporter
 		//printing the diff in-place is probably too hard, so maybe create an intermediate data structure and then sort/print THAT. 
 		//Intermediate structure: a list of Maps with the following keys: newRefDB, oldRefDB, newObjectType, oldObjectType, newQuantity, oldQuantity, diff.
 		//first, we need to build this thing.
-		List<Map<REPORT_KEYS,String>> reportRows = new ArrayList<Map<REPORT_KEYS,String>>();
+		List<ReportMap<REPORT_KEYS,String>> reportRows = new ArrayList<ReportMap<REPORT_KEYS,String>>();
 		for (String oldRefDBName : oldReport.keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 		{
 			for (String oldObjectType : oldReport.get(oldRefDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 			{
-				Map<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
+				ReportMap<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
 				map.put(REPORT_KEYS.OLD_REF_DB, oldRefDBName);
 				map.put(REPORT_KEYS.OLD_OBJECT_TYPE, oldObjectType);
 				map.put(REPORT_KEYS.OLD_QUANTITY, String.valueOf(oldReport.get(oldRefDBName).get(oldObjectType)));
@@ -296,12 +308,15 @@ public class CrossReferenceReporter
 			}
 		}
 		// Once that's done, we should go through the NEW report and add in any refdbs/objecttypes that weren't in oldReport
-		// for all ref db names in the new report that are not in the old report.
-		for (String newRefDBName : newReport.keySet().stream().filter( k -> !oldReport.containsKey(k)).sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
+		// for all ref db names in the new report that are not in the old report. EDIT: This was wrong: If new object types were added for existing databases, their records were omitted in the final report though the subtotal still showed the correct number.
+		for (String newRefDBName : newReport.keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 		{
-			for (String newObjectType : newReport.get(newRefDBName).keySet().stream().sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
+			// Filter for new Ref DBs *OR* for pre-existing Ref DBs with new object types.
+			for (String newObjectType : newReport.get(newRefDBName).keySet().stream()
+										.filter( objectType -> !oldReport.containsKey(newRefDBName) || !oldReport.get(newRefDBName).containsKey(objectType) )
+										.sorted(CrossReferenceReporter.reportRowComparator).collect(Collectors.toList()))
 			{
-				Map<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
+				ReportMap<REPORT_KEYS, String> map = new ReportMap<REPORT_KEYS, String>();
 				map.put(REPORT_KEYS.NEW_OBJECT_TYPE, newObjectType);
 				map.put(REPORT_KEYS.ALT_SORT_VALUE, newRefDBName+(newObjectType.contains("Subtotal") ? "1" : "0"));
 				map.put(REPORT_KEYS.NEW_REF_DB, newRefDBName);
@@ -315,6 +330,8 @@ public class CrossReferenceReporter
 				reportRows.add(map);
 			}
 		}
+		
+		//reportRows.sort(reportMapSorter);
 		
 		int oldRefDBNameMaxWidth = 0;
 		int oldObjectTypeMaxWidth = 0;
