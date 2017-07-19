@@ -40,6 +40,7 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
@@ -69,6 +70,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
@@ -99,6 +101,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
@@ -171,6 +174,7 @@
 		<value>ZINC - Predictions - Purchasable</value>
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
+		<value>COSMIC</value>
 		<!--
 		GeneCards returns a 403 for every request.
 		<value>GeneCards</value> 
