@@ -1,6 +1,7 @@
 package org.reactome.addlinks.dataretrieval;	
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,6 +17,16 @@ import java.time.Instant;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPSClient;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.Selectors;
+import org.apache.commons.vfs2.impl.StandardFileSystemManager;
+import org.apache.commons.vfs2.provider.sftp.SftpClientFactory;
+import org.apache.commons.vfs2.provider.sftp.SftpFileProvider;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystem;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -28,6 +39,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 
 public class FileRetriever implements DataRetriever {
 
@@ -145,8 +162,8 @@ public class FileRetriever implements DataRetriever {
 	{
 		user = user == null || user.trim().equals("") ? "anonymous" : user;
 		password = password == null || password.trim().equals("") ? "" : password;
-		
 		FTPClient client = new FTPClient();
+
 		client.connect(this.uri.getHost());
 		client.login(user, password);
 		logger.debug("connect/login reply code: {}",client.getReplyCode());
@@ -161,6 +178,14 @@ public class FileRetriever implements DataRetriever {
 			logger.error(errorString);
 			throw new Exception(errorString);
 		}
+		writeInputStreamToFile(inStream);
+		
+		client.logout();
+		client.disconnect();
+	}
+
+	protected void writeInputStreamToFile(InputStream inStream) throws IOException, FileNotFoundException
+	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		int b = inStream.read();
 		while (b!=-1)
@@ -168,8 +193,7 @@ public class FileRetriever implements DataRetriever {
 			baos.write(b);
 			b = inStream.read();
 		}
-		client.logout();
-		client.disconnect();
+
 		FileOutputStream file = new FileOutputStream(this.destination);
 		baos.writeTo(file);
 		file.flush();
@@ -179,6 +203,7 @@ public class FileRetriever implements DataRetriever {
 		file.close();
 	}
 
+	
 	protected void doHttpDownload(Path path) throws HttpHostConnectException, IOException, Exception
 	{
 		this.doHttpDownload(path, HttpClientContext.create());
