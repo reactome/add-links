@@ -48,5 +48,6 @@
 	 	<entry key="BrendaProcessor" value="BrendaRefCreator"/>
 	 	<entry key="IntActFileProcessor" value="IntActComplexPortalRefCreator"/>
 	 	<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
+	 	<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 	 </util:map>
 </beans>
