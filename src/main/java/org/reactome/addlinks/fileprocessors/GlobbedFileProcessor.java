@@ -30,6 +30,10 @@ public abstract class GlobbedFileProcessor<T> extends FileProcessor<T>
 	
 	protected SimpleFileVisitor<Path> globFileVisitor;
 	
+	/**
+	 * Sets the glob to match files against.
+	 * @param glob
+	 */
 	public void setFileGlob(String glob)
 	{
 		this.fileGlob = glob;
