@@ -600,6 +600,7 @@
 		<property name="testMode" value="true"/>
 	</bean>
 	
+	<!-- HGNC -->
 	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HGNCRetriever">
 		<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
 		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" />
@@ -625,4 +626,33 @@
 		<constructor-arg index="6" name="refCreatorName" value="refCreators/HGNCReferenceCreator"/>
 		<property name="testMode" value="true"/>
 	</bean>
+	
+	<!-- COSMIC -->
+	<bean id="COSMICProcessor" class="org.reactome.addlinks.fileprocessors.COSMICFileProcessor">
+		<constructor-arg name="processorName" value="file-processors/COSMICProcessor"/>
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz"/>
+			</bean>
+		</property>
+	</bean>
+
+	<bean class="org.reactome.addlinks.referencecreators.COSMICReferenceCreator" id="COSMICReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+		<constructor-arg index="5" name="targetDB" value="COSMIC"/>
+		<constructor-arg index="6" name="refCreatorName" value="refCreators/COSMICReferenceCreator"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
+	
+	<!--  -->
+	
+	<bean class="org.reactome.addlinks.linkchecking.LinkCheckManager" id="linkCheckManager">
+		<property name="dbAdaptor" ref="dbAdapter"/>
+	</bean>
+	
 </beans>
