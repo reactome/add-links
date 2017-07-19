@@ -172,7 +172,7 @@
 			<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="COSMIC">
 				<property name="userName" value="${cosmic.user}"/>
 				<property name="password" value="${cosmic.password}"/>
-				<property name="dataURL" value="sftp://sftp-cancer.sanger.ac.uk//files/grch38/cosmic/v81/CosmicMutantExport.tsv.gz" />
+				<property name="dataURL" value="sftp://sftp-cancer.sanger.ac.uk:22/files/grch38/cosmic/v81/CosmicMutantExport.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/COSMIC"/>
