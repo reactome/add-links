@@ -66,7 +66,7 @@ public class COSMICReferenceCreator extends SimpleReferenceCreator<String>
 							}
 							if (!this.testMode)
 							{
-								this.refCreator.createIdentifier(geneName, String.valueOf(inst.getDBID()), this.targetRefDB, personID, this.getClass().getName());
+								this.refCreator.createIdentifier(geneName, String.valueOf(inst.getDBID()), this.targetRefDB, personID, this.getClass().getName(), species);
 							}
 							addedToReactome.add(geneName);
 							sourceIdentifiersWithNewIdentifier++;

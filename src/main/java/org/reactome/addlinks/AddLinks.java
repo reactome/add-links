@@ -57,6 +57,7 @@ import org.reactome.addlinks.linkchecking.LinkCheckInfo;
 import org.reactome.addlinks.linkchecking.LinkCheckManager;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
+import org.reactome.addlinks.referencecreators.COSMICReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.IntActReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
@@ -633,6 +634,11 @@ public class AddLinks
 						// The IntActReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
 						sourceReferences = new ArrayList<GKInstance>();
 					}
+					else if ( refCreator instanceof COSMICReferenceCreator)
+					{
+						// COSMIC should use ALL human ReferenceGeneProduct, regarless of source database.
+						sourceReferences = this.objectCache.getBySpecies("48887", "ReferenceGeneProduct");
+					}
 					else
 					{
 						sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
@@ -895,8 +901,10 @@ public class AddLinks
 				}
 				catch (Exception e)
 				{
+					
 					//TODO: The decision to continue after a failure should be a configurable option. 
 					logger.warn("Exception caught while processing {}, message is: \"{}\". Will continue with next file retriever.",k,e.getMessage());
+					e.printStackTrace();
 				}
 			}
 			else
