@@ -145,8 +145,8 @@ public class FileRetriever implements DataRetriever {
 	{
 		user = user == null || user.trim().equals("") ? "anonymous" : user;
 		password = password == null || password.trim().equals("") ? "" : password;
-		
 		FTPClient client = new FTPClient();
+
 		client.connect(this.uri.getHost());
 		client.login(user, password);
 		logger.debug("connect/login reply code: {}",client.getReplyCode());
@@ -161,6 +161,14 @@ public class FileRetriever implements DataRetriever {
 			logger.error(errorString);
 			throw new Exception(errorString);
 		}
+		writeInputStreamToFile(inStream);
+		
+		client.logout();
+		client.disconnect();
+	}
+
+	protected void writeInputStreamToFile(InputStream inStream) throws IOException, FileNotFoundException
+	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		int b = inStream.read();
 		while (b!=-1)
@@ -168,8 +176,7 @@ public class FileRetriever implements DataRetriever {
 			baos.write(b);
 			b = inStream.read();
 		}
-		client.logout();
-		client.disconnect();
+
 		FileOutputStream file = new FileOutputStream(this.destination);
 		baos.writeTo(file);
 		file.flush();
@@ -179,6 +186,7 @@ public class FileRetriever implements DataRetriever {
 		file.close();
 	}
 
+	
 	protected void doHttpDownload(Path path) throws HttpHostConnectException, IOException, Exception
 	{
 		this.doHttpDownload(path, HttpClientContext.create());
