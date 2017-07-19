@@ -121,12 +121,12 @@ public class FileRetriever implements DataRetriever {
 		logger.trace("Scheme is: "+this.uri.getScheme());
 		Path path = Paths.get(new URI("file://"+this.destination));
 		Files.createDirectories(path.getParent());
-		if (this.uri.getScheme().equals("http"))
+		if (this.uri.getScheme().equals("http") || this.uri.getScheme().equals("https"))
 		{
 			
 			doHttpDownload(path);
 		}
-		else if (this.uri.getScheme().equals("ftp"))
+		else if (this.uri.getScheme().equals("ftp") || this.uri.getScheme().equals("sftp"))
 		{
 			doFtpDownload();
 		}

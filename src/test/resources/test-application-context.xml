@@ -228,6 +228,33 @@
 		<property name="testMode" value="true"/>
 	</bean>
 
+	<!-- **NEW** OMIM -->
+	
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OMIMFileRetriever">
+		<property name="dataURL" value="https://omim.org/static/omim/data/mim2gene.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/mim2gene.txt" />
+		<property name="maxAge" ref="maxFileAge" />
+		<constructor-arg name="retrieverName" value="retrievers/OMIM"/>
+	</bean>
+	
+	<bean id="OMIMProcessor" class="org.reactome.addlinks.fileprocessors.OMIMFileProcessor">
+		<constructor-arg name="processorName" value="file-processors/OMIMProcessor"/>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="OMIMPath">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/mim2gene.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- no need to create a new OMIM Reference Creator bean - the new "gene only" filtering
+	 requirements only affected data retrieval and file processing (which is where filtering occurs). -->
+
 	<!-- Protein Data Bank (PDB) -->
 	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToPDB">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />

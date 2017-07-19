@@ -176,6 +176,13 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/COSMIC"/>
+		<!-- The OMIM file is not used directly for mappings, but it used to filter out non-gene OMIM IDs. -->
+		<entry key="OMIM">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OMIM">
+				<property name="dataURL" value="https://omim.org/static/omim/data/mim2gene.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/mim2gene.txt" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/OMIM"/>
 			</bean>
 		</entry>
 	</util:map>
