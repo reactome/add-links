@@ -176,6 +176,8 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/COSMIC"/>
+			</bean>
+		</entry>
 		<!-- The OMIM file is not used directly for mappings, but it used to filter out non-gene OMIM IDs. -->
 		<entry key="OMIM">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OMIM">
