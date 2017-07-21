@@ -40,15 +40,16 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>COSMIC</value>
+		<value>EnsemblToALL</value>
+		<value>UniProtToEntrez_Gene</value>
+		<value>UniProtToENSEMBL</value>
+		
+<!-- 		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
 		<value>BrendaRetriever</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
-		<value>UniProtToENSEMBL</value>
-		<value>EnsemblToALL</value>
-		
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
 		<value>Zinc</value>
@@ -56,7 +57,6 @@
 		<value>RheaRetriever</value>
 		<value>UniProtToOMIM</value>
 		<value>OMIM</value>
-		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
@@ -67,11 +67,15 @@
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
- 		<value>IntActComplexPortal</value>
+ 		<value>IntActComplexPortal</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>COSMICProcessor</value>
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
+		<value>UniprotToEntrezGeneFileProcessor</value>
+
+		<!-- <value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
@@ -80,11 +84,7 @@
  		<value>UniprotToKEGGFileProcessor</value>
  		<value>ZincMoleculesFileProcessor</value>
 		<value>zincProtFileProcessor</value>
-		
-		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
  		<value>RheaFileProcessor</value>
-		
 		<value>DockblasterFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
@@ -95,14 +95,17 @@
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>OMIMProcessor</value>
-		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		
-		<value>IntActFileProcessor</value>
+		<value>IntActFileProcessor</value> -->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>COSMICReferenceCreator</value>
+
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+
+
+<!-- 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
@@ -113,9 +116,7 @@
 		<value>zincPurchasablePredictionsReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
 		<value>BrendaRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		
-		<value>upMappedEntrezGeneRefCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
 		
@@ -137,7 +138,7 @@
 		
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>IntActComplexPortalRefCreator</value>
+		<value>IntActComplexPortalRefCreator</value> -->
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -145,13 +146,13 @@
 		<value>UniProt</value>
 		<value>Flybase</value>
 		<value>Brenda</value>
-		<value>BioGPS Gene</value>
+		
 		<value>BioModels</value>
 		<value>CTD Gene</value>
 		<value>dbSNP Gene</value>
 		<value>NCBI Gene</value>
 		<value>Flybase</value>
-		
+		<value>Monarch</value>
 		<value>Gene Ontology</value>
 		<value>HapMap</value>
 		<value>ComplexPortal</value>
@@ -176,6 +177,11 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<!--
+		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,
+		because the ID won't get loaded until after the JavaScript runs.
+		<value>BioGPS Gene</value>
+		-->
 		<!--
 		GeneCards returns a 403 for every request.
 		<value>GeneCards</value> 

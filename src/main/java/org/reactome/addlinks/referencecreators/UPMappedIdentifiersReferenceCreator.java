@@ -213,8 +213,9 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 							{
 								this.refCreator.createIdentifier(parts[0], parts[1], targetDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 							}
-							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
-							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE"))
+							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP, Monarch
+							// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
+							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 							{
 								for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
 								{
