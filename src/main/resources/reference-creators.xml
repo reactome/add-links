@@ -41,6 +41,16 @@
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/dbSNPRefCreator"/>
 			<property name="testMode" value="false"/>
 		</bean>
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="MonarchRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
+			<constructor-arg index="5" name="targetDB" value="Monarch"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/MonarchRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
 	</util:list>
 
 	<util:map id="uniprotReferenceCreators" key-type="java.lang.String" value-type="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator">
