@@ -44,7 +44,7 @@
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToENSEMBL</value>
 		
-<!-- 		<value>COSMIC</value>
+		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
@@ -67,7 +67,7 @@
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
- 		<value>IntActComplexPortal</value> -->
+ 		<value>IntActComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -75,7 +75,7 @@
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 
-		<!-- <value>COSMICProcessor</value>
+		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
@@ -96,7 +96,7 @@
 		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>IntActFileProcessor</value> -->
+		<value>IntActFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -105,7 +105,7 @@
 		<value>upMappedEntrezGeneRefCreator</value>
 
 
-<!-- 		<value>COSMICReferenceCreator</value>
+		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
@@ -138,7 +138,7 @@
 		
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>IntActComplexPortalRefCreator</value> -->
+		<value>IntActComplexPortalRefCreator</value>
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
