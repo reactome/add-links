@@ -211,7 +211,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 							}
 							this.refCreator.createIdentifier(parts[0], parts[1], targetRefDBName, personID, this.getClass().getName(), Long.valueOf(parts[2]));
 							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
-							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE"))
+							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 							{
 								for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
 								{
