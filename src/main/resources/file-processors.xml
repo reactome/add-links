@@ -283,5 +283,16 @@
 				</property>
 			</bean>
 		</entry>
+		
+		<entry key="CTDProcessor">
+			<bean id="CTDProcessor" class="org.reactome.addlinks.fileprocessors.CTDFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/CTDProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/CTD_chem_gene_ixns.csv.gz"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

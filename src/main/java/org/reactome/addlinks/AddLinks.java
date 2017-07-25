@@ -60,6 +60,7 @@ import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.COSMICReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.reactome.addlinks.referencecreators.IntActReferenceCreator;
+import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
@@ -597,6 +598,12 @@ public class AddLinks
 			{
 				@SuppressWarnings("rawtypes")
 				BatchReferenceCreator refCreator = referenceCreators.get(refCreatorName);
+				
+				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
+				{
+					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get("CTDProcessor") );
+				}
+				
 				if (refCreator instanceof ENSMappedIdentifiersReferenceCreator)
 				{
 					sourceReferences = getENSEMBLIdentifiersList();
@@ -678,6 +685,10 @@ public class AddLinks
 			else if (uniprotReferenceCreators.containsKey(refCreatorName))
 			{
 				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(refCreatorName);
+				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
+				{
+					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get("CTDProcessor") );
+				}
 				sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName.get()), sourceReferences);
 			}
