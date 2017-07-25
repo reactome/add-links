@@ -40,6 +40,8 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>CTD</value>
+	<!-- 
 		<value>EnsemblToALL</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToENSEMBL</value>
@@ -67,14 +69,15 @@
 		<value>HmdbMolecules</value>
 		<value>DOCKBlaster</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
- 		<value>IntActComplexPortal</value>
+ 		<value>IntActComplexPortal</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
-
+		<value>CTDProcessor</value>
+<!-- 
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
@@ -97,14 +100,14 @@
 		<value>OMIMProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>IntActFileProcessor</value>
+		 -->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
-
-
+<!-- 
 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
@@ -138,7 +141,7 @@
 		
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>IntActComplexPortalRefCreator</value>
+		<value>IntActComplexPortalRefCreator</value> -->
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">

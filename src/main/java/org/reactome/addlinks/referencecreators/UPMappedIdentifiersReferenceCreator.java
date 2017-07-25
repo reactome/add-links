@@ -22,10 +22,10 @@ import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
  * Creates references for identifiers that were mapped from one database (usually UniProt) to another by the UniProt web service.
  * The name *is* pretty terrible, need to come up with something better later.
  */
-public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator< Map<String,List<String>> >
+public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //SimpleReferenceCreator< Map<String,List<String>> >
 {
 
-	private List<EntrezGeneBasedReferenceCreator> entrezGeneReferenceCreators;
+	
 	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
@@ -217,10 +217,7 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 							// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
 							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 							{
-								for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
-								{
-									entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
-								}
+								runNCBIGeneRefCreators(personID, parts);
 							}
 						}
 						// The string did NOT have a species-part.
@@ -248,6 +245,22 @@ public class UPMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<
 		else
 		{
 			logger.info("UniProt mapping is empty for {} to {}", sourceRefDB, targetRefDB);
+		}
+	}
+
+	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
+	{
+		for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
+		{
+			if (entrezGeneCreator instanceof CTDReferenceCreator )
+			{
+				((CTDReferenceCreator) entrezGeneCreator).setNcbiGenesInCTD(this.ctdGenes);
+				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+			}
+			else
+			{
+				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+			}
 		}
 	}
 }
