@@ -17,7 +17,7 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 
-public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator<Map<String,List<String>>>
+public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //extends SimpleReferenceCreator<Map<String,List<String>>>
 {
 	private List<EntrezGeneBasedReferenceCreator> entrezGeneReferenceCreators;
 	
@@ -213,10 +213,7 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
 							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 							{
-								for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
-								{
-									entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
-								}
+								runNCBIGeneRefCreators(personID, parts);
 							}
 						}
 						// The string did NOT have a species-part.
@@ -247,5 +244,21 @@ public class ENSMappedIdentifiersReferenceCreator extends SimpleReferenceCreator
 				this.targetRefDB, 
 				createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 	
+	}
+
+	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
+	{
+		for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
+		{
+			if (entrezGeneCreator instanceof CTDReferenceCreator )
+			{
+				((CTDReferenceCreator) entrezGeneCreator).setNcbiGenesInCTD(this.ctdGenes);
+				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+			}
+			else
+			{
+				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+			}
+		}
 	}
 }

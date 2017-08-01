@@ -37,7 +37,7 @@
 		
 		<entry key="COSMIC">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="PrimaryName" value="COSMIC"/>
+				<entry key="PrimaryName" value="COSMIC (genes)"/>
 				<entry key="URL" value="http://cancer.sanger.ac.uk/cosmic"/>
 				<entry key="AccessURL" value="http://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=###ID###"/>
 			</map>
