@@ -11,7 +11,7 @@ import org.gk.persistence.MySQLAdaptor;
  */
 public class EntrezGeneBasedReferenceCreator extends SimpleReferenceCreator<String>
 {
-	private Logger logger;
+	protected Logger logger;
 
 	public EntrezGeneBasedReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{

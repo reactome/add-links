@@ -96,7 +96,7 @@ public class LinkChecker
 				e.printStackTrace();
 				this.numRetries++;
 				this.timeout = this.timeout.plus(Duration.ofSeconds(30));
-				logger.info("Failed to check {} after {} due to cause \"{}\", but will retry {} more time(s) with a longer timeout of {}.", this.uri, Duration.ofMillis(endtime - startTime), e.getCause(), MAX_NUM_RETRIES - this.numRetries, this.timeout);
+				logger.info("Failed to check {} after {} due to cause \"{}\", but will retry {} more time(s) with a longer timeout of {}.", this.uri, Duration.ofMillis(endtime - startTime), e.getMessage(), MAX_NUM_RETRIES - this.numRetries, this.timeout);
 				done = this.numRetries > MAX_NUM_RETRIES;
 				if (done)
 				{

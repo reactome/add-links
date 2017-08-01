@@ -40,6 +40,7 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>CTD</value>
 		<value>EnsemblToALL</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToENSEMBL</value>
@@ -74,7 +75,7 @@
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
-
+		<value>CTDProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
@@ -103,8 +104,6 @@
 
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
-
-
 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
