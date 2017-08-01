@@ -191,7 +191,7 @@ Data is retrieve from BRENDA one identifier at a time, via a webservice. Each we
 #### KEGG
 To get data from KEGG, AddLinks must first get the UniProt-to-KEGG mappings. KEGG is then queried using these mapped values to get detailes for each of the KEGG identifiers. KEGG queries are species-specific.
 
-####UniProt
+#### UniProt
 This is a pretty simple web-service call. The difference here with UniProt is that there will be a .tab file with the mappings from UniProt to some other database, and a .not file containing all of the identifiers that the UniProt web service could not map.
 
 #### File processing
