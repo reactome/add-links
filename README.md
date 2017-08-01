@@ -172,3 +172,42 @@ java -cp "$(pwd)/resources" \
 ```
 
 You will need to execute this command from a directory which has a subdirectory named "resources", such that "resources" contains all of the necessary configuration files described above, as well as the application properties file (defined with the `-Dconfig.location` VM setting) and the logging configuration files (defined with the `-Dlog4j.configuration` VM setting). The AddLinks application itself takes one argument: the path to the Spring context file (application-context.xml).
+
+
+## Other notes
+
+Some notes on other parts of the AddLinks system. Most of these notes describe exceptions to how the rest of the system is built.
+
+### Different data retrieval
+Most of the data retrievers are designed to download a single file, or submit queries to a webservice to get data. Some of them work a little bit differently:
+
+#### ENSEMBL
+Getting cross-references from ENSEMBL requires first getting doing a batch mapping from ENSP to ENST, then batch mapping ENST to ENSG.
+Then, individual cross-reference lookups on ENSG to get other databases. The batch lookups require a specific species, as an input. So, getting data for ENSEMBL takes a few steps.
+
+#### BRENDA
+Data is retrieve from BRENDA one identifier at a time, via a webservice. Each webservice call requires authentication information.
+
+#### KEGG
+To get data from KEGG, AddLinks must first get the UniProt-to-KEGG mappings. KEGG is then queried using these mapped values to get detailes for each of the KEGG identifiers. KEGG queries are species-specific.
+
+####UniProt
+This is a pretty simple web-service call. The difference here with UniProt is that there will be a .tab file with the mappings from UniProt to some other database, and a .not file containing all of the identifiers that the UniProt web service could not map.
+
+#### File processing
+ - Most file processors operate on text files, usually tab or comma delimited. Some file processors operate on XML. In these cases, there is usually one or more XSL files that is used to transform the XML into a much simpler structure (usually a CSV or TSV). This is done for ENSEMBL, Orphanet, and HMDB.
+
+ - Some file processors operate on file globs (file name patterns). These include file processors for BRENDA, ENSEMBL, KEGG, UniProt, and OMIM. Usually, this is done becuase there are multiple input files, often distinguished by the target database of the mapping, a species ID, or both.
+ 
+#### Reference creation
+
+Some of the code that creates references behaves differently than most of the rest.
+
+#### Zinc Orthologs
+The code that creates ZINC orthologs first performs a query to the ZINC website to see if the identifier has an content for a specific type (biogenic, fda approved, etc...).
+
+#### OMIM
+The OMIM Reference Creator is a UniProt-mapped reference creator, but it uses its own OMIM file processor to filter the UniProt list with a list from OMIM before creating references.
+
+#### CTD, Monarch, BioGPS, dbSNP
+The Reference Creators for these databases are all NCBI-based. When the ENSEMBL or UniProt reference creators create references with NCBI identifiers, these other reference creators are also automatically executed. Additionally, for CTD there is a separate file processor and reference creator which filter based on a CTD file.
