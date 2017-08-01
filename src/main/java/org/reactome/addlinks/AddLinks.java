@@ -909,6 +909,7 @@ public class AddLinks
 				try
 				{
 					retriever.fetchData();
+					logger.info("Completed downloader: {}",k);
 				}
 				catch (Exception e)
 				{
