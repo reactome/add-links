@@ -2,7 +2,6 @@ package org.reactome.addlinks.fileprocessors;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,8 +26,8 @@ public class ZincMoleculesFileProcessor extends FileProcessor<List<String>>
 		Map<String, List<String>> chebiToZincMapping = new HashMap<String, List<String>>() ;
 		try
 		{
-			String pathToFile = this.unzipFile(this.pathToFile);
-			Files.readAllLines(Paths.get(pathToFile )).stream()
+			//String pathToFile = this.unzipFile(this.pathToFile);
+			Files.readAllLines(this.pathToFile).stream()
 				// Filter so that only ChEBI lines are processed.
 				.filter(line -> line.matches("CHEBI:\\d+\\tZINC.*"))
 				.forEach( line ->
