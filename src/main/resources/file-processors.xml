@@ -104,7 +104,7 @@
 				<constructor-arg name="processorName" value="file-processors/ZincMoleculesFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/chebi.info.txt.gz"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/chebi.info.txt"/>
 					</bean>
 				</property>
 			</bean>
