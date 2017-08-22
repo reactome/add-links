@@ -15,7 +15,7 @@
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="BioGPS Gene"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/BioGPSRefCreator"/>
@@ -25,7 +25,7 @@
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="CTD Gene"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/CTDRefCreator"/>
@@ -35,7 +35,7 @@
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="dbSNP Gene"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/dbSNPRefCreator"/>
@@ -45,7 +45,7 @@
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-			<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
 			<constructor-arg index="5" name="targetDB" value="Monarch"/>
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/MonarchRefCreator"/>
