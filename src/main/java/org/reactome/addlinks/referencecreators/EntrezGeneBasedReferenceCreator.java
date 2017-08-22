@@ -57,10 +57,8 @@ public class EntrezGeneBasedReferenceCreator extends SimpleReferenceCreator<Stri
 		}
 		if (!xrefAlreadyExists)
 		{
-			logger.trace("\tCreate identifier {} for {} @ ", identifierValue, referencedObject, this.targetRefDB);
-			this.refCreator.createIdentifier(identifierValue, referencedObject, this.targetRefDB, personID, this.getClass().getName());
+			logger.trace("\tCreate identifier {} for {}@{}", identifierValue, referencedObject, this.targetRefDB);
+			this.refCreator.createIdentifier(identifierValue, referencedObject, this.targetRefDB, personID, this.getClass().getName() + "( for " + this.targetRefDB + " )", Long.valueOf(speciesID));
 		}
-		
-		
 	}
 }
