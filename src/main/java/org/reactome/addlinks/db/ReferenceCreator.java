@@ -202,7 +202,7 @@ public class ReferenceCreator
 				// Now we add the species, if it's allowed.
 				@SuppressWarnings("unchecked")
 				Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>)identifierInstance.getSchemClass().getAttributes();
-				if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
+				if ( speciesID != null && attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 				{
 					GKInstance species = this.dbAdapter.fetchInstance(ReactomeJavaConstants.Species,speciesID.longValue());
 					identifierInstance.addAttributeValue(ReactomeJavaConstants.species, species);
