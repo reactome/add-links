@@ -152,9 +152,10 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 										break;
 									}
 								}
-								if (!xrefAlreadyExists)
+								String thingToCreate = targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID;
+								if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
 								{
-									thingsToCreate.add(targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID);
+									thingsToCreate.add(thingToCreate);
 									createdCounter.getAndIncrement();
 								}
 							}
