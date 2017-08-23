@@ -151,7 +151,8 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 									
 									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier);
-									if (!xrefAlreadyExists)
+									String thingToCreate = targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID;
+									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
 									{
 										if (!this.testMode)
 										{
