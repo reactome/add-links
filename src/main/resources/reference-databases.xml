@@ -264,9 +264,9 @@
 			</map>
 		</entry>
 		
-		<entry key="DOCKBlaster">
+		<entry key="DOCK Blaster">
 			<map key-type="java.lang.String">
-				<entry key="PrimaryName" value="DOCKBlaster" />
+				<entry key="PrimaryName" value="DOCK Blaster" />
 				<entry key="URL" value="http://blaster.docking.org/" />
 				<entry key="AccessURL" value="http://blaster.docking.org/cgi-bin/parser.pl?code=###ID###" />
 			</map>
