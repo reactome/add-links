@@ -40,11 +40,16 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>UniProtToPDB</value>
+		<value>DOCKBlaster</value>
+		<value>PROToReferencePeptideSequence</value>
+		<value>EntrezGeneToUniprotReference</value>
+
 		<value>CTD</value>
 		<value>EnsemblToALL</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToENSEMBL</value>
-		
+		<value>Zinc</value>
 		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
@@ -53,46 +58,41 @@
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
-		<value>Zinc</value>
- 		<value>OrphanetToUniprotReferenceDNASequence</value>
+		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>UniProtToOMIM</value>
 		<value>OMIM</value>
-		<value>UniProtToPDB</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToWormbase</value>
- 		<value>PROToReferencePeptideSequence</value>
-		<value>EntrezGeneToUniprotReference</value>
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
-		<value>DOCKBlaster</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
- 		<value>IntActComplexPortal</value>
+		<value>IntActComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PROFileProcessor</value>
+		<value>DockblasterFileProcessor</value>
+		<value>UniprotToPDBFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>CTDProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
 		<value>BrendaProcessor</value>
 		<value>KEGGFileProcessor</value>
- 		<value>UniprotToKEGGFileProcessor</value>
- 		<value>ZincMoleculesFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
- 		<value>RheaFileProcessor</value>
-		<value>DockblasterFileProcessor</value>
+		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
-		<value>PROFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
- 		<value>UniprotToEnsemblFileProcessor</value>
-		<value>UniprotToPDBFileProcessor</value>
+		<value>UniprotToEnsemblFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>OMIMProcessor</value>
@@ -101,7 +101,10 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-
+	
+		<value>upMappedPDBRefCreator</value>
+		<value>proRefCreator</value>
+		<value>dockBlasterRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
 		<value>COSMICReferenceCreator</value>
@@ -112,17 +115,16 @@
 		<value>zincMetabolitesReferenceCreator</value>
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
+		
 		<value>zincPurchasablePredictionsReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-		<value>BrendaRefCreator</value>
 		
+		<value>BrendaRefCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
-		
 		<value>zincToUniProtReferenceCreator</value>
 		<value>zincToChEBIReferenceCreator</value> 
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
-		<value>upMappedPDBRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
 		<value>upMappedRefSeqRNARefCreator</value>
@@ -132,8 +134,6 @@
 		<value>RheaReferenceCreator</value>
 		<value>BrendaRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
-		<value>proRefCreator</value>
-		<value>pdbRefCreator</value>
 		
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
@@ -141,25 +141,22 @@
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>PDB</value>
+		<value>CTD Gene</value>
+		<value>dbSNP Gene</value>
+		<value>NCBI Gene</value>
+		<value>Monarch</value>
 		<value>HGNC</value>
 		<value>UniProt</value>
 		<value>Flybase</value>
 		<value>Brenda</value>
-		
 		<value>BioModels</value>
-		<value>CTD Gene</value>
-		<value>dbSNP Gene</value>
-		<value>NCBI Gene</value>
 		<value>Flybase</value>
-		<value>Monarch</value>
 		<value>Gene Ontology</value>
 		<value>HapMap</value>
-		<value>ComplexPortal</value>
 		<value>IntEnz</value>
 		<value>KEGG</value>
 		<value>Orphanet</value>
-		<value>PDB</value>
-		<value>PRO</value>
 		<value>RefSeq</value>
 		<value>Rhea</value>
 		<value>UCSC human</value>
@@ -176,6 +173,11 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<!-- 
+		<value>DOCK Blaster</value>
+		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
+		Even loading one page seems to make it take effort.
+		-->
 		<!--
 		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,
 		because the ID won't get loaded until after the JavaScript runs.
@@ -191,6 +193,13 @@
 		If they change the way their pages load it might be worth re-activating link checking
 		for OMIM. Or... try to code around it, if you're feeling REALLY ambitious.
 		<value>OMIM</value> -->
+		<!--
+		<value>ComplexPortal</value>
+		ComplexPortal does not actually contain the identifier in the page content, so we can't properly check it.
+		 -->
+		 <!--
+		 PRO returns a 503 error when accessed via Java 
+		 <value>PRO</value> -->
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
