@@ -196,8 +196,11 @@
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
-				<constructor-arg index="4" name="sourceDB" value="Protein Data Bank"/>
-				<constructor-arg index="5" name="targetDB" value="DOCKBlaster"/>
+				<!-- Even though our links to DOCKBlaster will contain a PDB ID,
+				the mapping comes from a UniProt-to-PDB mapping so we need to use
+				UniProt objects as the source identifiers, so "UniProt" is the sourceDB. -->
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="DOCK Blaster"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/dockBlasterRefCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
