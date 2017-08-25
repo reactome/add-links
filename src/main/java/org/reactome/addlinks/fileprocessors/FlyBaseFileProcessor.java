@@ -34,12 +34,12 @@ public class FlyBaseFileProcessor extends FileProcessor<String>
 				{
 					lineCount.set(lineCount.get() + 1);
 					String[] parts = line.split("\\t");
-					// UniProt ID is the last column - if split returns 5 things than there is a UniProt ID. 
-					if (parts.length==5)
+					// UniProt ID is the 6th column, and FlyBase ID is the 3rd columne
+					if (parts.length>=6)
 					{
-						if (!"".equals(parts[4].trim()))
+						if (!"".equals(parts[5].trim()))
 						{
-							mappings.put(parts[4], parts[1]);
+							mappings.put(parts[5], parts[2]);
 						}
 						else
 						{
