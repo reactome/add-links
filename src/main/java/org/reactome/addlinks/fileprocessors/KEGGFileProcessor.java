@@ -45,6 +45,10 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 	@Override
 	protected void processFile(Path path, Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mapping)
 	{
+		int lineNumber = 0;
+		int entryLineNumber = 0;
+		int entryCount = 0;
+		int duplicateEntryCount = 0;
 		try
 		{
 			logger.debug("Processing: {}", path.toString());
@@ -62,6 +66,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 				boolean watchingForUniprotID = false;
 				while ((line = br.readLine()) != null)
 				{
+					lineNumber++;
 					// If a line begins with "ENTRY " then it is a new KEGG entry. Extract the Kegg ID from this line.
 					// If a line contains "///" then that is the end of the current entry.
 					// If a line begins with "ORGANISM" then it contains the KEGG species code, extract it.
@@ -89,6 +94,8 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							switch (parts[0].trim())
 							{
 								case "ENTRY":
+									entryLineNumber = lineNumber;
+									entryCount ++;
 									keggGeneID = parts[1].trim();
 									break;
 								case "ORGANISM":
@@ -154,38 +161,75 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							keggValues.put(KEGGKeys.KEGG_SPECIES, keggSpeciesCode);
 							keggValues.put(KEGGKeys.KEGG_DEFINITION, keggDefinition);
 							keggValues.put(KEGGKeys.EC_NUMBERS, ecNumber);
-							for (String uniProtID : uniProtIDs)
+							
+							if ( (keggValues.get(KEGGKeys.KEGG_IDENTIFIER) == null || keggValues.get(KEGGKeys.KEGG_IDENTIFIER).trim().equals(""))
+									&& (keggValues.get(KEGGKeys.KEGG_GENE_ID) == null || keggValues.get(KEGGKeys.KEGG_GENE_ID).trim().equals("")))
 							{
-								logger.trace("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
-								if (!mapping.containsKey(uniProtID))
+								logger.error("For UniProts {}: KEGG_IDENTIFIER and KEGG_GENE_ID are both NULL/Empty. This is not allowed! See ENTRY starting at line {}. KEGG values map for this entry: {}", uniProtIDs.toString(), entryLineNumber, keggValues.toString());
+							}
+							else
+							{
+								for (String uniProtID : uniProtIDs)
 								{
-									List<Map<KEGGFileProcessor.KEGGKeys, String>> keggList = new ArrayList<Map<KEGGFileProcessor.KEGGKeys, String>>();
-									keggList.add(keggValues);
-									mapping.put(uniProtID, keggList);
-								}
-								else
-								{
-									//we should check for dupliates...
-									boolean isDuplicate = false;
-									for (Map<KEGGKeys, String> keggValue : mapping.get(uniProtID))
+									logger.trace("UniProt ID {} maps to {}", uniProtID, keggValues.toString());
+									if (!mapping.containsKey(uniProtID))
 									{
-										if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(keggValue.get(KEGGKeys.KEGG_IDENTIFIER)))
+										List<Map<KEGGFileProcessor.KEGGKeys, String>> keggList = new ArrayList<Map<KEGGFileProcessor.KEGGKeys, String>>();
+										keggList.add(keggValues);
+										mapping.put(uniProtID, keggList);
+									}
+									else
+									{
+										//we should check for dupliates...
+										boolean isDuplicate = false;
+										for (Map<KEGGKeys, String> preExistingKeggValueRecord : mapping.get(uniProtID))
 										{
-											isDuplicate = true;
-											logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
+											String identifier = keggValues.get(KEGGKeys.KEGG_IDENTIFIER);
+											String otherIdentifier = preExistingKeggValueRecord.get(KEGGKeys.KEGG_IDENTIFIER);
+											String geneID = keggValues.get(KEGGKeys.KEGG_GENE_ID);
+											String otherGeneId = preExistingKeggValueRecord.get(KEGGKeys.KEGG_GENE_ID);
+											
+											// currentCompareValue and preexistingCompareValue should never actually be "" because
+											// that situation should be handled up above. The logic prevents such keggValue maps from
+											// ever being inserted into the main map structure.
+											String currentCompareValue = identifier != null && !identifier.trim().equals("")
+																			? identifier
+																			: (geneID != null && !geneID.trim().equals("")
+																				? geneID
+																				: "");  
+
+											String preexistingCompareValue = otherIdentifier != null && !otherIdentifier.trim().equals("")
+																			? otherIdentifier
+																			: (otherGeneId != null && !otherGeneId.trim().equals("")
+																				? otherGeneId
+																				: "");
+
+											if (currentCompareValue.equals(preexistingCompareValue))
+											{
+												isDuplicate = true;
+												duplicateEntryCount ++;
+												logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
+											}
+											
+//											if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(preExistingKeggValueRecord.get(KEGGKeys.KEGG_IDENTIFIER)))
+//											{
+//												isDuplicate = true;
+//												duplicateEntryCount ++;
+//												logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
+//											}
+										}
+										if (!isDuplicate)
+										{
+											mapping.get(uniProtID).add(keggValues);
 										}
 									}
-									if (!isDuplicate)
-									{
-										mapping.get(uniProtID).add(keggValues);
-									}
+									//Now reset all the variables.
+									keggDefinition = null;
+									keggGeneID = null;
+									keggSpeciesCode = null;
+									keggIdentifier = null;
+									ecNumber = null;
 								}
-								//Now reset all the variables.
-								keggDefinition = null;
-								keggGeneID = null;
-								keggSpeciesCode = null;
-								keggIdentifier = null;
-								ecNumber = null;
 							}
 						}
 						else
@@ -206,6 +250,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 			e.printStackTrace();
 			throw new Error(e);
 		}
+		logger.info("Processed {} lines for file {}. Found {} entries: {} were duplicates. Added {} UniProt keys to the mapping.", lineNumber, path.toString(), entryCount, duplicateEntryCount, mapping.keySet().size());
 	}
 
 
