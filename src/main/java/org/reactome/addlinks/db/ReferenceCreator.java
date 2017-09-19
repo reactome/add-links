@@ -103,6 +103,12 @@ public class ReferenceCreator
 	 */
 	public Long createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName, Long speciesID, Map<String,List<String>> otherAttribs) throws Exception
 	{
+		if (identifierValue == null || identifierValue.trim().equals(""))
+		{
+			logger.error("You tried to create a reference to ref DB {} via attribute {} for the object with DB_ID: {} with an empty/NULL Identifier", refDB, this.referringAttribute, referenceToValue);
+			throw new NullPointerException("Enmpty-string/NULL identifier value is not allowed!");
+		}
+		
 		Long newInstanceID = null;
 		try
 		{

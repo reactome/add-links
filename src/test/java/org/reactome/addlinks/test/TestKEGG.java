@@ -189,4 +189,20 @@ public class TestKEGG
 		List<GKInstance> sourceReferences = objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
 		refCreator.createIdentifiers(personID , mappings, sourceReferences );
 	}
+	
+	@Test
+	public void test_Q9W1A9()
+	{
+		String refDb = "UniProt";
+		String className = "ReferenceGeneProduct";
+		
+		KEGGFileProcessor keggProcessor = new KEGGFileProcessor("test_kegg_file_processor");
+		keggProcessor.setPath(Paths.get("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/test/resources/"));
+		keggProcessor.setFileGlob("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/test/resources/KEGG.Dmel_CG11290.txt");
+		
+		Map<String,List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = keggProcessor.getIdMappingsFromFile();
+		assertNotNull(mappings);
+		assertTrue(mappings.keySet().size()>0);
+
+	}
 }
