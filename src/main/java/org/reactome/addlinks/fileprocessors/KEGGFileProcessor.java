@@ -89,55 +89,59 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 					if (!line.equals("///"))
 					{
 						String[] parts = line.split("\\s+");
-						if (!watchingForUniprotID)
+						// This check is necessary because once or twice I've hit a line that was full of blank spaces....
+						if (parts.length > 0)
 						{
-							switch (parts[0].trim())
+							if (!watchingForUniprotID)
 							{
-								case "ENTRY":
-									entryLineNumber = lineNumber;
-									entryCount ++;
-									keggGeneID = parts[1].trim();
-									break;
-								case "ORGANISM":
-									keggSpeciesCode = parts[1].trim();
-									break;
-								case "DEFINITION":
-									keggDefinition = line.replaceFirst("DEFINITION +", "");
-									break;
-								case "NAME":
-									//Extract the first String from the NAME line (after "NAME").
-									keggIdentifier = Arrays.asList(line.replaceAll("NAME +", "").split(",")).get(0).trim();
-									break;
-								case "ORTHOLOGY":
-									// This could actually be several EC numbers separated by a space character.
-									Matcher matcher = ecPattern.matcher(line); 
-									if (matcher.matches() && matcher.groupCount() > 0)
-									{
-										ecNumber = matcher.group(2);
-									}
-									break;
-								case "DBLINKS":
-									// The UniProt ID could be on the FIRST line of DBLINKS (well... I haven't seen it but there's no reason to think it's impossible).
-									if (line.contains("UniProt:"))
-									{
-										uniProtIDs = line.replaceAll("UniProt:", "").trim().split("\\s+");
-										watchingForUniprotID = false;
-									}
-									else
-									{
-										// First line of DBLINKS was somethign else so turn on the "looking for UniProt" switch.
-										watchingForUniprotID = true;
-									}
-									break;
+								switch (parts[0].trim())
+								{
+									case "ENTRY":
+										entryLineNumber = lineNumber;
+										entryCount ++;
+										keggGeneID = parts[1].trim();
+										break;
+									case "ORGANISM":
+										keggSpeciesCode = parts[1].trim();
+										break;
+									case "DEFINITION":
+										keggDefinition = line.replaceFirst("DEFINITION +", "");
+										break;
+									case "NAME":
+										//Extract the first String from the NAME line (after "NAME").
+										keggIdentifier = Arrays.asList(line.replaceAll("NAME +", "").split(",")).get(0).trim();
+										break;
+									case "ORTHOLOGY":
+										// This could actually be several EC numbers separated by a space character.
+										Matcher matcher = ecPattern.matcher(line); 
+										if (matcher.matches() && matcher.groupCount() > 0)
+										{
+											ecNumber = matcher.group(2);
+										}
+										break;
+									case "DBLINKS":
+										// The UniProt ID could be on the FIRST line of DBLINKS (well... I haven't seen it but there's no reason to think it's impossible).
+										if (line.contains("UniProt:"))
+										{
+											uniProtIDs = line.replaceAll("UniProt:", "").trim().split("\\s+");
+											watchingForUniprotID = false;
+										}
+										else
+										{
+											// First line of DBLINKS was somethign else so turn on the "looking for UniProt" switch.
+											watchingForUniprotID = true;
+										}
+										break;
+								}
 							}
-						}
-						else
-						{
-							// Once UniProt is found, turn off the switch.
-							if (line.contains("UniProt:"))
+							else
 							{
-								uniProtIDs = line.replaceAll("UniProt:", "").trim().split("\\s+");
-								watchingForUniprotID = false;
+								// Once UniProt is found, turn off the switch.
+								if (line.contains("UniProt:"))
+								{
+									uniProtIDs = line.replaceAll("UniProt:", "").trim().split("\\s+");
+									watchingForUniprotID = false;
+								}
 							}
 						}
 					}
