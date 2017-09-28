@@ -191,18 +191,34 @@ public class TestKEGG
 	}
 	
 	@Test
-	public void test_Q9W1A9()
+	public void test_Q9W1A9() throws Exception
 	{
 		String refDb = "UniProt";
+		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
 		String className = "ReferenceGeneProduct";
 		
-		KEGGFileProcessor keggProcessor = new KEGGFileProcessor("test_kegg_file_processor");
+		String species = "Drosophila melanogaster";
+		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
+		
+		KEGGFileProcessor keggProcessor = new KEGGFileProcessor("file-processors/test_kegg_file_processor");
 		keggProcessor.setPath(Paths.get("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/test/resources/"));
-		keggProcessor.setFileGlob("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/test/resources/KEGG.Dmel_CG11290.txt");
+		keggProcessor.setFileGlob("/home/sshorser/workspaces/reactome/new_add_links/AddLinks/src/test/resources/kegg_entries.123.123.txt");
 		
 		Map<String,List<Map<KEGGFileProcessor.KEGGKeys, String>>> mappings = keggProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size()>0);
+		String classToCreate = ReactomeJavaConstants.ReferenceDNASequence;
+		String classReferring = ReactomeJavaConstants.ReferenceGeneProduct;
+		String referringAttribute = ReactomeJavaConstants.referenceGene;
+		String sourceDB = "UniProt";
+		String targetDB = "KEGG";
+		KEGGReferenceCreator refCreator = new KEGGReferenceCreator(dbAdapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, "refCreators/test_kegg_ref_creator");
+		refCreator.setTestMode(false);
+		long personID = 8939149;
+
+
+		List<GKInstance> sourceReferences = objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
+		refCreator.createIdentifiers(personID , mappings, sourceReferences );
 
 	}
 }
