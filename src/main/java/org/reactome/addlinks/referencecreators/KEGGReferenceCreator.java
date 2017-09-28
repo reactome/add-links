@@ -74,10 +74,15 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					// the ReferenceDatabase will contain a species code prefix in its accessUrl. If we *don't*
 					// remove it, we'll end up with URLs like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
 					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID).replaceAll("^[a-z0-9]{3}:", "");
-					
+					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
 						keggIdentifier = keggGeneIdentifier;
+					}
+					// If keggIdentifier STILL has no value, throw an exception! Can't insert null/empty identifiers.
+					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
+					{
+						throw new Exception("KEGG Identifier cannot be NULL or empty!");
 					}
 					StringBuilder xrefsSb = new StringBuilder();
 					for (GKInstance xref : xrefs)
