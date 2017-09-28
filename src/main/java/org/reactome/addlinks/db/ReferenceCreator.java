@@ -131,10 +131,10 @@ public class ReferenceCreator
 			// reference creator. Since UniProt references are downloaded, processed, and created in a fairly generic fashion,
 			// there is no easy way to integrate this sort of check in the UniProt-related classes.
 			boolean needToRemoveSpeciesCode = this.refDBInstance.getAttributeValue(ReactomeJavaConstants.name).toString().startsWith("KEGG")
-											&& identifierValue.length() > 3 && this.refDBInstance.getAttributeValue(ReactomeJavaConstants.accessUrl).toString().contains(identifierValue.substring(0, 3));
+											&& identifierValue.length() > 3 && this.refDBInstance.getAttributeValue(ReactomeJavaConstants.accessUrl).toString().contains( (identifierValue.substring(0, 3)+":") );
 			if ( needToRemoveSpeciesCode )
 			{
-				identifierValue = identifierValue.substring(4);
+				identifierValue = identifierValue.replaceFirst(identifierValue.substring(3)+":", "");
 			}
 			
 			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
