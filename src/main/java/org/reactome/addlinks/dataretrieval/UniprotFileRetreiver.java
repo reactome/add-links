@@ -67,7 +67,8 @@ public class UniprotFileRetreiver extends FileRetriever
 		Entrez_Gene("P_ENTREZGENEID"),
 		GeneName("GENENAME"),
 		KEGG("KEGG_ID"),
-		UniProt("ACC+ID");
+		UniProt("ACC+ID"),
+		UCSC("UCSC_ID");
 		
 		private String uniprotName;
 		private static Map<String,UniprotDB> mapToEnum;
