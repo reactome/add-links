@@ -49,6 +49,15 @@ public class TestBrendaIT
 	}
 	
 	@Test
+	public void testBrendaRetriever2() throws Exception
+	{
+		brendaRetriever.setIdentifiers(Arrays.asList("F4HU51", "O00116"));
+		brendaRetriever.setSpeciesName("Arabidopsis thaliana");
+		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Arabidopsis_thaliana.csv"));
+		brendaRetriever.fetchData();
+	}
+	
+	@Test
 	public void testBrendaProcessor() throws Exception
 	{
 		brendaRetriever.setIdentifiers(Arrays.asList("Q8N5Z0", "O00116"));

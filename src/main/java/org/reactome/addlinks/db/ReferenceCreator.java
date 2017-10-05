@@ -103,6 +103,7 @@ public class ReferenceCreator
 	 */
 	public Long createIdentifier(String identifierValue, String referenceToValue, String refDB, long personID, String creatorName, Long speciesID, Map<String,List<String>> otherAttribs) throws Exception
 	{
+		
 		Long newInstanceID = null;
 		try
 		{
@@ -125,10 +126,16 @@ public class ReferenceCreator
 			// reference creator. Since UniProt references are downloaded, processed, and created in a fairly generic fashion,
 			// there is no easy way to integrate this sort of check in the UniProt-related classes.
 			boolean needToRemoveSpeciesCode = this.refDBInstance.getAttributeValue(ReactomeJavaConstants.name).toString().startsWith("KEGG")
-											&& identifierValue.length() > 3 && this.refDBInstance.getAttributeValue(ReactomeJavaConstants.accessUrl).toString().contains(identifierValue.substring(0, 3));
+											&& identifierValue.length() > 3 && this.refDBInstance.getAttributeValue(ReactomeJavaConstants.accessUrl).toString().contains( (identifierValue.substring(0, 3)+":") );
 			if ( needToRemoveSpeciesCode )
 			{
-				identifierValue = identifierValue.substring(4);
+				identifierValue = identifierValue.replaceFirst(identifierValue.substring(3)+":", "");
+			}
+			
+			if (identifierValue == null || identifierValue.trim().equals(""))
+			{
+				logger.error("You tried to create a reference to ref DB {} via attribute {} for the object with DB_ID: {} with an empty/NULL Identifier", refDB, this.referringAttribute, referenceToValue);
+				throw new NullPointerException("Enmpty-string/NULL identifier value is not allowed!");
 			}
 			
 			GKSchemaAttribute identifierAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.identifier);
