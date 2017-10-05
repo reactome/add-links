@@ -390,6 +390,12 @@ public class AddLinks
 				e.printStackTrace();
 				throw new Error(e);
 			}
+			catch (Exception e)
+			{
+				logger.error("Exception caught while trying to get BRENDA species list: {}",e.getMessage());
+				e.printStackTrace();
+				throw new Error(e);
+			}
 			//Normalize the list.
 			List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
 			logger.debug(brendaSpecies.size() + " species known to BRENDA");
