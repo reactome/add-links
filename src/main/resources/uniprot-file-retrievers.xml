@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">48</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="UniprotDB_Uniprot" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>UniProt</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="UniprotDB_ENSEMBL_PRO" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLProtein</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="UniprotDB_ENSEMBL_GENE" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLGene</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="UniprotDB_ENSEMBL_TRANSCRIPT" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLTranscript</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+
+	<!--
+	Base UniProt File Retriever - other UniProt file
+	retriever beans can use this one as the parent,
+	and then override any values that they need to override.
+	-->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="baseUniProtRetriever" abstract="true">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="maxAge" ref="maxFileAge" />
+		<constructor-arg name="retrieverName" value="retrievers/Uniprot"/>
+	</bean>
+
+	
+	<util:map id="uniProtFileRetrievers"
+		key-type="java.lang.String"
+		value-type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver">
+
+		<entry key="UniProtToOMIM">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToOMIM" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">OMIM</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToPDB">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToPDB" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">PDB</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToRefSeqPeptide">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqPeptide" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqPeptide</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToRefSeqRNA">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqRNA" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqRNA</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToENSEMBL">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToENSEMBL" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBL.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">ENSEMBL</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToWormbase">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToWormbase"  parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToEntrez_Gene">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToEntrez_Gene"  parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+				</property>
+			</bean>
+		</entry>
+		<entry key="UniProtToKEGG">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToKEGG" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">KEGG</value>
+				</property>
+			</bean>
+		</entry>
+	</util:map>
+
+</beans>

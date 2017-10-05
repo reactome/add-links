@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		
+	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">48</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBL</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Protein" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLProtein</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Gene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLGene</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Transcript" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ENSEMBLTranscript</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>ALL_DATABASES</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_EntezGene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>EntrezGene</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="EnsemblDB_Wormbase" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>Wormbase</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup" id="ensemblBatchLookup" scope="prototype">
+		<property name="dataURL" value="http://rest.ensembl.org/lookup/id/" />
+		<property name="fetchDestination"  value="/tmp/addlinks-downloaded-files/ensembl/"/>
+		<property name="maxAge" ref="maxFileAge"/>
+		<constructor-arg name="retrieverName" value="retrievers/EnsemblBatch"/> 
+	</bean>
+	
+	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever" id="ensemblBaseXrefRetriever" abstract="true">
+		<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
+		<property name="maxAge" ref="maxFileAge"/>
+	</bean>
+	
+	<util:map id="ensemblFileRetrieversNonCore" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
+	
+		<entry key="ensemblToALL" >
+			<bean id="ensemblToALL" parent="ensemblBaseXrefRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_ALL.xml" />
+				<property name="mapToDbEnum" ref="EnsemblDB_ALL"/>
+				<property name="dataURL" value="http://rest.ensemblgenomes.org/xrefs/id/" />
+				<constructor-arg name="retrieverName" value="retrievers/EnsemblNonCore"/>
+			</bean>
+		</entry>
+		
+	</util:map>
+	
+	<!-- See IdentifierMapper/ENSEMBLMart.pm in the old add_links system. -->
+	<util:map id="ensemblFileRetrievers" key-type="java.lang.String" value-type="org.reactome.addlinks.dataretrieval.EnsemblFileRetriever">
+		<entry key="ensemblToALL" >
+			<bean id="ensemblToALL" parent="ensemblBaseXrefRetriever">
+				<constructor-arg name="retrieverName" value="retrievers/Ensembl"/>
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensembl_to_ALL.xml" />
+				<property name="mapToDbEnum" ref="EnsemblDB_ALL"/>
+			</bean>
+		</entry>
+
+	</util:map>
+	
+</beans>

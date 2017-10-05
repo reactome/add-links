@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		
+	<!-- 
+	This file is a mapping that maps file processors to reference creators.
+	-->
+	<util:list id="zincCreators" value-type="java.lang.String" list-class="java.util.ArrayList">
+		<value>zincSubstancesReferenceCreator</value>
+		<value>zincFDAReferenceCreator</value>
+		<value>zincWorldDrugsReferenceCreator</value>
+		<value>zincMetabolitesReferenceCreator</value>
+		<value>zincBiogenicReferenceCreator</value>
+		<value>zincInvestigationalReferenceCreator</value>
+		<value>zincPurchasablePredictionsReferenceCreator</value>
+	</util:list> 
+
+	<util:map id="processorCreatorLink" key-type="java.lang.String" value-type="java.lang.Object">
+		<entry key="zincOrthologFileProcessor" value-ref="zincCreators" />
+		<entry key="DockblasterFileProcessor" value="dockBlasterRefCreator"/>
+		<entry key="PROFileProcessor" value="proRefCreator"/>
+		<entry key="FlyBaseFileProcessor" value="FlyBaseReferenceCreator"/>
+		<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
+		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
+		<entry key="OrphanetFileProcessor" value="OrphanetReferenceCreator"/>
+		<!-- <entry key="IntActFileProcessor" value=""/> -->
+		<entry key="ZincMoleculesFileProcessor" value="zincToChEBIReferenceCreator"/>
+		<entry key="ENSEMBLFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
+		<entry key="ENSEMBLNonCoreFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
+		<entry key="UniprotToEnsemblFileProcessor" value="upMappedENSEMBLGeneRefCreator"/>
+		<entry key="UniprotToPDBFileProcessor" value="upMappedPDBRefCreator"/>
+		<entry key="UniprotToRefSeqPeptideFileProcessor" value="upMappedRefSeqPeptideRefCreator"/>
+		<entry key="UniprotToRefSeqRNAFileProcessor" value="upMappedRefSeqRNARefCreator"/>
+		<entry key="UniprotToEntrezGeneFileProcessor" value="upMappedEntrezGeneRefCreator"/>
+		<entry key="OMIMProcessor" value="upMappedOMIMRefCreator"/>
+		<entry key="UniprotToWormbaseFileProcessor" value="upMappedWormbaseRefCreator"/>
+		<entry key="UniprotToKEGGFileProcessor" value="upMappedKEGGRefCreator" />
+		<entry key="zincProtFileProcessor" value="zincToUniProtReferenceCreator" />
+		<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
+		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
+		<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
+		<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
+		<entry key="BrendaProcessor" value="BrendaRefCreator"/>
+		<entry key="IntActFileProcessor" value="IntActComplexPortalRefCreator"/>
+		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
+		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
+		<entry key="CTDProcessor" value="CTDRefCreator"/>
+	</util:map>
+
+</beans>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<context:property-placeholder location="file:resources/*.properties"  />
+	
+<!-- 	<context:annotation-config/>
+	
+	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
+ -->	
+	<import resource="reference-databases.xml"/>
+	<import resource="basic-file-retrievers.xml"/>
+	<import resource="uniprot-file-retrievers.xml"/>
+	<import resource="ensembl-file-retrievers.xml"/>
+	<import resource="file-processors.xml"/>
+	<import resource="file-processors-ref-creators-link.xml"/>
+	<import resource="reference-creators.xml"/>
+
+	<!-- DB Adapter 
+	public MySQLAdaptor(String host,String database,String username,String password,int port)
+	-->
+	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
+		<constructor-arg name="host" index="0" value="${database.host}"/>
+		<constructor-arg name="database" index="1" value="${database.name}"/>
+		<constructor-arg name="username" index="2" value="${database.user}"/>
+		<constructor-arg name="password" index="3" value="${database.password}"/>
+		<constructor-arg name="port" index="4" value="${database.port}"/>
+	</bean>
+	
+	
+	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
+		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" type="boolean" name="lazyLoad" value="${lazyLoadCache}" />
+	</bean>
+	
+
+	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>UniProtToPDB</value>
+		<value>DOCKBlaster</value>
+		<value>PROToReferencePeptideSequence</value>
+		<value>EntrezGeneToUniprotReference</value>
+
+		<value>CTD</value>
+		<value>EnsemblToALL</value>
+		<value>UniProtToEntrez_Gene</value>
+		<value>UniProtToENSEMBL</value>
+		<value>Zinc</value>
+		<value>COSMIC</value>
+		<value>HGNC</value>
+		<value>OrthologsFromZinc</value>
+		<value>OrthologsCSVFromZinc</value>
+		<value>BrendaRetriever</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>UniProtToKEGG</value>
+		<value>KEGGRetriever</value>
+		<value>OrphanetToUniprotReferenceDNASequence</value>
+		<value>RheaRetriever</value>
+		<value>UniProtToOMIM</value>
+		<value>OMIM</value>
+		<value>UniProtToRefSeqPeptide</value>
+		<value>UniProtToRefSeqRNA</value>
+		<value>UniProtToWormbase</value>
+		<value>HmdbProteins</value>
+		<value>HmdbMolecules</value>
+		<value>RHEAIdentifierToReactionlikeEvent</value>
+		<value>IntActComplexPortal</value>
+	</util:list>
+
+	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PROFileProcessor</value>
+		<value>DockblasterFileProcessor</value>
+		<value>UniprotToPDBFileProcessor</value>
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
+		<value>UniprotToEntrezGeneFileProcessor</value>
+		<value>CTDProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
+		<value>COSMICProcessor</value>
+		<value>HGNCProcessor</value>
+		<value>zincOrthologFileProcessor</value>
+		<value>FlyBaseFileProcessor</value>
+		<value>BrendaProcessor</value>
+		<value>KEGGFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
+		<value>zincProtFileProcessor</value>
+		<value>RheaFileProcessor</value>
+		<value>HmdbProteinsFileProcessor</value>
+		<value>HmdbMetabolitesFileProcessor</value>
+		<value>OrphanetFileProcessor</value>
+		<value>UniprotToEnsemblFileProcessor</value>
+		<value>UniprotToRefSeqPeptideFileProcessor</value>
+		<value>UniprotToRefSeqRNAFileProcessor</value>
+		<value>OMIMProcessor</value>
+		<value>UniprotToWormbaseFileProcessor</value>
+		<value>IntActFileProcessor</value>
+	</util:list>
+
+	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+	
+		<value>upMappedPDBRefCreator</value>
+		<value>proRefCreator</value>
+		<value>dockBlasterRefCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>COSMICReferenceCreator</value>
+		<value>geneCardsRefCreator</value>
+		<value>zincSubstancesReferenceCreator</value>
+		<value>zincFDAReferenceCreator</value>
+		<value>zincWorldDrugsReferenceCreator</value>
+		<value>zincMetabolitesReferenceCreator</value>
+		<value>zincBiogenicReferenceCreator</value>
+		<value>zincInvestigationalReferenceCreator</value>
+		
+		<value>zincPurchasablePredictionsReferenceCreator</value>
+		<value>HGNCReferenceCreator</value>
+		
+		<value>BrendaRefCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>zincToChEBIReferenceCreator</value> 
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>upMappedOMIMRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
+		<value>upMappedRefSeqRNARefCreator</value>
+		<value>upMappedRefSeqPeptideRefCreator</value>
+		<value>upMappedWormbaseRefCreator</value>
+		<value>FlyBaseReferenceCreator</value>
+		<value>RheaReferenceCreator</value>
+		<value>BrendaRefCreator</value>
+		<value>OrphanetReferenceCreator</value>
+		
+		<value>HMDBProtReferenceCreator</value>
+		<value>HmdbMoleculeReferenceCreator</value>
+		<value>IntActComplexPortalRefCreator</value>
+	</util:list>
+	
+	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>PDB</value>
+		<value>CTD Gene</value>
+		<value>dbSNP Gene</value>
+		<value>NCBI Gene</value>
+		<value>Monarch</value>
+		<value>HGNC</value>
+		<value>UniProt</value>
+		<value>Flybase</value>
+		<value>Brenda</value>
+		<value>BioModels</value>
+		<value>Flybase</value>
+		<value>Gene Ontology</value>
+		<value>HapMap</value>
+		<value>IntEnz</value>
+		<value>KEGG</value>
+		<value>Orphanet</value>
+		<value>RefSeq</value>
+		<value>Rhea</value>
+		<value>UCSC human</value>
+		<value>Wormbase</value>
+		<value>ZINC target</value>
+		<value>ZINC</value>
+		<value>ZINC - Substances</value>
+		<value>ZINC - FDA approved</value>
+		<value>ZINC - World Drugs</value>
+		<value>ZINC - Metabolites</value>
+		<value>ZINC - Biogenic</value>
+		<value>ZINC - Investigational</value>
+		<value>ZINC - Predictions - Purchasable</value>
+		<value>HMDB Protein</value>
+		<value>HMDB Metabolite</value>
+		<value>COSMIC</value>
+		<!-- 
+		<value>DOCK Blaster</value>
+		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
+		Even loading one page seems to make it take effort.
+		-->
+		<!--
+		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,
+		because the ID won't get loaded until after the JavaScript runs.
+		<value>BioGPS Gene</value>
+		-->
+		<!--
+		GeneCards returns a 403 for every request.
+		<value>GeneCards</value> 
+		-->
+		<!--
+		Don't bother testing OMIM - they will return a 403 each time you hit their page.
+		It probably has something to do with the JavaScript pop-over asking for donations...
+		If they change the way their pages load it might be worth re-activating link checking
+		for OMIM. Or... try to code around it, if you're feeling REALLY ambitious.
+		<value>OMIM</value> -->
+		<!--
+		<value>ComplexPortal</value>
+		ComplexPortal does not actually contain the identifier in the page content, so we can't properly check it.
+		 -->
+		 <!--
+		 PRO returns a 503 error when accessed via Java 
+		 <value>PRO</value> -->
+	</util:list>
+
+	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
+		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">
+		<property name="uniprotFileRetrievers" ref="uniProtFileRetrievers"/>
+		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
+		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
+		<property name="processorCreatorLink" ref="processorCreatorLink"/>
+		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
+		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
+	</bean>
+	
+	
+</beans>

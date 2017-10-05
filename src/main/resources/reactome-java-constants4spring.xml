@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+	<bean id="DatabaseIdentifierBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.DatabaseIdentifier"/>
+		</constructor-arg>
+	</bean>
+
+	<bean id="ReferenceGeneProductBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceGeneProduct"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceDNASequenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceDNASequence"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceMoleculeBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceMolecule"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="crossReferenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.crossReference"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="referenceGeneBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceGene"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="referenceTranscriptBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceTranscript"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceRNASequenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceRNASequence"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReactionBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Reaction"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ComplexBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Complex"/>
+		</constructor-arg>
+	</bean>
+</beans>

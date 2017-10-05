@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<import resource="testing-common.xml"/>
+	
+	<!-- Beans for PRO testing. -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
+		<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	<bean id="PROFileProcessor" class="org.reactome.addlinks.fileprocessors.PROFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="proRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="PRO"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
+	<!-- test BRENDA file retrieval -->
+	<bean id="brendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+		<property name="userName" value="${brenda.user}"/>
+		<property name="password" value="${brenda.password}"/>
+		<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA.csv"/>
+		<property name="maxAge" ref="zeroFileAge" />
+	</bean>
+	<bean id="brendaProcessor" class="org.reactome.addlinks.fileprocessors.BRENDAFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA*" />
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="brendaRefCreator" autowire="byName">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="BRENDA"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
+	<!-- Beans for Orphanet testing. -->
+	<bean id="OrphanetToUniprotReferenceDNASequence"
+		class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever">
+		<property name="dataURL" value="http://www.orphadata.org/data/BDD_partners/genes_diseases_external_references.xml" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/genes_diseases_external_references.xml" />
+		<property name="maxAge" ref="maxFileAge" />
+
+		<property name="userName" value="${orphanet.user}" />
+		<property name="password" value="${orphanet.password}" />
+	</bean>
+	<bean id="OrphanetFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.OrphanetFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/genes_diseases_external_references.xml"/>
+			</bean>
+		</property>
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="OrphanetReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Orphanet"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- IntEnz testing -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="intEnzFileRetriever">
+		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	<bean id="intEnzFileProcessor" class="org.reactome.addlinks.fileprocessors.IntEnzFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/IntEnz.dat"/>
+			</bean>
+		</property>
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.IntEnzReferenceCreator" id="intEnzReferenceCreator" autowire="byName">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="IntEnz"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!--  flybase testing -->
+	<bean id="FlyBaseFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/FlyBase.tsv.gz"/>
+			</bean>
+		</property>
+	</bean>
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
+		<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2016_05.tsv.gz" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="FlyBaseReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="FlyBase"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- GeneCards reference creator. -->
+	<bean class="org.reactome.addlinks.referencecreators.OneToOneReferenceCreator" id="geneCardsRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="GeneCards"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- UniProt mapped identifier testing -->
+	<bean id="uniprotTestAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">0</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="UniprotDB_Uniprot" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>UniProt</value>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+		<constructor-arg>
+			<value>Ensembl</value>
+		</constructor-arg>
+	</bean>
+	
+	
+	<!-- Wormbase -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToWormbase">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToWormbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedWormbaseRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- OMIM -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToOMIM">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">OMIM</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToOMIMFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedOMIMRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="OMIM"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
+	<!-- **NEW** OMIM -->
+	
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OMIMFileRetriever">
+		<property name="dataURL" value="https://omim.org/static/omim/data/mim2gene.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/mim2gene.txt" />
+		<property name="maxAge" ref="maxFileAge" />
+		<constructor-arg name="retrieverName" value="retrievers/OMIM"/>
+	</bean>
+	
+	<bean id="OMIMProcessor" class="org.reactome.addlinks.fileprocessors.OMIMFileProcessor">
+		<constructor-arg name="processorName" value="file-processors/OMIMProcessor"/>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM*" />
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="OMIMPath">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/mim2gene.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- no need to create a new OMIM Reference Creator bean - the new "gene only" filtering
+	 requirements only affected data retrieval and file processing (which is where filtering occurs). -->
+
+	<!-- Protein Data Bank (PDB) -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToPDB">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">PDB</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToPDBFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedPDBRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="PDB"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- RefSeqPeptide database -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqPeptide">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqPeptide</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToRefSeqPeptideFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqPeptideRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="RefSeq"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- RefSeqRNA database -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqRNA">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqRNA</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToRefSeqRNAFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqRNARefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceRNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceTranscriptBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="RefSeq"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- ENSEMBL -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToENSEMBLGene">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">ENSEMBLGene</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToENSEMBLGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedENSEMBLGeneRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	
+	<!-- EntrezGene -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToEntrezGene">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedEntrezGeneRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- Attempted ensembl-to-entrezgene (didn't really work) -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLToEntrezGeneRetriever">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBL_To_Entrez_Gene.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_ENSEMBL"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="ENSEMBLToEntrezGeneFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBL_To_Entrez_Gene" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="ENSEMBLToEntrezGeneRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Entrez_Gene"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
+	<!-- KEGG -->
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToKEGG">
+		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG.txt" />
+		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
+		<property name="mapToDbEnum">
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">KEGG</value>
+		</property>
+		<property name="maxAge" ref="uniprotTestAge" />
+	</bean>
+	
+	<bean id="UniprotToKEGGFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-mappings"/>
+			</bean>
+		</property>
+		<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG*" />
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedKEGGRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="KEGG"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	
+	
+	<!-- ChEBI to ZINC -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ZincFileRetriever">
+		<property name="dataURL" value="http://files.docking.org/catalogs/1/chebi/chebi.info.txt.gz" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi.info.txt.gz" />
+		<property name="maxAge">
+			<ref bean="maxFileAge" />
+		</property>
+	</bean>
+	
+	<bean id="zincMolFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/chebi.info.txt.gz"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.ZincToChEBIReferenceCreator" id="zincToChEBIReferenceCreator" autowire="byName">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
+		<constructor-arg index="5" name="targetDB" value="ZINC"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- UniProt to ZINC (with data from ZINC) -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsFromZinc">
+		<property name="dataURL" value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	
+	<bean id="zincProtFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincToUniProtReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="ZINC"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- HMDB Proteins -->
+	
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbProteinsRetriever">
+		<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_proteins.zip" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	
+	<bean id="HmdbProteinsFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.HmdbProteinsFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/hmdb_proteins.zip"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator" id="HMDBProtReferenceCreator" autowire="byName">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="HMDB"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- HMDB Molecules -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbMoleculesRetriever">
+		<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_metabolites.zip" />
+		<property name="maxAge" ref="maxFileAge"/>
+	</bean>
+	
+	<bean id="HmdbMoleculesFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/hmdb_metabolites.zip"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator" id="HmdbMoleculeReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt or ChEBI"/>
+		<constructor-arg index="5" name="targetDB" value="HMDB"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- RHEA testing -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="rheaRetriever">
+		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
+		<property name="maxAge"  ref="maxFileAge"/>
+	</bean>
+	
+	<bean id="rheaFileProcessor" class="org.reactome.addlinks.fileprocessors.RHEAFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths"  factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/rhea2reactome.tsv"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.RHEAReferenceCreator" id="rheaReferenceCreator" autowire="byName">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReactionBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+		<constructor-arg index="5" name="targetDB" value="Rhea"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- HGNC -->
+	<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HGNCRetriever">
+		<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
+		<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
+		<property name="maxAge" ref="maxFileAge" />
+	</bean>
+	<bean id="HGNCProcessor" class="org.reactome.addlinks.fileprocessors.HGNCFileProcessor">
+		<constructor-arg name="processorName" value="file-processors/HGNCProcessor"/>
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/hgnc_complete_set.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.HGNCReferenceCreator" id="HGNCReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="Uniprot"/>
+		<constructor-arg index="5" name="targetDB" value="HGNC"/>
+		<constructor-arg index="6" name="refCreatorName" value="refCreators/HGNCReferenceCreator"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
+	<!-- COSMIC -->
+	<bean id="COSMICProcessor" class="org.reactome.addlinks.fileprocessors.COSMICFileProcessor">
+		<constructor-arg name="processorName" value="file-processors/COSMICProcessor"/>
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz"/>
+			</bean>
+		</property>
+	</bean>
+
+	<bean class="org.reactome.addlinks.referencecreators.COSMICReferenceCreator" id="COSMICReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+		<constructor-arg index="5" name="targetDB" value="COSMIC"/>
+		<constructor-arg index="6" name="refCreatorName" value="refCreators/COSMICReferenceCreator"/>
+		<property name="testMode" value="true"/>
+	</bean>
+
+	
+	<!--  -->
+	
+	<bean class="org.reactome.addlinks.linkchecking.LinkCheckManager" id="linkCheckManager">
+		<property name="dbAdaptor" ref="dbAdapter"/>
+	</bean>
+	
+</beans>

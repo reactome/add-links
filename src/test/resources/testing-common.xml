@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+	<import resource="db-adapter-config.xml"/>
+
+	<context:property-placeholder location="classpath:*.properties" />
+
+	<bean id="DatabaseIdentifierBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.DatabaseIdentifier"/>
+		</constructor-arg>
+	</bean>
+
+	<bean id="ReferenceGeneProductBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceGeneProduct"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceDNASequenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceDNASequence"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceMoleculeBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceMolecule"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="crossReferenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.crossReference"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="referenceGeneBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceGene"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="referenceTranscriptBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.referenceTranscript"/>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="ReferenceRNASequenceBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceRNASequence"/>
+		</constructor-arg>
+	</bean>
+
+	<bean id="ReactionBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Reaction"/>
+		</constructor-arg>
+	</bean>
+
+	<!-- DB Adapter 
+	public MySQLAdaptor(String host,String database,String username,String password,int port)
+	-->
+
+	
+	
+	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
+		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="lazyLoad" value="true"/>
+	</bean>
+	
+	<bean id="maxFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">48</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="zeroFileAge" class="java.time.Duration" factory-method="of">
+		<constructor-arg index="0">
+			<value type="java.lang.Long">0</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value type="java.time.temporal.ChronoUnit">HOURS</value>
+		</constructor-arg>
+	</bean>
+</beans>
