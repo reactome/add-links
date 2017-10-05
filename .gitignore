@@ -10,3 +10,29 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+/target/
+
+# Eclipse ignores
+.classpath
+.settings
+.project
+
+auth.properties
+
+.dbeaver-data-sources.xml
+/misc/
+
+#ignore logging directory
+logs
+/logs.old/
+
+#ignore generated jar files
+AddLinks*jar
+
+scripts/resources
+
+diffReport*.txt
+/test-logs/
+.springBeans
+
+*.md.html

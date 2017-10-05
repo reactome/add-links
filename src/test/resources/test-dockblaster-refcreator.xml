@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+	<import resource="testing-common.xml"/>
+
+	<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="UniProtToPDBRetriever">
+		<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
+		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
+		<property name="userName" value="${dockblaster.user}"/>
+		<property name="password" value="${dockblaster.password}"/>
+		<property name="maxAge" ref="zeroFileAge" />
+	</bean>
+	
+	<bean id="DOCKBlasterFileProcessor"
+		class="org.reactome.addlinks.fileprocessors.DOCKBlasterFileProcessor">
+		<property name="path">
+			<bean class="java.nio.file.Paths" factory-method="get">
+				<constructor-arg value="file:///tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.reactome.addlinks.referencecreators.DOCKBlasterReferenceCreator" id="pdbRefCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="Protein Data Bank"/>
+		<property name="testMode" value="true"/>
+	</bean>
+</beans>

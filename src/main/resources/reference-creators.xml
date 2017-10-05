@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<import resource="reactome-java-constants4spring.xml"/>
+	
+	<util:list id="entrezGeneBasedReferenceCreators">
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="BioGPSRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
+			<constructor-arg index="5" name="targetDB" value="BioGPS Gene"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/BioGPSRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+		<bean class="org.reactome.addlinks.referencecreators.CTDReferenceCreator" id="CTDRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
+			<constructor-arg index="5" name="targetDB" value="CTD Gene"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/CTDRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="dbSNPRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
+			<constructor-arg index="5" name="targetDB" value="dbSNP Gene"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/dbSNPRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="MonarchRefCreator">
+			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+			<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+			<constructor-arg index="4" name="sourceDB" value="NCBI Gene"/>
+			<constructor-arg index="5" name="targetDB" value="Monarch"/>
+			<constructor-arg index="6" name="refCreatorName" value="refCreators/MonarchRefCreator"/>
+			<property name="testMode" value="false"/>
+		</bean>
+	</util:list>
+
+	<util:map id="uniprotReferenceCreators" key-type="java.lang.String" value-type="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator">
+		<entry key="upMappedPDBRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedPDBRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="PDB"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedPDBRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedOMIMRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedOMIMRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="OMIM"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedOMIMRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedENSEMBLGeneRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedENSEMBLGeneRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedENSEMBLGeneRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedEntrezGeneRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedEntrezGeneRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="NCBI Gene"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedEntrezGeneRefCreator"/>
+				<constructor-arg index="7" name="entrezGeneRefCreators" ref="entrezGeneBasedReferenceCreators"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedKEGGRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedKEGGRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="KEGG Glycan"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedKEGGRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedRefSeqRNARefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqRNARefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceRNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceTranscriptBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="RefSeq"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedRefSeqRNARefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedRefSeqPeptideRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedRefSeqPeptideRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="RefSeq"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedRefSeqPeptideRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="upMappedWormbaseRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator" id="upMappedWormbaseRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedWormbaseRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+	</util:map>
+
+	<util:map id="referenceCreators" key-type="java.lang.String" value-type="org.reactome.addlinks.referencecreators.BatchReferenceCreator">
+		<entry key="OrphanetReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="OrphanetReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="Orphanet"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/OrphanetReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="proRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="proRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="PRO"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/proRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="FlyBaseReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="FlyBaseReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="Flybase"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/FlyBaseReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="dockBlasterRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.DOCKBlasterReferenceCreator" id="dockBlasterRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<!-- Even though our links to DOCKBlaster will contain a PDB ID,
+				the mapping comes from a UniProt-to-PDB mapping so we need to use
+				UniProt objects as the source identifiers, so "UniProt" is the sourceDB. -->
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="DOCK Blaster"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/dockBlasterRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="geneCardsRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.GeneCardsReferenceCreators" id="geneCardsRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="GeneCards"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/geneCardsRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincToChEBIReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincToChEBIReferenceCreator" id="zincToChEBIReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincToChEBIReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="HMDBProtReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator" id="HMDBProtReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="HMDB Protein"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/HMDBProtReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincToUniProtReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="zincToUniProtReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC target"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincToUniProtReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<!-- Create references to other ZINC resources -->
+		<entry key="zincSubstancesReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincSubstancesReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Substances"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincSubstancesReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincFDAReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincFDAReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - FDA approved"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincFDAReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincWorldDrugsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincWorldDrugsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - World Drugs"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincWorldDrugsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincMetabolitesReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincMetabolitesReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Metabolites"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincMetabolitesReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincBiogenicReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincBiogenicReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Biogenic"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincBiogenicReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincInvestigationalReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincInvestigationalReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Biogenic"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincInvestigationalReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="zincPurchasablePredictionsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ZincOrthologsReferenceCreator" id="zincPurchasablePredictionsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="ZINC - Predictions - Purchasable"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/zincPurchasablePredictionsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		
+		<entry key="HmdbMoleculeReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator" id="HmdbMoleculeReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
+				<constructor-arg index="5" name="targetDB" value="HMDB Metabolite"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/HmdbMoleculeReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+ 		<entry key="ENSEMBLToEntrezGeneRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLToEntrezGeneRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="NCBI Gene"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLToEntrezGeneRefCreator"/>
+				<constructor-arg index="7" name="entrezGeneRefCreators" ref="entrezGeneBasedReferenceCreators"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+ 		<entry key="ENSEMBLToWormbaseRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLToWormbaseRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="Wormbase"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLToWormbaseRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="ENSEMBLEnspToEnsgRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator" id="ENSEMBLEnspToEnsgRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="ENSEMBL"/>
+				<constructor-arg index="5" name="targetDB" value="ENSEMBL"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ENSEMBLEnspToEnsgRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="KEGGReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.KEGGReferenceCreator" id="KEGGReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="KEGG Glycan"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/KEGGReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="RheaReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.RHEAReferenceCreator" id="RheaReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReactionBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+				<constructor-arg index="5" name="targetDB" value="Rhea"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/RheaReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="BrendaRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="BrendaRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="Brenda"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/BrendaRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		
+		<entry key="IntActComplexPortalRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.IntActReferenceCreator" id="IntActComplexPortalRefCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ComplexBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+				<constructor-arg index="5" name="targetDB" value="ComplexPortal"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/IntActComplexPortalRefCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		
+		<entry key="HGNCReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.HGNCReferenceCreator" id="HGNCReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="HGNC"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/HGNCReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		<entry key="COSMICReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.COSMICReferenceCreator" id="COSMICReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+				<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+				<constructor-arg index="5" name="targetDB" value="COSMIC (genes)"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/COSMICReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+	</util:map>
+</beans>
