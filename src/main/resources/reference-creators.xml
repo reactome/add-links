@@ -122,7 +122,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="UCSC human"/>
+				<constructor-arg index="5" name="targetDB" value="UCSC"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/upMappedUCSCRefCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
