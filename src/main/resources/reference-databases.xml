@@ -253,7 +253,7 @@
 				</entry>
 				<entry key="URL" value="https://genome.ucsc.edu/" />
 				<!-- The URL below assumes UniProt identifiers will be used in the URL. -->
-				<entry key="AccessURL" value="https://genome.ucsc.edu/cgi-bin/hgLinkIn?id=###ID###&amp;resource=uniprot"/>
+				<entry key="AccessURL" value="http://genome.ucsc.edu/cgi-bin/hgLinkIn?id=###ID###&amp;resource=uniprot"/>
 			</map>
 		</entry>
 		
