@@ -110,7 +110,7 @@ public class LinkChecker
 				throw e;
 			}
 			catch (IOException e) {
-				logger.error("Exception caught: {}",e.getMessage());
+				logger.error("While trying to connect to {} an exception was caught: {}", this.uri, e.getMessage());
 				throw e;
 			}
 		}

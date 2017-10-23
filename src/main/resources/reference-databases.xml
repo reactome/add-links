@@ -243,16 +243,17 @@
 			</map>
 		</entry>
 		
-		<entry key="UCSC human">
+		<entry key="UCSC">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="PrimaryName" value="UCSC human"/>
+				<entry key="PrimaryName" value="UCSC"/>
 				<entry key="Aliases">
 					<list value-type="java.lang.String">
 						<value>UCSC</value>
 					</list>
 				</entry>
-				<entry key="URL" value="http://genome.ucsc.edu/" />
-				<entry key="AccessURL" value="http://genome.ucsc.edu/cgi-bin/hgTracks?position=###ID###" />
+				<entry key="URL" value="https://genome.ucsc.edu/" />
+				<!-- The URL below assumes UniProt identifiers will be used in the URL. -->
+				<entry key="AccessURL" value="http://genome.ucsc.edu/cgi-bin/hgLinkIn?id=###ID###&amp;resource=uniprot"/>
 			</map>
 		</entry>
 		

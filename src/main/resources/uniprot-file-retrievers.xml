@@ -133,6 +133,14 @@
 				</property>
 			</bean>
 		</entry>
+		<entry key="UniProtToUCSC">
+			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToUCSC" parent="baseUniProtRetriever">
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_UCSC.txt" />
+				<property name="mapToDbEnum">
+					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">UCSC</value>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 
 </beans>
