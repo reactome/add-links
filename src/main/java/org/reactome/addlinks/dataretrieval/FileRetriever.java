@@ -157,7 +157,14 @@ public class FileRetriever implements DataRetriever {
 		{
 			try(InputStream inStream = client.retrieveFileStream(this.uri.getPath()))
 			{
-				writeInputStreamToFile(inStream);
+				if (inStream != null)
+				{
+					writeInputStreamToFile(inStream);
+				}
+				else
+				{
+					logger.error("No data returned from server for {}", this.uri.toString());
+				}
 			}
 		}
 		catch (IOException e)
@@ -180,21 +187,21 @@ public class FileRetriever implements DataRetriever {
 
 	protected void writeInputStreamToFile(InputStream inStream) throws IOException, FileNotFoundException
 	{
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		int b = inStream.read();
-		while (b!=-1)
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream())
 		{
-			baos.write(b);
-			b = inStream.read();
+			int b = inStream.read();
+			while (b!=-1)
+			{
+				baos.write(b);
+				b = inStream.read();
+			}
+	
+			try (FileOutputStream file = new FileOutputStream(this.destination))
+			{
+				baos.writeTo(file);
+				file.flush();
+			}
 		}
-
-		FileOutputStream file = new FileOutputStream(this.destination);
-		baos.writeTo(file);
-		file.flush();
-
-		baos.close();
-		inStream.close();
-		file.close();
 	}
 
 	
