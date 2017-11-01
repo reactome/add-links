@@ -146,13 +146,26 @@ public class FileRetriever implements DataRetriever {
 		user = user == null || user.trim().equals("") ? "anonymous" : user;
 		password = password == null || password.trim().equals("") ? "" : password;
 		FTPClient client = new FTPClient();
-
+		
 		client.connect(this.uri.getHost());
+		client.enterLocalPassiveMode(); //PASSIVE mode works better when inside a docker container.
 		client.login(user, password);
 		logger.debug("connect/login reply code: {}",client.getReplyCode());
 		client.setFileType(FTP.BINARY_FILE_TYPE);
 		client.setFileTransferMode(FTP.COMPRESSED_TRANSFER_MODE);
-		InputStream inStream = client.retrieveFileStream(this.uri.getPath());
+		try
+		{
+			try(InputStream inStream = client.retrieveFileStream(this.uri.getPath()))
+			{
+				writeInputStreamToFile(inStream);
+			}
+		}
+		catch (IOException e)
+		{
+			logger.error("Error while retrieving the file: {}",e.getMessage());
+			e.printStackTrace();
+			throw new Exception(e);
+		}
 		//Should probably have more/better reply-code checks.
 		logger.debug("retreive file reply code: {}",client.getReplyCode());
 		if (client.getReplyString().matches("^5\\d\\d.*") || (client.getReplyCode() >= 500 && client.getReplyCode() < 600) )
@@ -161,8 +174,6 @@ public class FileRetriever implements DataRetriever {
 			logger.error(errorString);
 			throw new Exception(errorString);
 		}
-		writeInputStreamToFile(inStream);
-		
 		client.logout();
 		client.disconnect();
 	}
