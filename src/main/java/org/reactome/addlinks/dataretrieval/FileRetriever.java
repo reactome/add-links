@@ -3,10 +3,8 @@ package org.reactome.addlinks.dataretrieval;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -16,7 +14,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.apache.axis.transport.http.SocketInputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.http.client.config.RequestConfig;
@@ -31,7 +28,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.util.FilteredObjectInputStream;
 
 public class FileRetriever implements DataRetriever {
 
@@ -150,25 +146,17 @@ public class FileRetriever implements DataRetriever {
 		user = user == null || user.trim().equals("") ? "anonymous" : user;
 		password = password == null || password.trim().equals("") ? "" : password;
 		FTPClient client = new FTPClient();
-		// FTP ports for Active mode are in range 3100 - 3200.
-		// This needs to be specified in advance so that if you run this code in a docker container, you know 
-		// what ports to publish in your `docker run -p...` command. 
-		// TODO: Make these values configurable.
-		//client.setActivePortRange(3100, 3200);
 		
 		client.connect(this.uri.getHost());
-		client.enterLocalPassiveMode();
+		client.enterLocalPassiveMode(); //PASSIVE mode works better when inside a docker container.
 		client.login(user, password);
 		logger.debug("connect/login reply code: {}",client.getReplyCode());
 		client.setFileType(FTP.BINARY_FILE_TYPE);
 		client.setFileTransferMode(FTP.COMPRESSED_TRANSFER_MODE);
-		//InputStream inStream;
 		try
 		{
-			//try(OutputStream outStream = new FileOutputStream(this.destination))
 			try(InputStream inStream = client.retrieveFileStream(this.uri.getPath()))
 			{
-				//inStream = client.retrieveFileStream(this.uri.getPath());
 				writeInputStreamToFile(inStream);
 			}
 		}
@@ -186,7 +174,6 @@ public class FileRetriever implements DataRetriever {
 			logger.error(errorString);
 			throw new Exception(errorString);
 		}
-		//writeInputStreamToFile(inStream);
 		client.logout();
 		client.disconnect();
 	}
