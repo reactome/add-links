@@ -35,11 +35,11 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.CrossReferenceReporter;
@@ -376,13 +376,14 @@ public class AddLinks
 		{
 			logger.info("Executing BRENDA file retrievers");
 			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
-			BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
+			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 			
 			// TODO: Maybe move this out to a BRENDASpeciesCache class. 
 			String speciesResult;
 			try
 			{
 				speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
+				logger.info("size of result (# characters): {}", speciesResult.length());
 			}
 			catch (MalformedURLException | NoSuchAlgorithmException | RemoteException |ServiceException e)
 			{
@@ -422,7 +423,7 @@ public class AddLinks
 						return null;
 					}).collect(Collectors.toList());
 					
-					logger.debug("Species: "+speciesId+"/"+speciesName);
+					logger.info("Processing for Brenda: Species: "+speciesId+"/"+speciesName);
 					identifiers.addAll(uniprotIdentifiers);
 					
 					if (uniprotIdentifiers != null && uniprotIdentifiers.size() > 0)

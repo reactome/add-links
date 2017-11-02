@@ -148,7 +148,7 @@
 		</entry>
 		
 		<entry key="BrendaRetriever">
-			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever">
 				<constructor-arg name="retrieverName" value="retrievers/BrendaRetriever"/>
 				<property name="userName" value="${brenda.user}"/>
 				<property name="password" value="${brenda.password}"/>
