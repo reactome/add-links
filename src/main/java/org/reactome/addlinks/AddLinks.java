@@ -398,8 +398,7 @@ public class AddLinks
 			}
 			//Normalize the list.
 			List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
-			logger.debug(brendaSpecies.size() + " species known to BRENDA");
-
+			logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getListOfSpeciesNames().size());
 			List<String> identifiers = new ArrayList<String>();
 			String originalDestination = brendaRetriever.getFetchDestination();
 			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
