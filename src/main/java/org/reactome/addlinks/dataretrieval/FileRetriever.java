@@ -16,6 +16,7 @@ import java.time.Instant;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -157,7 +158,14 @@ public class FileRetriever implements DataRetriever {
 		{
 			try(InputStream inStream = client.retrieveFileStream(this.uri.getPath()))
 			{
-				writeInputStreamToFile(inStream);
+				if (inStream != null)
+				{
+					writeInputStreamToFile(inStream);
+				}
+				else
+				{
+					logger.error("No data returned from server for {}", this.uri.toString());
+				}
 			}
 		}
 		catch (IOException e)
@@ -180,21 +188,21 @@ public class FileRetriever implements DataRetriever {
 
 	protected void writeInputStreamToFile(InputStream inStream) throws IOException, FileNotFoundException
 	{
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		int b = inStream.read();
-		while (b!=-1)
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream())
 		{
-			baos.write(b);
-			b = inStream.read();
+			int b = inStream.read();
+			while (b!=-1)
+			{
+				baos.write(b);
+				b = inStream.read();
+			}
+	
+			try (FileOutputStream file = new FileOutputStream(this.destination))
+			{
+				baos.writeTo(file);
+				file.flush();
+			}
 		}
-
-		FileOutputStream file = new FileOutputStream(this.destination);
-		baos.writeTo(file);
-		file.flush();
-
-		baos.close();
-		inStream.close();
-		file.close();
 	}
 
 	
@@ -221,6 +229,20 @@ public class FileRetriever implements DataRetriever {
 			try( CloseableHttpClient client = HttpClients.createDefault();
 				CloseableHttpResponse response = client.execute(get, context) )
 			{
+				int statusCode = response.getStatusLine().getStatusCode();
+				// If status code was not 200, we should print something so that the users know that an unexpected response was received.
+				if (statusCode != HttpStatus.SC_OK)
+				{
+					if (String.valueOf(statusCode).startsWith("4") || String.valueOf(statusCode).startsWith("5"))
+					{
+						logger.error("Response code was 4xx/5xx: {}, Status line is: ", statusCode, response.getStatusLine());
+					}
+					else
+					{
+						logger.warn("Response was not \"200\". It was: {}", response.getStatusLine());
+					}
+				}
+					
 				Files.write(path, EntityUtils.toByteArray(response.getEntity()));
 				done = true;
 			}
