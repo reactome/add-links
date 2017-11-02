@@ -14,8 +14,8 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.schema.InvalidAttributeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.BRENDAFileProcessor;
 import org.reactome.addlinks.referencecreators.BRENDAReferenceCreator;
@@ -100,7 +100,7 @@ public class TestBrendaIT
 	@Test
 	public void testBrendaReferenceCreatorAllUniProt() throws Exception
 	{
-		BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
+		BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 		
 		// TODO: Maybe move this out to a BRENDASpeciesCache class. 
 		String speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
