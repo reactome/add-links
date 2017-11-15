@@ -40,7 +40,12 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>BrendaRetriever</value>
+		<value>UniProtToUCSC</value>
+		<value>UniProtToRefSeqPeptide</value>
+		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToPDB</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>DOCKBlaster</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
@@ -54,16 +59,12 @@
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
-		<value>BrendaRetriever</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>UniProtToOMIM</value>
 		<value>OMIM</value>
-		<value>UniProtToRefSeqPeptide</value>
-		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToWormbase</value>
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
@@ -72,7 +73,12 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>BrendaProcessor</value>
+		<value>UniprotToRefSeqPeptideFileProcessor</value>
+		<value>UniprotToUCSCFileProcessor</value>
+		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>PROFileProcessor</value>
+		<value>FlyBaseFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
@@ -83,8 +89,7 @@
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
-		<value>FlyBaseFileProcessor</value>
-		<value>BrendaProcessor</value>
+		
 		<value>KEGGFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
@@ -93,16 +98,17 @@
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>UniprotToEnsemblFileProcessor</value>
-		<value>UniprotToRefSeqPeptideFileProcessor</value>
-		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>IntActFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-	
+		<value>upMappedRefSeqRNARefCreator</value>
+		<value>upMappedUCSCRefCreator</value>
+		<value>upMappedRefSeqPeptideRefCreator</value>
 		<value>upMappedPDBRefCreator</value>
+		<value>FlyBaseReferenceCreator</value>
 		<value>proRefCreator</value>
 		<value>dockBlasterRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
@@ -115,26 +121,20 @@
 		<value>zincMetabolitesReferenceCreator</value>
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
-		
 		<value>zincPurchasablePredictionsReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-		
 		<value>BrendaRefCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value> 
+		<value>zincToChEBIReferenceCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
-		<value>upMappedRefSeqRNARefCreator</value>
-		<value>upMappedRefSeqPeptideRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
-		<value>FlyBaseReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
 		<value>BrendaRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
-		
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>IntActComplexPortalRefCreator</value>
@@ -173,6 +173,12 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<!--
+		<value>UCSC</value>
+		The UCSC redirects make it hard to check and since we're linking to them via UniProt ID (not UCSC ID),
+		their redirect service might take the user to a page that is correct but does not display the UniProt ID that
+		got them there.
+		-->
 		<!-- 
 		<value>DOCK Blaster</value>
 		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
