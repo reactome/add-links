@@ -55,39 +55,46 @@ public class OMIMFileProcessor extends UniprotFileProcessor
 										.map( line -> line.split("\t")[0] )
 										.collect(Collectors.toSet());
 			logger.info("{} OMIM IDs are for genes.", omimGenes.size());
-			Map<String, Map<String,List<String>>> newMapping = Collections.synchronizedMap(new HashMap<String, Map<String,List<String>>>());
+			
+			Map<String, Map<String,List<String>>> mapCopy = mapping;
+			
 			// now that the main file processor has run, go through the mapping and REMOVE everything that is not a Gene.
-			for (String species : mapping.keySet())
+			for (String species : mapCopy.keySet())
 			{
-				for (String uniprotID : mapping.get(species).keySet())
+				for (String uniprotID : mapCopy.get(species).keySet())
 				{
-					for (String omimID : mapping.get(species).get(uniprotID))
+					for (String omimID : mapCopy.get(species).get(uniprotID))
 					{
 						// If the OMIM ID is in the list of genes, add it to the new list.
 						if ( omimGenes.contains(omimID) )
 						{
-							if (!newMapping.containsKey(species))
-							{
-								newMapping.put(species, Collections.synchronizedMap(new HashMap<String,List<String>>()));
-							}
-							if (!newMapping.get(species).containsKey(uniprotID))
-							{
-								newMapping.get(species).put(uniprotID, Collections.synchronizedList(new ArrayList<String>()));
-							}
-							// add the omim id to the new mapping
-							newMapping.get(species).get(uniprotID).add(omimID);
 							
 							logger.debug("Including OMIM ID: {}", omimID);
 						}
 						else
 						{
 							logger.debug("*NOT* including OMIM ID: {}", omimID);
+							if (mapping.containsKey(species))
+							{
+								if (mapping.get(species).containsKey(uniprotID))
+								{
+									if (mapping.get(species).get(uniprotID).contains(omimID))
+									{
+										// Remove omimID because it's not a gene.
+										//
+										// create a temporary new list, remove from that, then put that list back into the hash.
+										// You can't modify the list in the hash directly because if you do, you may 
+										// get a concurrent modification exception.
+										List<String> ids = Collections.synchronizedList( new ArrayList<String>( mapping.get(species).get(uniprotID) ));
+										ids.remove(omimID);
+										mapping.get(species).put(uniprotID, ids);
+									}
+								}
+							}
 						}
 					}
 				}
 			}
-			// assign newMapping to mapping so it can be accessed outside.
-			mapping = newMapping;
 		}
 		catch (IOException e)
 		{
