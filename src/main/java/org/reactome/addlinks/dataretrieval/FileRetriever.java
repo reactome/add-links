@@ -39,6 +39,7 @@ public class FileRetriever implements DataRetriever {
 	private int numRetries = 1;
 	protected String retrieverName;
 	protected Logger logger;
+	protected boolean passiveFTP = false;
 	
 	
 	public FileRetriever()
@@ -149,7 +150,10 @@ public class FileRetriever implements DataRetriever {
 		FTPClient client = new FTPClient();
 		
 		client.connect(this.uri.getHost());
-		client.enterLocalPassiveMode(); //PASSIVE mode works better when inside a docker container.
+		if (this.passiveFTP)
+		{
+			client.enterLocalPassiveMode(); //PASSIVE mode works better when inside a docker container.
+		}
 		client.login(user, password);
 		logger.debug("connect/login reply code: {}",client.getReplyCode());
 		client.setFileType(FTP.BINARY_FILE_TYPE);
@@ -318,5 +322,16 @@ public class FileRetriever implements DataRetriever {
 	{
 		return this.retrieverName;
 	}
+	
+	public void setPassiveFTP(boolean passiveMode)
+	{
+		this.passiveFTP = passiveMode;
+	}
+	
+	public boolean isPassiveFTP()
+	{
+		return this.passiveFTP ;
+	}
+	
 }
 
