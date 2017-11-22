@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.reactome.addlinks.dataretrieval.FileRetriever;
@@ -22,7 +23,7 @@ public class BRENDAFileRetriever extends FileRetriever
 	private String password;
 	private List<String> identifiers;
 	private String speciesName;
-	private int numThreads = 1;
+	private int numThreads = 4;
 	
 	public BRENDAFileRetriever()
 	{
@@ -52,6 +53,7 @@ public class BRENDAFileRetriever extends FileRetriever
 		Files.createDirectories(Paths.get(this.destination).getParent());
 		logger.info("{} identifiers for species {}", identifiers.size(), speciesName);
 		List<Callable<Boolean>> jobs = Collections.synchronizedList(new ArrayList<Callable<Boolean>>());
+		long startTime = System.currentTimeMillis();
 		identifiers.stream().forEach(uniprotID ->
 		{
 			Callable<Boolean> job = new Callable<Boolean>()
@@ -64,8 +66,8 @@ public class BRENDAFileRetriever extends FileRetriever
 					String result = null;
 					try
 					{
-						int sleepMillis = (requestCounter.incrementAndGet() % numThreads) * (100 + (numThreads * 10) );
-						logger.trace("Sleeping {} millis", sleepMillis);
+						int sleepMillis = (requestCounter.incrementAndGet() % numThreads) * 112; // 125 is best factor so far... 120 might be *slightly* better... 112 seems best so far, faster than 120 but does not trigger re-requests.
+						//logger.trace("Sleeping {} millis", sleepMillis);
 						Thread.sleep(sleepMillis);
 						result = client.callBrendaService(getDataURL().toString(), "getSequence", "organism*"+s+"#firstAccessionCode*"+uniprotID);
 					}
@@ -83,16 +85,12 @@ public class BRENDAFileRetriever extends FileRetriever
 					result = uniprotID + "\t" + result + "\n"; 
 
 					sb.append(result);
-					if (requestCounter.get() % 1000 == 0)
+					if (requestCounter.get() % 1000 == 0 || requestCounter.get() >= identifiers.size())
 					{
-						logger.debug("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
+						long currentTime = System.currentTimeMillis();
+						long elapsed = currentTime - startTime;
+						logger.debug("{} requests sent to BRENDA, {} returned no mapping. {} seconds for {} requests, {} per second.", requestCounter.get(), noMapping.get(), TimeUnit.MILLISECONDS.toSeconds(elapsed), requestCounter.get(), (double)requestCounter.get() / (double)TimeUnit.MILLISECONDS.toSeconds(elapsed));
 					}
-					if (requestCounter.get() >= identifiers.size())
-					{
-						logger.info("{} requests sent to BRENDA, {} returned no mapping.", requestCounter.get(), noMapping.get());
-					}
-	
-					
 					return true;
 				}
 			};
