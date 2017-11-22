@@ -1,6 +1,7 @@
 package org.reactome.addlinks.dataretrieval.brenda;
 
 import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.rmi.RemoteException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,12 +30,12 @@ public class BRENDASoapClient implements CustomLoggable
 		this.password = p;
 	}
 	
-	public String callBrendaService(String endpoint, String operation, String wsArgs) throws MalformedURLException, ServiceException, NoSuchAlgorithmException, RemoteException, Exception
+	public String callBrendaService(String endpoint, String operation, String wsArgs) throws Exception, SocketException
 	{
 		boolean done = false;
 		String resultString = null;
 		int attempts = 0;
-		int maxReAttempts = 3;
+		int maxReAttempts = 10;
 		while (!done)
 		{
 			logger.trace("Calling service operation {} @ {} with arguments: ",operation, endpoint, wsArgs);
@@ -62,7 +63,25 @@ public class BRENDASoapClient implements CustomLoggable
 				call.setTimeout( 30 * 1000 );
 				resultString = (String) call.invoke( new Object[] {parameters} );
 				done = true;
-				
+			}
+			catch (RemoteException e)
+			{
+				if (attempts > maxReAttempts)
+				{
+					logger.error("No more re-attempts allowed. Error occurred while making webservice call: {}", e.getMessage());
+					done = true;
+					e.printStackTrace();
+					throw e;
+				}
+				else
+				{
+					
+					//sleep for up to 10 seconds (+ #attempts * 100), just to give the server some relief.
+					Random r = new Random();
+					long sleepAmt = r.nextInt(10000) + (attempts * 100);
+					logger.warn("Caught a remote exception, retry after {} ms. {} attempts made so far for this thread...", sleepAmt , attempts);
+					Thread.sleep( sleepAmt );
+				}
 			}
 			catch (MalformedURLException e)
 			{
@@ -79,27 +98,11 @@ public class BRENDASoapClient implements CustomLoggable
 				logger.error("Could not generate Digest: {}", e.getMessage());
 				throw e;
 			}
-			catch (RemoteException e)
-			{
-				if (attempts > maxReAttempts)
-				{
-					logger.error("Error occurred while making webservice call: {}", e.getMessage());
-					done = true;
-					e.printStackTrace();
-					throw e;
-				}
-				else
-				{
-					
-					//sleep for up to 5 seconds, just to give the server some relief.
-					Random r = new Random();
-					long sleepAmt = r.nextInt(5000) + 150;
-					logger.info("Caught a remote exception, retry after {} ms. {} attempts made so far for this thread...", sleepAmt , attempts);
-					Thread.sleep( sleepAmt );
-				}
-			}
+			
 			catch (Exception e)
 			{
+				logger.error("Unexpected exception caught: {}",e.getMessage());
+				e.printStackTrace();
 				throw new Exception(e);
 			}
 		}
