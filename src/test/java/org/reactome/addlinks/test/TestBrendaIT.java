@@ -3,6 +3,9 @@ package org.reactome.addlinks.test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +49,30 @@ public class TestBrendaIT
 		brendaRetriever.setSpeciesName("Homo sapiens");
 		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Homo_sapiens.csv"));
 		brendaRetriever.fetchData();
+		assertTrue( Files.size(Paths.get(new URI("file://"+brendaRetriever.getFetchDestination())) ) > 0);
+	}
+	
+	@Test
+	public void testBrendaRetrieverBigList() throws Exception
+	{
+		String speciesName = "Arabidopsis thaliana";
+		String uniProtID = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
+		String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
+		brendaRetriever.setIdentifiers(
+		objectCache.getByRefDbAndSpecies(uniProtID, speciesId, "ReferenceGeneProduct").stream().map( (inst) -> { try
+			{
+				return ((String)inst.getAttributeValue(ReactomeJavaConstants.identifier)) ;
+			} catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}} ).collect(Collectors.toList())
+		);
+		brendaRetriever.setSpeciesName(speciesName);
+		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv","."+speciesName+".csv"));
+		brendaRetriever.fetchData();
+		assertTrue( Files.size(Paths.get(new URI("file://"+brendaRetriever.getFetchDestination())) ) > 0);
 	}
 	
 	@Test
@@ -55,6 +82,7 @@ public class TestBrendaIT
 		brendaRetriever.setSpeciesName("Arabidopsis thaliana");
 		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Arabidopsis_thaliana.csv"));
 		brendaRetriever.fetchData();
+		assertTrue( Files.size(Paths.get(new URI("file://"+brendaRetriever.getFetchDestination())) ) > 0);
 	}
 	
 	@Test
