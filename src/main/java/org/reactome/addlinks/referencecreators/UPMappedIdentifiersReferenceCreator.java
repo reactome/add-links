@@ -99,11 +99,11 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					logger.info("No references to create for species {}", speciesID);
 				}
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
-				Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
+				//Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
 				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
 				{
-					try
+					/*try
 					{
 						// actually, are these adaptors even necessary anymore? I think they were at one time but not now.
 						MySQLAdaptor localAdapter ;
@@ -123,7 +123,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					{
 						e.printStackTrace();
 						throw new Error(e);
-					}
+					}*/
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
 					
@@ -149,6 +149,14 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									}
 									
 									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
+									
+									if (this.targetRefDB.contains("UCSC"))
+									{
+										// UCSC - the target identifier IS the UniProt identifier,
+										// since we are using a UCSC feature which takes in 
+										// UniProt IDs and then redirects the use to the correct page.
+										targetIdentifier = uniprotID;
+									}
 									
 									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier);
 									String thingToCreate = targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID;
@@ -178,7 +186,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					}
 				} );
 				// empty the pool.
-				for (Long k : adapterPool.keySet())
+				/*for (Long k : adapterPool.keySet())
 				{
 					try
 					{
@@ -190,29 +198,33 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						throw new Error(e);
 					}
 				}
-				
+				*/
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 					String[] parts = newIdentifier.split(",");
-					logger.trace("Creating new identifier {} ", parts[0] );
+					String identifierValue = parts[0];
+					logger.trace("Creating new identifier {} ", identifierValue );
 					try
 					{
+						String species = parts[2];
+						String referenceToValue = parts[1];
 						// The string had a species-part.
-						if (parts[2] != null && !parts[2].trim().equals(""))
+						if (species != null && !species.trim().equals(""))
 						{
 							String targetDB = this.targetRefDB;
 							if (this.targetRefDB.contains("KEGG"))
 							{
 								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
-								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, parts[2]);
+								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, species);
 								if (targetDB == null)
 								{
 									targetDB = this.targetRefDB;
 								}
 							}
+							
 							if (!this.testMode)
 							{
-								this.refCreator.createIdentifier(parts[0], parts[1], targetDB, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+								this.refCreator.createIdentifier(identifierValue, referenceToValue, targetDB, personID, this.getClass().getName(), Long.valueOf(species));
 							}
 							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP, Monarch
 							// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
@@ -226,7 +238,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						{
 							if (!this.testMode)
 							{
-								this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+								this.refCreator.createIdentifier(identifierValue, referenceToValue, this.targetRefDB, personID, this.getClass().getName());
 							}
 						}
 					}

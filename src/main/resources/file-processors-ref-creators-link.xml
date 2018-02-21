@@ -40,6 +40,7 @@
 		<entry key="OMIMProcessor" value="upMappedOMIMRefCreator"/>
 		<entry key="UniprotToWormbaseFileProcessor" value="upMappedWormbaseRefCreator"/>
 		<entry key="UniprotToKEGGFileProcessor" value="upMappedKEGGRefCreator" />
+		<entry key="UniprotToUCSCFileProcessor" value="upMappedUCSCRefCreator" />
 		<entry key="zincProtFileProcessor" value="zincToUniProtReferenceCreator" />
 		<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
 		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
