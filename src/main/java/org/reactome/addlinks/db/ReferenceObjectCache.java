@@ -566,8 +566,9 @@ public final class ReferenceObjectCache
 	
 	/**
 	 * Retreive a list of <em>className</em> objects  filtered by Reference Database <em>and</em> Species.
-	 * @param refDb
-	 * @param species
+	 * @param refDb - the Reference Database ID
+	 * @param species - the Species ID
+	 * @param className - The name of the class.
 	 * @return
 	 */
 	public List<GKInstance> getByRefDbAndSpecies(String refDb, String species, String className)
