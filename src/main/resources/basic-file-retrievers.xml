@@ -48,6 +48,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_to_reactome.dat" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/IntActComplexPortal"/>
+				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
 		
@@ -77,9 +78,10 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2017_04.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2017_05.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
+				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
 
@@ -144,11 +146,12 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/RheaRetriever"/>
+				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
 		
 		<entry key="BrendaRetriever">
-			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.BRENDAFileRetriever">
+			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever">
 				<constructor-arg name="retrieverName" value="retrievers/BrendaRetriever"/>
 				<property name="userName" value="${brenda.user}"/>
 				<property name="password" value="${brenda.password}"/>
@@ -165,6 +168,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
+				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
 		
@@ -172,10 +176,11 @@
 			<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="COSMIC">
 				<property name="userName" value="${cosmic.user}"/>
 				<property name="password" value="${cosmic.password}"/>
-				<property name="dataURL" value="sftp://sftp-cancer.sanger.ac.uk:22/files/grch38/cosmic/v81/CosmicMutantExport.tsv.gz" />
+				<property name="dataURL" value="sftp://sftp-cancer.sanger.ac.uk:22/files/grch38/cosmic/v83/CosmicMutantExport.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/COSMIC"/>
+				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
 		<!-- The OMIM file is not used directly for mappings, but it used to filter out non-gene OMIM IDs. -->

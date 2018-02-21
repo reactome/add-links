@@ -3,6 +3,9 @@ package org.reactome.addlinks.test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,8 +17,8 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.schema.InvalidAttributeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever;
-import org.reactome.addlinks.dataretrieval.BRENDAFileRetriever.BRENDASoapClient;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.BRENDAFileProcessor;
 import org.reactome.addlinks.referencecreators.BRENDAReferenceCreator;
@@ -46,6 +49,30 @@ public class TestBrendaIT
 		brendaRetriever.setSpeciesName("Homo sapiens");
 		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Homo_sapiens.csv"));
 		brendaRetriever.fetchData();
+		assertTrue( Files.size(Paths.get(new URI("file://"+brendaRetriever.getFetchDestination())) ) > 0);
+	}
+	
+	@Test
+	public void testBrendaRetrieverBigList() throws Exception
+	{
+		String speciesName = "Arabidopsis thaliana";
+		String uniProtID = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
+		String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
+		brendaRetriever.setIdentifiers(
+		objectCache.getByRefDbAndSpecies(uniProtID, speciesId, "ReferenceGeneProduct").stream().map( (inst) -> { try
+			{
+				return ((String)inst.getAttributeValue(ReactomeJavaConstants.identifier)) ;
+			} catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}} ).collect(Collectors.toList())
+		);
+		brendaRetriever.setSpeciesName(speciesName);
+		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv","."+speciesName+".csv"));
+		brendaRetriever.fetchData();
+		assertTrue( Files.size(Paths.get(new URI("file://"+brendaRetriever.getFetchDestination())) ) > 0);
 	}
 	
 	@Test
@@ -55,6 +82,7 @@ public class TestBrendaIT
 		brendaRetriever.setSpeciesName("Arabidopsis thaliana");
 		brendaRetriever.setFetchDestination(brendaRetriever.getFetchDestination().replace(".csv",".Arabidopsis_thaliana.csv"));
 		brendaRetriever.fetchData();
+		assertTrue( Files.size(Paths.get(new URI("file://"+brendaRetriever.getFetchDestination())) ) > 0);
 	}
 	
 	@Test
@@ -100,7 +128,7 @@ public class TestBrendaIT
 	@Test
 	public void testBrendaReferenceCreatorAllUniProt() throws Exception
 	{
-		BRENDASoapClient client = brendaRetriever.new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
+		BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 		
 		// TODO: Maybe move this out to a BRENDASpeciesCache class. 
 		String speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");

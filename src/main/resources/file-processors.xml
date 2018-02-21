@@ -188,6 +188,12 @@
 			</bean>
 		</entry>
 		
+		<entry key="UniprotToUCSCFileProcessor">
+			<bean id="UniprotToUCSCFileProcessor" class="org.reactome.addlinks.fileprocessors.UniprotFileProcessor" parent="baseUniprotProcessor">
+				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_UCSC*" />
+			</bean>
+		</entry>
+		
 		<entry key="zincProtFileProcessor">
 			<bean id="zincProtFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/zincProtFileProcessor"/>

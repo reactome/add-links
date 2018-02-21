@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 		}
 		else
 		{
-			Map<String,List<String>> submappings = new HashMap<String, List<String>>();
+			Map<String,List<String>> submappings = Collections.synchronizedMap( new HashMap<String, List<String>>() );
 			mapping.put(speciesId, submappings);
 		}
 		logger.debug("Processing file: {}",file.getFileName());
@@ -84,7 +85,7 @@ public class UniprotFileProcessor extends GlobbedFileProcessor<Map<String,List<S
 				}
 				else
 				{
-					List<String> otherIds = new ArrayList<String>();
+					List<String> otherIds = Collections.synchronizedList( new  ArrayList<String>() );
 					otherIds.add(otherId);
 					mapping.get(speciesId).put(uniProtId, otherIds);
 				}
