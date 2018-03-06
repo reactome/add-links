@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.0.1b
+ - Exactly the same as 1.0.1, but the Flybase filename has been updated.
+
 ## 1.0.1
  - Include UCSC
  - Tweaks for BRENDA - it looks like we were sending too many requests at once before. Send fewer requests.
