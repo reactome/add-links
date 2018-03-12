@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -24,8 +25,6 @@ import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //SimpleReferenceCreator< Map<String,List<String>> >
 {
 
-	
-	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
@@ -198,6 +197,12 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					}
 				}
 				*/
+				
+				Function<String, String> generateENSEMBLRefDBName = (String speciesName) ->
+				{
+					return "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase() + "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
+				};
+				
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 					String[] parts = newIdentifier.split(",");
@@ -223,7 +228,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 							else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 							{
 								List<String> speciesNames = objectCache.getSpeciesNamesByID().get(Long.valueOf(species));
-								String speciesName = speciesNames.stream().filter(s -> null!=objectCache.getRefDbNamesToIds().get("ENSEMBL_"+s.replaceAll(" ", "_").toLowerCase()+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE") ) ).findFirst().orElse(null);
+								String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
 								if (speciesName == null)
 								{
 									targetDB = this.targetRefDB;
@@ -232,8 +237,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 								{
 									// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 									// Since we're not mapping to Transcript, we don't need to worry about that here.
-									targetDB = "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase()
-														+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
+									targetDB = generateENSEMBLRefDBName.apply(speciesName);
 								}
 							}
 							
