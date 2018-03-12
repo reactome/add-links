@@ -1,7 +1,6 @@
 package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -212,13 +211,29 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						if (species != null && !species.trim().equals(""))
 						{
 							String targetDB = this.targetRefDB;
-							if (this.targetRefDB.contains("KEGG"))
+							if (this.targetRefDB.toUpperCase().contains("KEGG"))
 							{
 								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
 								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, species);
 								if (targetDB == null)
 								{
 									targetDB = this.targetRefDB;
+								}
+							}
+							else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
+							{
+								List<String> speciesNames = objectCache.getSpeciesNamesByID().get(Long.valueOf(species));
+								String speciesName = speciesNames.stream().filter(s -> null!=objectCache.getRefDbNamesToIds().get("ENSEMBL_"+s.replaceAll(" ", "_").toLowerCase()+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE") ) ).findFirst().orElse(null);
+								if (speciesName == null)
+								{
+									targetDB = this.targetRefDB;
+								}
+								else
+								{
+									// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
+									// Since we're not mapping to Transcript, we don't need to worry about that here.
+									targetDB = "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase()
+														+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
 								}
 							}
 							
