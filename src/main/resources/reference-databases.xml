@@ -99,7 +99,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://flybase.org" />
-				<entry key="AccessURL" value="http://flybase.org/.bin/fbidq.html?###ID###" />
+				<entry key="AccessURL" value="http://flybase.org/reports/###ID###" />
 			</map>
 		</entry>
 		
