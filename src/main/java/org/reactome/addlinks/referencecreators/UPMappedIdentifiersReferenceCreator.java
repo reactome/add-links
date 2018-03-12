@@ -97,31 +97,10 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					logger.info("No references to create for species {}", speciesID);
 				}
 				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
-				//Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
 				
 				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
 				{
-					/*try
-					{
-						// actually, are these adaptors even necessary anymore? I think they were at one time but not now.
-						MySQLAdaptor localAdapter ;
-						long threadID = Thread.currentThread().getId();
-						if (adapterPool.containsKey(threadID))
-						{
-							localAdapter = adapterPool.get(threadID);
-						}
-						else
-						{
-							logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
-							localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
-							adapterPool.put(threadID, localAdapter);
-						}
-					}
-					catch (SQLException e)
-					{
-						e.printStackTrace();
-						throw new Error(e);
-					}*/
+					
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
 					
@@ -183,20 +162,6 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						}
 					}
 				} );
-				// empty the pool.
-				/*for (Long k : adapterPool.keySet())
-				{
-					try
-					{
-						adapterPool.get(k).cleanUp();
-					} 
-					catch (Exception e)
-					{
-						logger.error("Could not clean up the database adapter: {}",e.getMessage());
-						throw new Error(e);
-					}
-				}
-				*/
 				
 				Function<String, String> generateENSEMBLRefDBName = (String speciesName) ->
 				{
@@ -229,15 +194,19 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 							{
 								List<String> speciesNames = objectCache.getSpeciesNamesByID().get(Long.valueOf(species));
 								String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
-								if (speciesName == null)
+								if (speciesName != null)
 								{
-									targetDB = this.targetRefDB;
-								}
-								else
-								{
+									// ENSEMBL species-specific database.
 									// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 									// Since we're not mapping to Transcript, we don't need to worry about that here.
 									targetDB = generateENSEMBLRefDBName.apply(speciesName);
+								}
+								else
+								{
+									// If we can't find an ENSEMBL species-specific database, just use targetRefDB. Not ideal...
+									targetDB = this.targetRefDB;
+									// ...also, let's issue a warning.
+									logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", species, this.targetRefDB);
 								}
 							}
 							
