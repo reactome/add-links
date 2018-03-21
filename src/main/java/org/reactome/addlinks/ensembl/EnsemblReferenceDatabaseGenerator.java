@@ -1,15 +1,21 @@
 package org.reactome.addlinks.ensembl;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -22,8 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /**
  * This class will query ENSEMBL to get a list of supported species,
@@ -39,23 +43,7 @@ public final class EnsemblReferenceDatabaseGenerator
 	private static final Logger logger = LogManager.getLogger();
 	private static ReferenceDatabaseCreator dbCreator;
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
-	private static final String xpathForSpeciesNames = "/opt/data/species/@name";
-	private static XPathExpression pathToSpeciesNames;
 
-
-	static
-	{
-		try
-		{
-			pathToSpeciesNames = XPathFactory.newInstance().newXPath().compile(xpathForSpeciesNames);
-		}
-		catch (XPathExpressionException e)
-		{
-			logger.error("Error in static init creating the xpath expression: {}",e.getMessage());
-			throw new RuntimeException(e);
-		}
-	}
-	
 	/**
 	 * private constructor in a final class: This class is really more of a utility
 	 * class - creating multiple instances of it probably wouldn't make sense. 
@@ -76,23 +64,39 @@ public final class EnsemblReferenceDatabaseGenerator
 			CloseableHttpResponse response = client.execute(get) )
 		{
 			logger.info("Response: {}",response.getStatusLine());
-			//The response will be a big XML string, we need to extract all /opt/data/species/@name from it.
+
 			String s = EntityUtils.toString(response.getEntity());
 			InputStream inStream = new ByteArrayInputStream(s.getBytes());
-			InputSource source = new InputSource(inStream);
-			NodeList nodeList = (NodeList) EnsemblReferenceDatabaseGenerator.pathToSpeciesNames.evaluate(source, XPathConstants.NODESET);
-			if (nodeList.getLength() > 0)
-			{
-				logger.info("{} ENSEMBL species to attempt to create refDBs for.",nodeList.getLength());
-				for (int i = 0 ; i < nodeList.getLength() ; i ++)
-				{
-					String speciesName = nodeList.item(i).getTextContent();
-					
-					//Now that we have a species name, we can create a species-specific ReferenceDatabase.
-					createReferenceDatabase(objectCache, speciesName);
-				}
-			}
 			
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Source xsl = new StreamSource(new File("resources/ensembl-species-transform.xsl"));
+			Templates template = factory.newTemplates(xsl);
+			Transformer transformer = template.newTransformer();
+			Source xml = new StreamSource(inStream);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			Result result = new StreamResult(outputStream);
+			transformer.transform(xml, result);
+			
+			
+			String[] lines = outputStream.toString().split("\n");
+			// for each line, create a database for the proper name and all aliases. Except the numeric sequences.
+			// So what if you create a lot of database references? Most will be cleaned up afterwards anyway...
+			for (String line : lines)
+			{
+				// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
+				String[] parts = line.split(" : ");
+				String speciesName = parts[0].trim();
+				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
+				if (parts.length > 1)
+				{
+					String[] speciesNameAliases = parts[1].split(" , ");
+					for (String alias : speciesNameAliases)
+					{
+						EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, alias.trim());
+					}
+				}
+			
+			}
 		}
 	}
 
