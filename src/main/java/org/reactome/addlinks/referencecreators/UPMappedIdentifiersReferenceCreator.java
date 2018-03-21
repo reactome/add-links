@@ -25,6 +25,8 @@ import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //SimpleReferenceCreator< Map<String,List<String>> >
 {
 
+	ReferenceObjectCache refObjectCache = new ReferenceObjectCache(this.adapter, true);
+	
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
@@ -51,7 +53,6 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 	@Override
 	public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
-		ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter, true);
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
@@ -184,7 +185,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 							if (this.targetRefDB.toUpperCase().contains("KEGG"))
 							{
 								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
-								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, species);
+								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, species);
 								if (targetDB == null)
 								{
 									targetDB = this.targetRefDB;
@@ -192,18 +193,33 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 							}
 							else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 							{
-								List<String> speciesNames = objectCache.getSpeciesNamesByID().get(Long.valueOf(species));
+								List<String> speciesNames = this.refObjectCache.getSpeciesNamesByID().get(species);
 								String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
 								if (speciesName != null)
 								{
+									//special case for hamsters - ENSEMBL doesn't have an *exact*
+									//match for Cricetulus griseus, but "cricetulus_griseus_crigri"
+									//is what should be used.
+									if (speciesName.equals("Cricetulus griseus")) {
+										speciesName = "cricetulus_griseus_crigri";
+									}
+									
 									// ENSEMBL species-specific database.
 									// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 									// Since we're not mapping to Transcript, we don't need to worry about that here.
 									targetDB = generateENSEMBLRefDBName.apply(speciesName);
+									// Ok, now let's check that that the db we want actually exists
+									if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
+										|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
+									{
+										logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
+										throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
+									}
 								}
 								else
 								{
-									// If we can't find an ENSEMBL species-specific database, just use targetRefDB. Not ideal...
+									// If we couldn't generate a potential database name from the species code, just use the targetRefDB.
+									// Not ideal, but what else can you do here?
 									targetDB = this.targetRefDB;
 									// ...also, let's issue a warning.
 									logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", species, this.targetRefDB);
