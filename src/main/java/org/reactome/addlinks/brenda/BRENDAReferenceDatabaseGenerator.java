@@ -32,9 +32,18 @@ public final class BRENDAReferenceDatabaseGenerator
 	 * @param speciesName
 	 * @throws Exception 
 	 */
-	public void createReferenceDatabase(String speciesName) throws Exception
+	public static void createReferenceDatabase(String speciesName)
 	{
-		 BRENDAReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(BRENDA_URL, accessURL.replace("###SP###", speciesName), "BRENDA ("+speciesName+")");
+		// The whitespace in the species name needs to be replaced with a "+" for BRENDA.
+		try
+		{
+			BRENDAReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(BRENDA_URL, accessURL.replace("###SP###", speciesName.replace(" ", "+")), "BRENDA ("+speciesName+")");
+		}
+		catch (Exception e)
+		{
+			logger.error("Error ({}) occurred while creating BRENDA ReferenceDatabase for species {}", e.getMessage(), speciesName);
+			e.printStackTrace();
+		}
 	}
 	
 }

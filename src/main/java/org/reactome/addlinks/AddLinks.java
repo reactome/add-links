@@ -35,6 +35,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.brenda.BRENDAReferenceDatabaseGenerator;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
@@ -402,11 +403,15 @@ public class AddLinks
 			logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getListOfSpeciesNames().size());
 			List<String> identifiers = new ArrayList<String>();
 			String originalDestination = brendaRetriever.getFetchDestination();
+			ReferenceDatabaseCreator refDBcreator = new ReferenceDatabaseCreator(dbAdapter);
+			BRENDAReferenceDatabaseGenerator.setDBCreator(refDBcreator);
 			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 			{
 				String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
 				if (brendaSpecies.contains(speciesName.trim().toUpperCase()))
 				{
+					// Create the BRENDA ReferenceDatabase now that we know we've got a legit species name we can use.
+					BRENDAReferenceDatabaseGenerator.createReferenceDatabase(speciesName);
 					List<String> uniprotIdentifiers = objectCache.getByRefDbAndSpecies("2", speciesId, ReactomeJavaConstants.ReferenceGeneProduct).stream().map(instance -> {
 						try
 						{
