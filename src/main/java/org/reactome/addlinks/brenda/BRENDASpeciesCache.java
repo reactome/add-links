@@ -27,11 +27,22 @@ public final class BRENDASpeciesCache
 		//private constructor to prevent instantiation.
 	}
 	
+	/**
+	 * Gets a list of species names that are known to both BRENDA and Reactome.
+	 * @return
+	 */
 	public static List<String> getCache()
 	{
 		return BRENDASpeciesCache.brendaSpeciesCache;
 	}
 	
+	/**
+	 * Build a cache of species names.
+	 * @param client - BRENDASoapClient object to connect to the BRENDA web service.
+	 * @param speciesURL - The URL to query.
+	 * @param objectCache
+	 * @param dbAdapter
+	 */
 	public static void buildCache(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter)
 	{
 		BRENDASpeciesCache.brendaSpeciesCache = new ArrayList<String>();
@@ -56,8 +67,7 @@ public final class BRENDASpeciesCache
 		//Normalize the list.
 		List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
 		logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getListOfSpeciesNames().size());
-		//List<String> identifiers = new ArrayList<String>();
-		//String originalDestination = brendaRetriever.getFetchDestination();
+
 		ReferenceDatabaseCreator refDBcreator = new ReferenceDatabaseCreator(dbAdapter);
 		BRENDAReferenceDatabaseGenerator.setDBCreator(refDBcreator);
 		for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
