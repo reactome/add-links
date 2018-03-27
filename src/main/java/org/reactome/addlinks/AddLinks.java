@@ -272,7 +272,11 @@ public class AddLinks
 			int numLinkNotOK = 0;
 			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
 			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
-			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName()))
+			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
+					|| (refDBInst.getDisplayName().contains("ENSEMBL") && LinksToCheckCache.getRefDBsToCheck().contains("ENSEMBL"))
+					|| (refDBInst.getDisplayName().contains("Brenda") && LinksToCheckCache.getRefDBsToCheck().contains("Brenda"))
+					|| (refDBInst.getDisplayName().contains("KEGG") && LinksToCheckCache.getRefDBsToCheck().contains("KEGG"))
+				)
 			{
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
 				{
