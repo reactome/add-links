@@ -2,7 +2,10 @@ package org.reactome.addlinks.brenda;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gk.persistence.MySQLAdaptor;
+import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 
 public final class BRENDAReferenceDatabaseGenerator
 {
@@ -25,6 +28,14 @@ public final class BRENDAReferenceDatabaseGenerator
 		BRENDAReferenceDatabaseGenerator.dbCreator = creator;
 	}
 	
+	public static void createReferenceDatabases(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter)
+	{
+		BRENDASpeciesCache.buildCache(client, speciesURL, objectCache, dbAdapter);
+		for (String speciesName : BRENDASpeciesCache.getCache())
+		{
+			BRENDAReferenceDatabaseGenerator.createReferenceDatabase(speciesName);
+		}
+	}
 	
 	/**
 	 * Creates a BRENDA species-specific ReferenceDatabase object for a given species name. You should ensure that you only uses species
@@ -32,7 +43,7 @@ public final class BRENDAReferenceDatabaseGenerator
 	 * @param speciesName
 	 * @throws Exception 
 	 */
-	public static void createReferenceDatabase(String speciesName)
+	protected static void createReferenceDatabase(String speciesName)
 	{
 		// The whitespace in the species name needs to be replaced with a "+" for BRENDA.
 		try
