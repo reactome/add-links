@@ -52,17 +52,14 @@ public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 			}
 			if (speciesID != null)
 			{
+				// Find the species name based on the species ID.
 				String speciesNameForBrenda = referenceObjectCache.getSpeciesNamesByID().get(String.valueOf(speciesID))
 																	.stream()
 																	.filter( speciesName -> brendaDBNames.stream().anyMatch( brendaName -> brendaName.toUpperCase().contains(speciesName.toUpperCase()) ) )
 																	.findFirst().orElse("");
-				
+				// Find the species-specific BREDNA ReferenceDatabase.
 				speciesSpecificTargetRefDB = brendaDBNames.stream().filter(dbName -> dbName.contains(speciesNameForBrenda)).findFirst().orElse("");
 				
-//				speciesSpecificTargetRefDB = referenceObjectCache.getRefDbNamesToIds().get(
-//													brendaDBNames
-//														.stream()
-//														.filter( brendaDBName -> brendaDBName.contains(speciesNameForBrenda) ).findFirst().orElse("")).get(0);
 			}
 			if (mapping.containsKey(sourceReferenceIdentifier))
 			{

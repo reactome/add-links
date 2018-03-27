@@ -2,12 +2,9 @@ package org.reactome.addlinks;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,8 +23,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import javax.xml.rpc.ServiceException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -375,42 +370,7 @@ public class AddLinks
 	private void executeBrendaFileRetriever()
 	{
 		BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
-		//BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
-		
-		///////////////////////////////////////////////
-		// TODO: Maybe move this out to a BRENDASpeciesCache class.
-		/*String speciesResult;
-		try
-		{
-			speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
-			logger.info("size of result (# characters): {}", speciesResult.length());
-		}
-		catch (MalformedURLException | NoSuchAlgorithmException | RemoteException |ServiceException e)
-		{
-			logger.error("Exception caught while trying to get BRENDA species list: {}",e.getMessage());
-			e.printStackTrace();
-			throw new Error(e);
-		}
-		catch (Exception e)
-		{
-			logger.error("Exception caught while trying to get BRENDA species list: {}",e.getMessage());
-			e.printStackTrace();
-			throw new Error(e);
-		}
-		//Normalize the list.
-		List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
-		logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getListOfSpeciesNames().size());
-		ReferenceDatabaseCreator refDBcreator = new ReferenceDatabaseCreator(dbAdapter);
-		BRENDAReferenceDatabaseGenerator.setDBCreator(refDBcreator);
-		for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
-		{
-			if (brendaSpecies.contains(speciesName.trim().toUpperCase()))
-			{
-				// Create the BRENDA ReferenceDatabase now that we know we've got a legit species name we can use.
-				BRENDAReferenceDatabaseGenerator.createReferenceDatabase(speciesName);
-			}
-		}*/
-		///////////////////////////////////////////////
+
 		List<String> identifiers = new ArrayList<String>();
 		String originalDestination = brendaRetriever.getFetchDestination();
 

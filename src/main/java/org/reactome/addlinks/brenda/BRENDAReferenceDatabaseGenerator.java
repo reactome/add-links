@@ -28,9 +28,18 @@ public final class BRENDAReferenceDatabaseGenerator
 		BRENDAReferenceDatabaseGenerator.dbCreator = creator;
 	}
 	
+	/**
+	 * Create species-specific reference databases for use with BRENDA. To do this, you will need to make a web-service 
+	 * call to BRENDA to get their species list.
+	 * @param client - WebService client, for communicating with BRENDA.
+	 * @param speciesURL - Webservice endpoint for getting the BRENDA species list.
+	 * @param objectCache
+	 * @param dbAdapter
+	 */
 	public static void createReferenceDatabases(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter)
 	{
 		BRENDASpeciesCache.buildCache(client, speciesURL, objectCache, dbAdapter);
+		// Now that the cache exists, loop through it and create a ReferenceDatabase object for each cached species name.
 		for (String speciesName : BRENDASpeciesCache.getCache())
 		{
 			BRENDAReferenceDatabaseGenerator.createReferenceDatabase(speciesName);
