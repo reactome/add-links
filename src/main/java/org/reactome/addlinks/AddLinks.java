@@ -260,7 +260,7 @@ public class AddLinks
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
-		
+		logger.info("Now checking links.");
 		
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
@@ -273,9 +273,9 @@ public class AddLinks
 			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
 			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
 			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
-					|| (refDBInst.getDisplayName().contains("ENSEMBL") && LinksToCheckCache.getRefDBsToCheck().contains("ENSEMBL"))
-					|| (refDBInst.getDisplayName().contains("Brenda") && LinksToCheckCache.getRefDBsToCheck().contains("Brenda"))
-					|| (refDBInst.getDisplayName().contains("KEGG") && LinksToCheckCache.getRefDBsToCheck().contains("KEGG"))
+					|| (refDBInst.getDisplayName().toUpperCase().contains("ENSEMBL") && LinksToCheckCache.getRefDBsToCheck().contains("ENSEMBL"))
+					|| (refDBInst.getDisplayName().toUpperCase().contains("BRENDA") && LinksToCheckCache.getRefDBsToCheck().contains("Brenda"))
+					|| (refDBInst.getDisplayName().toUpperCase().contains("KEGG") && LinksToCheckCache.getRefDBsToCheck().contains("KEGG"))
 				)
 			{
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
