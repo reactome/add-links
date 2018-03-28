@@ -78,7 +78,8 @@ public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 						{
 							logger.trace("\tNeed to create a new identifier!");
 							totalNumberNewIdentifiers.incrementAndGet();
-							thingsToCreate.add(ecNumber + ";" + String.valueOf(instance.getDBID()) + ";" + speciesSpecificTargetRefDB + ";" + personID + ";" + this.getClass().getName() + ";" + speciesID);
+							String thingToCreate = ecNumber + ";" + String.valueOf(instance.getDBID()) + ";" + speciesSpecificTargetRefDB + ";" + personID + ";" + this.getClass().getName() + ";" + speciesID;
+							thingsToCreate.add(thingToCreate);
 						}
 						else
 						{
