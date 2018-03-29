@@ -57,6 +57,11 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
 
+		Function<String, String> generateENSEMBLRefDBName = (String speciesName) ->
+		{
+			return "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase() + "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
+		};
+		
 		// First, we need a map of sourceReferences.
 		Map<String, List<GKInstance>> sourceRefMap = Collections.synchronizedMap(new HashMap<String, List<GKInstance>>(sourceReferences.size()));
 		
@@ -85,7 +90,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			}
 		});
 		
-		if (mappings.keySet().size() > 0)
+		if (mappings != null && mappings.keySet() != null && mappings.keySet().size() > 0)
 		{
 			for (String speciesID : mappings.keySet())
 			{
@@ -136,14 +141,61 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 										targetIdentifier = uniprotID;
 									}
 									
+
+									// TODO: fix species-specific TargetRefDB....
+									String targetDB = this.targetRefDB;
+									if (this.targetRefDB.toUpperCase().contains("KEGG"))
+									{
+										// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
+										targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, speciesID);
+										if (targetDB == null)
+										{
+											targetDB = this.targetRefDB;
+										}
+									}
+									else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
+									{
+										List<String> speciesNames = this.refObjectCache.getSpeciesNamesByID().get(speciesID);
+										String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
+										if (speciesName != null)
+										{
+											//special case for hamsters - ENSEMBL doesn't have an *exact*
+											//match for Cricetulus griseus, but "cricetulus_griseus_crigri"
+											//is what should be used.
+											if (speciesName.equals("Cricetulus griseus")) {
+												speciesName = "cricetulus_griseus_crigri";
+											}
+											
+											// ENSEMBL species-specific database.
+											// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
+											// Since we're not mapping to Transcript, we don't need to worry about that here.
+											targetDB = generateENSEMBLRefDBName.apply(speciesName);
+											// Ok, now let's check that that the db we want actually exists
+											if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
+												|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
+											{
+												logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
+												throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
+											}
+										}
+										else
+										{
+											// If we couldn't generate a potential database name from the species code, just use the targetRefDB.
+											// Not ideal, but what else can you do here?
+											targetDB = this.targetRefDB;
+											// ...also, let's issue a warning.
+											logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", speciesID, this.targetRefDB);
+										}
+									}
+									
 									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier);
-									String thingToCreate = targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID;
+									String thingToCreate = targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID+","+targetDB;
 									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
 									{
 										if (!this.testMode)
 										{
 											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
-											thingsToCreate.add(targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID);
+											thingsToCreate.add(thingToCreate);
 										}
 										createdCounter.getAndIncrement();
 										
@@ -164,15 +216,16 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					}
 				} );
 				
-				Function<String, String> generateENSEMBLRefDBName = (String speciesName) ->
-				{
-					return "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase() + "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
-				};
+//				Function<String, String> generateENSEMBLRefDBName = (String speciesName) ->
+//				{
+//					return "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase() + "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
+//				};
 				
 				// Go through the list of references that need to be created, and create them!
 				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 					String[] parts = newIdentifier.split(",");
 					String identifierValue = parts[0];
+					String targetDB = parts[3];
 					logger.trace("Creating new identifier {} ", identifierValue );
 					try
 					{
@@ -181,50 +234,50 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						// The string had a species-part.
 						if (species != null && !species.trim().equals(""))
 						{
-							String targetDB = this.targetRefDB;
-							if (this.targetRefDB.toUpperCase().contains("KEGG"))
-							{
-								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
-								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, species);
-								if (targetDB == null)
-								{
-									targetDB = this.targetRefDB;
-								}
-							}
-							else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
-							{
-								List<String> speciesNames = this.refObjectCache.getSpeciesNamesByID().get(species);
-								String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
-								if (speciesName != null)
-								{
-									//special case for hamsters - ENSEMBL doesn't have an *exact*
-									//match for Cricetulus griseus, but "cricetulus_griseus_crigri"
-									//is what should be used.
-									if (speciesName.equals("Cricetulus griseus")) {
-										speciesName = "cricetulus_griseus_crigri";
-									}
-									
-									// ENSEMBL species-specific database.
-									// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
-									// Since we're not mapping to Transcript, we don't need to worry about that here.
-									targetDB = generateENSEMBLRefDBName.apply(speciesName);
-									// Ok, now let's check that that the db we want actually exists
-									if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
-										|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
-									{
-										logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
-										throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
-									}
-								}
-								else
-								{
-									// If we couldn't generate a potential database name from the species code, just use the targetRefDB.
-									// Not ideal, but what else can you do here?
-									targetDB = this.targetRefDB;
-									// ...also, let's issue a warning.
-									logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", species, this.targetRefDB);
-								}
-							}
+//							String targetDB = this.targetRefDB;
+//							if (this.targetRefDB.toUpperCase().contains("KEGG"))
+//							{
+//								// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
+//								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, species);
+//								if (targetDB == null)
+//								{
+//									targetDB = this.targetRefDB;
+//								}
+//							}
+//							else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
+//							{
+//								List<String> speciesNames = this.refObjectCache.getSpeciesNamesByID().get(species);
+//								String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
+//								if (speciesName != null)
+//								{
+//									//special case for hamsters - ENSEMBL doesn't have an *exact*
+//									//match for Cricetulus griseus, but "cricetulus_griseus_crigri"
+//									//is what should be used.
+//									if (speciesName.equals("Cricetulus griseus")) {
+//										speciesName = "cricetulus_griseus_crigri";
+//									}
+//									
+//									// ENSEMBL species-specific database.
+//									// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
+//									// Since we're not mapping to Transcript, we don't need to worry about that here.
+//									targetDB = generateENSEMBLRefDBName.apply(speciesName);
+//									// Ok, now let's check that that the db we want actually exists
+//									if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
+//										|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
+//									{
+//										logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
+//										throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
+//									}
+//								}
+//								else
+//								{
+//									// If we couldn't generate a potential database name from the species code, just use the targetRefDB.
+//									// Not ideal, but what else can you do here?
+//									targetDB = this.targetRefDB;
+//									// ...also, let's issue a warning.
+//									logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", species, this.targetRefDB);
+//								}
+//							}
 							
 							if (!this.testMode)
 							{
