@@ -73,7 +73,7 @@ public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 					{
 						logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, speciesSpecificTargetRefDB, ecNumber);
 						// Look for cross-references.
-						boolean xrefAlreadyExists = checkXRefExists(instance, ecNumber);
+						boolean xrefAlreadyExists = checkXRefExists(instance, ecNumber, speciesSpecificTargetRefDB);
 						if (!xrefAlreadyExists)
 						{
 							logger.trace("\tNeed to create a new identifier!");
@@ -126,5 +126,7 @@ public class BRENDAReferenceCreator extends SimpleReferenceCreator<List<String>>
 				this.sourceRefDB, this.targetRefDB, sourceIdentifiersWithExistingIdentifier.get(),
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping.get());
 	}
+
+
 	
 }
