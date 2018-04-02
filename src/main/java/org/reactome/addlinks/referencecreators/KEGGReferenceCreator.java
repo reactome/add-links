@@ -33,7 +33,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 		int sourceIdentifiersWithNoMapping = 0;
 		int sourceIdentifiersWithNewIdentifier = 0;
 		int sourceIdentifiersWithExistingIdentifier = 0;
-
+		// TODO: rewrite the Reference Creator to process sourceReferences in parallel and then build a list of thingsToCreate, which will be inserted serially.
 		for (GKInstance sourceReference : sourceReferences)
 		{
 			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
@@ -114,6 +114,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						}
 						Map<String,List<String>> extraAttributes = new HashMap<String,List<String>>(1);
 						extraAttributes.put(ReactomeJavaConstants.name, names);
+						logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
 						if (!this.testMode)
 						{
 							String targetDB = this.targetRefDB;
