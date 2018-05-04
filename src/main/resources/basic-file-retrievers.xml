@@ -78,7 +78,7 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2018_01.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2018_02.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="passiveFTP" value="false" />
@@ -123,8 +123,8 @@
 
 		<entry key="Zinc">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="Zinc">
-				<property name="dataURL" value="http://files.docking.org/catalogs/1/chebi/chebi.info.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi.info.txt" />
+				<property name="dataURL" value="http://files.docking.org/catalogs/1/chebi/chebi.info.txt.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi.info.txt.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/Zinc"/>
 			</bean>

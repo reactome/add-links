@@ -2,12 +2,9 @@ package org.reactome.addlinks;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -27,14 +24,14 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.xml.rpc.ServiceException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.brenda.BRENDAReferenceDatabaseGenerator;
+import org.reactome.addlinks.brenda.BRENDASpeciesCache;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
@@ -263,7 +260,7 @@ public class AddLinks
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
-		
+		logger.info("Now checking links.");
 		
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
@@ -275,7 +272,11 @@ public class AddLinks
 			int numLinkNotOK = 0;
 			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
 			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
-			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName()))
+			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
+					|| (refDBInst.getDisplayName().toUpperCase().contains("ENSEMBL") && LinksToCheckCache.getRefDBsToCheck().contains("ENSEMBL"))
+					|| (refDBInst.getDisplayName().toUpperCase().contains("BRENDA") && LinksToCheckCache.getRefDBsToCheck().contains("Brenda"))
+					|| (refDBInst.getDisplayName().toUpperCase().contains("KEGG") && LinksToCheckCache.getRefDBsToCheck().contains("KEGG"))
+				)
 			{
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
 				{
@@ -372,40 +373,19 @@ public class AddLinks
 	
 	private void executeBrendaFileRetriever()
 	{
+		BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
+
+		List<String> identifiers = new ArrayList<String>();
+		String originalDestination = brendaRetriever.getFetchDestination();
+
 		if (this.fileRetrieverFilter.contains("BrendaRetriever"))
 		{
 			logger.info("Executing BRENDA file retrievers");
-			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
-			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
 			
-			// TODO: Maybe move this out to a BRENDASpeciesCache class. 
-			String speciesResult;
-			try
-			{
-				speciesResult = client.callBrendaService(brendaRetriever.getDataURL().toString(), "getOrganismsFromOrganism", "");
-				logger.info("size of result (# characters): {}", speciesResult.length());
-			}
-			catch (MalformedURLException | NoSuchAlgorithmException | RemoteException |ServiceException e)
-			{
-				logger.error("Exception caught while trying to get BRENDA species list: {}",e.getMessage());
-				e.printStackTrace();
-				throw new Error(e);
-			}
-			catch (Exception e)
-			{
-				logger.error("Exception caught while trying to get BRENDA species list: {}",e.getMessage());
-				e.printStackTrace();
-				throw new Error(e);
-			}
-			//Normalize the list.
-			List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
-			logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getListOfSpeciesNames().size());
-			List<String> identifiers = new ArrayList<String>();
-			String originalDestination = brendaRetriever.getFetchDestination();
 			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 			{
 				String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
-				if (brendaSpecies.contains(speciesName.trim().toUpperCase()))
+				if (BRENDASpeciesCache.getCache().contains(speciesName.trim().toUpperCase()))
 				{
 					List<String> uniprotIdentifiers = objectCache.getByRefDbAndSpecies("2", speciesId, ReactomeJavaConstants.ReferenceGeneProduct).stream().map(instance -> {
 						try
@@ -868,10 +848,14 @@ public class AddLinks
 		}
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 		KEGGReferenceDatabaseGenerator.setDBCreator(creator);
+		BRENDAReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
 			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
+			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
+			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
+			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), objectCache, dbAdapter);
 		}
 		catch (Exception e)
 		{

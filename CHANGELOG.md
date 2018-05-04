@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.2
+ - Changes for species-specific BRENDA databases.
+ - Fixed bugs for species-specific ENSEMBL databases.
+ - Link checker should now log to its own files.
+ - ...and updated Flybase file URL, of course ;)
+
 ## 1.0.1b
  - Exactly the same as 1.0.1, but the Flybase filename has been updated.
 
