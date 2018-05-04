@@ -10,18 +10,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.conn.HttpHostConnectException;
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
+import org.reactome.addlinks.CustomLoggable;
 
 
-public class LinkCheckManager
+public class LinkCheckManager implements CustomLoggable
 {
 
-	private static final Logger logger = LogManager.getLogger();
+	private static Logger logger ;
 	private MySQLAdaptor dbAdaptor;
+	
+	public LinkCheckManager()
+	{
+		if (LinkCheckManager.logger  == null)
+		{
+			LinkCheckManager.logger = this.createLogger("LinkCheckManager", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+		}
+	}
 	
 	public void setDbAdaptor(MySQLAdaptor adaptor)
 	{

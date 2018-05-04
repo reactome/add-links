@@ -45,7 +45,11 @@ public class BRENDAFileProcessor extends GlobbedFileProcessor<List<String>>
 						
 						if (mappings.containsKey(uniProtID))
 						{
-							mappings.get(uniProtID).add(ecNumber);
+							// Avoid duplicates - only add ecNumber to the list for uniProtID if it's not already there.
+							if (!mappings.get(uniProtID).contains(ecNumber))
+							{
+								mappings.get(uniProtID).add(ecNumber);
+							}
 						}
 						else
 						{

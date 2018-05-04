@@ -16,13 +16,14 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.reactome.addlinks.CustomLoggable;
 
-public class LinkChecker
+public class LinkChecker implements CustomLoggable
 {
 
-	private static final Logger logger = LogManager.getLogger();
+	private static Logger logger; 
 	
 	private String keyword;
 	private URI uri;
@@ -34,12 +35,21 @@ public class LinkChecker
 	{
 		this.uri = uri;
 		this.keyword = keyword;
+		if (LinkChecker.logger == null)
+		{
+			LinkChecker.logger = this.createLogger("LinkChecker", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+		}
 	}
 	
 	public LinkChecker(CheckableLink link)
 	{
-		this.uri = link.getURI();
-		this.keyword = link.getSearchKeyword();
+		this(link.getURI(), link.getSearchKeyword());
+//		this.uri = link.getURI();
+//		this.keyword = link.getSearchKeyword();
+//		if (LinkChecker.logger == null)
+//		{
+//			LinkChecker.logger = this.createLogger("LinkChecker", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, logger, "Link Checker");
+//		}
 	}
 	
 	/**
