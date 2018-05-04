@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -155,34 +156,42 @@ public class ReferenceCreator
 				// then re-added.
 				for (GKInstance identifier : identifiers)
 				{
-					// If a preexisting instance has the identifier ${identifierValue}, we need to see what it is referred to by. 
-					// If they are the same as referenceToValue then the xref should be deleted and re-inserted. 
-					@SuppressWarnings("unchecked")
-					Map<SchemaAttribute, Collection<GKInstance>> referers = (Map<SchemaAttribute, Collection<GKInstance>>)identifier.getReferers();
-
-					for (SchemaAttribute key : referers.keySet())
+					if (identifier != null)
 					{
-						List<GKInstance> referersByAttrib = (List<GKInstance>) referers.get(key);
-						for (GKInstance inst : referersByAttrib)
+						// If a preexisting instance has the identifier ${identifierValue}, we need to see what it is referred to by. 
+						// If they are the same as referenceToValue then the xref should be deleted and re-inserted. 
+						@SuppressWarnings("unchecked")
+						Map<SchemaAttribute, Collection<GKInstance>> referers = (Map<SchemaAttribute, Collection<GKInstance>>)identifier.getReferers();
+	
+						for (SchemaAttribute key : referers.keySet())
 						{
-							// We found an instance in the database that has the same Identifier as what this function was asked to create AND that instance
-							// is *already* referred to by the same DB_ID this function was using for source object...
-							// it means we need to delete that instance and re-create it.
-							if (inst.getDBID() == Long.valueOf(referenceToValue))
+							List<GKInstance> referersByAttrib = (List<GKInstance>) referers.get(key);
+							for (GKInstance inst : referersByAttrib)
 							{
-								logger.warn( "Identifier {} already existed (and has DB_ID {}), *and* was referred to by {}, but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID), referenceToValue);
-								try
+								// We found an instance in the database that has the same Identifier as what this function was asked to create AND that instance
+								// is *already* referred to by the same DB_ID this function was using for source object...
+								// it means we need to delete that instance and re-create it.
+								if (inst.getDBID() == Long.valueOf(referenceToValue))
 								{
-									needToDeleteIdentifier = true;
-									this.dbAdapter.deleteInstance(identifier);
-								}
-								catch (Exception e)
-								{
-									e.printStackTrace();
-									throw e;
+									logger.warn( "Identifier {} already existed (and has DB_ID {}), *and* was referred to by {}, but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID), referenceToValue);
+									try
+									{
+										needToDeleteIdentifier = true;
+										this.dbAdapter.deleteInstance(identifier);
+									}
+									catch (Exception e)
+									{
+										e.printStackTrace();
+										throw e;
+									}
 								}
 							}
 						}
+					}
+					else
+					{
+						logger.error("The GKInstance for the Identifier was NULL. That should not happen, you should probably investigate this deeper. Some debug info: identifierValue: {}; referenceToValue: {}; refDB: {}; creatorName: {}; speciesID: {}; class queried: {}", identifierValue, referenceToValue, refDB, creatorName, speciesID, this.schemaClass.getName());
+						logger.error("The identifiers list contains {} elements, and {} were NULL.", identifiers.size(), identifiers.stream().filter(p -> p == null).count());
 					}
 				}
 				if (!needToDeleteIdentifier)
@@ -309,6 +318,7 @@ public class ReferenceCreator
 		}
 		catch (Exception e)
 		{
+			logger.catching(Level.ERROR, e);
 			e.printStackTrace();
 			throw e;
 		}

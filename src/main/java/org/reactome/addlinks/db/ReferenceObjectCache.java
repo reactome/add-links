@@ -258,14 +258,24 @@ public final class ReferenceObjectCache
 					if (referenceObject.getAttributeValue(ReactomeJavaConstants.identifier) != null)
 					{
 						String identifier = (String) referenceObject.getAttributeValue(ReactomeJavaConstants.identifier);
-						if (!objectCacheByIdentifier.containsKey(identifier))
+						try
 						{
-							objectCacheByIdentifier.put(identifier, new ArrayList<GKInstance>(Arrays.asList(referenceObject)));
+							if (!objectCacheByIdentifier.containsKey(identifier))
+							{
+								objectCacheByIdentifier.put(identifier, Collections.synchronizedList(new ArrayList<GKInstance>(Arrays.asList(referenceObject))) );
+							}
+							else
+							{
+								objectCacheByIdentifier.get(identifier).add(referenceObject);
+							}
 						}
-						else
+						catch (ArrayIndexOutOfBoundsException e)
 						{
-							objectCacheByIdentifier.get(identifier).add(referenceObject);
+							logger.error("ArrayIndexOutOfBounds was caught! Identifier that triggered this was: {}; className: {}; objectCacheByIdentifier has {} items; objectCacheByIdentifier[identifier] has {} items", identifier, className, objectCacheByIdentifier.size(), objectCacheByIdentifier.containsKey(identifier) ? objectCacheByIdentifier.get(identifier).size() : " *THAT IDENTIFIER IS NOT IN THAT MAP!* ");
+							e.printStackTrace();
+							throw new Error(e);
 						}
+
 					}
 				}
 				catch (InvalidAttributeException e)

@@ -37,6 +37,10 @@ public class KEGGReferenceDatabaseGenerator
 
 	}
 	
+	/**
+	 * Generate new species-specific KEGG reference databases. The new database will be named in the form "KEGG Gene (${SPECIES_NAME})". 
+	 * @param objectCache - The object cache. The list of species in this cache will be what the new reference databases are based on.
+	 */
 	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) 
 	{
 		for (String speciesName : objectCache.getSpeciesNamesToIds().keySet())
@@ -64,6 +68,12 @@ public class KEGGReferenceDatabaseGenerator
 		}
 	}
 	
+	/**
+	 * Generate a KEGG reference database name.
+	 * @param objectCache
+	 * @param speciesID
+	 * @return A string of the form "KEGG Gene (${SPECIES_NAME})"
+	 */
 	public static String generateKeggDBName(ReferenceObjectCache objectCache, String speciesID)
 	{
 		String targetDB = null;
