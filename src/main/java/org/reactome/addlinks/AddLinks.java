@@ -385,7 +385,7 @@ public class AddLinks
 			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 			{
 				String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
-				if (BRENDASpeciesCache.getCache().contains(speciesName.trim().toUpperCase()))
+				if (BRENDASpeciesCache.getCache().contains(speciesName.trim()))
 				{
 					List<String> uniprotIdentifiers = objectCache.getByRefDbAndSpecies("2", speciesId, ReactomeJavaConstants.ReferenceGeneProduct).stream().map(instance -> {
 						try

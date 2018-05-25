@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.0.3
+ - Integrated a fix for BRENDA species-specific databases.
+
 ## 1.0.2
  - Changes for species-specific BRENDA databases.
  - Fixed bugs for species-specific ENSEMBL databases.
