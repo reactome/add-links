@@ -107,13 +107,14 @@ public class ReferenceDatabaseCreator
 	 * @param names - A list of names for this ReferenceDatabase. If *none* of these values are already in the database, then a new ReferenceDatabase
 	 * will be created and these names will be associated with it. If *any* of these names already exist, then the other names will be associated with it.
 	 * The URLs will *not* be updated in the case that a ReferenceDatabase name is pre-existing in the database.
+	 * @return - The ID of the reference database, whether it was created by this function call, or if it was pre-existing.
 	 * @throws Exception 
 	 */
-	public void createReferenceDatabaseToURL(String url, String accessUrl, String ... names) throws Exception
+	public long createReferenceDatabaseToURL(String url, String accessUrl, String ... names) throws Exception
 	{
 		//First, let's check that the Reference Database doesn't already exist. all we have to go on is the name...
 		SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
-		
+		long refDBID = -1L;
 		try
 		{
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
@@ -152,7 +153,7 @@ public class ReferenceDatabaseCreator
 				newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
 				newReferenceDB.setDbAdaptor(this.adapter);
 				InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
-				this.adapter.storeInstance(newReferenceDB);
+				refDBID = this.adapter.storeInstance(newReferenceDB);
 				logger.info("New ReferenceDatabase has been created: {}", newReferenceDB);
 			}
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
@@ -170,6 +171,7 @@ public class ReferenceDatabaseCreator
 						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB + "( " + preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.name).toString() + " )");
 						preexistingRefDB.addAttributeValue(dbNameAttrib, name);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
+						refDBID = preexistingRefDB.getDBID();
 					}
 				}
 			}
@@ -180,5 +182,6 @@ public class ReferenceDatabaseCreator
 			logger.error("Error while trying to create a Reference Database object: "+e.getMessage());
 			throw e;
 		}
+		return refDBID;
 	}
 }
