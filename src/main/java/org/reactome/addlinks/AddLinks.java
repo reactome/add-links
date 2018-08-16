@@ -331,15 +331,15 @@ public class AddLinks
 	{
 		logger.info("Fixing BRENDA reference database names.");
 		@SuppressWarnings("unchecked")
-		List<GKInstance> brendaRefDBs = (List<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "LIKE", "%BRENDA%");
+		Set<GKInstance> brendaRefDBs = (Set<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "LIKE", "%BRENDA%");
 		for (GKInstance brendaRefDB : brendaRefDBs)
 		{
 			@SuppressWarnings("unchecked")
-			List<String> names = (List<String>) brendaRefDB.getAttributeValue(ReactomeJavaConstants.name);
+			List<String> names = (List<String>) brendaRefDB.getAttributeValuesList(ReactomeJavaConstants.name);
 			names.set(0, "BRENDA");
 			brendaRefDB.setAttributeValue(ReactomeJavaConstants.name, names);
 			this.dbAdapter.updateInstanceAttribute(brendaRefDB, ReactomeJavaConstants.name);
-			logger.info("BRENDA RefDB {} now has names: {}", brendaRefDB, brendaRefDB.getAttributeValue(ReactomeJavaConstants.name));
+			logger.info("BRENDA RefDB {} now has names: {}", brendaRefDB.toString(), brendaRefDB.getAttributeValue(ReactomeJavaConstants.name));
 		}
 	}
 	
