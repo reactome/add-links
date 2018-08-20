@@ -316,9 +316,33 @@ public class AddLinks
 			
 		}
 		
+		// Now... we need to clean up some of the species-specific Reference Database names. Specifically, BRENDA was causing problems for some external team
+		// that was using a file which contained strings of the form "BRENDA (Species Name)". So we will change name[0] for BRENDA ReferenceDatabase objects
+		// to "BRENDA" but leave the _displayName as "BRENDA (Species Name)".
+		// This *CANNOT* be done earlier in the process as the species name in the ReferenceDatabase name is used to do lookups to get the correct species-specific
+		// ReferenceDatabase object. Another option would be to modify the data model by adding a new "species" attribute to the ReferenceDatabase type, but
+		// I'm not sure anyone else will go along with that...
+		fixBrendaRefDBNames();
+		
 		logger.info("Process complete.");
 	}
 
+	private void fixBrendaRefDBNames() throws Exception
+	{
+		logger.info("Fixing BRENDA reference database names.");
+		@SuppressWarnings("unchecked")
+		Set<GKInstance> brendaRefDBs = (Set<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "LIKE", "%BRENDA%");
+		for (GKInstance brendaRefDB : brendaRefDBs)
+		{
+			@SuppressWarnings("unchecked")
+			List<String> names = (List<String>) brendaRefDB.getAttributeValuesList(ReactomeJavaConstants.name);
+			names.set(0, "BRENDA");
+			brendaRefDB.setAttributeValue(ReactomeJavaConstants.name, names);
+			this.dbAdapter.updateInstanceAttribute(brendaRefDB, ReactomeJavaConstants.name);
+			logger.info("BRENDA RefDB {} now has names: {}", brendaRefDB.toString(), brendaRefDB.getAttributeValue(ReactomeJavaConstants.name));
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	private void purgeUnusedRefDBs()
 	{
