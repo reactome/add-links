@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# 1.0.4
+ - BRENDA Reference Database object names will simply be "BRENDA", but the _displayName will include the species name for the species-specific ReferenceDatabase instance.
+
 ## 1.0.3
  - Integrated a fix for BRENDA species-specific databases.
 
