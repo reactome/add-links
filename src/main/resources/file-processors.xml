@@ -88,8 +88,8 @@
 			</bean>
 		</entry>
 		
-		<entry key="IntActFileProcessor">
-			<bean id="IntActFileProcessor" class="org.reactome.addlinks.fileprocessors.IntActFileProcessor">
+		<entry key="ComplexPortalFileProcessor">
+			<bean id="ComplexPortalFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/IntActFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
