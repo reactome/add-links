@@ -28,7 +28,6 @@
 		<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
 		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
 		<entry key="OrphanetFileProcessor" value="OrphanetReferenceCreator"/>
-		<!-- <entry key="IntActFileProcessor" value=""/> -->
 		<entry key="ZincMoleculesFileProcessor" value="zincToChEBIReferenceCreator"/>
 		<entry key="ENSEMBLFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
 		<entry key="ENSEMBLNonCoreFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
@@ -47,7 +46,7 @@
 		<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
 		<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
 		<entry key="BrendaProcessor" value="BrendaRefCreator"/>
-		<entry key="IntActFileProcessor" value="IntActComplexPortalRefCreator"/>
+		<entry key="ComplexPortalFileProcessor" value="ComplexPortalRefCreator"/>
 		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 		<entry key="CTDProcessor" value="CTDRefCreator"/>

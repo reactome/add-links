@@ -41,26 +41,28 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>BrendaRetriever</value>
+ 		<value>DOCKBlaster</value>
+		<value>OrthologsFromZinc</value>
+		<value>OrthologsCSVFromZinc</value>
+		<value>Zinc</value>
+		<value>UniProtToKEGG</value>
+		<value>KEGGRetriever</value>
+		<value>EnsemblToALL</value>
+		<value>UniProtToENSEMBL</value>
+		<value>CTD</value>
+		<value>EntrezGeneToUniprotReference</value>
+		<value>UniProtToEntrez_Gene</value>
+		
 		<value>UniProtToUCSC</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToPDB</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
-		<value>DOCKBlaster</value>
+		
 		<value>PROToReferencePeptideSequence</value>
-		<value>EntrezGeneToUniprotReference</value>
-
-		<value>CTD</value>
-		<value>EnsemblToALL</value>
-		<value>UniProtToEntrez_Gene</value>
-		<value>UniProtToENSEMBL</value>
-		<value>Zinc</value>
 		<value>COSMIC</value>
 		<value>HGNC</value>
-		<value>OrthologsFromZinc</value>
-		<value>OrthologsCSVFromZinc</value>
-		<value>UniProtToKEGG</value>
-		<value>KEGGRetriever</value>
+		
 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>UniProtToOMIM</value>
@@ -69,11 +71,21 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>IntActComplexPortal</value>
+		<value>ComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
 		<value>BrendaProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
+		<value>CTDProcessor</value>
+		<value>KEGGFileProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
+		
+		<value>zincOrthologFileProcessor</value>
+		<value>zincProtFileProcessor</value>
+		<value>UniprotToEnsemblFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToUCSCFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
@@ -81,29 +93,27 @@
 		<value>FlyBaseFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
-		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>CTDProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
-		<value>zincOrthologFileProcessor</value>
-		
-		<value>KEGGFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
-		<value>zincProtFileProcessor</value>
 		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
-		<value>UniprotToEnsemblFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>IntActFileProcessor</value>
+		<value>ComplexPortalFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>BrendaRefCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
+		
+		<value>zincToChEBIReferenceCreator</value>
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedUCSCRefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
@@ -111,7 +121,6 @@
 		<value>FlyBaseReferenceCreator</value>
 		<value>proRefCreator</value>
 		<value>dockBlasterRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
@@ -123,39 +132,33 @@
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-		<value>BrendaRefCreator</value>
-		<value>upMappedKEGGRefCreator</value>
-		<value>KEGGReferenceCreator</value>
 		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
-		<value>upMappedENSEMBLGeneRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
 		<value>RheaReferenceCreator</value>
-		<value>BrendaRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>IntActComplexPortalRefCreator</value>
+		<value>ComplexPortalRefCreator</value>
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
-		<value>PDB</value>
-		<value>CTD Gene</value>
+		<value>Brenda</value>
+		<value>KEGG</value>
+		<value>ENSEMBL</value>
 		<value>dbSNP Gene</value>
+		<value>CTD Gene</value>
+		<value>PDB</value>
 		<value>NCBI Gene</value>
 		<value>Monarch</value>
 		<value>HGNC</value>
 		<value>UniProt</value>
 		<value>Flybase</value>
-		<value>Brenda</value>
 		<value>BioModels</value>
 		<value>Flybase</value>
 		<value>Gene Ontology</value>
 		<value>HapMap</value>
 		<value>IntEnz</value>
-		<value>KEGG</value>
 		<value>Orphanet</value>
 		<value>RefSeq</value>
 		<value>Rhea</value>

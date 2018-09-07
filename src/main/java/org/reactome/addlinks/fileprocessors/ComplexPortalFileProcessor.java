@@ -8,14 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IntActFileProcessor extends FileProcessor<List<String>>
+public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 {
-	public IntActFileProcessor(String processorName)
+	public ComplexPortalFileProcessor(String processorName)
 	{
 		super(processorName);
 	}
 	
-	public IntActFileProcessor()
+	public ComplexPortalFileProcessor()
 	{
 		super(null);
 	}
