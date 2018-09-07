@@ -11,9 +11,9 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 
-public class IntActReferenceCreator extends SimpleReferenceCreator<List<String>>
+public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<String>>
 {
-	public IntActReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring,
+	public ComplexPortalReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring,
 			String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
@@ -35,6 +35,7 @@ public class IntActReferenceCreator extends SimpleReferenceCreator<List<String>>
 				// A ComplexPortal ID could have mappings to Uniprot, Reactome, or both.
 				for (String uniprotOrReactomeIdentifier : mappings.get(complexPortalID))
 				{
+					// TODO: Refactor the code in the if-else blocks - it can probably be simplified to a single function.
 					// If Reactome identifier...
 					if (uniprotOrReactomeIdentifier.matches("R-[a-zA-Z]{3}.+"))
 					{
