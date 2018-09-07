@@ -56,7 +56,7 @@ import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.COSMICReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
-import org.reactome.addlinks.referencecreators.IntActReferenceCreator;
+import org.reactome.addlinks.referencecreators.ComplexPortalReferenceCreator;
 import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
@@ -646,9 +646,9 @@ public class AddLinks
 					{
 						sourceReferences = objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
 					}
-					else if (refCreator instanceof IntActReferenceCreator)
+					else if (refCreator instanceof ComplexPortalReferenceCreator)
 					{
-						// The IntActReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
+						// The ComplexPortalReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
 						sourceReferences = new ArrayList<GKInstance>();
 					}
 					else if ( refCreator instanceof COSMICReferenceCreator)
