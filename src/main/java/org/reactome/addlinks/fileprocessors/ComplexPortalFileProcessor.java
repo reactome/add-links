@@ -29,7 +29,9 @@ public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 		Map<String, List<String>> complexPortalToUniprotAndReactome = new HashMap<String,List<String>>(); 
 		try
 		{
-			Files.readAllLines(this.pathToFile).stream().forEach(line ->
+			Files.readAllLines(this.pathToFile).stream()
+				.filter(line -> !line.startsWith("#"))
+				.forEach(line ->
 			{
 				String[] parts = line.split("\\t");
 				
@@ -39,11 +41,11 @@ public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 				String uniprots = parts[4];
 				// There could be multiple Uniprot identifiers so we need to extract them all.
 				// Remove the stoichiometry information (in parenthesis after each Uniprot ID) and then split on "|".
-				String[] uniprotIDs = uniprots.replaceAll("\\(\\d*\\)", "").split("|");
+				String[] uniprotIDs = uniprots.replaceAll("\\(\\d*\\)", "").split("\\|");
 				// Cross-references will be in the 9th column, and may include Reactome identifiers.
 				String xrefs = parts[8];
 				// There could me multiple Reactome identifiers, so we need to extract them all.
-				List<String> reactomeIDs = Arrays.stream(xrefs.split("|"))
+				List<String> reactomeIDs = Arrays.stream(xrefs.split("\\|"))
 												.filter(s -> s.startsWith("reactome"))
 												.map(s -> s.replace("reactome:", "").replaceAll("\\(.*\\)",""))
 												.collect(Collectors.toList());

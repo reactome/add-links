@@ -437,8 +437,8 @@
 			</bean>
 		</entry>
 		
-		<entry key="IntActComplexPortalRefCreator">
-			<bean class="org.reactome.addlinks.referencecreators.IntActReferenceCreator" id="IntActComplexPortalRefCreator">
+		<entry key="ComplexPortalRefCreator">
+			<bean class="org.reactome.addlinks.referencecreators.ComplexPortalReferenceCreator" id="ComplexPortalRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ComplexBean"/>

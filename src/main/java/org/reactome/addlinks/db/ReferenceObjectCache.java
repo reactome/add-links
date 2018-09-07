@@ -446,6 +446,11 @@ public final class ReferenceObjectCache
 	private static Map<String,GKInstance> databaseIdentifiersByDBID = new ConcurrentHashMap<String,GKInstance>();
 	private static Map<String,List<GKInstance>> databaseIdentifiersByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
 	
+	// Complex cache
+	private static Map<String,List<GKInstance>> complexesByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,GKInstance> complexesByDBID = new ConcurrentHashMap<String,GKInstance>();
+	private static Map<String,List<GKInstance>> complexesByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
+	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	//These really should be 1:n mappings...
 	private static Map<String,List<String>> speciesMapping = new ConcurrentHashMap<String,List<String>>();
