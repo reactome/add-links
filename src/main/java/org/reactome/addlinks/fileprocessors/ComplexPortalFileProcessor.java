@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 {
@@ -23,30 +25,49 @@ public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 	@Override
 	public Map<String, List<String>> getIdMappingsFromFile()
 	{
-		// Key is the Reactome ID, value is a list of (possibly) multiple EBI IDs that can be used to do a lookup in IntAct's ComplexPortal.
-		Map<String, List<String>> reactomeToIntActMapping = new HashMap<String,List<String>>(); 
+		// Key is the ComplexPortal ID, value is a list of (possibly) multiple Uniprot IDs and ReactomeIDs.
+		Map<String, List<String>> complexPortalToUniprotAndReactome = new HashMap<String,List<String>>(); 
 		try
 		{
 			Files.readAllLines(this.pathToFile).stream().forEach(line ->
 			{
-				String[] parts = line.split("\\s+");
-				if (reactomeToIntActMapping.containsKey(parts[1]))
+				String[] parts = line.split("\\t");
+				
+				// Get the ID for ComplexPortal.
+				String complexPortalID = parts[0];
+				// The UniprotIDs will be in the 5th column.
+				String uniprots = parts[4];
+				// There could be multiple Uniprot identifiers so we need to extract them all.
+				// Remove the stoichiometry information (in parenthesis after each Uniprot ID) and then split on "|".
+				String[] uniprotIDs = uniprots.replaceAll("\\(\\d*\\)", "").split("|");
+				// Cross-references will be in the 9th column, and may include Reactome identifiers.
+				String xrefs = parts[8];
+				// There could me multiple Reactome identifiers, so we need to extract them all.
+				List<String> reactomeIDs = Arrays.stream(xrefs.split("|"))
+												.filter(s -> s.startsWith("reactome"))
+												.map(s -> s.replace("reactome:", "").replaceAll("\\(.*\\)",""))
+												.collect(Collectors.toList());
+				// Update the mapping.
+				if (complexPortalToUniprotAndReactome.containsKey(complexPortalID))
 				{
-					reactomeToIntActMapping.get(parts[1]).add(parts[0]);
+					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(Arrays.asList(uniprotIDs));
+					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(reactomeIDs);
 				}
 				else
 				{
-					reactomeToIntActMapping.put(parts[1], new ArrayList<String>(Arrays.asList(parts[0])));
+					complexPortalToUniprotAndReactome.put(complexPortalID, new ArrayList<String>());
+					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(Arrays.asList(uniprotIDs));
+					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(reactomeIDs);
+
 				}
 			});
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		logger.info("Number of IntAct mappings: {}",reactomeToIntActMapping.size());
-		return reactomeToIntActMapping;
+		logger.info("Number of ComplexPortal mappings: {}",complexPortalToUniprotAndReactome.size());
+		return complexPortalToUniprotAndReactome;
 	}
 
 }
