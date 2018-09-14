@@ -119,7 +119,7 @@ public class KeggIdentifierFixer
 					refEntInstance.setAttributeValue(ReactomeJavaConstants.identifier, identifier);
 					refEntInstance.getAttributeValuesList(ReactomeJavaConstants.modified);
 					refEntInstance.addAttributeValue(ReactomeJavaConstants.modified, instanceEdit);
-					// Update not yet tested...
+
 					KeggIdentifierFixer.adaptor.updateInstanceAttribute(refEntInstance, ReactomeJavaConstants.identifier);
 					KeggIdentifierFixer.adaptor.updateInstanceAttribute(refEntInstance, ReactomeJavaConstants.modified);
 					updatedCount++;

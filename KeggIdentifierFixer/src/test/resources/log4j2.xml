@@ -1,0 +1,23 @@
+<Configuration status="info">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%msg%n" />
+		</Console>
+		<RollingFile name="LogFile" fileName="logs/KeggIdentifierFixer-PostFixComparison-${date:MM-dd-yyyy_HH.mm.ss}.log"
+									filePattern="logs/KeggIdentifierFixer-PostFixComparison-%d{MM-dd-yyyy_HH.mm.ss}.log">
+
+			<PatternLayout>
+				<Pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+			</Policies>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="debug">
+			<AppenderRef ref="Console" level="info" />
+			<AppenderRef ref="LogFile" level="debug" />
+		</Root>
+	</Loggers>
+</Configuration>
