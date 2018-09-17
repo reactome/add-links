@@ -86,11 +86,11 @@ public class TestLinkCheckManagerIT
 		List<GKInstance> instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2)));
 		System.out.println("Number of instances found: " + instances.size());
 		float proportionToCheck = 0.25f;
-		int maxToCheck = 10;
+		int maxToCheck = 20;
 		
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
 		System.out.println("Number of results: "+results.size());
-		assertTrue(results.keySet().size() == 10);
+		assertTrue(results.keySet().size() == 20);
 		for(String k : results.keySet())
 		{
 			assertTrue(results.get(k).isKeywordFound());
@@ -98,18 +98,35 @@ public class TestLinkCheckManagerIT
 		}
 		
 		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("KEGG Gene (Danio rerio)").get(0)) );
-
 		aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
 		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", "68323");
 		instances.clear();
 		instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2)));
 		System.out.println("Number of instances found: " + instances.size());
 		proportionToCheck = 0.25f;
-		maxToCheck = 10;
+		maxToCheck = 20;
 		results.clear();
 		results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
 		System.out.println("Number of results: "+results.size());
-		assertTrue(results.keySet().size() == 10);
+		assertTrue(results.keySet().size() == 20);
+		for(String k : results.keySet())
+		{
+			assertTrue(results.get(k).isKeywordFound());
+			System.out.println(results.get(k));
+		}
+		
+		// Check weird identfiers, such ones that contain a non-species prefix, such as "si:" 
+		instances.clear();
+		SchemaAttribute att3 = this.dbAdapter.fetchSchema().getClassByName("ReferenceDNASequence").getAttribute("identifier");
+		AttributeQueryRequest aqr3 = this.dbAdapter.new AttributeQueryRequest(att3, "LIKE", "si:%");
+		instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2, aqr3)));
+		System.out.println("Number of instances found: " + instances.size());
+		proportionToCheck = 0.5f;
+		maxToCheck = 20;
+		results.clear();
+		results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
+		System.out.println("Number of results: "+results.size());
+		assertTrue(results.keySet().size() > 0);
 		for(String k : results.keySet())
 		{
 			assertTrue(results.get(k).isKeywordFound());
