@@ -136,8 +136,26 @@ public class LinkChecker implements CustomLoggable
 					{
 						if (responseBody.contains(this.keyword))
 						{
-							// then the link is OK.
-							linkCheckInfo.setKeywordFound(true);
+							// SPECIAL CASE FOR KEGG: Kegg will return "OK 200" AND the keyword, even if the keyword is not found. 
+							// The exact text to check for it: "No such data was found."
+							//if (referenceDatabaseName.toLowerCase().contains("kegg"))
+							// KEGG URLs have a domain name of genome.jp
+							if (this.uri.getHost().toLowerCase().contains("genome.jp"))
+							{
+								if (responseBody.toLowerCase().contains("No such data was found.".toLowerCase()))
+								{
+									linkCheckInfo.setKeywordFound(false);
+								}
+								else
+								{
+									linkCheckInfo.setKeywordFound(true);
+								}
+							}
+							else
+							{
+								// then the link is OK.
+								linkCheckInfo.setKeywordFound(true);
+							}
 						}
 						else
 						{

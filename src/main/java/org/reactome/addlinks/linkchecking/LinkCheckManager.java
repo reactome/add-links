@@ -58,7 +58,6 @@ public class LinkCheckManager implements CustomLoggable
 				refDBInst, proportionToCheck, maxToCheck, instances.size(), proportionToCheck , instances.size(), (int)(instances.size() * proportionToCheck), instancesToCheck.size());
 		
 		String refDBID = refDBInst.getDBID().toString();
-		//for (GKInstance inst : instancesToCheck)
 		instancesToCheck.parallelStream().forEach( inst -> {
 			try
 			{
