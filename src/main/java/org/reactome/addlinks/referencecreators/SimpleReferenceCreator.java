@@ -75,7 +75,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			throw new RuntimeException (e);
 		}
 		 
-		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
+		this.refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
 	/**

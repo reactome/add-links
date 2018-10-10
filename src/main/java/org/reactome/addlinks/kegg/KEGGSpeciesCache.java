@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -24,7 +27,7 @@ public final class KEGGSpeciesCache
 	private static String speciesURL = "http://www.genome.jp/kegg-bin/download_htext?htext=br08601.keg&format=htext&filedir=";
 	// The map of KEGG codes will be keyed of the proper (Latin) species name, as they are found in KEGG.
 	private static Map<String,Map<String,String>> speciesMap = new HashMap<String,Map<String,String>>();
-	
+	private static Set<String> allCodes;
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
@@ -33,6 +36,10 @@ public final class KEGGSpeciesCache
 		
 	}
 	
+	/**
+	 * Static initializer will query KEGG and populate the caches the first time
+	 * this class is referenced.
+	 */
 	static
 	{
 		try
@@ -126,6 +133,20 @@ public final class KEGGSpeciesCache
 			commonName = m.get(COMMON_NAME); 
 		}
 		return commonName;
+	}
+	
+	/**
+	 * Returns the set of KEGG species codes.
+	 * @return
+	 */
+	public static Set<String> getKeggSpeciesCodes()
+	{
+		// save the codes in a separate variable so that subsquent calls to this function are faster. 
+		if (KEGGSpeciesCache.allCodes == null)
+		{
+			KEGGSpeciesCache.allCodes =  KEGGSpeciesCache.speciesMap.values().stream().map( v -> v.get(KEGG_CODE) ).collect(Collectors.toSet());
+		}
+		return KEGGSpeciesCache.allCodes;
 	}
 }
 

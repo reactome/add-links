@@ -110,6 +110,17 @@
 		<property name="testMode" value="true"/>
 	</bean>
 	
+	<bean class="org.reactome.addlinks.referencecreators.KEGGReferenceCreator" id="KEGGReferenceCreator">
+		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+		<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
+		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+		<constructor-arg index="3" name="referringAttribute" ref="referenceGeneBean"/>
+		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+		<constructor-arg index="5" name="targetDB" value="KEGG Glycan"/>
+		<constructor-arg index="6" name="refCreatorName" value="refCreators/KEGGReferenceCreator"/>
+		<property name="testMode" value="true"/>
+	</bean>
+	
 	<!--  flybase testing -->
 	<bean id="FlyBaseFileProcessor"
 		class="org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor">
