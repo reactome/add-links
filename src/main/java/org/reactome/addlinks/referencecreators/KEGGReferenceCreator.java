@@ -13,6 +13,7 @@ import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 
 public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
 {
@@ -73,7 +74,8 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					// If the data we extracted already begins with a species code such as "hsa:" then we can remove it because
 					// the ReferenceDatabase will contain a species code prefix in its accessUrl. If we *don't*
 					// remove it, we'll end up with URLs like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
-					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID).replaceAll("^[a-z0-9]{3}:", "");
+					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID);
+					keggGeneIdentifier = pruneSpeciesCode(keggGeneIdentifier);
 					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
@@ -84,6 +86,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					{
 						throw new Exception("KEGG Identifier cannot be NULL or empty!");
 					}
+					keggIdentifier = pruneSpeciesCode(keggIdentifier);
 					StringBuilder xrefsSb = new StringBuilder();
 					for (GKInstance xref : xrefs)
 					{
@@ -125,7 +128,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							}
 							if (!this.testMode)
 							{
-								refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+								this.refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
 							}
 						}
 					}
@@ -148,6 +151,25 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNewIdentifier,
 				this.sourceRefDB, this.targetRefDB, sourceIdentifiersWithExistingIdentifier,
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
+	}
+
+	/**
+	 * Strips out the species code prefix from a KEGG identifier string.
+	 * @param identifier - the identifier string to prune
+	 * @return The identifier, minus any species code prefix that might have been there.
+	 */
+	private String pruneSpeciesCode(String identifier)
+	{
+		if (identifier != null && identifier.contains(":"))
+		{
+			String[] parts = identifier.split(":");
+			String prefix = parts[0];
+			if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(prefix))
+			{
+				identifier = identifier.replaceFirst(prefix + ":", "");
+			}
+		}
+		return identifier;
 	}
 
 
