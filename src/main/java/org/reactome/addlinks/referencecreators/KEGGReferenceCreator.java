@@ -67,6 +67,14 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				{
 					// Use the KEGG Identifier (from the NAME line). If there is none, use the KEGG gene id, example: "hsa:12345"
 					String keggIdentifier = keggData.get(KEGGKeys.KEGG_IDENTIFIER);
+					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID);
+					// If keggIdentifier AND keggGeneIdentifier have no value, throw an exception! Can't insert null/empty identifiers.
+					if ( (keggIdentifier == null || keggIdentifier.trim().equals(""))
+						&& (keggGeneIdentifier == null || keggGeneIdentifier.trim().equals("")) )
+					{
+						throw new Exception("KEGG Identifier cannot be NULL or empty!");
+					}
+					
 					//String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
 					// No longer need to include the species code here because it will be a part of the URL. See in KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases
 					// That's where we create the URLs with the species code built-in to the URL.
@@ -74,17 +82,11 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					// If the data we extracted already begins with a species code such as "hsa:" then we can remove it because
 					// the ReferenceDatabase will contain a species code prefix in its accessUrl. If we *don't*
 					// remove it, we'll end up with URLs like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
-					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID);
 					keggGeneIdentifier = pruneSpeciesCode(keggGeneIdentifier);
 					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
 						keggIdentifier = keggGeneIdentifier;
-					}
-					// If keggIdentifier STILL has no value, throw an exception! Can't insert null/empty identifiers.
-					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
-					{
-						throw new Exception("KEGG Identifier cannot be NULL or empty!");
 					}
 					keggIdentifier = pruneSpeciesCode(keggIdentifier);
 					StringBuilder xrefsSb = new StringBuilder();
@@ -163,7 +165,10 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 		if (identifier != null && identifier.contains(":"))
 		{
 			String[] parts = identifier.split(":");
+			// Species code prefix will be the left-most part, if you split on ":".
+			// There could be *other* parts (such as "si" in "dre:si:ch73-368j24.13"), but the species code is what matters here.
 			String prefix = parts[0];
+			// remove the species code, IF it's in the list of known KEGG species codes.
 			if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(prefix))
 			{
 				identifier = identifier.replaceFirst(prefix + ":", "");
