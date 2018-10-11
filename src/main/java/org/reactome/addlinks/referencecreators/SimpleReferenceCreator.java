@@ -28,7 +28,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	protected Logger logger;// = LogManager.getLogger();
+	protected Logger logger;
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
@@ -75,7 +75,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			throw new RuntimeException (e);
 		}
 		 
-		this.refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
+		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
 	/**
@@ -161,38 +161,6 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier) throws InvalidAttributeException, Exception
 	{
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, this.targetRefDB);
-//		@SuppressWarnings("unchecked")
-//		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
-//		StringBuilder xrefsb = new StringBuilder();
-//		if (xrefs.size() > 0)
-//		{
-//			for (GKInstance xref : xrefs)
-//			{
-//				String identifier = xref.getAttributeValue(ReactomeJavaConstants.identifier).toString();
-//				xrefsb.append(identifier);
-//				GKInstance xrefRefDB = (GKInstance) xref.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
-//				Object refdbDisplayName = xrefRefDB.getAttributeValue(ReactomeJavaConstants._displayName);
-//				xrefsb.append("@").append(refdbDisplayName).append(",\t");
-//				// We won't add a cross-reference if it already exists
-//				if (identifier.equals( targetRefDBIdentifier ))
-//				{
-//					// We found a cross-reference with the same identifiers, but it's possible this identifier is used by more than one Ref DB. Need to check...
-//					// Found a cross reference with the same identifer AND the same ref db displayname.
-//					if (refdbDisplayName.equals(this.targetRefDB))
-//					{
-//						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-//						return true;	
-//					}
-//					else
-//					{
-//						logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, refdbDisplayName, this.targetRefDB);
-//					}
-//					
-//				}
-//			}
-//			logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-//		}
-//		return false;
 	}
 	
 	/**
