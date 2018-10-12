@@ -84,17 +84,6 @@ public final class KEGGSpeciesCache
 						map.put(COMMON_NAME, commonName);
 						speciesMap.put(name, map);
 						codesToSpecies.put(code, name);
-//						// Special case for "Plasmodium falciparum": Reactome list this species with the names "[Plasmodium falciparum, malaria parasite P. falciparum]",
-//						// But KEGG has the names: "Plasmodium falciparum 3D7, Plasmodium falciparum Dd2, Plasmodium falciparum HB3". 
-//						// The code that Reactome needs for P.Falciparum is "pfa" which in KEGG is "Plasmodium falciparum 3D7", so 
-//						// we need special code to handle this, because if we just try to match the names, IT JUST WON'T WORK!
-//						if (code.equals("pfa"))
-//						{
-//							map = new HashMap<String,String>(2);
-//							map.put(KEGG_CODE, code);
-//							map.put(COMMON_NAME, "Plasmodium falciparum");
-//							speciesMap.put("Plasmodium falciparum", map);
-//						}
 					}
 					else
 					{

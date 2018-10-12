@@ -139,7 +139,6 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							}
 							if (targetDB == null)
 							{
-								// targetDB = this.targetRefDB;
 								logger.error("No KEGG DB Name could be obtained for this identifier: {}. Cross-reference will not be created", keggIdentifier);
 							}
 							if (!this.testMode && targetDB != null)
@@ -168,26 +167,4 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				this.sourceRefDB, this.targetRefDB, sourceIdentifiersWithExistingIdentifier,
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
 	}
-
-//	/**
-//	 * Strips out the species code prefix from a KEGG identifier string.
-//	 * @param identifier - the identifier string to prune
-//	 * @return The identifier, minus any species code prefix that might have been there.
-//	 */
-//	private String pruneKEGGSpeciesCode(String identifier)
-//	{
-//		if (identifier != null && identifier.contains(":"))
-//		{
-//			String[] parts = identifier.split(":");
-//			// Species code prefix will be the left-most part, if you split on ":".
-//			// There could be *other* parts (such as "si" in "dre:si:ch73-368j24.13"), but the species code is what matters here.
-//			String prefix = parts[0];
-//			// remove the species code, IF it's in the list of known KEGG species codes.
-//			if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(prefix))
-//			{
-//				identifier = identifier.replaceFirst(prefix + ":", "");
-//			}
-//		}
-//		return identifier;
-//	}
 }
