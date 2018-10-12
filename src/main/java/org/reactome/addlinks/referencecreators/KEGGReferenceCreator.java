@@ -122,7 +122,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
 						if (!this.testMode)
 						{
-							String targetDB = this.targetRefDB;
+							String targetDB = null;
 							if (keggIdentifier.startsWith("vg:"))
 							{
 								targetDB = "KEGG Gene (Viruses)";
@@ -137,6 +137,8 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							{
 								targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, String.valueOf(speciesID));
 							}
+							// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier. 
+							// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use. 
 							if (targetDB == null)
 							{
 								logger.error("No KEGG DB Name could be obtained for this identifier: {}. Cross-reference will not be created", keggIdentifier);
