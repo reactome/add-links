@@ -130,63 +130,19 @@ public class KEGGReferenceDatabaseGenerator
 				try
 				{
 					GKInstance species = KEGGReferenceDatabaseGenerator.adaptor.fetchInstance(Long.parseLong(speciesID));
-					//String abbreviation = (String) species.getAttributeValue("abbreviation");
+
 					@SuppressWarnings("unchecked")
 					Collection<String> reactomeSpeciesNames = (Collection<String>) species.getAttributeValuesList(ReactomeJavaConstants.name);
-	//					keggSpeciesName = KEGGSpeciesCache.getKeggSpeciesNames().parallelStream()
-	//														.filter(keggSpecies -> reactomeSpeciesNames.stream()
-	//																									.filter( reactomeSpeciesName -> reactomeSpeciesName.contains(keggSpecies) || keggSpecies.contains(reactomeSpeciesName))
-	//																									.collect(Collectors.toList()).size() > 0 ).findFirst().orElse(null);
 
 					// Note: if this succeeds, the value in keggSpeciesName will actually be a closely-matching *REACTOME* species name
 					// This is because when we created the databases, we did it with the REACTOME names, so we need to return a REACTOME name
 					// in the case where KEGG and Reactome have species names that are close but not exact matches.
 					keggSpeciesName = reactomeSpeciesNames.parallelStream()
-										.filter( rName -> KEGGSpeciesCache.getKeggSpeciesNames()
-																			.stream().filter(kName -> kName.contains(rName) || rName.contains(kName))
+										.filter( rName -> KEGGSpeciesCache.getKeggSpeciesNames().stream()
+																			.filter(kName -> kName.contains(rName) || rName.contains(kName))
 																			.collect(Collectors.toList()).size() > 0)
 										.findFirst().orElse(null);
-					
-					
-//					if (abbreviation != null && !abbreviation.trim().equals(""))
-//					{
-//						// The Reactome abbreviation (in lower case) often matches with the KEGG code, even when the names aren't exact matches.
-//						// For example, "Plasmodium falciparum 3D7" in KEGG *almost* matches "Plasmodium falciparum" in Reactome, but BOTH have "pfa" as the code.
-//						if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(abbreviation.toLowerCase()))
-//						{
-//							keggSpeciesName = KEGGSpeciesCache.getSpeciesName(abbreviation.toLowerCase());
-//							if (keggSpeciesName != null)
-//							{
-//								// Let's just check to make sure that the names are close...
-//								boolean reactomeNamesContainKEGGName = false;
-//								boolean keggNameContainsReactomeName = false;
-//								for (String reactomeName : reactomeSpeciesNames)
-//								{
-//									if (reactomeName.toLowerCase().contains(keggSpeciesName.toLowerCase()))
-//									{
-//										reactomeNamesContainKEGGName = true;
-//									}
-//									if (keggSpeciesName.toLowerCase().contains(reactomeName.toLowerCase()))
-//									{
-//										keggNameContainsReactomeName = true;
-//									}
-//								}
-//								if (!reactomeNamesContainKEGGName && !keggNameContainsReactomeName)
-//								{
-//									logger.warn("KEGG species {} has code that matches Reactome species {} code {} but names do NOT match! targetDB will be reset to NULL.", keggSpeciesName, species.toString(), abbreviation);
-//									targetDB = null;
-//								}
-//							}
-//							else
-//							{
-//								logger.warn("Could not find KEGG species name for {} when using abbreviation: {}", species.toString(), abbreviation);
-//							}
-//						}
-//					}
-//					else
-//					{
-//						logger.warn("Species {} has no abbreviation.", species.toString());
-//					}
+
 				}
 				catch (Exception e)
 				{
