@@ -84,7 +84,7 @@ public class KEGGReferenceDatabaseGenerator
 			}
 			else
 			{
-				logger.info("No KEGG code for {}, so no KEGG species-specific database will be created.", speciesName);
+				logger.debug("No KEGG code for {}, so no KEGG species-specific database will be created.", speciesName);
 			}
 		}
 		// Special cases for viruses and "addendum"
