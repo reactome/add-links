@@ -677,7 +677,7 @@ public final class ReferenceObjectCache
 	 * Returns a set of the keys used to cache by Species.
 	 * @return a set of the keys used to cache by Species.
 	 */
-	public Set<String> getListOfSpeciesNames()
+	public Set<String> getSetOfSpeciesNames()
 	{
 		return getSpeciesNamesToIds().keySet();
 	}
