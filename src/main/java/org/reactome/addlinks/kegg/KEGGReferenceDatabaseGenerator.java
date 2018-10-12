@@ -1,7 +1,13 @@
 package org.reactome.addlinks.kegg;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
+import org.gk.persistence.MySQLAdaptor;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
@@ -11,10 +17,16 @@ public class KEGGReferenceDatabaseGenerator
 	private static final Logger logger = LogManager.getLogger();
 	private static final String KEGG_URL = "http://www.genome.jp/dbget-bin/www_bget?###SP3######ID###";
 	private static ReferenceDatabaseCreator dbCreator;
+	private static MySQLAdaptor adaptor;
 	
+	// private constructor to avoid instantiation.
 	private KEGGReferenceDatabaseGenerator()
 	{
-		
+	}
+	
+	public static void setDBAdaptor(MySQLAdaptor adaptor)
+	{
+		KEGGReferenceDatabaseGenerator.adaptor = adaptor;
 	}
 	
 	public static void setDBCreator(ReferenceDatabaseCreator creator)
@@ -46,6 +58,15 @@ public class KEGGReferenceDatabaseGenerator
 		for (String speciesName : objectCache.getSpeciesNamesToIds().keySet())
 		{
 			String keggCode = KEGGSpeciesCache.getKEGGCode(speciesName);
+			// If we couldn't get a KEGG code on a direct match, let's try an indirect match. It could work,
+			// as sometimes KEGG and Reactome have *similar* names, for example: "Plasmodium falciparum HB3" (KEGG) and "Plasmodium falciparum" (Reactome)
+			// If this works, the database will be created using the *REACTOME* species name.
+			if (keggCode == null)
+			{
+				String keggSpeciesName = KEGGSpeciesCache.getKeggSpeciesNames().parallelStream().filter(keggName -> keggName.contains(speciesName) || speciesName.contains(keggName)).findFirst().orElse(null);
+				keggCode = KEGGSpeciesCache.getKEGGCode(keggSpeciesName);
+			}
+			
 			if (keggCode != null)
 			{
 				try
@@ -66,6 +87,23 @@ public class KEGGReferenceDatabaseGenerator
 				logger.info("No KEGG code for {}, so no KEGG species-specific database will be created.", speciesName);
 			}
 		}
+		// Special cases for viruses and "addendum"
+		String speciesURL = KEGG_URL.replace("###SP3###", "vg:");
+		String newDBName = "KEGG Gene (Viruses)";
+		try
+		{
+			createReferenceDatabase(newDBName, "Viruses", speciesURL, objectCache);
+			speciesURL = KEGG_URL.replace("###SP3###", "ag:");
+			newDBName = "KEGG Gene (Addendum)";
+			createReferenceDatabase(newDBName, "Addendum", speciesURL, objectCache);
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		LinksToCheckCache.getRefDBsToCheck().add(newDBName);
+		
 	}
 	
 	/**
@@ -79,15 +117,89 @@ public class KEGGReferenceDatabaseGenerator
 		String targetDB = null;
 		if (speciesID != null && objectCache.getSpeciesNamesByID().get(speciesID) != null)
 		{
-			String speciesName = objectCache.getSpeciesNamesByID().get(speciesID).stream()
+			String keggSpeciesName = objectCache.getSpeciesNamesByID().get(speciesID).stream()
 															.filter(s ->
 															{
 																return KEGGSpeciesCache.getKEGGCode(s) != null;
 															})
 															.findFirst().orElse(null);
-			if (speciesName != null)
+			if (keggSpeciesName == null)
 			{
-				targetDB = "KEGG Gene (" + speciesName + ")";
+				// Ok, there was no exact match. Maybe there's a substring match?
+				// We'll have to see if the Reactome species names are substrings of any KEGG species names, or vice-versa.
+				try
+				{
+					GKInstance species = KEGGReferenceDatabaseGenerator.adaptor.fetchInstance(Long.parseLong(speciesID));
+					//String abbreviation = (String) species.getAttributeValue("abbreviation");
+					@SuppressWarnings("unchecked")
+					Collection<String> reactomeSpeciesNames = (Collection<String>) species.getAttributeValuesList(ReactomeJavaConstants.name);
+	//					keggSpeciesName = KEGGSpeciesCache.getKeggSpeciesNames().parallelStream()
+	//														.filter(keggSpecies -> reactomeSpeciesNames.stream()
+	//																									.filter( reactomeSpeciesName -> reactomeSpeciesName.contains(keggSpecies) || keggSpecies.contains(reactomeSpeciesName))
+	//																									.collect(Collectors.toList()).size() > 0 ).findFirst().orElse(null);
+
+					// Note: if this succeeds, the value in keggSpeciesName will actually be a closely-matching *REACTOME* species name
+					// This is because when we created the databases, we did it with the REACTOME names, so we need to return a REACTOME name
+					// in the case where KEGG and Reactome have species names that are close but not exact matches.
+					keggSpeciesName = reactomeSpeciesNames.parallelStream()
+										.filter( rName -> KEGGSpeciesCache.getKeggSpeciesNames()
+																			.stream().filter(kName -> kName.contains(rName) || rName.contains(kName))
+																			.collect(Collectors.toList()).size() > 0)
+										.findFirst().orElse(null);
+					
+					
+//					if (abbreviation != null && !abbreviation.trim().equals(""))
+//					{
+//						// The Reactome abbreviation (in lower case) often matches with the KEGG code, even when the names aren't exact matches.
+//						// For example, "Plasmodium falciparum 3D7" in KEGG *almost* matches "Plasmodium falciparum" in Reactome, but BOTH have "pfa" as the code.
+//						if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(abbreviation.toLowerCase()))
+//						{
+//							keggSpeciesName = KEGGSpeciesCache.getSpeciesName(abbreviation.toLowerCase());
+//							if (keggSpeciesName != null)
+//							{
+//								// Let's just check to make sure that the names are close...
+//								boolean reactomeNamesContainKEGGName = false;
+//								boolean keggNameContainsReactomeName = false;
+//								for (String reactomeName : reactomeSpeciesNames)
+//								{
+//									if (reactomeName.toLowerCase().contains(keggSpeciesName.toLowerCase()))
+//									{
+//										reactomeNamesContainKEGGName = true;
+//									}
+//									if (keggSpeciesName.toLowerCase().contains(reactomeName.toLowerCase()))
+//									{
+//										keggNameContainsReactomeName = true;
+//									}
+//								}
+//								if (!reactomeNamesContainKEGGName && !keggNameContainsReactomeName)
+//								{
+//									logger.warn("KEGG species {} has code that matches Reactome species {} code {} but names do NOT match! targetDB will be reset to NULL.", keggSpeciesName, species.toString(), abbreviation);
+//									targetDB = null;
+//								}
+//							}
+//							else
+//							{
+//								logger.warn("Could not find KEGG species name for {} when using abbreviation: {}", species.toString(), abbreviation);
+//							}
+//						}
+//					}
+//					else
+//					{
+//						logger.warn("Species {} has no abbreviation.", species.toString());
+//					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+			if (keggSpeciesName != null)
+			{
+				targetDB = "KEGG Gene (" + keggSpeciesName + ")";
+			}
+			else
+			{
+				logger.warn("Tried to generate a KEGG DB Name for the species {} ({}) but no KEGG species name was found!", speciesID, objectCache.getSpeciesNamesByID().get(speciesID));
 			}
 		}
 		return targetDB;

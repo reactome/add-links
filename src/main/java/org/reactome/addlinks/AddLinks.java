@@ -872,6 +872,7 @@ public class AddLinks
 		}
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 		KEGGReferenceDatabaseGenerator.setDBCreator(creator);
+		KEGGReferenceDatabaseGenerator.setDBAdaptor(this.dbAdapter);
 		BRENDAReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
