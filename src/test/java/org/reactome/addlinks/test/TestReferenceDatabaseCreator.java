@@ -321,6 +321,7 @@ public class TestReferenceDatabaseCreator
 			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
 			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
 			KEGGReferenceDatabaseGenerator.setDBCreator(creator);
+			KEGGReferenceDatabaseGenerator.setDBAdaptor(adapter);
 			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 		}
 		catch (Exception e)

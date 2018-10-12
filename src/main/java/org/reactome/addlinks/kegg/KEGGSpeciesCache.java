@@ -27,6 +27,7 @@ public final class KEGGSpeciesCache
 	private static String speciesURL = "http://www.genome.jp/kegg-bin/download_htext?htext=br08601.keg&format=htext&filedir=";
 	// The map of KEGG codes will be keyed of the proper (Latin) species name, as they are found in KEGG.
 	private static Map<String,Map<String,String>> speciesMap = new HashMap<String,Map<String,String>>();
+	private static Map<String, String> codesToSpecies = new HashMap<String, String>();
 	private static Set<String> allCodes;
 	/**
 	 * Private constructor to prevent instantiation.
@@ -82,6 +83,18 @@ public final class KEGGSpeciesCache
 						map.put(KEGG_CODE, code);
 						map.put(COMMON_NAME, commonName);
 						speciesMap.put(name, map);
+						codesToSpecies.put(code, name);
+//						// Special case for "Plasmodium falciparum": Reactome list this species with the names "[Plasmodium falciparum, malaria parasite P. falciparum]",
+//						// But KEGG has the names: "Plasmodium falciparum 3D7, Plasmodium falciparum Dd2, Plasmodium falciparum HB3". 
+//						// The code that Reactome needs for P.Falciparum is "pfa" which in KEGG is "Plasmodium falciparum 3D7", so 
+//						// we need special code to handle this, because if we just try to match the names, IT JUST WON'T WORK!
+//						if (code.equals("pfa"))
+//						{
+//							map = new HashMap<String,String>(2);
+//							map.put(KEGG_CODE, code);
+//							map.put(COMMON_NAME, "Plasmodium falciparum");
+//							speciesMap.put("Plasmodium falciparum", map);
+//						}
 					}
 					else
 					{
@@ -148,5 +161,47 @@ public final class KEGGSpeciesCache
 		}
 		return KEGGSpeciesCache.allCodes;
 	}
+	
+	/**
+	 * Returns the set of KEGG species names (not "common" names).
+	 * @return
+	 */
+	public static Set<String> getKeggSpeciesNames()
+	{
+		return speciesMap.keySet();
+	}
+	
+	/**
+	 * Strips out the species code prefix from a KEGG identifier string.
+	 * @param identifier - the identifier string to prune
+	 * @return The identifier, minus any species code prefix that might have been there.
+	 */
+	public static String pruneKEGGSpeciesCode(String identifier)
+	{
+		if (identifier != null && identifier.contains(":"))
+		{
+			String[] parts = identifier.split(":");
+			// Species code prefix will be the left-most part, if you split on ":".
+			// There could be *other* parts (such as "si" in "dre:si:ch73-368j24.13"), but the species code is what matters here.
+			String prefix = parts[0];
+			// remove the species code, IF it's in the list of known KEGG species codes.
+			if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(prefix))
+			{
+				identifier = identifier.replaceFirst(prefix + ":", "");
+			}
+		}
+		return identifier;
+	}
+
+	/**
+	 * Returns the KEGG name of a species, give the code.
+	 * @param abbreviation
+	 * @return
+	 */
+	public static String getSpeciesName(String abbreviation)
+	{
+		return codesToSpecies.get(abbreviation);
+	}
+	
 }
 

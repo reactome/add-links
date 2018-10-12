@@ -17,12 +17,13 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 
 /*
  * Creates references for identifiers that were mapped from one database (usually UniProt) to another by the UniProt web service.
  * The name *is* pretty terrible, need to come up with something better later.
  */
-public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //SimpleReferenceCreator< Map<String,List<String>> >
+public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator
 {
 
 	ReferenceObjectCache refObjectCache = new ReferenceObjectCache(this.adapter, true);
@@ -109,11 +110,16 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
-					
 						String sourceIdentifier = uniprotID;
 						String targetIdentifier = otherIdentifierID;
 						try
 						{
+							// Special case for KEGG - prune species code prefix.
+							if (this.targetRefDB.toUpperCase().trim().contains("KEGG"))
+							{
+								targetIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(targetIdentifier);
+							}
+							
 							// Now we need to get the DBID of the pre-existing identifier.
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
 							if (sourceInstances != null && sourceInstances.size() > 0)
@@ -147,11 +153,27 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									if (this.targetRefDB.toUpperCase().contains("KEGG"))
 									{
 										// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
-										targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, speciesID);
+										if (targetIdentifier.startsWith("vg:"))
+										{
+											targetDB = "KEGG Gene (Viruses)";
+											targetIdentifier = targetIdentifier.replaceFirst("vg:", "");
+										}
+										else if (targetIdentifier.startsWith("ad:"))
+										{
+											targetDB = "KEGG Gene (Addendum)";
+											targetIdentifier = targetIdentifier.replaceFirst("ad:", "");
+										}
+										else
+										{
+											targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, speciesID);
+										}
 										if (targetDB == null)
 										{
-											targetDB = this.targetRefDB;
+											// targetDB = this.targetRefDB;
+											logger.error("No KEGG DB Name could be obtained for this identifier: {}. This cross-reference will not be created.", targetIdentifier);
 										}
+										//targetDB = this.targetRefDB;
+										
 									}
 									else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 									{
@@ -190,16 +212,15 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									
 									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier, targetDB);
 									String thingToCreate = targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID+","+targetDB;
-									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
+									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate) && targetDB != null)
 									{
-										logger.info("Need to create {} references", thingsToCreate.size());
+										//logger.info("Need to create {} references", thingsToCreate.size());
 										if (!this.testMode)
 										{
 											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
 											thingsToCreate.add(thingToCreate);
 										}
 										createdCounter.getAndIncrement();
-										
 									}
 								}
 							}
