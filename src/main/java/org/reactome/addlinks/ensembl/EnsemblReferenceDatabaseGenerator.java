@@ -86,16 +86,19 @@ public final class EnsemblReferenceDatabaseGenerator
 				// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
 				String[] parts = line.split(" : ");
 				String speciesName = parts[0].trim();
-				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
-				if (parts.length > 1)
+				// Don't create species-specific ReferenceDatabase objects if Reactome doesn't have that species.
+				if (objectCache.getSetOfSpeciesNames().contains(speciesName))
 				{
-					String[] speciesNameAliases = parts[1].split(" , ");
-					for (String alias : speciesNameAliases)
+					EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
+					if (parts.length > 1)
 					{
-						EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, alias.trim());
+						String[] speciesNameAliases = parts[1].split(" , ");
+						for (String alias : speciesNameAliases)
+						{
+							EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, alias.trim());
+						}
 					}
 				}
-			
 			}
 		}
 	}
