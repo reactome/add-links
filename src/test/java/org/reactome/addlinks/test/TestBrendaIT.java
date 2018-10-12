@@ -139,7 +139,7 @@ public class TestBrendaIT
 		List<String> identifiers = new ArrayList<String>();
 		String originalDestination = brendaRetriever.getFetchDestination();
 		//for (String speciesId : objectCache.getSpeciesNamesByID().keySet())
-		for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
+		for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 		{
 			//String speciesName = objectCache.getSpeciesNamesByID().get(speciesId).get(0);
 			String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
