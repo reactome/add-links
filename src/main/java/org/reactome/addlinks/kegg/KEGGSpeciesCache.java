@@ -3,8 +3,10 @@ package org.reactome.addlinks.kegg;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -26,7 +28,7 @@ public final class KEGGSpeciesCache
 	private static final Logger logger = LogManager.getLogger();
 	private static String speciesURL = "http://www.genome.jp/kegg-bin/download_htext?htext=br08601.keg&format=htext&filedir=";
 	// The map of KEGG codes will be keyed of the proper (Latin) species name, as they are found in KEGG.
-	private static Map<String,Map<String,String>> speciesMap = new HashMap<String,Map<String,String>>();
+	private static Map<String, List<Map<String,String>>> speciesMap = new HashMap<String, List<Map<String,String>>>();
 	private static Map<String, String> codesToSpecies = new HashMap<String, String>();
 	private static Set<String> allCodes;
 	/**
@@ -82,7 +84,18 @@ public final class KEGGSpeciesCache
 						Map<String,String> map = new HashMap<String,String>(2);
 						map.put(KEGG_CODE, code);
 						map.put(COMMON_NAME, commonName);
-						speciesMap.put(name, map);
+						// Check that the name isn't already in the map. Yes, the KEGG species file *does* contain duplicated names with different codes.
+						if (speciesMap.containsKey(name))
+						{
+							speciesMap.get(name).add(map);
+						}
+						else
+						{
+							List<Map<String,String>> list = new ArrayList<Map<String,String>>();
+							list.add(map);
+							speciesMap.put(name, list);
+						}
+//						speciesMap.put(name, map);
 						codesToSpecies.put(code, name);
 					}
 					else
@@ -105,36 +118,36 @@ public final class KEGGSpeciesCache
 	}
 	
 	/**
-	 * Get the KEGG code for a species name.
+	 * Get the KEGG codes for a species name.
 	 * @param name - The name of the species. 
 	 * @return The KEGG code for that species.
 	 */
-	public static String getKEGGCode(String name)
+	public static List<String> getKEGGCodes(String name)
 	{
-		Map<String,String> m = KEGGSpeciesCache.speciesMap.get(name);
-		String code = null;
-		if (m != null)
+		List<Map<String, String>> list = KEGGSpeciesCache.speciesMap.get(name);
+		List<String> codes = null;
+		if (list != null)
 		{
-			code = m.get(KEGG_CODE); 
+			codes = list.stream().map( m -> m.get(KEGG_CODE)).collect(Collectors.toList());
 		}
-		return code;
+		return codes;
 	}
 	
 	/**
-	 * Get the KEGG common name for a species. NOTE: Not all species have a common name in the KEGG database, so this may return null
+	 * Get the KEGG common names for a species. NOTE: Not all species have a common name in the KEGG database, so this may return null
 	 * even if it is a valid organism in the KEGG listing.
 	 * @param name - the name of the organism to look up.
 	 * @return The common name (according to KEGG), if there is one.
 	 */
-	public static String getKEGGCommonName(String name)
+	public static List<String> getKEGGCommonNames(String name)
 	{
-		Map<String,String> m = KEGGSpeciesCache.speciesMap.get(name);
-		String commonName = null;
-		if (m != null)
+		List<Map<String,String>> list = KEGGSpeciesCache.speciesMap.get(name);
+		List<String> commonNames = null;
+		if (list != null)
 		{
-			commonName = m.get(COMMON_NAME); 
+			commonNames = list.stream().map( m -> m.get(COMMON_NAME)).collect(Collectors.toList()); 
 		}
-		return commonName;
+		return commonNames;
 	}
 	
 	/**
@@ -146,7 +159,8 @@ public final class KEGGSpeciesCache
 		// save the codes in a separate variable so that subsquent calls to this function are faster. 
 		if (KEGGSpeciesCache.allCodes == null)
 		{
-			KEGGSpeciesCache.allCodes =  KEGGSpeciesCache.speciesMap.values().stream().map( v -> v.get(KEGG_CODE) ).collect(Collectors.toSet());
+			//KEGGSpeciesCache.allCodes =  KEGGSpeciesCache.speciesMap.values().stream().map( v -> v.get(KEGG_CODE) ).collect(Collectors.toSet());
+			KEGGSpeciesCache.allCodes =  KEGGSpeciesCache.speciesMap.values().stream().flatMap( v -> v.stream().map( i -> i.get(KEGG_CODE)).collect(Collectors.toList()).stream() ).collect(Collectors.toSet()) ;
 		}
 		return KEGGSpeciesCache.allCodes;
 	}
@@ -160,12 +174,7 @@ public final class KEGGSpeciesCache
 		return speciesMap.keySet();
 	}
 	
-	/**
-	 * Strips out the species code prefix from a KEGG identifier string.
-	 * @param identifier - the identifier string to prune
-	 * @return The identifier, minus any species code prefix that might have been there.
-	 */
-	public static String pruneKEGGSpeciesCode(String identifier)
+	public static String extractKEGGSpeciesCode(String identifier)
 	{
 		if (identifier != null && identifier.contains(":"))
 		{
@@ -173,11 +182,26 @@ public final class KEGGSpeciesCache
 			// Species code prefix will be the left-most part, if you split on ":".
 			// There could be *other* parts (such as "si" in "dre:si:ch73-368j24.13"), but the species code is what matters here.
 			String prefix = parts[0];
-			// remove the species code, IF it's in the list of known KEGG species codes.
+			// RETURN the species code, IF it's in the list of known KEGG species codes.
 			if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(prefix))
 			{
-				identifier = identifier.replaceFirst(prefix + ":", "");
+				return prefix;
 			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Strips out the species code prefix from a KEGG identifier string.
+	 * @param identifier - the identifier string to prune
+	 * @return The identifier, minus any species code prefix that might have been there.
+	 */
+	public static String pruneKEGGSpeciesCode(String identifier)
+	{
+		String prefix = KEGGSpeciesCache.extractKEGGSpeciesCode(identifier);
+		if (prefix != null)
+		{
+			identifier = identifier.replaceFirst(prefix + ":", "");
 		}
 		return identifier;
 	}

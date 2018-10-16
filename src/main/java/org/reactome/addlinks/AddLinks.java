@@ -475,7 +475,7 @@ public class AddLinks
 			List<Callable<Boolean>> keggJobs = new ArrayList<Callable<Boolean>>();
 			
 			for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sequential()
-												.filter(speciesName -> KEGGSpeciesCache.getKEGGCode(speciesName)!=null)
+												.filter(speciesName -> KEGGSpeciesCache.getKEGGCodes(speciesName)!=null)
 												.collect(Collectors.toList()))
 			{
 				String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
