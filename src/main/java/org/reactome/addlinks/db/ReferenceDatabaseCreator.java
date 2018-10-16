@@ -34,10 +34,12 @@ public class ReferenceDatabaseCreator
 	 * @param accessUrl - The access URL of the RefereneDatabase.
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
 	 * @param aliases - Other names.
+	 * @return the DB_ID of the new ReferenceDatabase.
 	 * @throws Exception 
 	 */
-	public void createReferenceDatabaseWithAliases(String url, String accessUrl, String primaryName, String ... aliases) throws Exception
+	public Long createReferenceDatabaseWithAliases(String url, String accessUrl, String primaryName, String ... aliases) throws Exception
 	{
+		Long dbid = null;
 		//First, let's check that the Reference Database doesn't already exist. all we have to go on is the name...
 		try
 		{
@@ -59,7 +61,7 @@ public class ReferenceDatabaseCreator
 					if ( (names==null || names.size() == 0)
 						&& (names !=null && !names.get(0).equals(primaryName)) )
 					{
-						createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
+						dbid = createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 					}
 					else
 					{
@@ -69,7 +71,7 @@ public class ReferenceDatabaseCreator
 			}
 			else
 			{
-				createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
+				dbid = createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 			}
 			
 		}
@@ -79,9 +81,22 @@ public class ReferenceDatabaseCreator
 			e.printStackTrace();
 			throw e;
 		}
+		return dbid;
 	}
 
-	private void createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	/**
+	 * Creates a ReferenceDatabase with a name and some alias-names.
+	 * @param url - The URL for the ReferenceDatabase. 
+	 * @param accessUrl - The URL that will be used to actually access data. Should contain ###ID### which will be used when other parts of Reactome need to insert the ID of the thing being accessed at this URL.
+	 * @param primaryName - The primary name for this Reference database.
+	 * @param refDBClass - The SchemaClass for the object that will be created.
+	 * @param aliases - A list of alternate names for the ReferenceDatabase object.
+	 * @return The DB_ID of the new ReferenceDatabase object that was just created.
+	 * @throws InvalidAttributeException
+	 * @throws InvalidAttributeValueException
+	 * @throws Exception
+	 */
+	private long createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws InvalidAttributeException, InvalidAttributeValueException, Exception
 	{
 		// Create new GKInstance, with the appropriate primary name.
 		GKInstance newReferenceDB = new GKInstance(refDBClass);
@@ -97,7 +112,7 @@ public class ReferenceDatabaseCreator
 		newReferenceDB.setDbAdaptor(this.adapter);
 		InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
 		//Persist to storage.
-		this.adapter.storeInstance(newReferenceDB);
+		return this.adapter.storeInstance(newReferenceDB);
 	}
 	
 	/**
