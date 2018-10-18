@@ -169,13 +169,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 										targetDB = createNewKEGGReferenceDatabase(objectCache, keggIdentifier, keggPrefix);
 									}
 								}
-//								targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromKeggSpeciesCode(objectCache, keggPrefix);
-//								if (targetDB == null)
-//								{
-//									targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromReactomeSpecies(objectCache, String.valueOf(speciesID));	
-//								}
 							}
-
 							if (!this.testMode && targetDB != null)
 							{
 								this.refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);

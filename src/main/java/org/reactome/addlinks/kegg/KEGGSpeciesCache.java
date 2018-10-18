@@ -5,7 +5,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,7 +94,6 @@ public final class KEGGSpeciesCache
 							list.add(map);
 							speciesMap.put(name, list);
 						}
-//						speciesMap.put(name, map);
 						codesToSpecies.put(code, name);
 					}
 					else
