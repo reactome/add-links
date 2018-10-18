@@ -151,35 +151,43 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									}
 									else if (this.targetRefDB.toUpperCase().contains("KEGG"))
 									{
+										targetDB = null;
 										// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
 										if (targetIdentifier.startsWith("vg:"))
 										{
 											targetDB = "KEGG Gene (Viruses)";
 											targetIdentifier = targetIdentifier.replaceFirst("vg:", "");
 										}
-										else if (targetIdentifier.startsWith("ad:"))
+										else if (targetIdentifier.startsWith("ag:"))
 										{
 											targetDB = "KEGG Gene (Addendum)";
-											targetIdentifier = targetIdentifier.replaceFirst("ad:", "");
+											targetIdentifier = targetIdentifier.replaceFirst("ag:", "");
 										}
 										else
 										{
-											targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromReactomeSpecies(this.refObjectCache, speciesID);
-											if (targetDB == null)
+											// At this point, we really should be looking for a way to get the DB_ID for the ReferenceDatabase, based on the keggPrefix.
+											// This is where we start running in to problems where multiple kegg codes map to the *EXACT* same species name.
+											// So we need to create a new ReferenceDatabase if necessary that differs only by accessUrl.
+											synchronized (this)
 											{
-												targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromKeggSpeciesCode(this.refObjectCache, keggPrefix);
+												Long targetDBID = KEGGReferenceDatabaseGenerator.getKeggReferenceDatabase(keggPrefix);
+												if (targetDBID != null)
+												{
+													targetDB = targetDBID.toString();
+												}
+												if (targetDB == null)
+												{
+													logger.warn("No KEGG DB Name could be obtained for this identifier: {}:{}. The next step is to try to create a *new* ReferenceDatabase.", keggPrefix, targetIdentifier);
+													targetDB = createNewKEGGReferenceDatabase(targetIdentifier, keggPrefix);
+												}
 											}
+//											targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromKeggSpeciesCode(this.refObjectCache, keggPrefix);
+//											if (targetDB == null)
+//											{
+//												targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromReactomeSpecies(this.refObjectCache, speciesID);
+//											}
 										}
 										
-										// targetDB = this.targetRefDB;
-										synchronized (this)
-										{
-											if (targetDB == null)
-											{
-												logger.warn("No KEGG DB Name could be obtained for this identifier: {}:{}. The next step is to try to create a *new* ReferenceDatabase.", keggPrefix, targetIdentifier);
-												targetDB = createNewKEGGReferenceDatabase(targetIdentifier, keggPrefix);
-											}
-										}
 									}
 									else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 									{

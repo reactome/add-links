@@ -45,8 +45,13 @@ public class ReferenceDatabaseCreator
 		{
 			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
+			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
 			@SuppressWarnings("unchecked")
-			Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+			//Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
+			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
+																? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
+																: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
 			// Now that we have a bunch of things that contain primaryName, we need to find the ones where the rank of that name-attribute is 0.
 			if (preexistingReferenceDBs!=null && preexistingReferenceDBs.size() > 0)
 			{
@@ -66,6 +71,7 @@ public class ReferenceDatabaseCreator
 					else
 					{
 						logger.warn("The primaryName {} appears to already be in use by {}", primaryName, refDBInst);
+						dbid = refDBInst.getDBID();
 					}
 				}
 			}
