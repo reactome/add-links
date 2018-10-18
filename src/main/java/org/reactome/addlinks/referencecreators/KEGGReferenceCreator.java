@@ -91,6 +91,12 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					{
 						keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(keggIdentifier);
 					}
+					if (keggPrefix == null || (keggData.get(KEGGKeys.KEGG_SPECIES) != null && !keggPrefix.equals(keggData.get(KEGGKeys.KEGG_SPECIES))))
+					{
+						// Use the KEGG SPECIES if it was not possible to extract the code from the identifier/gene identifier OR if there's a mismatch between
+						// the extracted code and the species.
+						keggPrefix = keggData.get(KEGGKeys.KEGG_SPECIES);
+					}
 					keggGeneIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggGeneIdentifier);
 					
 					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
@@ -140,30 +146,36 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 								targetDB = "KEGG Gene (Viruses)";
 								keggIdentifier = keggIdentifier.replaceFirst("vg:", "");
 							}
-							else if (keggIdentifier.startsWith("ad:"))
+							else if (keggIdentifier.startsWith("ag:"))
 							{
 								targetDB = "KEGG Gene (Addendum)";
-								keggIdentifier = keggIdentifier.replaceFirst("ad:", "");
+								keggIdentifier = keggIdentifier.replaceFirst("ag:", "");
 							}
 							else
 							{
-								targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromReactomeSpecies(objectCache, String.valueOf(speciesID));
+								Long targetDBID = KEGGReferenceDatabaseGenerator.getKeggReferenceDatabase(keggPrefix);
+								if (targetDBID != null)
+								{
+									targetDB = targetDBID.toString();
+								}
+								// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier. 
+								// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use. 
 								if (targetDB == null)
 								{
-									targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromKeggSpeciesCode(objectCache, keggPrefix);
+									logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", keggIdentifier);
+									
+									if (keggPrefix != null)
+									{
+										targetDB = createNewKEGGReferenceDatabase(objectCache, keggIdentifier, keggPrefix);
+									}
 								}
+//								targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromKeggSpeciesCode(objectCache, keggPrefix);
+//								if (targetDB == null)
+//								{
+//									targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromReactomeSpecies(objectCache, String.valueOf(speciesID));	
+//								}
 							}
-							// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier. 
-							// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use. 
-							if (targetDB == null)
-							{
-								logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", keggIdentifier);
-								
-								if (keggPrefix != null)
-								{
-									targetDB = createNewKEGGReferenceDatabase(objectCache, keggIdentifier, keggPrefix);
-								}
-							}
+
 							if (!this.testMode && targetDB != null)
 							{
 								this.refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);

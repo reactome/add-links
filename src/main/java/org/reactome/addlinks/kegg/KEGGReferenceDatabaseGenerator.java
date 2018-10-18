@@ -2,7 +2,9 @@ package org.reactome.addlinks.kegg;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ public class KEGGReferenceDatabaseGenerator
 	private static final String KEGG_URL = "http://www.genome.jp/dbget-bin/www_bget?###SP3######ID###";
 	private static ReferenceDatabaseCreator dbCreator;
 	private static MySQLAdaptor adaptor;
+	private static Map<String, GKInstance> keggCodesToRefDBMap = new HashMap<String, GKInstance>();
 	
 	// private constructor to avoid instantiation.
 	private KEGGReferenceDatabaseGenerator()
@@ -43,7 +46,7 @@ public class KEGGReferenceDatabaseGenerator
 		{
 			// Even if the cache contains a reference database with this name, we should check that the accessUrl is different. This is because
 			// KEGG sometimes has different codes for one species name. For example, "Oryza sativa japonica" can map to either "dosa" or "osa".
-			// and "Mycobacterium tuberculosis H37Rv" can have codes "mtu" or"mtv", and in these cases, new ReferenceDatabase objects should be
+			// And "Mycobacterium tuberculosis H37Rv" can have codes "mtu" or"mtv", and in these cases, new ReferenceDatabase objects should be
 			// created with the correct KEGG species code.
 			@SuppressWarnings("unchecked")
 			Set<GKInstance> preexistingRefDBs = (Set<GKInstance>) adaptor.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.accessUrl, "=", speciesURL);
@@ -52,15 +55,14 @@ public class KEGGReferenceDatabaseGenerator
 			if (preexistingRefDBs != null && preexistingRefDBs.size() > 0)
 			{
 				logger.debug("KEGG ReferenceDatabase name {} already exists, nothing new will be created.", dbName);
-				// Just take the DB_ID of the first one.
-				//return Long.parseLong(objectCache.getRefDbNamesToIds().get(dbName).get(0));
+				// Just take the DB_ID of the first one. And since the query was based on accessUrl, there should only ever be 1 item in the list.
 				return (new ArrayList<GKInstance>(preexistingRefDBs)).get(0).getDBID();
 			}
 		}
 		// If we got to this point, it means that no pre-existing reference database could be found, so let's create a new one.
 		logger.debug("Adding a KEGG ReferenceDatabase {} for species: {} with accessURL: {}", dbName, speciesName, speciesURL);
-		return KEGGReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(KEGG_URL, speciesURL, dbName, "KEGG", "KEGG Gene");
-
+		Long dbId = KEGGReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(KEGG_URL, speciesURL, dbName, "KEGG", "KEGG Gene");
+		return dbId;
 	}
 	
 	/**
@@ -90,7 +92,9 @@ public class KEGGReferenceDatabaseGenerator
 					{
 						String speciesURL = KEGG_URL.replace("###SP3###", code + ":");
 						String newDBName = "KEGG Gene ("+speciesName + ")";
-						createReferenceDatabase(newDBName, speciesName, speciesURL, objectCache);
+						Long dbId = createReferenceDatabase(newDBName, speciesName, speciesURL, objectCache);
+						GKInstance refDBInst = adaptor.fetchInstance(dbId);
+						KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.put(code, refDBInst);
 						LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 					}
 					catch(Exception e)
@@ -122,6 +126,46 @@ public class KEGGReferenceDatabaseGenerator
 		}
 		LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 		
+	}
+	
+	public static Long getKeggReferenceDatabase(String keggSpeciesCode)
+	{
+		Long dbId = null;
+		if (KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.containsKey(keggSpeciesCode))
+		{
+			dbId = KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.get(keggSpeciesCode).getDBID();
+		}
+		// If it's not in the cache, for some reason, look it up, by the accessUrl which will contain the speciesCode.
+		else
+		{
+			String speciesURL = KEGG_URL.replace("###SP3###", keggSpeciesCode + ":");
+			try
+			{
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> refDBs = (Collection<GKInstance>) KEGGReferenceDatabaseGenerator.adaptor.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.accessUrl, "=", speciesURL);
+				// There should be exactly one result!
+				if (refDBs.size() == 1)
+				{
+					GKInstance refDB = refDBs.stream().findFirst().get();
+					dbId = refDB.getDBID();
+					// And we will add to the cache since it wasn't there.
+					KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.put(keggSpeciesCode, refDB);
+				}
+				else if (refDBs.size() == 0)
+				{
+					logger.error("Sorry, there was no KEGG ReferenceDatabase with the KEGG species code {}", keggSpeciesCode);
+				}
+				else
+				{
+					logger.warn("More than 1 ({}) KEGG ReferenceDatabases were found in the database with the species code {}. You might want to look into this... ReferenceDatabase objects: {}", refDBs.size(), keggSpeciesCode, refDBs.toString());
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return dbId;
 	}
 	
 	/**
@@ -206,7 +250,10 @@ public class KEGGReferenceDatabaseGenerator
 		String newDBName = "KEGG Gene ("+keggSpeciesName + ")";
 		try
 		{
-			return new Long(createReferenceDatabase(newDBName, keggSpeciesName, speciesURL, objectCache)).toString();
+			Long dbId = new Long(createReferenceDatabase(newDBName, keggSpeciesName, speciesURL, objectCache));
+			GKInstance refDBInst = adaptor.fetchInstance(dbId);
+			KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.put(keggPrefix, refDBInst);
+			return dbId.toString();
 		}
 		catch (Exception e)
 		{
