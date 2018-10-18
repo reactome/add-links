@@ -181,13 +181,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 													targetDB = createNewKEGGReferenceDatabase(targetIdentifier, keggPrefix);
 												}
 											}
-//											targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromKeggSpeciesCode(this.refObjectCache, keggPrefix);
-//											if (targetDB == null)
-//											{
-//												targetDB = KEGGReferenceDatabaseGenerator.generateDBNameFromReactomeSpecies(this.refObjectCache, speciesID);
-//											}
 										}
-										
 									}
 									else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 									{

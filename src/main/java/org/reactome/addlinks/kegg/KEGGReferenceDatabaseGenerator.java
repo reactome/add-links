@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -128,6 +127,11 @@ public class KEGGReferenceDatabaseGenerator
 		
 	}
 	
+	/**
+	 * Gets the DBID of a KEGG ReferenceDatabase, based on a KEGG species code.
+	 * @param keggSpeciesCode KEGG species code.
+	 * @return The DBID of the KEGG ReferenceDatabase object, if it exists. If no ReferenceDatabase can be found (or too many matching ReferenceDatabases), then NULL will be returned.
+	 */
 	public static Long getKeggReferenceDatabase(String keggSpeciesCode)
 	{
 		Long dbId = null;
@@ -185,44 +189,21 @@ public class KEGGReferenceDatabaseGenerator
 																return KEGGSpeciesCache.getKEGGCodes(s) != null;
 															})
 															.findFirst().orElse(null);
-//			if (keggSpeciesName == null)
-//			{
-//				// Ok, there was no exact match. Maybe there's a substring match?
-//				// We'll have to see if the Reactome species names are substrings of any KEGG species names, or vice-versa.
-//				try
-//				{
-//					GKInstance species = KEGGReferenceDatabaseGenerator.adaptor.fetchInstance(Long.parseLong(speciesID));
-//
-//					@SuppressWarnings("unchecked")
-//					Collection<String> reactomeSpeciesNames = (Collection<String>) species.getAttributeValuesList(ReactomeJavaConstants.name);
-//
-//					// Note: if this succeeds, the value in keggSpeciesName will actually be a closely-matching *REACTOME* species name
-//					// This is because when we created the databases, we did it with the REACTOME names, so we need to return a REACTOME name
-//					// in the case where KEGG and Reactome have species names that are close but not exact matches.
-//					keggSpeciesName = reactomeSpeciesNames.parallelStream()
-//										.filter( rName -> KEGGSpeciesCache.getKeggSpeciesNames().stream()
-//																			.filter(kName -> kName.contains(rName) || rName.contains(kName))
-//																			.collect(Collectors.toList()).size() > 0)
-//										.findFirst().orElse(null);
-//
-//				}
-//				catch (Exception e)
-//				{
-//					e.printStackTrace();
-//				}
-//			}
+
 			if (keggSpeciesName != null)
 			{
 				targetDB = "KEGG Gene (" + keggSpeciesName + ")";
 			}
-//			else
-//			{
-//				logger.warn("Tried to generate a KEGG DB Name for the species {} ({}) but no KEGG species name was found!", speciesID, objectCache.getSpeciesNamesByID().get(speciesID));
-//			}
 		}
 		return targetDB;
 	}
 	
+	/**
+	 * Generates a ReferenceDatabase name based on a KEGG species code. This will do a look-up in the cache for the species code to get the KEGG species name.
+	 * @param objectCache 
+	 * @param keggSpeciesCode A KEGG species code.
+	 * @return "Kegg Gene ("+keggSpeciesName+")"
+	 */
 	public static String generateDBNameFromKeggSpeciesCode(ReferenceObjectCache objectCache, String keggSpeciesCode)
 	{
 		String targetDB = null;
