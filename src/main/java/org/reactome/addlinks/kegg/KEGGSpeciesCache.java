@@ -172,6 +172,11 @@ public final class KEGGSpeciesCache
 		return speciesMap.keySet();
 	}
 	
+	/**
+	 * If <code>identifier</code> begins with a known KEGG species code, this function will return that prefix.
+	 * @param identifier An Identifier.
+	 * @return The prefix, if the identifier begins with a prefix.
+	 */
 	public static String extractKEGGSpeciesCode(String identifier)
 	{
 		if (identifier != null && identifier.contains(":"))

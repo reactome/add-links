@@ -139,37 +139,43 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						if (!this.testMode)
 						{
 							String targetDB = null;
-							// "vg:" and "ad:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
-							// the identifier has already been pruned.
-							if (keggIdentifier.startsWith("vg:"))
-							{
-								targetDB = "KEGG Gene (Viruses)";
-								keggIdentifier = keggIdentifier.replaceFirst("vg:", "");
-							}
-							else if (keggIdentifier.startsWith("ag:"))
-							{
-								targetDB = "KEGG Gene (Addendum)";
-								keggIdentifier = keggIdentifier.replaceFirst("ag:", "");
-							}
-							else
-							{
-								Long targetDBID = KEGGReferenceDatabaseGenerator.getKeggReferenceDatabase(keggPrefix);
-								if (targetDBID != null)
-								{
-									targetDB = targetDBID.toString();
-								}
-								// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier. 
-								// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use. 
-								if (targetDB == null)
-								{
-									logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", keggIdentifier);
-									
-									if (keggPrefix != null)
-									{
-										targetDB = createNewKEGGReferenceDatabase(objectCache, keggIdentifier, keggPrefix);
-									}
-								}
-							}
+							KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, this.logger);
+							String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggIdentifier, keggPrefix);
+							targetDB = parts[0];
+							keggIdentifier = parts[1];
+
+//							String targetDB = null;
+//							// "vg:" and "ad:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
+//							// the identifier has already been pruned.
+//							if (keggIdentifier.startsWith("vg:"))
+//							{
+//								targetDB = "KEGG Gene (Viruses)";
+//								keggIdentifier = keggIdentifier.replaceFirst("vg:", "");
+//							}
+//							else if (keggIdentifier.startsWith("ag:"))
+//							{
+//								targetDB = "KEGG Gene (Addendum)";
+//								keggIdentifier = keggIdentifier.replaceFirst("ag:", "");
+//							}
+//							else
+//							{
+//								Long targetDBID = KEGGReferenceDatabaseGenerator.getKeggReferenceDatabase(keggPrefix);
+//								if (targetDBID != null)
+//								{
+//									targetDB = targetDBID.toString();
+//								}
+//								// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier. 
+//								// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use. 
+//								if (targetDB == null)
+//								{
+//									logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", keggIdentifier);
+//									
+//									if (keggPrefix != null)
+//									{
+//										targetDB = createNewKEGGReferenceDatabase(objectCache, keggIdentifier, keggPrefix);
+//									}
+//								}
+//							}
 							if (!this.testMode && targetDB != null)
 							{
 								this.refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);

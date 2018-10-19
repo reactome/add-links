@@ -177,7 +177,9 @@ public class KEGGReferenceDatabaseGenerator
 	 * @param objectCache
 	 * @param speciesID
 	 * @return A string of the form "KEGG Gene (${SPECIES_NAME})"
+	 * @deprecated this method looks up KEGG species by the Reactome species ID, which is not the best way to do it.
 	 */
+	@Deprecated()
 	public static String generateDBNameFromReactomeSpecies(ReferenceObjectCache objectCache, String speciesID)
 	{
 		String targetDB = null;
