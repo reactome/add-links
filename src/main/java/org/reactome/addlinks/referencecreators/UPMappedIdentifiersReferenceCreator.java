@@ -93,6 +93,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		
 		if (mappings != null && mappings.keySet() != null && mappings.keySet().size() > 0)
 		{
+			List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 			for (String speciesID : mappings.keySet())
 			{
 				if (mappings.get(speciesID).keySet().size() > 0)
@@ -103,7 +104,6 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				{
 					logger.info("No references to create for species {}", speciesID);
 				}
-				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				
 				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
 				{
@@ -193,46 +193,45 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						}
 					}
 				} );
-				
-				// Go through the list of references that need to be created, and create them!
-				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-					String[] parts = newIdentifier.split(",");
-					String identifierValue = parts[0];
-					String targetDB = parts[3];
-					logger.trace("Creating new identifier {} ", identifierValue );
-					try
-					{
-						String species = parts[2];
-						String referenceToValue = parts[1];
-						// The string had a species-part.
-						if (species != null && !species.trim().equals(""))
-						{
-							if (!this.testMode)
-							{
-								this.refCreator.createIdentifier(identifierValue, referenceToValue, targetDB, personID, this.getClass().getName(), Long.valueOf(species));
-							}
-							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP, Monarch
-							// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
-							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
-							{
-								runNCBIGeneRefCreators(personID, parts);
-							}
-						}
-						// The string did NOT have a species-part.
-						else
-						{
-							if (!this.testMode)
-							{
-								this.refCreator.createIdentifier(identifierValue, referenceToValue, this.targetRefDB, personID, this.getClass().getName());
-							}
-						}
-					}
-					catch (Exception e)
-					{
-						throw new RuntimeException(e);
-					}
-				} );
 			}
+			// Go through the list of references that need to be created, and create them!
+			thingsToCreate.stream().sequential().forEach( newIdentifier -> {
+				String[] parts = newIdentifier.split(",");
+				String identifierValue = parts[0];
+				String targetDB = parts[3];
+				logger.trace("Creating new identifier {} ", identifierValue );
+				try
+				{
+					String species = parts[2];
+					String referenceToValue = parts[1];
+					// The string had a species-part.
+					if (species != null && !species.trim().equals(""))
+					{
+						if (!this.testMode)
+						{
+							this.refCreator.createIdentifier(identifierValue, referenceToValue, targetDB, personID, this.getClass().getName(), Long.valueOf(species));
+						}
+						// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP, Monarch
+						// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
+						if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
+						{
+							runNCBIGeneRefCreators(personID, parts);
+						}
+					}
+					// The string did NOT have a species-part.
+					else
+					{
+						if (!this.testMode)
+						{
+							this.refCreator.createIdentifier(identifierValue, referenceToValue, this.targetRefDB, personID, this.getClass().getName());
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException(e);
+				}
+			} );
 			logger.info("{} Reference creation summary:\n"
 					+ "\t# Identifiers created: {}\n"
 					+ "\t# Identifiers which already existed: {} \n"
