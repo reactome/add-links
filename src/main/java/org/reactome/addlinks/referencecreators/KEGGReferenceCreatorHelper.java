@@ -25,6 +25,12 @@ class KEGGReferenceCreatorHelper
 		this.logger = logger;
 	}
 	
+	/**
+	 * Create a new KEGG Reference Database.
+	 * @param targetIdentifier An identifier that will belong in this database. Not actually used in the process of ReferenceDatabase creation, just used in a logging message.
+	 * @param keggPrefix The KEGG Prefix - the KEGG species to use will be looked up, based on this prefix.
+	 * @return The DBID or Name of the new KEGG Database.
+	 */
 	private synchronized String createNewKEGGReferenceDatabase(String targetIdentifier, String keggPrefix)
 	{
 		String targetDB = null;
@@ -45,24 +51,7 @@ class KEGGReferenceCreatorHelper
 		}
 		return targetDB;
 	}
-	
-//	public synchronized  String createNewKEGGReferenceDatabase(ReferenceObjectCache objectCache, String keggIdentifier, String keggPrefix)
-//	{
-//		String targetDB = null;
-//		// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
-//		String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
-//		if (keggSpeciesName != null)
-//		{
-//			targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, objectCache);
-//			objectCache.rebuildRefDBNamesAndMappings();
-//		}
-//		if (targetDB == null)
-//		{
-//			logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, keggIdentifier);
-//		}
-//		return targetDB;
-//	}
-	
+
 	/**
 	 * This function will determine which KEGG ReferenceDatabase should be used for a KEGG identifier. If there is no ReferenceDatabase currently in the system,
 	 * it will *create* a new ReferenceDatabase object.
