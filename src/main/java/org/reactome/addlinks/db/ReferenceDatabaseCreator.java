@@ -46,9 +46,8 @@ public class ReferenceDatabaseCreator
 			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
 			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
-			@SuppressWarnings("unchecked")
-			//Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
 			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
+			@SuppressWarnings("unchecked")
 			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
 																? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
 																: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
@@ -63,8 +62,7 @@ public class ReferenceDatabaseCreator
 					List<String> names = (List<String>) refDBInst.getAttributeValuesList(ReactomeJavaConstants.name);
 					
 					// if primaryName is not already in use...
-					if ( (names==null || names.size() == 0)
-						&& (names !=null && !names.get(0).equals(primaryName)) )
+					if ( (names==null || names.size() == 0) || (!names.get(0).equals(primaryName)) )
 					{
 						dbid = createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 					}
