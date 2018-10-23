@@ -28,7 +28,7 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 	@Override
 	public void createIdentifiers(long personID, Map<String,List<String>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
-		ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter);
+		ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter, true);
 		
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
@@ -41,35 +41,26 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 			try
 			{
 				// A ComplexPortal ID could have mappings to Uniprot, Reactome, or both.
+				// NOTE: In today's (2018-10-23) dev stand-up call, I confirmed with Robin that we'll just stick with mapping identifiers that already have a Reactome identifier.
+				// Later, there may be a decision to expand this, but for now we'll keep it simple.
 				for (String uniprotOrReactomeIdentifier : mappings.get(complexPortalID))
 				{
-					// TODO: Refactor the code in the if-else blocks - it can probably be simplified to a single function.
-					// If Reactome identifier...
 					if (uniprotOrReactomeIdentifier.matches("R-[a-zA-Z]{3}.+"))
 					{
-						// Now, we need to find this instance identified by uniprotOrReactomeIdentifier
-						@SuppressWarnings("unchecked")
-						Collection<GKInstance> instances = (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseObject, ReactomeJavaConstants.stableIdentifier, " LIKE ", uniprotOrReactomeIdentifier);
-						for (GKInstance instance : instances)
+						if (cache.getStableIdentifierCache().containsKey(uniprotOrReactomeIdentifier))
 						{
-//							@SuppressWarnings("unchecked")
-//							Collection<GKInstance> instances = (Collection<GKInstance>) identifierInstance.getReferers(ReactomeJavaConstants.crossReference);
-
-							// should only be one, but the function returns a collection...
-//							for (GKInstance instance : instances)
-//							{
+							GKInstance instance = cache.getStableIdentifierCache().get(uniprotOrReactomeIdentifier);
+							// Ensure that we only add identifiers to things of the correct class, which have the correct attribute. We could
+							// avoid this if we modified that cache to cache by Stable Identifier AND SchemaClass.
+							if (instance.getSchemClass().isa(this.classReferringToRefName) && instance.getSchemClass().isValidAttribute(this.referringAttributeName))
+							{
 								// check that the reference is not already there.
 								if (!this.checkXRefExists(instance, complexPortalID))
 								{
 									Long speciesID = ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID();
 									if (!this.testMode)
 									{
-										// Updating the classReferringToRefName is necessary because if the identifier is a Reactome identifier, we're dealing with a Complex,
-										// but if it's a Uniprot identifier, then we're dealing with some other PhysicalEntity, probably a ReferenceGeneProduct or EntityWithAccessionedSequence
-										this.setClassReferringToRefName(instance.getSchemClass().getName());
-										this.setReferringAttributeName(ReactomeJavaConstants.crossReference);
-										this.setClassToCreateName(ReactomeJavaConstants.DatabaseIdentifier);
-										this.refCreator.createIdentifier(uniprotOrReactomeIdentifier, String.valueOf(instance.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesID);
+										this.refCreator.createIdentifier(complexPortalID, String.valueOf(instance.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesID);
 									}
 									createdCounter.incrementAndGet();
 									referencingReactome.incrementAndGet();
@@ -78,53 +69,8 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 								{
 									xrefAlreadyExistsCounter.incrementAndGet();
 								}
-//							}
-						}
-					}
-					// else it's a Uniprot
-					else
-					{
-						List<GKInstance> fromCache = cache.getByIdentifier(uniprotOrReactomeIdentifier, ReactomeJavaConstants.ReferenceGeneProduct);
-						
-						// Now, we need to find this instance identified by uniprotOrReactomeIdentifier
-//						@SuppressWarnings("unchecked")
-//						Collection<GKInstance> identifierInstances = (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseIdentifier, ReactomeJavaConstants.identifier, "=", uniprotOrReactomeIdentifier);
-						if (fromCache != null)
-						{
-							for (GKInstance instance : fromCache)
-							{
-	//							@SuppressWarnings("unchecked")
-	//							Collection<GKInstance> instances = (Collection<GKInstance>) identifierInstance.getReferers(ReactomeJavaConstants.crossReference);
-								// should only be one, but the function returns a collection...
-	//							for (GKInstance instance : instances)
-								{
-									this.setClassReferringToRefName(instance.getSchemClass().getName());
-									this.setClassToCreateName(ReactomeJavaConstants.ReferenceDNASequence);
-									this.setReferringAttributeName(ReactomeJavaConstants.crossReference);
-									this.refCreator.setReferringAttribute((GKSchemaAttribute)instance.getSchemClass().getAttribute(ReactomeJavaConstants.crossReference));
-									// check that the reference is not already there.
-									if (!this.checkXRefExists(instance, complexPortalID))
-									{
-										Long speciesID = ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.species)).getDBID();
-										if (!this.testMode)
-										{
-											// Updating the classReferringToRefName is necessary because if the identifier is a Reactome identifier, we're dealing with a Complex,
-											// but if it's a Uniprot identifier, then we're dealing with some other PhysicalEntity, probably a ReferenceGeneProduct or EntityWithAccessionedSequence
-											this.refCreator.createIdentifier(uniprotOrReactomeIdentifier, String.valueOf(instance.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesID);
-										}
-										createdCounter.incrementAndGet();
-										referencingUniprot.incrementAndGet();
-									}
-									else
-									{
-										xrefAlreadyExistsCounter.incrementAndGet();
-									}
-								}
 							}
 						}
-//						ReverseAttributeQueryRequest raqr = this.adapter.createReverseAttributeQueryRequest(ReactomeJavaConstants.DatabaseIdentifier, ReactomeJavaConstants.identifier, "=", uniprotOrReactomeIdentifier);
-//						@SuppressWarnings("unchecked")
-//						Set<GKInstance> instances = (Set<GKInstance>) this.adapter._fetchInstance(Arrays.asList(raqr));
 					}
 				}
 			}
