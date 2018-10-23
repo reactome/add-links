@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
-import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileAggregator;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblFileProcessor;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
 import org.springframework.beans.factory.annotation.Autowired;

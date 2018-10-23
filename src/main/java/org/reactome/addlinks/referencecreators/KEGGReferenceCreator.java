@@ -13,6 +13,7 @@ import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 
 public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
 {
@@ -64,26 +65,59 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				
 				for (Map<KEGGKeys, String> keggData : keggMaps)
 				{
-					// Use the KEGG Identifier (from the NAME line). If there is none, use the KEGG gene id, example: "hsa:12345"
+					// Use KEGG Gene ID (from ENTRY line). If not available, use KEGG Identifier (from NAME line).
 					String keggIdentifier = keggData.get(KEGGKeys.KEGG_IDENTIFIER);
-					//String keggGeneIdentifier = keggData.get(KEGGKeys.KEGG_SPECIES) + ":" + keggData.get(KEGGKeys.KEGG_GENE_ID);
-					// No longer need to include the species code here because it will be a part of the URL. See in KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases
-					// That's where we create the URLs with the species code built-in to the URL.
+					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID);
+					// If keggIdentifier AND keggGeneIdentifier have no value, throw an exception! Can't insert null/empty identifiers.
+					if ( (keggIdentifier == null || keggIdentifier.trim().equals(""))
+						&& (keggGeneIdentifier == null || keggGeneIdentifier.trim().equals("")) )
+					{
+						throw new Exception("KEGG Identifier cannot be NULL or empty!");
+					}
+					
+					// NOTE: If the identifier to use begins with a species prefix, it should be removed since we will
+					// include a species prefix in the accessUrl of each KEGG species-specific ReferenceDatabase.
+					// If we *don't* remove species codes from identifiers, we'll end up with URLs with doubled species codes
+					// like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
 					//
-					// If the data we extracted already begins with a species code such as "hsa:" then we can remove it because
-					// the ReferenceDatabase will contain a species code prefix in its accessUrl. If we *don't*
-					// remove it, we'll end up with URLs like: "http://www.genome.jp/dbget-bin/www_bget?hsa:hsa:2309" and that is not valid
-					String keggGeneIdentifier =  keggData.get(KEGGKeys.KEGG_GENE_ID).replaceAll("^[a-z0-9]{3}:", "");
+					// But... there's also a possibility that we will need to create a new KEGG Reference Database on-the-fly. This could happen
+					// if the species names in KEGG don't quite match the names in Reactome. So if the names don't match, why create a Reference Database?
+					// Because we got this KEGG identifier as a result of a successful mapping operation, so it MUST be a valid KEGG identifier that we can map to, 
+					// and the problem is in the species names. Since we can't modify the Species data in Reactome to match the KEGG species, we'll just create a new Reference Database.
+					
+					// Use the KEGG Species for the prefix.
+					String keggPrefix = keggData.get(KEGGKeys.KEGG_SPECIES);
+					if (keggPrefix == null && (keggIdentifier != null && keggIdentifier.trim().equals("")))
+					{
+						// if somehow there was no species (probably should never happen, but KEGG data has surprised me before... *shrug*),
+						// extract species code from the kegg Identifier (from the NAME line)
+						keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(keggIdentifier);
+					}
+					// If prefix is STILL null try to extract from KEGG Gene ID (ENTRY line)
+					if (keggPrefix == null)
+					{
+						keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(keggGeneIdentifier);
+					}
+					
+					// remove prefix if necessary. Data in the ENTRY line in KEGG files doesn't seem to usually have a prefix, but data from the NAME line is
+					// more likely to have a prefix.
+					if (keggGeneIdentifier.startsWith(keggPrefix))
+					{
+						keggGeneIdentifier = keggGeneIdentifier.replaceFirst(keggPrefix, "");
+					}
+					
 					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
 						keggIdentifier = keggGeneIdentifier;
 					}
-					// If keggIdentifier STILL has no value, throw an exception! Can't insert null/empty identifiers.
-					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
+					
+					if (keggIdentifier.startsWith(keggPrefix))
 					{
-						throw new Exception("KEGG Identifier cannot be NULL or empty!");
+						keggIdentifier = keggIdentifier.replaceFirst(keggPrefix, "");
 					}
+
+					//keggIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggIdentifier);
 					StringBuilder xrefsSb = new StringBuilder();
 					for (GKInstance xref : xrefs)
 					{
@@ -117,15 +151,15 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
 						if (!this.testMode)
 						{
-							String targetDB = this.targetRefDB;
-							targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(objectCache, String.valueOf(speciesID));
-							if (targetDB == null)
+							String targetDB = null;
+							KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, this.logger);
+							String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggGeneIdentifier, keggPrefix);
+							targetDB = parts[0];
+							keggGeneIdentifier = parts[1];
+
+							if (!this.testMode && targetDB != null)
 							{
-								targetDB = this.targetRefDB;
-							}
-							if (!this.testMode)
-							{
-								refCreator.createIdentifier(keggIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+								this.refCreator.createIdentifier(keggGeneIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
 							}
 						}
 					}
@@ -150,6 +184,20 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
 	}
 
-
-	
+	private synchronized  String createNewKEGGReferenceDatabase(ReferenceObjectCache objectCache, String keggIdentifier, String keggPrefix)
+	{
+		String targetDB = null;
+		// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
+		String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
+		if (keggSpeciesName != null)
+		{
+			targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, objectCache);
+			objectCache.rebuildRefDBNamesAndMappings();
+		}
+		if (targetDB == null)
+		{
+			logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, keggIdentifier);
+		}
+		return targetDB;
+	}
 }

@@ -109,11 +109,50 @@ public class ReferenceCreator
 		try
 		{
 			// Get the refDB and add it as an attribute.
-			// Store refDBInstance at the ReferenceCreator *instance* level to speed things up for the reference creation process. 
-			if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
+			// Store refDBInstance at the ReferenceCreator *instance* level to speed things up for the reference creation process.
+			// If a user puts a numeric string into refDB, assume it is the DB_ID of a ReferenceDatabase object.
+			// TODO: Refactor to take a REAL long instead of a long in a string
+			if (this.refDBInstance == null)
 			{
-				this.refDBInstance = getReferenceDatabase(refDB);
+				// Look up by DB_ID
+				if (refDB.trim().matches("\\d+"))
+				{
+					this.refDBInstance = this.dbAdapter.fetchInstance(Long.parseLong(refDB));
+				}
+				// Look up name in cache.
+				else
+				{
+					this.refDBInstance = getReferenceDatabaseByName(refDB);
+				}
 			}
+			else
+			{
+				if (refDB.trim().matches("\\d+"))
+				{
+					// When refDB is numeric, comapre DB_ID
+					if (!this.refDBInstance.getDBID().equals(new Long(refDB)) )
+					{
+						this.refDBInstance = this.dbAdapter.fetchInstance(Long.parseLong(refDB));
+					}
+				}
+				else // Comparing names isn't the best way to do it. Really should only allow Long (for DB_ID) in refDB parameter. Oh well, refactor later.
+				{
+					if (!this.refDBInstance.getDisplayName().equals(refDB))
+					{
+						this.refDBInstance = getReferenceDatabaseByName(refDB);
+					}
+				}
+			}
+			
+//			if (this.refDBInstance == null && refDB.matches("^[0-9]+$"))
+//			{
+//				this.refDBInstance = this.dbAdapter.fetchInstance(Long.parseLong(refDB));
+//			}
+//
+//			if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
+//			{
+//				this.refDBInstance = getReferenceDatabase(refDB);
+//			}
 			// If it's still null, there is a problem!
 			if (this.refDBInstance == null)
 			{
@@ -347,7 +386,7 @@ public class ReferenceCreator
 	 * @return - A GKInstance representing the Reference Database.
 	 * @throws Exception - An exception could be thrown in the case that there is no ReferenceDatabase whose _displayName is <i>dbName</i>. 
 	 */
-	protected GKInstance getReferenceDatabase(String dbName) throws Exception
+	protected GKInstance getReferenceDatabaseByName(String dbName) throws Exception
 	{
 		List<String> dbIds = this.objectCache.getRefDbNamesToIds().get(dbName);
 		

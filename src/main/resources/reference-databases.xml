@@ -239,7 +239,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.uniprot.org" />
-				<entry key="AccessURL" value="http://www.uniprot.org/uniprot/###ID###" />
+				<entry key="AccessURL" value="http://www.uniprot.org/entry/###ID###" />
 			</map>
 		</entry>
 		

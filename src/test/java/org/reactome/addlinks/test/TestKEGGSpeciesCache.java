@@ -12,14 +12,14 @@ public class TestKEGGSpeciesCache
 	{
 		try
 		{
-			System.out.println(KEGGSpeciesCache.getKEGGCode("Homo sapiens"));
-			assertEquals("hsa",KEGGSpeciesCache.getKEGGCode("Homo sapiens"));
-			assertEquals("human",KEGGSpeciesCache.getKEGGCommonName("Homo sapiens"));
-			assertNotNull(KEGGSpeciesCache.getKEGGCode("Bos taurus"));
-			System.out.println(KEGGSpeciesCache.getKEGGCode("Bos taurus"));
+			System.out.println(KEGGSpeciesCache.getKEGGCodes("Homo sapiens"));
+			assertEquals("hsa",KEGGSpeciesCache.getKEGGCodes("Homo sapiens"));
+			assertEquals("human",KEGGSpeciesCache.getKEGGCommonNames("Homo sapiens"));
+			assertNotNull(KEGGSpeciesCache.getKEGGCodes("Bos taurus"));
+			System.out.println(KEGGSpeciesCache.getKEGGCodes("Bos taurus"));
 			
-			assertNotNull(KEGGSpeciesCache.getKEGGCode("Mus musculus"));
-			System.out.println(KEGGSpeciesCache.getKEGGCode("Mus musculus"));
+			assertNotNull(KEGGSpeciesCache.getKEGGCodes("Mus musculus"));
+			System.out.println(KEGGSpeciesCache.getKEGGCodes("Mus musculus"));
 		}
 		catch (Exception e)
 		{
