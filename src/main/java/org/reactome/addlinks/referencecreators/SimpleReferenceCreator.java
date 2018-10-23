@@ -13,6 +13,7 @@ import org.gk.schema.GKSchemaAttribute;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.db.ReferenceCreator;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 
 /**
  * Creates references from one database to another.
@@ -28,7 +29,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	protected Logger logger;// = LogManager.getLogger();
+	protected Logger logger;
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
@@ -161,51 +162,46 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier) throws InvalidAttributeException, Exception
 	{
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, this.targetRefDB);
-//		@SuppressWarnings("unchecked")
-//		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
-//		StringBuilder xrefsb = new StringBuilder();
-//		if (xrefs.size() > 0)
-//		{
-//			for (GKInstance xref : xrefs)
-//			{
-//				String identifier = xref.getAttributeValue(ReactomeJavaConstants.identifier).toString();
-//				xrefsb.append(identifier);
-//				GKInstance xrefRefDB = (GKInstance) xref.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
-//				Object refdbDisplayName = xrefRefDB.getAttributeValue(ReactomeJavaConstants._displayName);
-//				xrefsb.append("@").append(refdbDisplayName).append(",\t");
-//				// We won't add a cross-reference if it already exists
-//				if (identifier.equals( targetRefDBIdentifier ))
-//				{
-//					// We found a cross-reference with the same identifiers, but it's possible this identifier is used by more than one Ref DB. Need to check...
-//					// Found a cross reference with the same identifer AND the same ref db displayname.
-//					if (refdbDisplayName.equals(this.targetRefDB))
-//					{
-//						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-//						return true;	
-//					}
-//					else
-//					{
-//						logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, refdbDisplayName, this.targetRefDB);
-//					}
-//					
-//				}
-//			}
-//			logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-//		}
-//		return false;
 	}
 	
 	/**
 	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
 	 * @param sourceReference - The source Object that has cross references.
 	 * @param targetRefDBIdentifier - The identifier that you are looking for.
-	 * @param targetReferenceDB - The name of a target ReferenceDatabase. Use this to override this.targetRefDB. This is useful when working
+	 * @param targetReferenceDB - The name or DB_ID of the target reference database you want to use.  Use this to override this.targetRefDB. This is useful when working
 	 * with species-specific ReferenceDatabases.
 	 * @return - TRUE of sourceReference has a cross-reference to an identifier whose value is targetRefDBIdentifier. Otherwise, FALSE.
 	 * @throws InvalidAttributeException
 	 * @throws Exception
+
 	 */
-	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, String targetReferenceDB) throws InvalidAttributeException, Exception
+	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, String  targetReferenceDB) throws InvalidAttributeException, Exception
+	{
+		GKInstance refDB;
+		// Look up by DB_ID
+		if (targetReferenceDB.trim().matches("\\d+"))
+		{
+			refDB = this.adapter.fetchInstance(Long.parseLong(targetReferenceDB));
+		}
+		// Look up name in cache.
+		else
+		{
+			ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter, true);
+			refDB = this.adapter.fetchInstance(Long.parseLong(cache.getRefDbNamesToIds().get(targetReferenceDB).get(0)));
+		}
+		return checkXRefExists(sourceReference, targetRefDBIdentifier, refDB);
+	}
+	
+	/**
+	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
+	 * @param sourceReference - The source Object that has cross references.
+	 * @param targetRefDBIdentifier - The identifier that you are looking for.
+	 * @param targetReferenceDB - The GKInstance of a target ReferenceDatabase.
+	 * @return - TRUE of sourceReference has a cross-reference to an identifier whose value is targetRefDBIdentifier. Otherwise, FALSE.
+	 * @throws InvalidAttributeException
+	 * @throws Exception
+	 */
+	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, GKInstance targetReferenceDB) throws InvalidAttributeException, Exception
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
@@ -224,7 +220,8 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 				{
 					// We found a cross-reference with the same identifiers, but it's possible this identifier is used by more than one Ref DB. Need to check...
 					// Found a cross reference with the same identifer AND the same ref db displayname.
-					if (refdbDisplayName.equals(targetReferenceDB))
+					//if (refdbDisplayName.equals(targetReferenceDB))
+					if (xrefRefDB.getDBID().equals(targetReferenceDB.getDBID()))
 					{
 						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 						return true;	

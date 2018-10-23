@@ -406,7 +406,7 @@ public class AddLinks
 		{
 			logger.info("Executing BRENDA file retrievers");
 			
-			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
+			for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 			{
 				String speciesId = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
 				if (BRENDASpeciesCache.getCache().contains(speciesName.trim()))
@@ -474,8 +474,8 @@ public class AddLinks
 
 			List<Callable<Boolean>> keggJobs = new ArrayList<Callable<Boolean>>();
 			
-			for (String speciesName : objectCache.getListOfSpeciesNames().stream().sequential()
-												.filter(speciesName -> KEGGSpeciesCache.getKEGGCode(speciesName)!=null)
+			for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sequential()
+												.filter(speciesName -> KEGGSpeciesCache.getKEGGCodes(speciesName)!=null)
 												.collect(Collectors.toList()))
 			{
 				String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
@@ -872,6 +872,7 @@ public class AddLinks
 		}
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 		KEGGReferenceDatabaseGenerator.setDBCreator(creator);
+		KEGGReferenceDatabaseGenerator.setDBAdaptor(this.dbAdapter);
 		BRENDAReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
