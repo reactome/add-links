@@ -1,22 +1,22 @@
 package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.gk.model.GKInstance;
-import org.gk.model.InstanceUtilities;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
-import org.gk.persistence.MySQLAdaptor.ReverseAttributeQueryRequest;
-import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 
+/**
+ * Create cross-references that refer to ComplexPortal.
+ * The TSV file from ComplexPortal will contain ComplexPortal identifiers with a list of other
+ * identifiers, including Reactome identifiers.
+ * @author sshorser
+ *
+ */
 public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<String>>
 {
 	public ComplexPortalReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring,
