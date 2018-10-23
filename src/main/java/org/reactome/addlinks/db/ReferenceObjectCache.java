@@ -88,26 +88,7 @@ public final class ReferenceObjectCache
 			
 			MySQLAdaptor localAdapter ;
 			long threadID = Thread.currentThread().getId();
-			if (adapterPool.containsKey(threadID))
-			{
-				localAdapter = adapterPool.get(threadID);
-			}
-			else
-			{
-				logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
-				try
-				{
-					localAdapter = new MySQLAdaptor( ReferenceObjectCache.adapter.getDBHost(), ReferenceObjectCache.adapter.getDBName(),
-													ReferenceObjectCache.adapter.getDBUser(), ReferenceObjectCache.adapter.getDBPwd(),
-													ReferenceObjectCache.adapter.getDBPort());
-					adapterPool.put(threadID, localAdapter);
-				}
-				catch (SQLException e)
-				{
-					e.printStackTrace();
-					throw new Error(e);
-				}
-			}
+			localAdapter = getAdaptorForThread(threadID);
 			// We don't explicitly call the adapter in this code. We rely on each GKInstance object to have a reference to a PersistenceAdapter.
 			// To allow for multiuple threads, we need to ensure that these objects use the local adapter from the pool.
 			referenceObject.setDbAdaptor(localAdapter);
@@ -302,6 +283,38 @@ public final class ReferenceObjectCache
 					objectCacheByIdentifier.size(),
 					cacheByID.size()
 				);
+	}
+
+	/**
+	 * Gets a database adaptor for a thread.
+	 * @param threadID
+	 * @return
+	 * @throws Error
+	 */
+	private static MySQLAdaptor getAdaptorForThread(long threadID) throws Error
+	{
+		MySQLAdaptor localAdapter;
+		if (adapterPool.containsKey(threadID))
+		{
+			localAdapter = adapterPool.get(threadID);
+		}
+		else
+		{
+			logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+			try
+			{
+				localAdapter = new MySQLAdaptor( ReferenceObjectCache.adapter.getDBHost(), ReferenceObjectCache.adapter.getDBName(),
+												ReferenceObjectCache.adapter.getDBUser(), ReferenceObjectCache.adapter.getDBPwd(),
+												ReferenceObjectCache.adapter.getDBPort());
+				adapterPool.put(threadID, localAdapter);
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+		}
+		return localAdapter;
 	}
 	
 	private static synchronized void populateCaches(MySQLAdaptor adapter)
@@ -599,26 +612,7 @@ public final class ReferenceObjectCache
 				instances.parallelStream().forEach( instance -> {
 					MySQLAdaptor localAdapter ;
 					long threadID = Thread.currentThread().getId();
-					if (adapterPool.containsKey(threadID))
-					{
-						localAdapter = adapterPool.get(threadID);
-					}
-					else
-					{
-						logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
-						try
-						{
-							localAdapter = new MySQLAdaptor( ReferenceObjectCache.adapter.getDBHost(), ReferenceObjectCache.adapter.getDBName(),
-															ReferenceObjectCache.adapter.getDBUser(), ReferenceObjectCache.adapter.getDBPwd(),
-															ReferenceObjectCache.adapter.getDBPort());
-							adapterPool.put(threadID, localAdapter);
-						}
-						catch (SQLException e)
-						{
-							e.printStackTrace();
-							throw new Error(e);
-						}
-					}
+					localAdapter = getAdaptorForThread(threadID);
 					instance.setDbAdaptor(localAdapter);
 					
 					String stableIdentifier;
