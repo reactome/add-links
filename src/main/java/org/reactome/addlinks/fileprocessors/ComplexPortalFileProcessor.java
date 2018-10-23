@@ -38,10 +38,10 @@ public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 				// Get the ID for ComplexPortal.
 				String complexPortalID = parts[0];
 				// The UniprotIDs will be in the 5th column.
-				String uniprots = parts[4];
+//				String uniprots = parts[4];
 				// There could be multiple Uniprot identifiers so we need to extract them all.
 				// Remove the stoichiometry information (in parenthesis after each Uniprot ID) and then split on "|".
-				String[] uniprotIDs = uniprots.replaceAll("\\(\\d*\\)", "").split("\\|");
+//				String[] uniprotIDs = uniprots.replaceAll("\\(\\d*\\)", "").split("\\|");
 				// Cross-references will be in the 9th column, and may include Reactome identifiers.
 				String xrefs = parts[8];
 				// There could me multiple Reactome identifiers, so we need to extract them all.
@@ -52,15 +52,14 @@ public class ComplexPortalFileProcessor extends FileProcessor<List<String>>
 				// Update the mapping.
 				if (complexPortalToUniprotAndReactome.containsKey(complexPortalID))
 				{
-					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(Arrays.asList(uniprotIDs));
+//					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(Arrays.asList(uniprotIDs));
 					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(reactomeIDs);
 				}
 				else
 				{
 					complexPortalToUniprotAndReactome.put(complexPortalID, new ArrayList<String>());
-					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(Arrays.asList(uniprotIDs));
+//					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(Arrays.asList(uniprotIDs));
 					complexPortalToUniprotAndReactome.get(complexPortalID).addAll(reactomeIDs);
-
 				}
 			});
 		}

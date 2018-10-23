@@ -45,7 +45,7 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 				// Later, there may be a decision to expand this, but for now we'll keep it simple.
 				for (String uniprotOrReactomeIdentifier : mappings.get(complexPortalID))
 				{
-					if (uniprotOrReactomeIdentifier.matches("R-[a-zA-Z]{3}.+"))
+					if (uniprotOrReactomeIdentifier.matches("R-[a-zA-Z]{3}-\\d.+"))
 					{
 						if (cache.getStableIdentifierCache().containsKey(uniprotOrReactomeIdentifier))
 						{
@@ -85,6 +85,5 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 				+ "\t# Identifiers that were not created: {}",
 				this.targetRefDB, 
 				createdCounter.get(), referencingReactome.get(), referencingUniprot.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
-
 	}
 }
