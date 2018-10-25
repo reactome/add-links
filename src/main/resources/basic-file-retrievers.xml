@@ -201,5 +201,15 @@
 				<constructor-arg name="retrieverName" value="retrievers/CTD"/>
 			</bean>
 		</entry>
+
+		<entry key="OpenTargets">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OpenTargets">
+				<property name="dataURL" value="(TBD)" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/OpenTargets.dat" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
+			</bean>
+		</entry>
+
 	</util:map>
 </beans>
