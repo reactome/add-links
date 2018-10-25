@@ -445,7 +445,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="Reactome"/>
 				<constructor-arg index="5" name="targetDB" value="ComplexPortal"/>
-				<constructor-arg index="6" name="refCreatorName" value="refCreators/IntActComplexPortalRefCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/ComplexPortalRefCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
