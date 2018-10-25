@@ -90,7 +90,7 @@
 		
 		<entry key="ComplexPortalFileProcessor">
 			<bean id="ComplexPortalFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/IntActFileProcessor"/>
+				<constructor-arg name="processorName" value="file-processors/ComplexPortalFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv"/>
