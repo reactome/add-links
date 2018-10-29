@@ -301,8 +301,8 @@
 			</bean>
 		</entry>
 		
-		<entry key="OpenTargetFileProcessor">
-			<bean id="OpenTargetFileProcessor" class="org.reactome.addlinks.fileprocessors.OpenTargetsFileProcessor">
+		<entry key="OpenTargetsFileProcessor">
+			<bean id="OpenTargetsFileProcessor" class="org.reactome.addlinks.fileprocessors.OpenTargetsFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/OpenTargetsFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">

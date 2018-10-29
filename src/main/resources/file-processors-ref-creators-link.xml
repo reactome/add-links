@@ -28,7 +28,6 @@
 		<entry key="HmdbProteinsFileProcessor" value="HMDBProtReferenceCreator"/>
 		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
 		<entry key="OrphanetFileProcessor" value="OrphanetReferenceCreator"/>
-		<!-- <entry key="IntActFileProcessor" value=""/> -->
 		<entry key="ZincMoleculesFileProcessor" value="zincToChEBIReferenceCreator"/>
 		<entry key="ENSEMBLFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
 		<entry key="ENSEMBLNonCoreFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
@@ -51,6 +50,7 @@
 		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 		<entry key="CTDProcessor" value="CTDRefCreator"/>
+		<entry key="OpenTargetsFileProcessor" value="OpenTargetsReferenceCreator"/>
 	</util:map>
 
 </beans>
