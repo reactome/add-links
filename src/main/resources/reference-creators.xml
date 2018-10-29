@@ -482,7 +482,7 @@
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 				<constructor-arg index="5" name="targetDB" value="OpenTargets"/>
-				<constructor-arg index="6" name="refCreatorName" value="refCreators/openTargetsReferenceCreator"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/OpenTargetsReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
