@@ -11,7 +11,7 @@ public class DuplicateIdentifierReporter
 {
 	private MySQLAdaptor dbAdapter;
 	
-	private static String query = "SELECT distinct subq1.*, ReferenceDatabase_2_name.name, Species.db_id, Taxon_2_name.name\n" + 
+	private static String query = "SELECT distinct subq1.*, ReferenceDatabase_2_name.name, Species.db_id as specied_db_id, Taxon_2_name.name as species_name\n" + 
 			"from (\n" + 
 			"	select count(ReferenceEntity.DB_ID) as duplicate_count, ReferenceEntity.identifier, group_concat(ReferenceEntity.db_id) as ReferenceEntity_DB_IDs, ReferenceEntity.referenceDatabase, DatabaseObject._class, subq.combined_identifier\n" + 
 			"	from ReferenceEntity \n" + 
