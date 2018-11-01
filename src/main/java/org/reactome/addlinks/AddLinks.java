@@ -40,6 +40,8 @@ import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.CrossReferenceReporter;
+import org.reactome.addlinks.db.DuplicateIdentifierReporter;
+import org.reactome.addlinks.db.DuplicateIdentifierReporter.REPORT_KEYS;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
@@ -140,10 +142,18 @@ public class AddLinks
 		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		CrossReferenceReporter reporter = new CrossReferenceReporter(this.dbAdapter);
-		Map<String, Map<String,Integer>> preAddLinksReport = reporter.createReportMap();
-		logger.info("\n"+(reporter.printReport(preAddLinksReport)));
+		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
+		Map<String, Map<String,Integer>> preAddLinksReport = xrefReporter.createReportMap();
+		logger.info("\n"+(xrefReporter.printReport(preAddLinksReport)));
 
+		logger.info("Duplicated identifiers in the database, BEFORE running AddLinks:");
+		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
+		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
+		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
+		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		logger.info("\n{}\nReport can also be found in {}",duplicateSB.toString(), preAddLinksDuplicateIdentifierReportFileName);
+		Files.write(Paths.get(preAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
+		
 		ExecutorService execSrvc = Executors.newFixedThreadPool(5);
 		
 		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
@@ -247,16 +257,25 @@ public class AddLinks
 
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		//reporter.printReport();
-		Map<String, Map<String,Integer>> postAddLinksReport = reporter.createReportMap();
-		logger.info("\n"+reporter.printReport(postAddLinksReport));
+		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
+		logger.info("\n"+xrefReporter.printReport(postAddLinksReport));
 		
 		logger.info("Differences");
-		String diffReport = reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
+		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
 		// Save the diff report to a file for future reference.uinm
-		String diffReportName = "diffReport" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
+		
+		logger.info("Duplicated identifiers in the database, AFTER running AddLinks:");
+		duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
+		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
+		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
+		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		logger.info("\n{}\nReport can also be found in {}",postAddLinksduplicateSB.toString(), postAddLinksduplicateSB);
+		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
+		
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
