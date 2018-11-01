@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.gk.persistence.MySQLAdaptor;
 
 /**
@@ -18,7 +19,7 @@ public class DuplicateIdentifierReporter
 {
 	private MySQLAdaptor dbAdapter;
 	
-	enum REPORT_KEYS
+	private enum REPORT_KEYS
 	{
 		duplicate_count, identifier, ReferenceEntity_DB_IDs, object_type, display_name, combined_identifier, ref_db_name, species_db_id, species_name;
 	}
@@ -91,4 +92,33 @@ public class DuplicateIdentifierReporter
 		
 		return rows;
 	}
+	
+	public StringBuilder generatePrintableReport(List<Map<REPORT_KEYS, String>> reportMap)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		int totalReportWidth = 0;
+		// First, create the header.
+		for (REPORT_KEYS key : REPORT_KEYS.values())
+		{
+			int colWidth = Math.max(this.maxColWidths.get(key), key.toString().length()) + 3;
+			totalReportWidth += colWidth;
+			sb.append(StringUtils.rightPad(key.toString(), colWidth, " ")).append(" | ");
+		}
+		sb.append("\n");
+		sb.append(StringUtils.rightPad("-", totalReportWidth, "-"));
+		
+		// Now, append the rows.
+		for (Map<REPORT_KEYS, String> rowData : reportMap)
+		{
+			for(REPORT_KEYS key : REPORT_KEYS.values())
+			{
+				sb.append(StringUtils.rightPad(rowData.get(key), this.maxColWidths.get(key), " ")).append(" | ");
+			}
+			sb.append("\n");
+		}
+		
+		return sb;
+	}
+	
 }
