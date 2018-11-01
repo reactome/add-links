@@ -31,7 +31,10 @@ public class DuplicateIdentifierReporter
 		duplicate_count, identifier, ReferenceEntity_DB_IDs, object_type, display_name, combined_identifier, ref_db_name, species_db_id, species_name;
 	}
 	
-	private static String query = "SELECT distinct subq1.duplicate_count, subq1.identifier, subq1.ReferenceEntity_DB_IDs, subq1._class AS object_type, subq1._displayName as display_name, subq1.combined_identifier, ReferenceDatabase_2_name.name as ref_db_name, Species.db_id as specied_db_id, Taxon_2_name.name as species_name\n" + 
+	// Should I move the query out to a file? I like that having it in here as a local private member makes the implementation self-contained,
+	// but on the other hand, *IFF* there are ever changes needed during a Release, that would require a recompiling of the code. Also, it's
+	// a rather long and ugly string to keep contained in a class. But... I also don't want YET ANOTHER resource file to load... Hmmm... will resolve this later...
+	private static String query = "SELECT distinct subq1.duplicate_count, subq1.identifier, subq1.ReferenceEntity_DB_IDs, subq1._class AS object_type, subq1._displayName as display_name, subq1.combined_identifier, ReferenceDatabase_2_name.name as ref_db_name, Species.db_id as species_db_id, Taxon_2_name.name as species_name\n" + 
 			"from (\n" + 
 			"	select count(ReferenceEntity.DB_ID) as duplicate_count, ReferenceEntity.identifier, group_concat(ReferenceEntity.db_id) as ReferenceEntity_DB_IDs, ReferenceEntity.referenceDatabase, DatabaseObject._class, DatabaseObject._displayName, subq.combined_identifier\n" + 
 			"	from ReferenceEntity \n" + 
@@ -61,27 +64,26 @@ public class DuplicateIdentifierReporter
 	// the time comes to actual *print* the report.
 	private Map<REPORT_KEYS, Integer> maxColWidths = new HashMap<>();
 	
+	/**
+	 * Creates a new DuplicateIdentifierReporter
+	 * @param adaptor
+	 */
 	public DuplicateIdentifierReporter(MySQLAdaptor adaptor)
 	{
 		this.dbAdapter = adaptor;
 		for (REPORT_KEYS key : REPORT_KEYS.values())
 		{
 			// initializxe the map of column widths with the widths of header columns.
-			if (this.maxColWidths.containsKey(key))
-			{
-				if (this.maxColWidths.get(key) < key.toString().length())
-				{
-					this.maxColWidths.put(key, key.toString().length());
-				}
-			}
-			else
-			{
-				this.maxColWidths.put(key, key.toString().length());
-			}
+			updateMaxColumnWidths(key,key.toString());
 		}
 	}
 	
-	public List<Map<REPORT_KEYS, String>> createReportMap() throws SQLException
+	/**
+	 * Creates a report of duplicated identifiers. The report is represented as a list of maps - each map is a key-value mapping of column names to values.
+	 * @return The report data.
+	 * @throws SQLException
+	 */
+	public List<Map<REPORT_KEYS, String>> createReport() throws SQLException
 	{
 		List<Map<REPORT_KEYS, String>> rows = new ArrayList<>();
 		
@@ -102,26 +104,42 @@ public class DuplicateIdentifierReporter
 				}
 				rowData.put(key, value);
 				// Check to see if this key is already in the map of column widths
-				if (this.maxColWidths.containsKey(key))
-				{
-					// If the current width is smaller than the width of the current value, put the new value's width into the map.
-					if (this.maxColWidths.get(key) < value.length())
-					{
-						this.maxColWidths.put(key, value.length());
-					}
-				}
-				else
-				{
-					this.maxColWidths.put(key, value.length());
-				}
+				updateMaxColumnWidths(key, value);
 			}
 			rows.add(rowData);
 		}
 		
 		return rows;
 	}
+
+	/**
+	 * Updates the instance's maxColWidths map, for some key.
+	 * @param key - The key in the map to update.
+	 * @param value - The value whose length will be tested.
+	 */
+	private void updateMaxColumnWidths(REPORT_KEYS key, String value)
+	{
+		if (this.maxColWidths.containsKey(key))
+		{
+			// If the current width is smaller than the width of the current value, put the new value's width into the map.
+			if (this.maxColWidths.get(key) < value.length())
+			{
+				this.maxColWidths.put(key, value.length());
+			}
+		}
+		else
+		{
+			this.maxColWidths.put(key, value.length());
+		}
+	}
 	
-	public StringBuilder generatePrintableReport(List<Map<REPORT_KEYS, String>> reportMap)
+	/**
+	 * Generates a printable version of a report.
+	 * @param reportData - the report data.
+	 * @return A StringBuilder is returned, containing the table-formatted String-representation of the report data. Columns are adjusted to be as
+	 * wide as the widest value in that column - this report could be rather wide. 
+	 */
+	public StringBuilder generatePrintableReport(List<Map<REPORT_KEYS, String>> reportData)
 	{
 		StringBuilder sb = new StringBuilder();
 		
@@ -137,7 +155,7 @@ public class DuplicateIdentifierReporter
 		sb.append(StringUtils.rightPad("-", totalReportWidth, "-"));
 		sb.append("\n");
 		// Now, append the rows.
-		for (Map<REPORT_KEYS, String> rowData : reportMap)
+		for (Map<REPORT_KEYS, String> rowData : reportData)
 		{
 			for(REPORT_KEYS key : REPORT_KEYS.values())
 			{
