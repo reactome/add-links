@@ -56,7 +56,7 @@ public class TestDuplicateIdentifierReport
 	{
 		DuplicateIdentifierReporter reporter = new DuplicateIdentifierReporter(adaptor);
 	
-		List<Map<REPORT_KEYS, String>> rows = reporter.createReportMap();
+		List<Map<REPORT_KEYS, String>> rows = reporter.createReport();
 		
 		assertNotNull(rows);
 		// Should be two data rows.
@@ -68,7 +68,7 @@ public class TestDuplicateIdentifierReport
 	{
 		DuplicateIdentifierReporter reporter = new DuplicateIdentifierReporter(adaptor);
 		
-		List<Map<REPORT_KEYS, String>> rows = reporter.createReportMap();
+		List<Map<REPORT_KEYS, String>> rows = reporter.createReport();
 		StringBuilder sb = reporter.generatePrintableReport(rows);
 		
 		assertNotNull(sb);
