@@ -17,9 +17,16 @@ import org.gk.persistence.MySQLAdaptor;
  */
 public class DuplicateIdentifierReporter
 {
+	private static final String FIELD_SEPARATOR = " | ";
+
 	private MySQLAdaptor dbAdapter;
 	
-	private enum REPORT_KEYS
+	/**
+	 * Enum values map directly to column names in the query result set.
+	 * @author sshorser
+	 *
+	 */
+	public enum REPORT_KEYS
 	{
 		duplicate_count, identifier, ReferenceEntity_DB_IDs, object_type, display_name, combined_identifier, ref_db_name, species_db_id, species_name;
 	}
@@ -34,7 +41,7 @@ public class DuplicateIdentifierReporter
 			"		from ReferenceEntity\n" + 
 			"		inner join DatabaseObject on ReferenceEntity.db_id = DatabaseObject.db_id) as subq on subq.db_id = ReferenceEntity.db_id\n" + 
 			"	where ReferenceEntity.identifier is not null\n" + 
-			"	-- First, group on the combined identifer - the identifier concatenated with _displayName.\n" + 
+			"    -- First, group on the combined identifer - the identifier concatenated with _displayName.\n" + 
 			"    -- This is because an identifier could be associated with many DatabaseObjects that have different _displayNames, sometimes the\n" + 
 			"    -- _displayName indiciates as version-number change in an object, but the reference identifier remains the same.\n" + 
 			"	group by subq.combined_identifier, ReferenceEntity.identifier, referenceDatabase, _class, _displayName\n" + 
@@ -57,6 +64,21 @@ public class DuplicateIdentifierReporter
 	public DuplicateIdentifierReporter(MySQLAdaptor adaptor)
 	{
 		this.dbAdapter = adaptor;
+		for (REPORT_KEYS key : REPORT_KEYS.values())
+		{
+			// initializxe the map of column widths with the widths of header columns.
+			if (this.maxColWidths.containsKey(key))
+			{
+				if (this.maxColWidths.get(key) < key.toString().length())
+				{
+					this.maxColWidths.put(key, key.toString().length());
+				}
+			}
+			else
+			{
+				this.maxColWidths.put(key, key.toString().length());
+			}
+		}
 	}
 	
 	public List<Map<REPORT_KEYS, String>> createReportMap() throws SQLException
@@ -72,11 +94,17 @@ public class DuplicateIdentifierReporter
 			for (REPORT_KEYS key : REPORT_KEYS.values())
 			{
 				String value = rs.getString(key.toString());
+				// Sometimes you might get a null, such as when there is no Species information for a ReferenceMolecule
+				if (value == null)
+				{
+					// Use the empty string literal (instead of an actual NULL value) so we can get the length of it, if necessary.
+					value = "";
+				}
 				rowData.put(key, value);
 				// Check to see if this key is already in the map of column widths
 				if (this.maxColWidths.containsKey(key))
 				{
-					// If we have a new max length, put it in the column width map.
+					// If the current width is smaller than the width of the current value, put the new value's width into the map.
 					if (this.maxColWidths.get(key) < value.length())
 					{
 						this.maxColWidths.put(key, value.length());
@@ -101,19 +129,19 @@ public class DuplicateIdentifierReporter
 		// First, create the header.
 		for (REPORT_KEYS key : REPORT_KEYS.values())
 		{
-			int colWidth = Math.max(this.maxColWidths.get(key), key.toString().length()) + 3;
-			totalReportWidth += colWidth;
-			sb.append(StringUtils.rightPad(key.toString(), colWidth, " ")).append(" | ");
+			int colWidth = Math.max(this.maxColWidths.get(key), key.toString().length());
+			totalReportWidth += colWidth + FIELD_SEPARATOR.length();
+			sb.append(StringUtils.rightPad(key.toString(), colWidth, " ")).append(FIELD_SEPARATOR);
 		}
 		sb.append("\n");
 		sb.append(StringUtils.rightPad("-", totalReportWidth, "-"));
-		
+		sb.append("\n");
 		// Now, append the rows.
 		for (Map<REPORT_KEYS, String> rowData : reportMap)
 		{
 			for(REPORT_KEYS key : REPORT_KEYS.values())
 			{
-				sb.append(StringUtils.rightPad(rowData.get(key), this.maxColWidths.get(key), " ")).append(" | ");
+				sb.append(StringUtils.rightPad(rowData.get(key), this.maxColWidths.get(key), " ")).append(FIELD_SEPARATOR);
 			}
 			sb.append("\n");
 		}
