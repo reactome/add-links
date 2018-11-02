@@ -137,4 +137,16 @@ public class AddLinksHttpClient
 	{
 		this.timeoutRetryIncrement = timeoutRetryIncrement;
 	}
+
+
+	public Duration getTimeout()
+	{
+		return this.timeout;
+	}
+
+
+	public void setTimeout(Duration timeout)
+	{
+		this.timeout = timeout;
+	}
 }
