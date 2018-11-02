@@ -34,32 +34,33 @@ public class DuplicateIdentifierReporter
 	// Should I move the query out to a file? I like that having it in here as a local private member makes the implementation self-contained,
 	// but on the other hand, *IFF* there are ever changes needed during a Release, that would require a recompiling of the code. Also, it's
 	// a rather long and ugly string to keep contained in a class. But... I also don't want YET ANOTHER resource file to load... Hmmm... will resolve this later...
-	private static String query = "SELECT distinct subq1.duplicate_count, subq1.identifier, subq1.ReferenceEntity_DB_IDs, subq1._class AS object_type, subq1._displayName as display_name, subq1.combined_identifier, ReferenceDatabase_2_name.name as ref_db_name, Species.db_id as species_db_id, Taxon_2_name.name as species_name\n" + 
+	private static String query = "SELECT distinct subq1.duplicate_count, subq1.identifier, subq1.ReferenceEntity_DB_IDs, subq1._class AS object_type, subq1._displayName as display_name, subq1.combined_identifier, ReferenceDatabase_2_name.name as ref_db_name, subq1.species_db_id, subq1.species_name \n" + 
 			"from (\n" + 
-			"	select count(ReferenceEntity.DB_ID) as duplicate_count, ReferenceEntity.identifier, group_concat(ReferenceEntity.db_id) as ReferenceEntity_DB_IDs, ReferenceEntity.referenceDatabase, DatabaseObject._class, DatabaseObject._displayName, subq.combined_identifier\n" + 
-			"	from ReferenceEntity \n" + 
-			"	inner join DatabaseObject on DatabaseObject.db_id = ReferenceEntity.db_id\n" + 
+			"    select count(ReferenceEntity.DB_ID) as duplicate_count, ReferenceEntity.identifier, group_concat(ReferenceEntity.db_id) as ReferenceEntity_DB_IDs, ReferenceEntity.referenceDatabase, DatabaseObject._class, DatabaseObject._displayName, subq.combined_identifier, subq.species_db_id, subq.species_name\n" + 
+			"    from ReferenceEntity \n" + 
+			"    inner join DatabaseObject on DatabaseObject.db_id = ReferenceEntity.db_id\n" + 
 			"    -- subquery to produce a combined identifier that contains the identifier string and the object's displayName\n" + 
-			"	inner join (select ReferenceEntity.*, concat(coalesce(ReferenceEntity.identifier,'NULL'),';', coalesce(DatabaseObject._displayName,'NULL')) as combined_identifier\n" + 
-			"		from ReferenceEntity\n" + 
-			"		inner join DatabaseObject on ReferenceEntity.db_id = DatabaseObject.db_id) as subq on subq.db_id = ReferenceEntity.db_id\n" + 
-			"	where ReferenceEntity.identifier is not null\n" + 
+			"    inner join (select ReferenceEntity.*, concat(coalesce(ReferenceEntity.identifier,'NULL'),';', coalesce(DatabaseObject._displayName,'NULL')) as combined_identifier, species_subq.db_id AS species_db_id, species_subq.name AS species_name\n" + 
+			"                from ReferenceEntity\n" + 
+			"                inner join DatabaseObject on ReferenceEntity.db_id = DatabaseObject.db_id\n" + 
+			"               -- start OUTER joining from ReferenceEntity through ReferenceSequence to Taxon2Name to get the species name of\n" + 
+			"               -- the reference object. But not all References have a species (such as ReferenceMolecule),\n" + 
+			"               -- hence the OUTER joins.\n" + 
+			"               LEFT OUTER JOIN ReferenceSequence ON ReferenceEntity.DB_ID = ReferenceSequence.DB_ID\n" + 
+			"               -- subquery to combine species table and taxon_2_name\n" + 
+			"               LEFT OUTER JOIN (SELECT Species.DB_ID, Taxon_2_name.name\n" + 
+			"                                   FROM Species \n" + 
+			"                                   INNER JOIN Taxon_2_name ON (Taxon_2_name.DB_ID = Species.DB_ID AND Taxon_2_name.name_rank = 0)) AS species_subq\n" + 
+			"               ON ReferenceSequence.species = species_subq.DB_ID\n" + 
+			"                where ReferenceEntity.identifier is not null) as subq on subq.db_id = ReferenceEntity.db_id\n" + 
 			"    -- First, group on the combined identifer - the identifier concatenated with _displayName.\n" + 
 			"    -- This is because an identifier could be associated with many DatabaseObjects that have different _displayNames, sometimes the\n" + 
 			"    -- _displayName indiciates as version-number change in an object, but the reference identifier remains the same.\n" + 
-			"	group by subq.combined_identifier, ReferenceEntity.identifier, referenceDatabase, _class, _displayName\n" + 
-			"	having count(ReferenceEntity.db_id) > 1) as subq1\n" + 
+			"    group by subq.combined_identifier, ReferenceEntity.identifier, referenceDatabase, _class, _displayName, subq.species_db_id, subq.species_name\n" + 
+			"    having count(ReferenceEntity.db_id) > 1) as subq1\n" + 
 			"inner join ReferenceDatabase_2_name on ReferenceDatabase_2_name.DB_ID = subq1.referenceDatabase\n" + 
-			"INNER JOIN ReferenceEntity ON ReferenceEntity.identifier = subq1.identifier\n" + 
-			"-- start OUTER joining from ReferenceEntity through ReferenceSequence to Taxon2Name to get the species name of\n" + 
-			"-- the reference object. But not all References have a species (such as ReferenceMolecule),\n" + 
-			"-- hence the OUTER joins.\n" + 
-			"LEFT OUTER JOIN ReferenceSequence ON ReferenceEntity.DB_ID = ReferenceSequence.DB_ID\n" + 
-			"LEFT OUTER JOIN Species ON ReferenceSequence.species = Species.DB_ID\n" + 
-			"LEFT OUTER JOIN Taxon_2_name ON (Taxon_2_name.DB_ID = Species.DB_ID AND Taxon_2_name.name_rank = 0)\n" + 
 			"where ReferenceDatabase_2_name.name_rank = 0\n" + 
-			"order by duplicate_count desc, ReferenceDatabase_2_name.name asc;";
-	
+			"order by duplicate_count, ReferenceDatabase_2_name.name, identifier;";
 	// This is used to keep track of the maximum width of each column. This will be important when
 	// the time comes to actual *print* the report.
 	private Map<REPORT_KEYS, Integer> maxColWidths = new HashMap<>();
