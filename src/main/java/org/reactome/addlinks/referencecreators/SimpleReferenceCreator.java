@@ -37,6 +37,8 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	protected String targetRefDB ;
 	protected String sourceRefDB ;
 	
+	protected ReferenceObjectCache cache;
+	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		this(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, null);
@@ -75,7 +77,10 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			// Can't recover if there is no valid attribute object, throw it up the stack. 
 			throw new RuntimeException (e);
 		}
-		 
+		if (this.cache == null)
+		{
+			this.cache = new ReferenceObjectCache(this.adapter, true);
+		}
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
@@ -186,7 +191,6 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		// Look up name in cache.
 		else
 		{
-			ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter, true);
 			refDB = this.adapter.fetchInstance(Long.parseLong(cache.getRefDbNamesToIds().get(targetReferenceDB).get(0)));
 		}
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, refDB);
