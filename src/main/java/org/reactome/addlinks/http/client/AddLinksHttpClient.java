@@ -64,7 +64,7 @@ public class AddLinksHttpClient
 				// we will ONLY be retrying the connection timeouts, defined as the time required to establish a connection, or socket timeouts (inactivity that occurs after the connection has been established).
 				// we will *not* handle connection manager timeouts (time waiting for connection manager or connection pool).
 				long endtime = System.currentTimeMillis();
-				e.printStackTrace();
+				//e.printStackTrace();
 				this.numAttempts++;
 				this.timeout = this.timeout.plus(this.timeoutRetryIncrement);
 				logger.info("Failed to connect to {} after {} due to cause \"{}\", but will retry {} more time(s) with a longer timeout of {}.", uri.toString(), Duration.ofMillis(endtime - startTime), e.getMessage(), maxNumAttempts - this.numAttempts, this.timeout);
