@@ -98,41 +98,47 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					{
 						keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(keggGeneIdentifier);
 					}
-					
-					// remove prefix if necessary. Data in the ENTRY line in KEGG files doesn't seem to usually have a prefix, but data from the NAME line is
-					// more likely to have a prefix.
-					if (keggGeneIdentifier.startsWith(keggPrefix))
-					{
-						keggGeneIdentifier = keggGeneIdentifier.replaceFirst(keggPrefix, "");
-					}
-					
-					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
+//					
+//					// remove prefix if necessary. Data in the ENTRY line in KEGG files doesn't seem to usually have a prefix, but data from the NAME line is
+//					// more likely to have a prefix.
+//					if (keggGeneIdentifier.startsWith(keggPrefix))
+//					{
+//						keggGeneIdentifier = keggGeneIdentifier.replaceFirst(keggPrefix, "");
+//					}
+//					
+//					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
 					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 					{
 						keggIdentifier = keggGeneIdentifier;
 					}
-					
-					if (keggIdentifier.startsWith(keggPrefix))
-					{
-						keggIdentifier = keggIdentifier.replaceFirst(keggPrefix, "");
-					}
+//					
+//					if (keggIdentifier.startsWith(keggPrefix))
+//					{
+//						keggIdentifier = keggIdentifier.replaceFirst(keggPrefix, "");
+//					}
 
-					//keggIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggIdentifier);
-					StringBuilder xrefsSb = new StringBuilder();
-					for (GKInstance xref : xrefs)
-					{
-						xrefsSb.append(" ").append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-						// We won't add a cross-reference if it already exists
-						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( keggIdentifier ))
-						{
-							xrefAlreadyExists = true;
-							// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
-							// in letting the loop run longer.
-							// TODO: rewrite into a while-loop condition (I don't like breaks that much).
-							break;
-						}
-					}
-					logger.trace("xrefs:{}",xrefsSb.toString());
+					keggIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggIdentifier);
+//					StringBuilder xrefsSb = new StringBuilder();
+//					for (GKInstance xref : xrefs)
+//					{
+//						xrefsSb.append(" ").append(xref.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+//						// We won't add a cross-reference if it already exists
+//						if (xref.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals( keggIdentifier ))
+//						{
+//							xrefAlreadyExists = true;
+//							// Break out of the xrefs loop - we found an existing cross-reference that matches so there's no point 
+//							// in letting the loop run longer.
+//							// TODO: rewrite into a while-loop condition (I don't like breaks that much).
+//							break;
+//						}
+//					}
+					logger.trace("Working on source object: {}", sourceReference.toString());
+					String targetDB = null;
+					KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, this.logger);
+					String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggGeneIdentifier, keggPrefix);
+					targetDB = parts[0];
+					keggGeneIdentifier = parts[1];
+					xrefAlreadyExists = this.checkXRefExists(sourceReference, keggGeneIdentifier, targetDB);
 					if (!xrefAlreadyExists)
 					{
 						String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
@@ -151,12 +157,6 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 						logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
 						if (!this.testMode)
 						{
-							String targetDB = null;
-							KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, this.logger);
-							String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggGeneIdentifier, keggPrefix);
-							targetDB = parts[0];
-							keggGeneIdentifier = parts[1];
-
 							if (!this.testMode && targetDB != null)
 							{
 								this.refCreator.createIdentifier(keggGeneIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
