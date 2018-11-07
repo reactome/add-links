@@ -171,7 +171,7 @@ public class DuplicateIdentifierReporter
 							});
 						}
 						// Include this row in the report IF this identifier is referred to by the same referrer more than once.
-						synchronized(referrerCounts)
+						//synchronized(referrerCounts)
 						{
 							reportThisRow = referrerCounts.keySet().parallelStream().anyMatch(k -> referrerCounts.get(k) > 1);
 						}
