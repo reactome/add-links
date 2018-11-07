@@ -1,14 +1,20 @@
 package org.reactome.addlinks.db;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.SchemaAttribute;
 
 /**
  * Reports on duplicated identifiers.
@@ -18,7 +24,7 @@ import org.gk.persistence.MySQLAdaptor;
 public class DuplicateIdentifierReporter
 {
 	private static final String FIELD_SEPARATOR = " | ";
-
+	private Logger logger = LogManager.getLogger();
 	private MySQLAdaptor dbAdapter;
 	
 	/**
@@ -82,15 +88,18 @@ public class DuplicateIdentifierReporter
 	/**
 	 * Creates a report of duplicated identifiers. The report is represented as a list of maps - each map is a key-value mapping of column names to values.
 	 * @return The report data.
-	 * @throws SQLException
+	 * @throws Exception 
+	 * @throws NumberFormatException 
 	 */
-	public List<Map<REPORT_KEYS, String>> createReport() throws SQLException
+	public List<Map<REPORT_KEYS, String>> createReport() throws NumberFormatException, Exception
 	{
+		Map<Long,MySQLAdaptor> adapterPool = Collections.synchronizedMap( new HashMap<Long,MySQLAdaptor>() );
 		List<Map<REPORT_KEYS, String>> rows = new ArrayList<>();
 		
 		ResultSet rs = this.dbAdapter.executeQuery(DuplicateIdentifierReporter.query, null);
 		while (rs.next())
 		{
+			boolean reportThisRow = true;
 			Map<REPORT_KEYS, String> rowData = new HashMap<>();
 			// For each REPORT_KEY (aka "column names"), add them to the a map.
 			// Also: Update this instance's map of maximum column widths
@@ -103,11 +112,82 @@ public class DuplicateIdentifierReporter
 					// Use the empty string literal (instead of an actual NULL value) so we can get the length of it, if necessary.
 					value = "";
 				}
-				rowData.put(key, value);
-				// Check to see if this key is already in the map of column widths
-				updateMaxColumnWidths(key, value);
+				else
+				{
+					if (key.equals(REPORT_KEYS.ReferenceEntity_DB_IDs))
+					{
+						Map<Long, Integer> referrerCounts = Collections.synchronizedMap(new HashMap<>());
+						String[] dbIDs = value.split(",");
+						// Now, we need to check the referrers of each entity and ensure that they are different. And Identifier is not *really* duplicated if 
+						// the "duplicates" are referred to by different entities.
+						if (dbIDs != null && dbIDs.length > 1)
+						{
+							//process multiple Reference Entities in parallel
+							Arrays.asList(dbIDs).parallelStream().forEach(refEntID -> {
+								try
+								{
+									// TODO: Create a common adapter pool for everywhere it is needed.
+									MySQLAdaptor localAdapter ;
+									long threadID = Thread.currentThread().getId();
+									if (adapterPool.containsKey(threadID))
+									{
+										localAdapter = adapterPool.get(threadID);
+									}
+									else
+									{
+										logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+										localAdapter = new MySQLAdaptor(this.dbAdapter.getDBHost(), this.dbAdapter.getDBName(), this.dbAdapter.getDBUser(),this.dbAdapter.getDBPwd(), this.dbAdapter.getDBPort());
+										adapterPool.put(threadID, localAdapter);
+									}
+									
+									GKInstance refEntInst = this.dbAdapter.fetchInstance(Long.parseLong(refEntID));
+									// Loop through the attributes of the instance's class that are referrer attributes.
+									// This way, we don't need an explicit list of attributes for getReferrers, we just
+									// use the metadata to drive this loop.
+									for (SchemaAttribute attrib : ((Collection<SchemaAttribute>) refEntInst.getSchemClass().getReferers()) )
+									{
+										@SuppressWarnings("unchecked")
+										Collection<GKInstance> referrers = refEntInst.getReferers(attrib);
+										for (GKInstance referrer : referrers)
+										{
+											// Add the referrer's ID to a Map. If the same Referrer ID appears more than once, it means the identifier is referred to by the same thing more than once,
+											// and that is what we REALLY need to report.
+											Long referrerID = referrer.getDBID();
+											if (referrerCounts.containsKey(referrerID))
+											{
+												referrerCounts.put(referrerID, referrerCounts.get(referrerID) + 1);
+											}
+											else
+											{
+												referrerCounts.put(referrerID, 1);
+											}
+										}
+									}
+								}
+								catch (Exception e)
+								{
+									e.printStackTrace();
+								}
+							});
+						}
+						// Include this row in the report IF this identifier is referred to by the same referrer more than once.
+						synchronized(referrerCounts)
+						{
+							reportThisRow = referrerCounts.keySet().parallelStream().anyMatch(k -> referrerCounts.get(k) > 1);
+						}
+					}
+				}
+				if (reportThisRow)
+				{
+					rowData.put(key, value);
+					// Check to see if this key is already in the map of column widths
+					updateMaxColumnWidths(key, value);
+				}
 			}
-			rows.add(rowData);
+			if (reportThisRow)
+			{
+				rows.add(rowData);
+			}
 		}
 		
 		return rows;
