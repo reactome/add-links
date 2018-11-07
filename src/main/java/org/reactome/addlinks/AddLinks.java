@@ -68,6 +68,8 @@ import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
 
 public class AddLinks
 {
+	private static final String DATE_PATTERN_FOR_FILENAMES = "yyyy-MM-dd_HHmmss";
+
 	private static final Logger logger = LogManager.getLogger();
 	
 	private ReferenceObjectCache objectCache;
@@ -150,7 +152,7 @@ public class AddLinks
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
 		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
-		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
 		logger.info("Report can be found in {}", preAddLinksDuplicateIdentifierReportFileName);
 		Files.write(Paths.get(preAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
 		
@@ -263,7 +265,7 @@ public class AddLinks
 		logger.info("Differences");
 		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
 		// Save the diff report to a file for future reference.uinm
-		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
@@ -272,9 +274,9 @@ public class AddLinks
 		duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
 		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
-		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
-		logger.info("Report can be found in {}", postAddLinksduplicateSB);
-		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
+		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		logger.info("Report can be found in {}", postAddLinksDuplicateIdentifierReportFileName);
+		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), postAddLinksduplicateSB.toString().getBytes());
 		
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
@@ -383,10 +385,10 @@ public class AddLinks
 				{
 					refCount = refMap.size();
 				}
-				logger.info("ReferenceDatabase: {} ({}); # referrers: {}", refDB.getDBID(), names.toString(), refCount);
+				logger.trace("ReferenceDatabase: {} ({}); # referrers: {}", refDB.getDBID(), names.toString(), refCount);
 				if (refCount == 0)
 				{
-					logger.info("NOTHING refers to ReferenceDatabase DB ID {} ({}) so it will now be deleted.", refDB.getDBID(), names.toString());
+					logger.debug("NOTHING refers to ReferenceDatabase DB ID {} ({}) so it will now be deleted.", refDB.getDBID(), names.toString());
 					this.dbAdapter.deleteByDBID(refDB.getDBID());
 				}
 			}
