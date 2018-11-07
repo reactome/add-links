@@ -16,7 +16,6 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.db.ReferenceObjectCache;
-import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 
 /*
@@ -157,7 +156,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 											KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(this.refObjectCache, this.logger);
 											String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(targetIdentifier, keggPrefix);
 											targetDB = parts[0];
-											targetIdentifier = parts[1];											
+											targetIdentifier = parts[1];
 										}
 
 									}
@@ -282,26 +281,26 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		return targetDB;
 	}
 
-	private synchronized String createNewKEGGReferenceDatabase(String targetIdentifier, String keggPrefix)
-	{
-		String targetDB = null;
-		if (keggPrefix != null)
-		{
-			// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
-			String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
-			if (keggSpeciesName != null)
-			{
-				targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, refObjectCache);
-				// TODO: Figure out a way to only refresh the cache if a new database was actually created. If the database already existed, it won't be created.
-				refObjectCache.rebuildRefDBNamesAndMappings();
-			}
-			if (targetDB == null)
-			{
-				logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, targetIdentifier);
-			}
-		}
-		return targetDB;
-	}
+//	private synchronized String createNewKEGGReferenceDatabase(String targetIdentifier, String keggPrefix)
+//	{
+//		String targetDB = null;
+//		if (keggPrefix != null)
+//		{
+//			// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
+//			String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
+//			if (keggSpeciesName != null)
+//			{
+//				targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, refObjectCache);
+//				// TODO: Figure out a way to only refresh the cache if a new database was actually created. If the database already existed, it won't be created.
+//				refObjectCache.rebuildRefDBNamesAndMappings();
+//			}
+//			if (targetDB == null)
+//			{
+//				logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, targetIdentifier);
+//			}
+//		}
+//		return targetDB;
+//	}
 
 	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
 	{
