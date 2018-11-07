@@ -198,7 +198,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				String[] parts = newIdentifier.split(",");
 				String identifierValue = parts[0];
 				String targetDB = parts[3];
-				logger.trace("Creating new identifier {} ", identifierValue );
+				//logger.trace("Creating new identifier {} ", identifierValue );
 				try
 				{
 					String species = parts[2];
