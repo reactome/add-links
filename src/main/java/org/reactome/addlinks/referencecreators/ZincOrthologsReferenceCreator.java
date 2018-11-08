@@ -38,7 +38,7 @@ public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< Strin
 		@SuppressWarnings("unchecked")
 		GKInstance refDB = (new ArrayList<GKInstance>(((Collection<GKInstance>) this.adapter.fetchInstanceByAttribute("ReferenceDatabase", "name", "=", this.targetRefDB)))).get(0);
 		List<String> thingsToCreate = new ArrayList<String>(mapping.keySet().size());
-		//for (GKInstance sourceReference : sourceReferences)
+		//TODO: Maybe consider a slightly greater degree of parallelism here (~10-12 threads? instead of default 7 on my machine), since it's so damn slow?
 		sourceReferences.parallelStream().forEach( sourceReference ->
 		{
 			try
