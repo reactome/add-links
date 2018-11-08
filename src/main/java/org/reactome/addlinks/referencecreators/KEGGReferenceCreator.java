@@ -137,6 +137,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, this.logger);
 					String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggGeneIdentifier, keggPrefix);
 					targetDB = parts[0];
+					// now, the identifier should have been cleaned up by determineKeggReferenceDatabase
 					keggGeneIdentifier = parts[1];
 					xrefAlreadyExists = this.checkXRefExists(sourceReference, keggGeneIdentifier, targetDB);
 					if (!xrefAlreadyExists)
