@@ -205,7 +205,7 @@
 		<entry key="OpenTargets">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OpenTargets">
 				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/18.10/output/summaries/opentargets_genes_unique.tsv" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/OpenTargets.dat" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/opentargets_genes_unique.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
 			</bean>
