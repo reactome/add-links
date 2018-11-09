@@ -484,6 +484,7 @@
 				<constructor-arg index="5" name="targetDB" value="OpenTargets"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/OpenTargetsReferenceCreator"/>
 				<property name="testMode" value="false"/>
+				<property name="sourceIdentifyingAttribute" value="geneName"/>
 			</bean>
 		</entry>
 	</util:map>

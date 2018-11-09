@@ -1,8 +1,11 @@
 package org.reactome.addlinks.referencecreators;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +38,10 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	protected String classReferringToRefName ;
 	protected String referringAttributeName ;
 	protected String targetRefDB ;
+	protected String sourceIdentifyingAttribute = ReactomeJavaConstants.identifier;
 	protected String sourceRefDB ;
+	
+	protected ReferenceObjectCache cache;
 	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
@@ -75,7 +81,10 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			// Can't recover if there is no valid attribute object, throw it up the stack. 
 			throw new RuntimeException (e);
 		}
-		 
+		if (cache == null)
+		{
+			cache = new ReferenceObjectCache(this.adapter, true);
+		}
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
@@ -91,55 +100,76 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	@Override
 	public void createIdentifiers(long personID, Map<String, T> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
-		int sourceIdentifiersWithNoMapping = 0;
-		int sourceIdentifiersWithNewIdentifier = 0;
-		int sourceIdentifiersWithExistingIdentifier = 0;
+		AtomicInteger sourceIdentifiersWithNoMapping = new AtomicInteger(0);
+		AtomicInteger sourceIdentifiersWithNewIdentifier = new AtomicInteger(0);
+		AtomicInteger sourceIdentifiersWithExistingIdentifier = new AtomicInteger(0);
 		logger.traceEntry();
-		for (GKInstance sourceReference : sourceReferences)
+		
+		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
+		
+		sourceReferences.parallelStream().forEach(sourceReference ->
 		{
-			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
-			
-			// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
-			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
-			// if we want new identifiers to have the same species of the thing which they refer to.
-			Long speciesID = null;
-			@SuppressWarnings("unchecked")
-			Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
-			if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
+			try
 			{
-				GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
-				if (speciesInst != null)
+				String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(this.sourceIdentifyingAttribute);
+				
+				if (mapping.containsKey(sourceReferenceIdentifier))
 				{
-					speciesID = new Long(speciesInst.getDBID());
-				}
-			}
-			 
-			if (mapping.containsKey(sourceReferenceIdentifier))
-			{
-				String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
-				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
-				// Look for cross-references.
-				boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
-				if (!xrefAlreadyExists)
-				{
-					logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
-					sourceIdentifiersWithNewIdentifier ++;
-					if (!this.testMode)
+					// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
+					// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
+					// if we want new identifiers to have the same species of the thing which they refer to.
+					Long speciesID = null;
+					@SuppressWarnings("unchecked")
+					Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
+					if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 					{
-						this.refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID);
+						GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+						if (speciesInst != null)
+						{
+							speciesID = new Long(speciesInst.getDBID());
+						}
+					}
+					
+					String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
+					logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
+					// Look for cross-references.
+					boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
+					if (!xrefAlreadyExists)
+					{
+						logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
+						sourceIdentifiersWithNewIdentifier.incrementAndGet();
+						thingsToCreate.add(targetRefDBIdentifier+","+String.valueOf(sourceReference.getDBID())+","+speciesID);
+					}
+					else
+					{
+						sourceIdentifiersWithExistingIdentifier.incrementAndGet();
 					}
 				}
 				else
 				{
-					sourceIdentifiersWithExistingIdentifier ++;
+					sourceIdentifiersWithNoMapping.incrementAndGet();
 				}
 			}
-			else
+			catch (Exception e)
 			{
-				sourceIdentifiersWithNoMapping ++;
-				//logger.debug("UniProt ID {} is NOT in the database.", uniprotID);
+				e.printStackTrace();
 			}
+		});
+		
+		for(String thing : thingsToCreate)
+		{
+			String[] parts = thing.split(",");
+			String targetRefDBIdentifier = parts[0];
+			String sourceDBID = parts[1];
+			String speciesID = parts[2];
+			
+			if (!this.testMode)
+			{
+				this.refCreator.createIdentifier(targetRefDBIdentifier, sourceDBID, this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(speciesID));
+			}
+
 		}
+		
 		logger.info("{} reference creation summary: \n"
 				+ "\t# {} IDs with a new {} identifier (a new {} reference was created): {};\n"
 				+ "\t# {} identifiers which already had the same {} reference (nothing new was created): {};\n"
@@ -186,8 +216,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		// Look up name in cache.
 		else
 		{
-			ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter, true);
-			refDB = this.adapter.fetchInstance(Long.parseLong(cache.getRefDbNamesToIds().get(targetReferenceDB).get(0)));
+			refDB = this.adapter.fetchInstance(Long.parseLong(this.cache.getRefDbNamesToIds().get(targetReferenceDB).get(0)));
 		}
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, refDB);
 	}
@@ -298,6 +327,16 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	public void setSourceRefDB(String sourceRefDB)
 	{
 		this.sourceRefDB = sourceRefDB;
+	}
+
+	public String getSourceIdentifyingAttribute()
+	{
+		return this.sourceIdentifyingAttribute;
+	}
+
+	public void setSourceIdentifyingAttribute(String sourceIdentifyingAttribute)
+	{
+		this.sourceIdentifyingAttribute = sourceIdentifyingAttribute;
 	}
 	
 }
