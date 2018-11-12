@@ -66,7 +66,7 @@
 		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>BrendaProcessor</value>
-		<value>IntActFileProcessor</value>
+		<value>ComplexPortalFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -99,7 +99,7 @@
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
-		<value>IntActComplexPortalRefCreator</value>
+		<value>ComplexPortalRefCreator</value>
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
