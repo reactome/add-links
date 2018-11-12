@@ -63,7 +63,7 @@
 		<value>RHEAIdentifierToReactionlikeEvent</value> 
 		<value>KEGGRetriever</value>
 		<value>BrendaRetriever</value>
- 		<value>IntActComplexPortal</value>
+ 		<value>ComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
