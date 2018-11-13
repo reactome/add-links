@@ -226,6 +226,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 									keggSpeciesCode = null;
 									keggIdentifier = null;
 									ecNumber = null;
+									uniProtIDs = null;
 								}
 							}
 						}

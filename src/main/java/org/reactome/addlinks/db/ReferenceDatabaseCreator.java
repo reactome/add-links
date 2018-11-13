@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
@@ -16,15 +16,20 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
+import org.reactome.addlinks.CustomLoggable;
 
-public class ReferenceDatabaseCreator
+public class ReferenceDatabaseCreator implements CustomLoggable
 {
 	private MySQLAdaptor adapter;
-	private static final Logger logger = LogManager.getLogger();
+	private static Logger logger ;
 	
 	public ReferenceDatabaseCreator(MySQLAdaptor adapter)
 	{
 		this.adapter = adapter;
+		if (ReferenceDatabaseCreator.logger  == null)
+		{
+			ReferenceDatabaseCreator.logger = this.createLogger("ReferenceDatabaseCreator", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+		}
 	}
 	
 	/**
@@ -194,7 +199,6 @@ public class ReferenceDatabaseCreator
 					}
 				}
 			}
-
 		}
 		catch (Exception e)
 		{

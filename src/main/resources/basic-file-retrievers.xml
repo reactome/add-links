@@ -42,12 +42,12 @@
 			</bean>
 		</entry>
 
-		<entry key="IntActComplexPortal">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntActComplexPortal">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/current/various/reactome.dat" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_to_reactome.dat" />
+		<entry key="ComplexPortal">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortal">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/homo_sapiens.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
-				<constructor-arg name="retrieverName" value="retrievers/IntActComplexPortal"/>
+				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
 				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
@@ -78,7 +78,7 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2018_03.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2018_05.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="passiveFTP" value="false" />

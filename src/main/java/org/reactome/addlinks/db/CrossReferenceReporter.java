@@ -195,7 +195,7 @@ public class CrossReferenceReporter
 			"				inner join ReferenceDatabase on ReferenceDatabase_2_name.DB_ID = ReferenceDatabase.DB_ID\n" +
 			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
 			"	group by DatabaseObject._class, DatabaseIdentifier.referenceDatabase, ref_db_subq.name\n" +
-			"    union\n" +
+			"	union\n" +
 			"	select count(*) as count,  ExternalOntology.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q5'\n" +
 			"	from ExternalOntology\n" +
 			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = ExternalOntology.referenceDatabase\n" +
@@ -205,7 +205,7 @@ public class CrossReferenceReporter
 			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
 			"	inner join DatabaseObject on DatabaseObject.db_id = ExternalOntology.db_id\n" +
 			"	group by ExternalOntology.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
-			"    union\n" +
+			"	union\n" +
 			"	select count(*) as count,  GO_CellularComponent.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q6'\n" +
 			"	from GO_CellularComponent\n" +
 			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_CellularComponent.referenceDatabase\n" +
@@ -215,7 +215,7 @@ public class CrossReferenceReporter
 			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
 			"	inner join DatabaseObject on DatabaseObject.db_id = GO_CellularComponent.db_id\n" +
 			"	group by GO_CellularComponent.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
-			"    union\n" +
+			"	union\n" +
 			"	select count(*) as count,  GO_MolecularFunction.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q7'\n" +
 			"	from GO_MolecularFunction\n" +
 			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_MolecularFunction.referenceDatabase\n" +
@@ -225,7 +225,7 @@ public class CrossReferenceReporter
 			"				group by ReferenceDatabase.db_id) as ref_db_subq on ReferenceDatabase.db_id = ref_db_subq.db_id\n" +
 			"	inner join DatabaseObject on DatabaseObject.db_id = GO_MolecularFunction.db_id\n" +
 			"	group by GO_MolecularFunction.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
-			"    union\n" +
+			"	union\n" +
 			"	select count(*) as count,  GO_BiologicalProcess.referenceDatabase as ref_db_id, ref_db_subq.name as ref_db_names_and_aliases, DatabaseObject._class as object_type, 'q8'\n" +
 			"	from GO_BiologicalProcess\n" +
 			"	inner join ReferenceDatabase on ReferenceDatabase.DB_ID = GO_BiologicalProcess.referenceDatabase\n" +
