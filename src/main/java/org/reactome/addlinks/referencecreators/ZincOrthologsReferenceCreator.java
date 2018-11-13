@@ -2,6 +2,7 @@ package org.reactome.addlinks.referencecreators;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +38,7 @@ public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< Strin
 		@SuppressWarnings("unchecked")
 		GKInstance refDB = (new ArrayList<GKInstance>(((Collection<GKInstance>) this.adapter.fetchInstanceByAttribute("ReferenceDatabase", "name", "=", this.targetRefDB)))).get(0);
 		List<String> thingsToCreate = new ArrayList<String>(mapping.keySet().size());
-		//for (GKInstance sourceReference : sourceReferences)
+		//TODO: Maybe consider a slightly greater degree of parallelism here (~10-12 threads? instead of default 7 on my machine), since it's so damn slow?
 		sourceReferences.parallelStream().forEach( sourceReference ->
 		{
 			try
@@ -66,6 +67,8 @@ public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< Strin
 					{
 						// NOTE: Should also check http://zinc15.docking.org/orthologs/SRC_CHICK/predictions/subsets/purchasable.csv (example link) and if line count > 1 (meaning: more than 1 header line) the link is valid!
 						AddLinksHttpClient client = new AddLinksHttpClient();
+						// Seems that it usually takes > 30 seconds, so let's just give it a longer initial timeout.
+						client.setTimeout(Duration.ofSeconds(50));
 						URI uri = new URI(refDB.getAttributeValue("accessUrl").toString().replaceAll("###ID###", targetRefDBIdentifier).replaceAll("/$", ".csv"));
 						client.setUri(uri);
 						AddLinksHttpResponse response = client.executeRequest();

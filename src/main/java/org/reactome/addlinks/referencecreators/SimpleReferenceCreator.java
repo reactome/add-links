@@ -81,9 +81,9 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			// Can't recover if there is no valid attribute object, throw it up the stack. 
 			throw new RuntimeException (e);
 		}
-		if (cache == null)
+		if (this.cache == null)
 		{
-			cache = new ReferenceObjectCache(this.adapter, true);
+			this.cache = new ReferenceObjectCache(this.adapter, true);
 		}
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}

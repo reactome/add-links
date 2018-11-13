@@ -46,7 +46,7 @@
 		<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
 		<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
 		<entry key="BrendaProcessor" value="BrendaRefCreator"/>
-		<entry key="IntActFileProcessor" value="IntActComplexPortalRefCreator"/>
+		<entry key="ComplexPortalFileProcessor" value="ComplexPortalRefCreator"/>
 		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 		<entry key="CTDProcessor" value="CTDRefCreator"/>
