@@ -474,5 +474,18 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
+		<entry key="OpenTargetsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="OpenTargetsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="OpenTargets"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/OpenTargetsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+				<property name="sourceIdentifyingAttribute" value="geneName"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

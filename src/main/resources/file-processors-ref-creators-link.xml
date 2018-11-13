@@ -50,6 +50,7 @@
 		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 		<entry key="CTDProcessor" value="CTDRefCreator"/>
+		<entry key="OpenTargetsFileProcessor" value="OpenTargetsReferenceCreator"/>
 	</util:map>
 
 </beans>
