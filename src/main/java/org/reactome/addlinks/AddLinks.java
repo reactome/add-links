@@ -40,6 +40,8 @@ import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.db.CrossReferenceReporter;
+import org.reactome.addlinks.db.DuplicateIdentifierReporter;
+import org.reactome.addlinks.db.DuplicateIdentifierReporter.REPORT_KEYS;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
@@ -66,6 +68,8 @@ import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
 
 public class AddLinks
 {
+	private static final String DATE_PATTERN_FOR_FILENAMES = "yyyy-MM-dd_HHmmss";
+
 	private static final Logger logger = LogManager.getLogger();
 	
 	private ReferenceObjectCache objectCache;
@@ -140,10 +144,18 @@ public class AddLinks
 		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		CrossReferenceReporter reporter = new CrossReferenceReporter(this.dbAdapter);
-		Map<String, Map<String,Integer>> preAddLinksReport = reporter.createReportMap();
-		logger.info("\n"+(reporter.printReport(preAddLinksReport)));
+		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
+		Map<String, Map<String,Integer>> preAddLinksReport = xrefReporter.createReportMap();
+		logger.info("\n"+(xrefReporter.printReport(preAddLinksReport)));
 
+		logger.info("Querying for Duplicated identifiers in the database, BEFORE running AddLinks...");
+		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
+		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
+		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
+		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		logger.info("Report can be found in {}", preAddLinksDuplicateIdentifierReportFileName);
+		Files.write(Paths.get(preAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
+		
 		ExecutorService execSrvc = Executors.newFixedThreadPool(5);
 		
 		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
@@ -247,16 +259,25 @@ public class AddLinks
 
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		//reporter.printReport();
-		Map<String, Map<String,Integer>> postAddLinksReport = reporter.createReportMap();
-		logger.info("\n"+reporter.printReport(postAddLinksReport));
+		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
+		logger.info("\n"+xrefReporter.printReport(postAddLinksReport));
 		
 		logger.info("Differences");
-		String diffReport = reporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
+		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
 		// Save the diff report to a file for future reference.uinm
-		String diffReportName = "diffReport" + DateTimeFormatter.ofPattern("yyyy-MM-dd_Hms").format(LocalDateTime.now()) + ".txt";
+		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
+		
+		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
+		duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
+		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
+		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
+		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		logger.info("Report can be found in {}", postAddLinksDuplicateIdentifierReportFileName);
+		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), postAddLinksduplicateSB.toString().getBytes());
+		
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
@@ -364,10 +385,10 @@ public class AddLinks
 				{
 					refCount = refMap.size();
 				}
-				logger.info("ReferenceDatabase: {} ({}); # referrers: {}", refDB.getDBID(), names.toString(), refCount);
+				logger.trace("ReferenceDatabase: {} ({}); # referrers: {}", refDB.getDBID(), names.toString(), refCount);
 				if (refCount == 0)
 				{
-					logger.info("NOTHING refers to ReferenceDatabase DB ID {} ({}) so it will now be deleted.", refDB.getDBID(), names.toString());
+					logger.debug("NOTHING refers to ReferenceDatabase DB ID {} ({}) so it will now be deleted.", refDB.getDBID(), names.toString());
 					this.dbAdapter.deleteByDBID(refDB.getDBID());
 				}
 			}
