@@ -30,6 +30,8 @@ logs
 AddLinks*jar
 
 scripts/resources
+scripts/reports
+Scripts
 
 diffReport*.txt
 /test-logs/

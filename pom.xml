@@ -5,9 +5,26 @@
 	<artifactId>AddLinks</artifactId>
 	<version>1.0.2</version>
 	
+	<organization>
+		<name>Reactome</name>
+		<url>https://reactome.org</url>
+	</organization>
+	
+	<name>AddLinks</name>
+	
+	<developers>
+		<developer>
+			<organization>OICR</organization>
+			<organizationUrl>https://oicr.on.ca/</organizationUrl>
+			<email>solomon.shorser@oicr.on.ca</email>
+		</developer>
+	</developers>
+	
 	<properties>
 		<spring.version>4.3.5.RELEASE</spring.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<powermock.version>1.7.4</powermock.version>
+		<mockito.version>2.8.9</mockito.version>
 	</properties>
 	
 	<dependencies>
@@ -107,20 +124,32 @@
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
-			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.6.6</version>
+			<artifactId>powermock-api-mockito2</artifactId>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.6.6</version>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4-rule</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-core</artifactId>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -262,4 +291,5 @@
 			</releases>
 		</repository>
 	</repositories>
+	
 </project>
