@@ -24,6 +24,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -308,7 +309,7 @@ public class AddLinks
 					{
 						if (!results.get(k).isKeywordFound())
 						{
-							if (results.get(k).getStatusCode() == 200)
+							if (results.get(k).getStatusCode() == HttpStatus.SC_OK)
 							{
 								logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
 							}
