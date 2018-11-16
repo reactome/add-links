@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
@@ -16,15 +16,20 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
+import org.reactome.addlinks.CustomLoggable;
 
-public class ReferenceDatabaseCreator
+public class ReferenceDatabaseCreator implements CustomLoggable
 {
 	private MySQLAdaptor adapter;
-	private static final Logger logger = LogManager.getLogger();
+	private static Logger logger ;
 	
 	public ReferenceDatabaseCreator(MySQLAdaptor adapter)
 	{
 		this.adapter = adapter;
+		if (ReferenceDatabaseCreator.logger  == null)
+		{
+			ReferenceDatabaseCreator.logger = this.createLogger("ReferenceDatabaseCreator", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+		}
 	}
 	
 	/**
@@ -34,17 +39,23 @@ public class ReferenceDatabaseCreator
 	 * @param accessUrl - The access URL of the RefereneDatabase.
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
 	 * @param aliases - Other names.
+	 * @return the DB_ID of the new ReferenceDatabase.
 	 * @throws Exception 
 	 */
-	public void createReferenceDatabaseWithAliases(String url, String accessUrl, String primaryName, String ... aliases) throws Exception
+	public Long createReferenceDatabaseWithAliases(String url, String accessUrl, String primaryName, String ... aliases) throws Exception
 	{
+		Long dbid = null;
 		//First, let's check that the Reference Database doesn't already exist. all we have to go on is the name...
 		try
 		{
 			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
+			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
+			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
 			@SuppressWarnings("unchecked")
-			Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
+																? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
+																: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
 			// Now that we have a bunch of things that contain primaryName, we need to find the ones where the rank of that name-attribute is 0.
 			if (preexistingReferenceDBs!=null && preexistingReferenceDBs.size() > 0)
 			{
@@ -56,20 +67,20 @@ public class ReferenceDatabaseCreator
 					List<String> names = (List<String>) refDBInst.getAttributeValuesList(ReactomeJavaConstants.name);
 					
 					// if primaryName is not already in use...
-					if ( (names==null || names.size() == 0)
-						&& (names !=null && !names.get(0).equals(primaryName)) )
+					if ( (names==null || names.size() == 0) || (!names.get(0).equals(primaryName)) )
 					{
-						createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
+						dbid = createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 					}
 					else
 					{
 						logger.warn("The primaryName {} appears to already be in use by {}", primaryName, refDBInst);
+						dbid = refDBInst.getDBID();
 					}
 				}
 			}
 			else
 			{
-				createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
+				dbid = createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 			}
 			
 		}
@@ -79,9 +90,22 @@ public class ReferenceDatabaseCreator
 			e.printStackTrace();
 			throw e;
 		}
+		return dbid;
 	}
 
-	private void createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	/**
+	 * Creates a ReferenceDatabase with a name and some alias-names.
+	 * @param url - The URL for the ReferenceDatabase. 
+	 * @param accessUrl - The URL that will be used to actually access data. Should contain ###ID### which will be used when other parts of Reactome need to insert the ID of the thing being accessed at this URL.
+	 * @param primaryName - The primary name for this Reference database.
+	 * @param refDBClass - The SchemaClass for the object that will be created.
+	 * @param aliases - A list of alternate names for the ReferenceDatabase object.
+	 * @return The DB_ID of the new ReferenceDatabase object that was just created.
+	 * @throws InvalidAttributeException
+	 * @throws InvalidAttributeValueException
+	 * @throws Exception
+	 */
+	private long createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws InvalidAttributeException, InvalidAttributeValueException, Exception
 	{
 		// Create new GKInstance, with the appropriate primary name.
 		GKInstance newReferenceDB = new GKInstance(refDBClass);
@@ -97,7 +121,7 @@ public class ReferenceDatabaseCreator
 		newReferenceDB.setDbAdaptor(this.adapter);
 		InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
 		//Persist to storage.
-		this.adapter.storeInstance(newReferenceDB);
+		return this.adapter.storeInstance(newReferenceDB);
 	}
 	
 	/**
@@ -175,7 +199,6 @@ public class ReferenceDatabaseCreator
 					}
 				}
 			}
-
 		}
 		catch (Exception e)
 		{

@@ -88,26 +88,7 @@ public final class ReferenceObjectCache
 			
 			MySQLAdaptor localAdapter ;
 			long threadID = Thread.currentThread().getId();
-			if (adapterPool.containsKey(threadID))
-			{
-				localAdapter = adapterPool.get(threadID);
-			}
-			else
-			{
-				logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
-				try
-				{
-					localAdapter = new MySQLAdaptor( ReferenceObjectCache.adapter.getDBHost(), ReferenceObjectCache.adapter.getDBName(),
-													ReferenceObjectCache.adapter.getDBUser(), ReferenceObjectCache.adapter.getDBPwd(),
-													ReferenceObjectCache.adapter.getDBPort());
-					adapterPool.put(threadID, localAdapter);
-				}
-				catch (SQLException e)
-				{
-					e.printStackTrace();
-					throw new Error(e);
-				}
-			}
+			localAdapter = getAdaptorForThread(threadID);
 			// We don't explicitly call the adapter in this code. We rely on each GKInstance object to have a reference to a PersistenceAdapter.
 			// To allow for multiuple threads, we need to ensure that these objects use the local adapter from the pool.
 			referenceObject.setDbAdaptor(localAdapter);
@@ -255,7 +236,7 @@ public final class ReferenceObjectCache
 			{
 				try
 				{
-					if (referenceObject.getAttributeValue(ReactomeJavaConstants.identifier) != null)
+					if (referenceObject.getSchemClass().isValidAttribute(ReactomeJavaConstants.identifier) && referenceObject.getAttributeValue(ReactomeJavaConstants.identifier) != null)
 					{
 						String identifier = (String) referenceObject.getAttributeValue(ReactomeJavaConstants.identifier);
 						try
@@ -304,6 +285,38 @@ public final class ReferenceObjectCache
 				);
 	}
 
+	/**
+	 * Gets a database adaptor for a thread.
+	 * @param threadID
+	 * @return
+	 * @throws Error
+	 */
+	private static MySQLAdaptor getAdaptorForThread(long threadID) throws Error
+	{
+		MySQLAdaptor localAdapter;
+		if (adapterPool.containsKey(threadID))
+		{
+			localAdapter = adapterPool.get(threadID);
+		}
+		else
+		{
+			logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+			try
+			{
+				localAdapter = new MySQLAdaptor( ReferenceObjectCache.adapter.getDBHost(), ReferenceObjectCache.adapter.getDBName(),
+												ReferenceObjectCache.adapter.getDBUser(), ReferenceObjectCache.adapter.getDBPwd(),
+												ReferenceObjectCache.adapter.getDBPort());
+				adapterPool.put(threadID, localAdapter);
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+				throw new Error(e);
+			}
+		}
+		return localAdapter;
+	}
+	
 	private static synchronized void populateCaches(MySQLAdaptor adapter)
 	{
 		ReferenceObjectCache.adapter = adapter;
@@ -324,12 +337,16 @@ public final class ReferenceObjectCache
 				buildReferenceDatabaseCache(adapter);
 				// Build up the species caches.
 				buildSpeciesCache(adapter);
-
+				// build the StableIdentifier cache.
+				ReferenceObjectCache.buildStableIdentifierCache(adapter);
+				// print some stats
 				logger.info("All caches initialized."
 						+ "\n\tkeys in refDbMapping: {};"
-						+ "\n\tkeys in speciesMapping: {}",
+						+ "\n\tkeys in speciesMapping: {}"
+						+ "\n\tkeys in StableIdentifierMapping: {}",
 								ReferenceObjectCache.refdbMapping.size(),
-								ReferenceObjectCache.speciesMapping.size());
+								ReferenceObjectCache.speciesMapping.size(),
+								ReferenceObjectCache.cachedByStableIdentifier.size());
 				ReferenceObjectCache.cachesArePopulated = true;
 			}
 			catch (Exception e)
@@ -446,6 +463,9 @@ public final class ReferenceObjectCache
 	private static Map<String,GKInstance> databaseIdentifiersByDBID = new ConcurrentHashMap<String,GKInstance>();
 	private static Map<String,List<GKInstance>> databaseIdentifiersByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
 	
+	// Cache objects by Stable Identifier
+	private static Map<String, GKInstance> cachedByStableIdentifier = new ConcurrentHashMap<String, GKInstance>();
+	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	//These really should be 1:n mappings...
 	private static Map<String,List<String>> speciesMapping = new ConcurrentHashMap<String,List<String>>();
@@ -517,6 +537,8 @@ public final class ReferenceObjectCache
 				try
 				{
 					ReferenceObjectCache.buildReferenceCaches(objectClass, objectCacheBySpecies, objectCacheByDBID, objectCacheByIdentifier, objectCacheByRefDB);
+					// NOTE: ReferenceDatabase cache and Species cache will get rebuilt EVERY time *this* method is called.
+					// This could be inefficient when rebuildRefDBCachesWithoutClearing is called because it calls *this* method several times.
 					// Build up the Reference Database caches.
 					buildReferenceDatabaseCache(adapter);
 					// Build up the species caches.
@@ -561,15 +583,68 @@ public final class ReferenceObjectCache
 				return null;
 		}
 	}
-
-
 	
+	/**
+	 * Gets a map that maps Reactome Stable Identifiers to DatabaseObjects.
+	 * @return
+	 */
+	public Map<String, GKInstance> getStableIdentifierCache()
+	{
+		if (ReferenceObjectCache.lazyLoad)
+		{
+			ReferenceObjectCache.buildStableIdentifierCache(ReferenceObjectCache.adapter);
+		}
+		return ReferenceObjectCache.cachedByStableIdentifier;
+	}
+	
+	/**
+	 * Build the cache of objects that are cached by StableIdentifier.
+	 * @param dbAdaptor - the databse adaptor to use.
+	 */
+	private synchronized static void buildStableIdentifierCache(MySQLAdaptor dbAdaptor)
+	{
+		if (ReferenceObjectCache.cachedByStableIdentifier.isEmpty())
+		{
+			try
+			{
+
+				
+				@SuppressWarnings("unchecked")
+				Collection<GKInstance> instances = (Collection<GKInstance>) dbAdaptor.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseObject, ReactomeJavaConstants.stableIdentifier, "IS NOT NULL", null);
+				instances.parallelStream().forEach( instance -> {
+					MySQLAdaptor localAdapter ;
+					long threadID = Thread.currentThread().getId();
+					localAdapter = getAdaptorForThread(threadID);
+					instance.setDbAdaptor(localAdapter);
+					
+					String stableIdentifier;
+					try
+					{
+						GKInstance stableIdentifierInstance = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier);
+						stableIdentifier = (String) stableIdentifierInstance.getAttributeValue(ReactomeJavaConstants.identifier);
+						ReferenceObjectCache.cachedByStableIdentifier.put(stableIdentifier, instance);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+				});
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+			logger.info("{} items cached by Stable Identifier", ReferenceObjectCache.cachedByStableIdentifier.keySet().size());
+		}
+		//adapterPool.clear();
+	}
+
 	/**
 	 * Get a ReferenceGeneProduct shell by its DB_ID.
 	 * @param id
 	 * @return
 	 */
-	public GKInstance getById(String id)
+	public GKInstance getReferenceGeneProductById(String id)
 	{
 		return ReferenceObjectCache.refGeneProdCacheByDBID.get(id);
 	}
@@ -611,7 +686,7 @@ public final class ReferenceObjectCache
 		{
 			try
 			{
-				buildReferenceDatabaseCache(ReferenceObjectCache.adapter);
+				ReferenceObjectCache.buildReferenceDatabaseCache(ReferenceObjectCache.adapter);
 			}
 			catch (InvalidAttributeException e)
 			{
@@ -677,7 +752,7 @@ public final class ReferenceObjectCache
 	 * Returns a set of the keys used to cache by Species.
 	 * @return a set of the keys used to cache by Species.
 	 */
-	public Set<String> getListOfSpeciesNames()
+	public Set<String> getSetOfSpeciesNames()
 	{
 		return getSpeciesNamesToIds().keySet();
 	}
@@ -782,6 +857,51 @@ public final class ReferenceObjectCache
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheByDBID, ReferenceObjectCache.refRNASeqCacheByIdentifier, ReferenceObjectCache.refRNASeqCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheByDBID, ReferenceObjectCache.refGeneProdCacheByIdentifier, ReferenceObjectCache.refGeneProdCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, false);
+	}
+	
+	public synchronized void rebuildRefDBNamesAndMappings()
+	{
+		ReferenceObjectCache.refdbMapping.clear();
+		ReferenceObjectCache.refDbNamesToIds.clear();
+		getRefDBMappings();
+		getRefDbNamesToIds();
+	}
+	
+	public synchronized void rebuildRefDBCachesWithClearing()
+	{
+		ReferenceObjectCache.moleculeCacheByDBID.clear();
+		ReferenceObjectCache.moleculeCacheByIdentifier.clear();
+		ReferenceObjectCache.moleculeCacheByRefDB.clear();
+		
+		ReferenceObjectCache.refDNASeqCacheBySpecies.clear();
+		ReferenceObjectCache.refDNASeqCacheByDBID.clear();
+		ReferenceObjectCache.refDNASeqCacheByIdentifier.clear();
+		ReferenceObjectCache.refDNASeqCacheByRefDb.clear();
+		
+		ReferenceObjectCache.refRNASeqCacheBySpecies.clear();
+		ReferenceObjectCache.refRNASeqCacheByDBID.clear();
+		ReferenceObjectCache.refRNASeqCacheByIdentifier.clear();
+		ReferenceObjectCache.refRNASeqCacheByRefDb.clear();
+		
+		ReferenceObjectCache.refGeneProdCacheBySpecies.clear();
+		ReferenceObjectCache.refGeneProdCacheByDBID.clear();
+		ReferenceObjectCache.refGeneProdCacheByIdentifier.clear();
+		ReferenceObjectCache.refGeneProdCacheByRefDb.clear();
+		
+		ReferenceObjectCache.databaseIdentifiersByDBID.clear();
+		ReferenceObjectCache.databaseIdentifiersByIdentifier.clear();
+		ReferenceObjectCache.databaseIdentifiersByRefDb.clear();
+
+		ReferenceObjectCache.refdbMapping.clear();
+		ReferenceObjectCache.refDbNamesToIds.clear();
+		
+		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceMolecule, null, ReferenceObjectCache.moleculeCacheByDBID, ReferenceObjectCache.moleculeCacheByIdentifier, ReferenceObjectCache.moleculeCacheByRefDB, false);
+		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceDNASequence, ReferenceObjectCache.refDNASeqCacheBySpecies, ReferenceObjectCache.refDNASeqCacheByDBID, ReferenceObjectCache.refDNASeqCacheByIdentifier, ReferenceObjectCache.refDNASeqCacheByRefDb, false);
+		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheByDBID, ReferenceObjectCache.refRNASeqCacheByIdentifier, ReferenceObjectCache.refRNASeqCacheByRefDb, false);
+		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheByDBID, ReferenceObjectCache.refGeneProdCacheByIdentifier, ReferenceObjectCache.refGeneProdCacheByRefDb, false);
+		buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, false);
+		getRefDBMappings();
+		getRefDbNamesToIds();
 	}
 	
 	/**

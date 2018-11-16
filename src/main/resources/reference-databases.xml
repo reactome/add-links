@@ -239,7 +239,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.uniprot.org" />
-				<entry key="AccessURL" value="http://www.uniprot.org/uniprot/###ID###" />
+				<entry key="AccessURL" value="http://www.uniprot.org/entry/###ID###" />
 			</map>
 		</entry>
 		
@@ -369,6 +369,14 @@
 				</entry>
 				<entry key="URL" value="http://www.genenames.org/" />
 				<entry key="AccessURL" value="http://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=###ID###" />
+			</map>
+		</entry>
+		
+		<entry key="OpenTargets">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="OpenTargets" />
+				<entry key="URL" value="https://www.targetvalidation.org/" />
+				<entry key="AccessURL" value="https://www.targetvalidation.org/target/###ID###" />
 			</map>
 		</entry>
 	</util:map>

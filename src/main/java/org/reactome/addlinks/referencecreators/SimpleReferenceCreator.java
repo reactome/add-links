@@ -1,8 +1,11 @@
 package org.reactome.addlinks.referencecreators;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +16,7 @@ import org.gk.schema.GKSchemaAttribute;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.db.ReferenceCreator;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 
 /**
  * Creates references from one database to another.
@@ -28,13 +32,16 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
-	protected Logger logger;// = LogManager.getLogger();
+	protected Logger logger;
 	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
 	protected String referringAttributeName ;
 	protected String targetRefDB ;
+	protected String sourceIdentifyingAttribute = ReactomeJavaConstants.identifier;
 	protected String sourceRefDB ;
+	
+	protected ReferenceObjectCache cache;
 	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
@@ -74,7 +81,10 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			// Can't recover if there is no valid attribute object, throw it up the stack. 
 			throw new RuntimeException (e);
 		}
-		 
+		if (this.cache == null)
+		{
+			this.cache = new ReferenceObjectCache(this.adapter, true);
+		}
 		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
@@ -90,55 +100,76 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	@Override
 	public void createIdentifiers(long personID, Map<String, T> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
-		int sourceIdentifiersWithNoMapping = 0;
-		int sourceIdentifiersWithNewIdentifier = 0;
-		int sourceIdentifiersWithExistingIdentifier = 0;
+		AtomicInteger sourceIdentifiersWithNoMapping = new AtomicInteger(0);
+		AtomicInteger sourceIdentifiersWithNewIdentifier = new AtomicInteger(0);
+		AtomicInteger sourceIdentifiersWithExistingIdentifier = new AtomicInteger(0);
 		logger.traceEntry();
-		for (GKInstance sourceReference : sourceReferences)
+		
+		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
+		
+		sourceReferences.parallelStream().forEach(sourceReference ->
 		{
-			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
-			
-			// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
-			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
-			// if we want new identifiers to have the same species of the thing which they refer to.
-			Long speciesID = null;
-			@SuppressWarnings("unchecked")
-			Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
-			if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
+			try
 			{
-				GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
-				if (speciesInst != null)
+				String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(this.sourceIdentifyingAttribute);
+				
+				if (mapping.containsKey(sourceReferenceIdentifier))
 				{
-					speciesID = new Long(speciesInst.getDBID());
-				}
-			}
-			 
-			if (mapping.containsKey(sourceReferenceIdentifier))
-			{
-				String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
-				logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
-				// Look for cross-references.
-				boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
-				if (!xrefAlreadyExists)
-				{
-					logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
-					sourceIdentifiersWithNewIdentifier ++;
-					if (!this.testMode)
+					// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
+					// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
+					// if we want new identifiers to have the same species of the thing which they refer to.
+					Long speciesID = null;
+					@SuppressWarnings("unchecked")
+					Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
+					if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 					{
-						this.refCreator.createIdentifier(targetRefDBIdentifier, String.valueOf(sourceReference.getDBID()), this.targetRefDB, personID, this.getClass().getName(), speciesID);
+						GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+						if (speciesInst != null)
+						{
+							speciesID = new Long(speciesInst.getDBID());
+						}
+					}
+					
+					String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
+					logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
+					// Look for cross-references.
+					boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
+					if (!xrefAlreadyExists)
+					{
+						logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
+						sourceIdentifiersWithNewIdentifier.incrementAndGet();
+						thingsToCreate.add(targetRefDBIdentifier+","+String.valueOf(sourceReference.getDBID())+","+speciesID);
+					}
+					else
+					{
+						sourceIdentifiersWithExistingIdentifier.incrementAndGet();
 					}
 				}
 				else
 				{
-					sourceIdentifiersWithExistingIdentifier ++;
+					sourceIdentifiersWithNoMapping.incrementAndGet();
 				}
 			}
-			else
+			catch (Exception e)
 			{
-				sourceIdentifiersWithNoMapping ++;
-				//logger.debug("UniProt ID {} is NOT in the database.", uniprotID);
+				e.printStackTrace();
 			}
+		});
+		
+		for(String thing : thingsToCreate)
+		{
+			String[] parts = thing.split(",");
+			String targetRefDBIdentifier = parts[0];
+			String sourceDBID = parts[1];
+			String speciesID = parts[2];
+			
+			if (!this.testMode)
+			{
+				this.refCreator.createIdentifier(targetRefDBIdentifier, sourceDBID, this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(speciesID));
+			}
+
 		}
+		
 		logger.info("{} reference creation summary: \n"
 				+ "\t# {} IDs with a new {} identifier (a new {} reference was created): {};\n"
 				+ "\t# {} identifiers which already had the same {} reference (nothing new was created): {};\n"
@@ -161,51 +192,45 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier) throws InvalidAttributeException, Exception
 	{
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, this.targetRefDB);
-//		@SuppressWarnings("unchecked")
-//		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
-//		StringBuilder xrefsb = new StringBuilder();
-//		if (xrefs.size() > 0)
-//		{
-//			for (GKInstance xref : xrefs)
-//			{
-//				String identifier = xref.getAttributeValue(ReactomeJavaConstants.identifier).toString();
-//				xrefsb.append(identifier);
-//				GKInstance xrefRefDB = (GKInstance) xref.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
-//				Object refdbDisplayName = xrefRefDB.getAttributeValue(ReactomeJavaConstants._displayName);
-//				xrefsb.append("@").append(refdbDisplayName).append(",\t");
-//				// We won't add a cross-reference if it already exists
-//				if (identifier.equals( targetRefDBIdentifier ))
-//				{
-//					// We found a cross-reference with the same identifiers, but it's possible this identifier is used by more than one Ref DB. Need to check...
-//					// Found a cross reference with the same identifer AND the same ref db displayname.
-//					if (refdbDisplayName.equals(this.targetRefDB))
-//					{
-//						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-//						return true;	
-//					}
-//					else
-//					{
-//						logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, refdbDisplayName, this.targetRefDB);
-//					}
-//					
-//				}
-//			}
-//			logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-//		}
-//		return false;
 	}
 	
 	/**
 	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
 	 * @param sourceReference - The source Object that has cross references.
 	 * @param targetRefDBIdentifier - The identifier that you are looking for.
-	 * @param targetReferenceDB - The name of a target ReferenceDatabase. Use this to override this.targetRefDB. This is useful when working
+	 * @param targetReferenceDB - The name or DB_ID of the target reference database you want to use.  Use this to override this.targetRefDB. This is useful when working
 	 * with species-specific ReferenceDatabases.
 	 * @return - TRUE of sourceReference has a cross-reference to an identifier whose value is targetRefDBIdentifier. Otherwise, FALSE.
 	 * @throws InvalidAttributeException
 	 * @throws Exception
+
 	 */
-	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, String targetReferenceDB) throws InvalidAttributeException, Exception
+	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, String  targetReferenceDB) throws InvalidAttributeException, Exception
+	{
+		GKInstance refDB;
+		// Look up by DB_ID
+		if (targetReferenceDB.trim().matches("\\d+"))
+		{
+			refDB = this.adapter.fetchInstance(Long.parseLong(targetReferenceDB));
+		}
+		// Look up name in cache.
+		else
+		{
+			refDB = this.adapter.fetchInstance(Long.parseLong(this.cache.getRefDbNamesToIds().get(targetReferenceDB).get(0)));
+		}
+		return checkXRefExists(sourceReference, targetRefDBIdentifier, refDB);
+	}
+	
+	/**
+	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
+	 * @param sourceReference - The source Object that has cross references.
+	 * @param targetRefDBIdentifier - The identifier that you are looking for.
+	 * @param targetReferenceDB - The GKInstance of a target ReferenceDatabase.
+	 * @return - TRUE of sourceReference has a cross-reference to an identifier whose value is targetRefDBIdentifier. Otherwise, FALSE.
+	 * @throws InvalidAttributeException
+	 * @throws Exception
+	 */
+	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, GKInstance targetReferenceDB) throws InvalidAttributeException, Exception
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
@@ -224,7 +249,8 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 				{
 					// We found a cross-reference with the same identifiers, but it's possible this identifier is used by more than one Ref DB. Need to check...
 					// Found a cross reference with the same identifer AND the same ref db displayname.
-					if (refdbDisplayName.equals(targetReferenceDB))
+					//if (refdbDisplayName.equals(targetReferenceDB))
+					if (xrefRefDB.getDBID().equals(targetReferenceDB.getDBID()))
 					{
 						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 						return true;	
@@ -301,6 +327,16 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	public void setSourceRefDB(String sourceRefDB)
 	{
 		this.sourceRefDB = sourceRefDB;
+	}
+
+	public String getSourceIdentifyingAttribute()
+	{
+		return this.sourceIdentifyingAttribute;
+	}
+
+	public void setSourceIdentifyingAttribute(String sourceIdentifyingAttribute)
+	{
+		this.sourceIdentifyingAttribute = sourceIdentifyingAttribute;
 	}
 	
 }

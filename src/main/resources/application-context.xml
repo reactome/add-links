@@ -40,6 +40,7 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>OpenTargets</value>
 		<value>BrendaRetriever</value>
 		<value>UniProtToUCSC</value>
 		<value>UniProtToRefSeqPeptide</value>
@@ -49,7 +50,6 @@
 		<value>DOCKBlaster</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
-
 		<value>CTD</value>
 		<value>EnsemblToALL</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -69,10 +69,11 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>IntActComplexPortal</value>
+		<value>ComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>OpenTargetsFileProcessor</value>
 		<value>BrendaProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToUCSCFileProcessor</value>
@@ -89,7 +90,6 @@
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
-		
 		<value>KEGGFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
@@ -100,10 +100,11 @@
 		<value>UniprotToEnsemblFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>IntActFileProcessor</value>
+		<value>ComplexPortalFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>OpenTargetsReferenceCreator</value>
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedUCSCRefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
@@ -137,10 +138,11 @@
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>IntActComplexPortalRefCreator</value>
+		<value>ComplexPortalRefCreator</value>
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>OpenTargets</value>
 		<value>PDB</value>
 		<value>CTD Gene</value>
 		<value>dbSNP Gene</value>

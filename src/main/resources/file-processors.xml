@@ -88,12 +88,12 @@
 			</bean>
 		</entry>
 		
-		<entry key="IntActFileProcessor">
-			<bean id="IntActFileProcessor" class="org.reactome.addlinks.fileprocessors.IntActFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/IntActFileProcessor"/>
+		<entry key="ComplexPortalFileProcessor">
+			<bean id="ComplexPortalFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/ComplexPortalFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_to_reactome.dat"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv"/>
 					</bean>
 				</property>
 			</bean>
@@ -296,6 +296,17 @@
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/CTD_chem_gene_ixns.csv.gz"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		
+		<entry key="OpenTargetsFileProcessor">
+			<bean id="OpenTargetsFileProcessor" class="org.reactome.addlinks.fileprocessors.OpenTargetsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/OpenTargetsFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/opentargets_genes_unique.tsv"/>
 					</bean>
 				</property>
 			</bean>

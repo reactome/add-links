@@ -38,7 +38,7 @@ public class TestReferenceGeneProductCache {
 	@Test
 	public void testCacheById() throws InvalidAttributeException, Exception
 	{
-		GKInstance shell = objectCache.getById("5618411");
+		GKInstance shell = objectCache.getReferenceGeneProductById("5618411");
 
 		assertNotNull(shell);
 		assertTrue(5618411 == shell.getDBID());

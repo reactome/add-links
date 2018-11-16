@@ -66,11 +66,11 @@ public final class BRENDASpeciesCache
 		}
 		//Normalize the list.
 		List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
-		logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getListOfSpeciesNames().size());
+		logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getSetOfSpeciesNames().size());
 
 		ReferenceDatabaseCreator refDBcreator = new ReferenceDatabaseCreator(dbAdapter);
 		BRENDAReferenceDatabaseGenerator.setDBCreator(refDBcreator);
-		for (String speciesName : objectCache.getListOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
+		for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 		{
 			if (brendaSpecies.contains(speciesName.trim().toUpperCase()))
 			{

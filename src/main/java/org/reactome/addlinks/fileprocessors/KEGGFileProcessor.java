@@ -214,13 +214,6 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 												duplicateEntryCount ++;
 												logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
 											}
-											
-//											if (keggValues.get(KEGGKeys.KEGG_IDENTIFIER).equals(preExistingKeggValueRecord.get(KEGGKeys.KEGG_IDENTIFIER)))
-//											{
-//												isDuplicate = true;
-//												duplicateEntryCount ++;
-//												logger.warn("Duplicate mapping for {} to {} - will not be added to results.", uniProtID, keggValues.get(KEGGKeys.KEGG_IDENTIFIER));
-//											}
 										}
 										if (!isDuplicate)
 										{
@@ -233,6 +226,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 									keggSpeciesCode = null;
 									keggIdentifier = null;
 									ecNumber = null;
+									uniProtIDs = null;
 								}
 							}
 						}
