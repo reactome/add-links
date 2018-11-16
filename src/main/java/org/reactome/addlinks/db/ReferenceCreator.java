@@ -3,6 +3,7 @@ package org.reactome.addlinks.db;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -204,7 +205,7 @@ public class ReferenceCreator
 	
 						for (SchemaAttribute key : referers.keySet())
 						{
-							List<GKInstance> referersByAttrib = (List<GKInstance>) referers.get(key);
+							Set<GKInstance> referersByAttrib = (Set<GKInstance>) referers.get(key);
 							for (GKInstance inst : referersByAttrib)
 							{
 								// We found an instance in the database that has the same Identifier as what this function was asked to create AND that instance
