@@ -3,6 +3,7 @@ package org.reactome.addlinks.test;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaAttribute;
 import org.junit.Test;
@@ -65,6 +67,66 @@ public class TestLinkCheckManagerIT
 		
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
 		assertTrue(results.keySet().size() == 10);
+		for(String k : results.keySet())
+		{
+			assertTrue(results.get(k).isKeywordFound());
+			System.out.println(results.get(k));
+		}
+	}
+	
+	@Test
+	public void testLinkCheckManagerKEGG() throws Exception
+	{
+		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("KEGG Gene (Homo sapiens)").get(0)) );
+		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceDNASequence").getAttribute("referenceDatabase");
+		SchemaAttribute att2 = this.dbAdapter.fetchSchema().getClassByName("ReferenceDNASequence").getAttribute("species");
+
+		AttributeQueryRequest aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
+		AttributeQueryRequest aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", "48887");
+		List<GKInstance> instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2)));
+		System.out.println("Number of instances found: " + instances.size());
+		float proportionToCheck = 0.25f;
+		int maxToCheck = 20;
+		
+		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
+		System.out.println("Number of results: "+results.size());
+		assertTrue(results.keySet().size() == 20);
+		for(String k : results.keySet())
+		{
+			assertTrue(results.get(k).isKeywordFound());
+			System.out.println(results.get(k));
+		}
+		
+		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("KEGG Gene (Danio rerio)").get(0)) );
+		aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
+		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", "68323");
+		instances.clear();
+		instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2)));
+		System.out.println("Number of instances found: " + instances.size());
+		proportionToCheck = 0.25f;
+		maxToCheck = 20;
+		results.clear();
+		results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
+		System.out.println("Number of results: "+results.size());
+		assertTrue(results.keySet().size() == 20);
+		for(String k : results.keySet())
+		{
+			assertTrue(results.get(k).isKeywordFound());
+			System.out.println(results.get(k));
+		}
+		
+		// Check weird identfiers, such ones that contain a non-species prefix, such as "si:" 
+		instances.clear();
+		SchemaAttribute att3 = this.dbAdapter.fetchSchema().getClassByName("ReferenceDNASequence").getAttribute("identifier");
+		AttributeQueryRequest aqr3 = this.dbAdapter.new AttributeQueryRequest(att3, "LIKE", "si:%");
+		instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2, aqr3)));
+		System.out.println("Number of instances found: " + instances.size());
+		proportionToCheck = 0.5f;
+		maxToCheck = 20;
+		results.clear();
+		results = this.linkCheckManager.checkLinks(refDBInst, instances, proportionToCheck, maxToCheck);
+		System.out.println("Number of results: "+results.size());
+		assertTrue(results.keySet().size() > 0);
 		for(String k : results.keySet())
 		{
 			assertTrue(results.get(k).isKeywordFound());

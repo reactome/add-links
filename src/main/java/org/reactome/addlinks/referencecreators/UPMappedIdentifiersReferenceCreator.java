@@ -16,13 +16,13 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.db.ReferenceObjectCache;
-import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
+import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 
 /*
  * Creates references for identifiers that were mapped from one database (usually UniProt) to another by the UniProt web service.
  * The name *is* pretty terrible, need to come up with something better later.
  */
-public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //SimpleReferenceCreator< Map<String,List<String>> >
+public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator
 {
 
 	ReferenceObjectCache refObjectCache = new ReferenceObjectCache(this.adapter, true);
@@ -92,6 +92,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		
 		if (mappings != null && mappings.keySet() != null && mappings.keySet().size() > 0)
 		{
+			List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 			for (String speciesID : mappings.keySet())
 			{
 				if (mappings.get(speciesID).keySet().size() > 0)
@@ -102,18 +103,24 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				{
 					logger.info("No references to create for species {}", speciesID);
 				}
-				List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 				
 				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
 				{
 					
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
-					
 						String sourceIdentifier = uniprotID;
 						String targetIdentifier = otherIdentifierID;
+						String keggPrefix = null;
 						try
 						{
+							// Special case for KEGG - prune species code prefix.
+							if (this.targetRefDB.toUpperCase().trim().contains("KEGG"))
+							{
+								keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(targetIdentifier);
+								targetIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(targetIdentifier);
+							}
+							
 							// Now we need to get the DBID of the pre-existing identifier.
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
 							if (sourceInstances != null && sourceInstances.size() > 0)
@@ -126,6 +133,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			
 								for (GKInstance inst : sourceInstances)
 								{
+									String targetDB = this.targetRefDB;
 									if (sourceInstances.size() > 1)
 									{
 										logger.trace("\tDealing with duplicate instances (w.r.t. Identifier), instance: {} mapping to {}", inst, targetIdentifier);
@@ -140,66 +148,34 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 										// UniProt IDs and then redirects the use to the correct page.
 										targetIdentifier = uniprotID;
 									}
-									
-
-									// TODO: fix species-specific TargetRefDB....
-									String targetDB = this.targetRefDB;
-									if (this.targetRefDB.toUpperCase().contains("KEGG"))
+									else if (this.targetRefDB.toUpperCase().contains("KEGG"))
 									{
-										// If we are mapping to KEGG, we should try to use a species-specific KEGG database. 
-										targetDB = KEGGReferenceDatabaseGenerator.generateKeggDBName(this.refObjectCache, speciesID);
-										if (targetDB == null)
+										synchronized (this)
 										{
-											targetDB = this.targetRefDB;
+											targetDB = null;
+											KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(this.refObjectCache, this.logger);
+											String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(targetIdentifier, keggPrefix);
+											targetDB = parts[0];
+											targetIdentifier = parts[1];
 										}
+
 									}
 									else if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 									{
-										List<String> speciesNames = this.refObjectCache.getSpeciesNamesByID().get(speciesID);
-										String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
-										if (speciesName != null)
-										{
-											//special case for hamsters - ENSEMBL doesn't have an *exact*
-											//match for Cricetulus griseus, but "cricetulus_griseus_crigri"
-											//is what should be used.
-											if (speciesName.equals("Cricetulus griseus")) {
-												speciesName = "cricetulus_griseus_crigri";
-											}
-											
-											// ENSEMBL species-specific database.
-											// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
-											// Since we're not mapping to Transcript, we don't need to worry about that here.
-											targetDB = generateENSEMBLRefDBName.apply(speciesName);
-											// Ok, now let's check that that the db we want actually exists
-											if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
-												|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
-											{
-												logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
-												throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
-											}
-										}
-										else
-										{
-											// If we couldn't generate a potential database name from the species code, just use the targetRefDB.
-											// Not ideal, but what else can you do here?
-											targetDB = this.targetRefDB;
-											// ...also, let's issue a warning.
-											logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", speciesID, this.targetRefDB);
-										}
+										targetDB = setTargetDBForENSEMBL(generateENSEMBLRefDBName, speciesID);
 									}
 									
 									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier, targetDB);
 									String thingToCreate = targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID+","+targetDB;
-									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
+									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate) && targetDB != null)
 									{
-										logger.info("Need to create {} references", thingsToCreate.size());
+										//logger.info("Need to create {} references", thingsToCreate.size());
 										if (!this.testMode)
 										{
 											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
 											thingsToCreate.add(thingToCreate);
 										}
 										createdCounter.getAndIncrement();
-										
 									}
 								}
 							}
@@ -216,48 +192,45 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						}
 					}
 				} );
-				
-				// Go through the list of references that need to be created, and create them!
-				thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-					String[] parts = newIdentifier.split(",");
-					String identifierValue = parts[0];
-					String targetDB = parts[3];
-					logger.trace("Creating new identifier {} ", identifierValue );
-					try
-					{
-						String species = parts[2];
-						String referenceToValue = parts[1];
-						// The string had a species-part.
-						if (species != null && !species.trim().equals(""))
-						{
-
-							
-							if (!this.testMode)
-							{
-								this.refCreator.createIdentifier(identifierValue, referenceToValue, targetDB, personID, this.getClass().getName(), Long.valueOf(species));
-							}
-							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP, Monarch
-							// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
-							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
-							{
-								runNCBIGeneRefCreators(personID, parts);
-							}
-						}
-						// The string did NOT have a species-part.
-						else
-						{
-							if (!this.testMode)
-							{
-								this.refCreator.createIdentifier(identifierValue, referenceToValue, this.targetRefDB, personID, this.getClass().getName());
-							}
-						}
-					}
-					catch (Exception e)
-					{
-						throw new RuntimeException(e);
-					}
-				} );
 			}
+			// Go through the list of references that need to be created, and create them!
+			thingsToCreate.stream().sequential().forEach( newIdentifier -> {
+				String[] parts = newIdentifier.split(",");
+				String identifierValue = parts[0];
+				String targetDB = parts[3];
+				//logger.trace("Creating new identifier {} ", identifierValue );
+				try
+				{
+					String species = parts[2];
+					String referenceToValue = parts[1];
+					// The string had a species-part.
+					if (species != null && !species.trim().equals(""))
+					{
+						if (!this.testMode)
+						{
+							this.refCreator.createIdentifier(identifierValue, referenceToValue, targetDB, personID, this.getClass().getName(), Long.valueOf(species));
+						}
+						// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP, Monarch
+						// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
+						if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
+						{
+							runNCBIGeneRefCreators(personID, parts);
+						}
+					}
+					// The string did NOT have a species-part.
+					else
+					{
+						if (!this.testMode)
+						{
+							this.refCreator.createIdentifier(identifierValue, referenceToValue, this.targetRefDB, personID, this.getClass().getName());
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException(e);
+				}
+			} );
 			logger.info("{} Reference creation summary:\n"
 					+ "\t# Identifiers created: {}\n"
 					+ "\t# Identifiers which already existed: {} \n"
@@ -270,6 +243,64 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			logger.info("UniProt mapping is empty for {} to {}", sourceRefDB, targetRefDB);
 		}
 	}
+
+	private String setTargetDBForENSEMBL(Function<String, String> generateENSEMBLRefDBName, String speciesID)
+	{
+		String targetDB;
+		List<String> speciesNames = this.refObjectCache.getSpeciesNamesByID().get(speciesID);
+		String speciesName = speciesNames.stream().filter(s -> null!=generateENSEMBLRefDBName.apply(s) ).findFirst().orElse(null);
+		if (speciesName != null)
+		{
+			//special case for hamsters - ENSEMBL doesn't have an *exact*
+			//match for Cricetulus griseus, but "cricetulus_griseus_crigri"
+			//is what should be used.
+			if (speciesName.equals("Cricetulus griseus")) {
+				speciesName = "cricetulus_griseus_crigri";
+			}
+			
+			// ENSEMBL species-specific database.
+			// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
+			// Since we're not mapping to Transcript, we don't need to worry about that here.
+			targetDB = generateENSEMBLRefDBName.apply(speciesName);
+			// Ok, now let's check that that the db we want actually exists
+			if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
+				|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
+			{
+				logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
+				throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
+			}
+		}
+		else
+		{
+			// If we couldn't generate a potential database name from the species code, just use the targetRefDB.
+			// Not ideal, but what else can you do here?
+			targetDB = this.targetRefDB;
+			// ...also, let's issue a warning.
+			logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", speciesID, this.targetRefDB);
+		}
+		return targetDB;
+	}
+
+//	private synchronized String createNewKEGGReferenceDatabase(String targetIdentifier, String keggPrefix)
+//	{
+//		String targetDB = null;
+//		if (keggPrefix != null)
+//		{
+//			// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
+//			String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
+//			if (keggSpeciesName != null)
+//			{
+//				targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, refObjectCache);
+//				// TODO: Figure out a way to only refresh the cache if a new database was actually created. If the database already existed, it won't be created.
+//				refObjectCache.rebuildRefDBNamesAndMappings();
+//			}
+//			if (targetDB == null)
+//			{
+//				logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, targetIdentifier);
+//			}
+//		}
+//		return targetDB;
+//	}
 
 	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
 	{
