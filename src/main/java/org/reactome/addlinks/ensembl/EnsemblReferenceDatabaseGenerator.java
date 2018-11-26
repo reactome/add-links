@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -23,8 +25,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.reactome.addlinks.CustomLoggable;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
@@ -37,10 +41,10 @@ import org.reactome.addlinks.linkchecking.LinksToCheckCache;
  * @author sshorser
  *
  */
-public final class EnsemblReferenceDatabaseGenerator
+public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 {
 	private static final String ENSEMBL_URL = "http://www.ensembl.org";
-	private static final Logger logger = LogManager.getLogger();
+	private static Logger logger; // = LogManager.getLogger();
 	private static ReferenceDatabaseCreator dbCreator;
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
 
@@ -50,9 +54,19 @@ public final class EnsemblReferenceDatabaseGenerator
 	 */
 	private EnsemblReferenceDatabaseGenerator()
 	{
-		
+		if (EnsemblReferenceDatabaseGenerator.logger  == null)
+		{
+			EnsemblReferenceDatabaseGenerator.logger = this.createLogger("ENSEMBLReferenceDatabaseCreator", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+		}
 	}
 	
+	static
+	{
+		// Ugh... the constructor is private because this class never really needed a constructor. But now 
+		// we want to use the CustomLoggable methods to log the output to a separate log file. But those methods require an instance.
+		// So... a static initializer to create an instance that will trigger the creation of the custom logger.
+		EnsemblReferenceDatabaseGenerator generator = new EnsemblReferenceDatabaseGenerator();
+	}
 	
 	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) throws URISyntaxException, ClientProtocolException, IOException, XPathExpressionException, Exception
 	{
@@ -77,6 +91,7 @@ public final class EnsemblReferenceDatabaseGenerator
 			Result result = new StreamResult(outputStream);
 			transformer.transform(xml, result);
 			
+			Set<String> lowerCaseSpeciesNames = objectCache.getSetOfSpeciesNames().parallelStream().map( name -> name.toLowerCase() ).collect(Collectors.toSet());
 			
 			String[] lines = outputStream.toString().split("\n");
 			// for each line, create a database for the proper name and all aliases. Except the numeric sequences.
@@ -87,7 +102,7 @@ public final class EnsemblReferenceDatabaseGenerator
 				String[] parts = line.split(" : ");
 				String speciesName = parts[0].trim();
 				// Don't create species-specific ReferenceDatabase objects if Reactome doesn't have that species.
-				if (objectCache.getSetOfSpeciesNames().contains(speciesName))
+				if (lowerCaseSpeciesNames.contains(speciesName.replace("_", " ") ))
 				{
 					EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
 					if (parts.length > 1)
@@ -110,7 +125,7 @@ public final class EnsemblReferenceDatabaseGenerator
 		{
 			//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
 			//and only create a ReferenceDatbase object when it's discovered that one is needed.
-			String speciesURL = "http://www.ensembl.org/"+speciesName+"/geneview?gene=###ID###&db=core";
+			String speciesURL = "http://www.ensembl.org/"+speciesName.replaceAll(" ", "_")+"/geneview?gene=###ID###&db=core";
 			
 			// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
 			String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";
