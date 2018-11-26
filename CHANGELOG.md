@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.1.1
+Hotfix: Fixes for ENSEMBL species list.
+
 ## 1.1.0
 Highlights:
  - New resource: OpenTargets
