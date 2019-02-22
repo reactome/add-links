@@ -7,10 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -105,66 +101,23 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			Result result = new StreamResult(outputStream);
 			transformer.transform(xml, result);
 			
-//			Set<String> lowerCaseSpeciesNames = objectCache.getSetOfSpeciesNames().parallelStream()
-//															.map( name -> name.toLowerCase() )
-//															.collect(Collectors.toSet());
 			logger.info("Flattened species list from ENSEMBL:\n{}",outputStream.toString());
 			String[] lines = outputStream.toString().split("\n");
-			// for each line, create a database for the proper name and all aliases. Except the numeric sequences.
-			// So what if you create a lot of database references? Most will be cleaned up afterwards anyway...
+			// for each line, create a database for the proper name 
 			for (String line : lines)
 			{
 				// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
+				// Aliases can be ignored - they are not needed.
 				String[] parts = line.split(" : ");
 				String speciesName = parts[0].trim().toLowerCase().replace("_", " ");
-				// Don't create species-specific ReferenceDatabase objects if Reactome doesn't have that species.
-				// Actually... it looks like we might need to, for some of the ENSEMBL Uniprot-mapped ENSEMBL identifiers. Otherwise, we get "Requested ENSEMBL ReferenceDatabase "ENSEMBL_cricetulus_griseus_crigri_GENE" does not exists."
-				// if (lowerCaseSpeciesNames.contains(speciesName))
-				{
-					EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
-//					if (parts.length > 1)
-//					{
-//						// use .distinct() in case there are duplicates in the list of names.
-//						// strings are normalized by converting to lowercase, trimming, and replacing "_" with " ".
-//						// Also, filter out any aliases that happen to be the same as the species name.
-//						String[] speciesNameAliases = Arrays.stream(parts[1].split(" , "))
-//															.map(a -> a.toLowerCase().trim().replace("_", " ") )
-//															.filter(a -> !a.equals(speciesName))
-//															.distinct().toArray(String[]::new);
-////						for (String alias : speciesNameAliases)
-////						{
-////							EnsemblReferenceDatabaseGenerator.createAliasForReferenceDatabase(objectCache, speciesName, speciesNameAliases);
-////						}
-//					}
-				}
+				// It looks like we might need to create a ReferenceDatabase for all ENSEMBL species,
+				// for use by some of the ENSEMBL Uniprot-mapped ENSEMBL identifiers.
+				// Otherwise, we get "Requested ENSEMBL ReferenceDatabase "ENSEMBL_cricetulus_griseus_crigri_GENE" does not exists."
+				// In the Reactome database, the closest species name we have to that is "Cricetulus", so it *can* be mapped to.
+				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
 			}
 		}
 	}
-
-//	/**
-//	 * Creates a new Name for a reference database.
-//	 * @param objectCache
-//	 * @param speciesName
-//	 * @param aliases
-//	 */
-//	private static void createAliasForReferenceDatabase(ReferenceObjectCache objectCache, String speciesName, String ... aliases)
-//	{
-//		// Look up the ENSEMBL reference database using the species name
-//		for (String s : Arrays.asList("_GENE", "_PROTEIN", "_TRANSCRIPT"))
-//		{
-//			String refDBPrimaryName = "ENSEMBL_" + speciesName + s;
-//			try
-//			{
-//				String[] ensemblAliases = Arrays.stream(aliases).map(alias -> "ENSEMBL_"+alias+s).toArray(String[]::new);
-//				EnsemblReferenceDatabaseGenerator.dbCreator.addAliasesToReferenceDatabase(refDBPrimaryName, ensemblAliases);
-//			}
-//			catch (Exception e)
-//			{
-//				logger.error("Could not create alias \"{}\" for {} because: {}", aliases, refDBPrimaryName, e.getMessage());
-//				e.printStackTrace();
-//			}	
-//		}
-//	}
 
 	/**
 	 * Creates a ReferenceDatabase for a species.
@@ -235,8 +188,7 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			logger.debug("Adding alias {} to existing ReferenceDatabase {} for species {} with accessURL: {}", newDBName, oldStyleDBName, speciesName, speciesURL);
 			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName, newDBName);
 		}
-		// only create the new ENSEMBL ReferenceDatabase if the name is not already in the cache. 
-		else //if (!objectCache.getRefDbNamesToIds().keySet().contains(newDBName))
+		else
 		{
 			logger.debug("Adding an ENSEMBL ReferenceDatabase {} for species: {} with accessURL: {}", newDBName, speciesName, speciesURL);
 			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(ENSEMBL_URL, speciesURL, newDBName);
