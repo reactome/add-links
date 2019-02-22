@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
@@ -206,5 +207,53 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			throw e;
 		}
 		return refDBID;
+	}
+	
+	/**
+	 * Adds additional names to a ReferenceDatabase object's list of names.
+	 * @param dbId - the DB_ID of the ReferenceDatabase to update.
+	 * @param names - An array of names to add.
+	 * @throws InvalidAttributeValueException, Exception 
+	 * @throws InvalidAttributeException 
+	 */
+	public void addAliasesToReferenceDatabase(Long dbId, String ...names) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	{
+		GKInstance refDB = this.adapter.fetchInstance(dbId);
+		if (refDB!=null)
+		{
+			@SuppressWarnings("unchecked")
+			List<String> preexistingNames = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
+			List<String> newAliases = Arrays.stream(names)
+										.distinct() // no duplicates!
+										.filter(name -> !preexistingNames.contains(name)) // remove any name that's already in preexistingNames
+										.sorted() // Sort them
+										.collect(Collectors.toList());
+			logger.info("Adding aliases: \"{}\" to RefDB: {}, which had preexisting names: {}", newAliases.toString(), refDB.toString(), preexistingNames.toString());
+			preexistingNames.addAll(newAliases);
+			refDB.setAttributeValue(ReactomeJavaConstants.name, preexistingNames);
+			this.adapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.name);
+		}
+	}
+	
+	/**
+	 * Adds additional names to a ReferenceDatabase object's list of names.
+	 * @param refDBPrimaryName - the PRIMARY name of the reference database.
+	 * @param names - An array of names to add.
+	 */
+	public void addAliasesToReferenceDatabase(String refDBPrimaryName, String ...names) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	{
+		@SuppressWarnings("unchecked")
+		Set<GKInstance> refDBs = (Set<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", refDBPrimaryName);
+		for (GKInstance refDB : refDBs)
+		{
+			if (refDB != null)
+			{
+				this.addAliasesToReferenceDatabase(refDB.getDBID(), names);
+			}
+			else
+			{
+				logger.warn("Can't add aliases to ReferenceDatabase \"{}\" because nothing with that name could be found in the database.", refDBPrimaryName);
+			}
+		}
 	}
 }
