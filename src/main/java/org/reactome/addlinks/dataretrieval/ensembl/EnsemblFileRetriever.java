@@ -51,7 +51,8 @@ public class EnsemblFileRetriever extends FileRetriever
 		// ENSEMBL Rest API is aware of a  number of external wormbase 
 		// databases (wormbase_id, wormbase_gene, etc...) but wormbase_gene 
 		// is what the old Perl code used.
-		Wormbase("wormbase_gene"), 
+//		Wormbase("wormbase_gene"), 
+		Wormbase("wormbase_id"),
 		EntrezGene("EntrezGene"),
 		RefSeqPeptide("RefSeq_peptide"),
 		RefSeqRNA("RefSeq_mRNA"),
