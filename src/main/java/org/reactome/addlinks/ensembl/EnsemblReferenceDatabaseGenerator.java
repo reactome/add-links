@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,7 +28,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.CustomLoggable;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
@@ -49,7 +50,7 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
 
 	/**
-	 * private constructor in a final class: This class is really more of a utility
+	 * private constructor (to prevent instantiation) in a final class: This class is really more of a utility
 	 * class - creating multiple instances of it probably wouldn't make sense. 
 	 */
 	private EnsemblReferenceDatabaseGenerator()
@@ -62,12 +63,25 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	
 	static
 	{
-		// Ugh... the constructor is private because this class never really needed a constructor. But now 
+		// Ugh... the constructor is private because this class never really needed a constructor. But *now* 
 		// we want to use the CustomLoggable methods to log the output to a separate log file. But those methods require an instance.
 		// So... a static initializer to create an instance that will trigger the creation of the custom logger.
+		@SuppressWarnings("unused")
 		EnsemblReferenceDatabaseGenerator generator = new EnsemblReferenceDatabaseGenerator();
 	}
 	
+	/**
+	 * Generate species-specific ENSEMBL ReferenceDatabases.
+	 * This function will query ENSEMBL for a list of species, transform the resulting XML into simple-to-parse text,
+	 * and then create an ENSEMBL ReferenceDatabase for each species. Aliases of species will also be added as additional
+	 * names for ReferenceDatabase objects.
+	 * @param objectCache - A ReferenceObjectCache
+	 * @throws URISyntaxException
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws XPathExpressionException
+	 * @throws Exception
+	 */
 	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) throws URISyntaxException, ClientProtocolException, IOException, XPathExpressionException, Exception
 	{
 		URI uri = new URI(EnsemblReferenceDatabaseGenerator.speciesURL);
@@ -91,8 +105,10 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			Result result = new StreamResult(outputStream);
 			transformer.transform(xml, result);
 			
-			Set<String> lowerCaseSpeciesNames = objectCache.getSetOfSpeciesNames().parallelStream().map( name -> name.toLowerCase() ).collect(Collectors.toSet());
-			
+//			Set<String> lowerCaseSpeciesNames = objectCache.getSetOfSpeciesNames().parallelStream()
+//															.map( name -> name.toLowerCase() )
+//															.collect(Collectors.toSet());
+			logger.info("Flattened species list from ENSEMBL:\n{}",outputStream.toString());
 			String[] lines = outputStream.toString().split("\n");
 			// for each line, create a database for the proper name and all aliases. Except the numeric sequences.
 			// So what if you create a lot of database references? Most will be cleaned up afterwards anyway...
@@ -100,25 +116,62 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			{
 				// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
 				String[] parts = line.split(" : ");
-				String speciesName = parts[0].trim();
+				String speciesName = parts[0].trim().toLowerCase().replace("_", " ");
 				// Don't create species-specific ReferenceDatabase objects if Reactome doesn't have that species.
-				if (lowerCaseSpeciesNames.contains(speciesName.replace("_", " ") ))
+				// Actually... it looks like we might need to, for some of the ENSEMBL Uniprot-mapped ENSEMBL identifiers. Otherwise, we get "Requested ENSEMBL ReferenceDatabase "ENSEMBL_cricetulus_griseus_crigri_GENE" does not exists."
+				// if (lowerCaseSpeciesNames.contains(speciesName))
 				{
 					EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
-					if (parts.length > 1)
-					{
-						String[] speciesNameAliases = parts[1].split(" , ");
-						for (String alias : speciesNameAliases)
-						{
-							EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, alias.trim());
-						}
-					}
+//					if (parts.length > 1)
+//					{
+//						// use .distinct() in case there are duplicates in the list of names.
+//						// strings are normalized by converting to lowercase, trimming, and replacing "_" with " ".
+//						// Also, filter out any aliases that happen to be the same as the species name.
+//						String[] speciesNameAliases = Arrays.stream(parts[1].split(" , "))
+//															.map(a -> a.toLowerCase().trim().replace("_", " ") )
+//															.filter(a -> !a.equals(speciesName))
+//															.distinct().toArray(String[]::new);
+////						for (String alias : speciesNameAliases)
+////						{
+////							EnsemblReferenceDatabaseGenerator.createAliasForReferenceDatabase(objectCache, speciesName, speciesNameAliases);
+////						}
+//					}
 				}
 			}
 		}
 	}
 
+//	/**
+//	 * Creates a new Name for a reference database.
+//	 * @param objectCache
+//	 * @param speciesName
+//	 * @param aliases
+//	 */
+//	private static void createAliasForReferenceDatabase(ReferenceObjectCache objectCache, String speciesName, String ... aliases)
+//	{
+//		// Look up the ENSEMBL reference database using the species name
+//		for (String s : Arrays.asList("_GENE", "_PROTEIN", "_TRANSCRIPT"))
+//		{
+//			String refDBPrimaryName = "ENSEMBL_" + speciesName + s;
+//			try
+//			{
+//				String[] ensemblAliases = Arrays.stream(aliases).map(alias -> "ENSEMBL_"+alias+s).toArray(String[]::new);
+//				EnsemblReferenceDatabaseGenerator.dbCreator.addAliasesToReferenceDatabase(refDBPrimaryName, ensemblAliases);
+//			}
+//			catch (Exception e)
+//			{
+//				logger.error("Could not create alias \"{}\" for {} because: {}", aliases, refDBPrimaryName, e.getMessage());
+//				e.printStackTrace();
+//			}	
+//		}
+//	}
 
+	/**
+	 * Creates a ReferenceDatabase for a species.
+	 * @param objectCache - A ReferenceObjectCache 
+	 * @param speciesName - The speciesName
+	 * @throws Exception
+	 */
 	private static void createReferenceDatabase(ReferenceObjectCache objectCache, String speciesName) throws Exception
 	{
 		try
@@ -162,26 +215,47 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 		}
 	}
 
-
+	/**
+	 * Creates a ReferenceDatabase.
+	 * @param objectCache - A ReferenceObjectCache
+	 * @param speciesName - The name of a species
+	 * @param speciesURL - The species-specific URL - this will be used for the accessURL attribute of the ReferenceDatabase object.
+	 * @param newDBName - a "new"-styled (with "_" as a separator instead of " ", and in lowercase) ReferenceDatabase name for this ReferenceDatabase.
+	 * @param oldStyleDBName - a "old"-styled (in UPPERCASE with "_" OR " " as a separator) ReferenceDatabase name for this ReferenceDatabase.
+	 * @throws Exception
+	 */
 	private static void createReferenceDB(ReferenceObjectCache objectCache, String speciesName, String speciesURL, String newDBName, String oldStyleDBName) throws Exception
 	{
+		// The problem here is that the objectCache will be constantly invalidated while this code is running.
+		// We need to know which ReferenceDatabases have already been created, without constantly rebuilding the cache.
+		// The cache will only contain ReferenceDatabase names that existed *before* this part of the code runs.
 		if (objectCache.getRefDbNamesToIds().keySet().contains(oldStyleDBName))
 		{
+			// If the old-style name already exists, try to create a new-style alias to it.
 			logger.debug("Adding alias {} to existing ReferenceDatabase {} for species {} with accessURL: {}", newDBName, oldStyleDBName, speciesName, speciesURL);
 			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName, newDBName);
 		}
-		else
+		// only create the new ENSEMBL ReferenceDatabase if the name is not already in the cache. 
+		else //if (!objectCache.getRefDbNamesToIds().keySet().contains(newDBName))
 		{
 			logger.debug("Adding an ENSEMBL ReferenceDatabase {} for species: {} with accessURL: {}", newDBName, speciesName, speciesURL);
 			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(ENSEMBL_URL, speciesURL, newDBName);
 		}
 	}
 
+	/**
+	 * Set the ReferenceDatabaseCreator object.
+	 * @param dbCreator
+	 */
 	public static void setDbCreator(ReferenceDatabaseCreator dbCreator)
 	{
 		EnsemblReferenceDatabaseGenerator.dbCreator = dbCreator;
 	}
 
+	/**
+	 * Set the species-specific URL
+	 * @param speciesURL
+	 */
 	public static void setSpeciesURL(String speciesURL)
 	{
 		EnsemblReferenceDatabaseGenerator.speciesURL = speciesURL;
