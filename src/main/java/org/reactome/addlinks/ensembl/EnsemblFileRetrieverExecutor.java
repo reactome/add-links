@@ -174,7 +174,7 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 		// Don't forget: each EnsemblFileRetriever will execute *n* threads as well, each as big as
 		// stream().parallel() will allow, so we should only try to run 2 retrievers at at time.
 		ForkJoinPool pool = new ForkJoinPool(2);
-		if (pool != null && jobs.size() > 0)
+		if (jobs.size() > 0)
 		{
 			pool.invokeAll(jobs);
 		}
