@@ -38,7 +38,7 @@ public class TestEnsemblFileRetriever
 		EnsemblFileRetriever retriever = new EnsemblFileRetriever();
 		retriever.setDataURL(new URI("http://rest.ensembl.org/xrefs/id/"));
 		String mapTo = EnsemblDB.EntrezGene.getEnsemblName();
-		String mapFrom = EnsemblDB.ENSEMBL.getEnsemblName();
+//		String mapFrom = EnsemblDB.ENSEMBL.getEnsemblName();
 		List<String> identifiers = Arrays.asList("ENSG00000175899", "ENSG00000175890", "ENSG00000166913");
 		String species = "homo_sapiens";
 		retriever.setFetchDestination("/tmp/test_ensembl_mapping_service/ensembl_mapped_to_"+mapTo+"_for_"+species+".xml");
