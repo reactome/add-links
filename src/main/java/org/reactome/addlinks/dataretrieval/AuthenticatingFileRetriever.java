@@ -24,11 +24,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
-public class AuthenticatingFileRetriever extends FileRetriever
+public class AuthenticatingFileRetriever extends AuthenticatableFileRetriever
 {
-	private String userName;
-	private String password;
-
 	public AuthenticatingFileRetriever(String retrieverName)
 	{
 		super(retrieverName);
@@ -71,12 +68,9 @@ public class AuthenticatingFileRetriever extends FileRetriever
 		String hostname = this.uri.getHost();
 		int port = this.uri.getPort();
 		
-//		StandardFileSystemManager fsMgr = new StandardFileSystemManager();
-		
 		FileSystemOptions fileSystemOptions = new FileSystemOptions();
 		Session session = SftpClientFactory.createConnection(hostname, port, user.toCharArray(), password.toCharArray(), fileSystemOptions);
 		
-		//session.connect();
 		Channel channel = session.openChannel("sftp");
 		channel.connect();
 		ChannelSftp sftpChannel = (ChannelSftp)channel;
@@ -87,10 +81,6 @@ public class AuthenticatingFileRetriever extends FileRetriever
 		sftpChannel.disconnect();
 		channel.disconnect();
 		session.disconnect();
-//		File file = new File(this.destination);
-//		FileObject localFile = fsMgr.resolveFile(file.getAbsolutePath());
-//		FileObject remoteFile = fsMgr.resolveFile(this.getDataURL());
-//		localFile.copyFrom(remoteFile, Selectors.SELECT_SELF);
 	}
 
 	private HttpClientContext createAuthenticatedContext()
@@ -103,15 +93,4 @@ public class AuthenticatingFileRetriever extends FileRetriever
 		context.setCredentialsProvider(credProvider);
 		return context;
 	}
-	
-	public void setUserName(String userName)
-	{
-		this.userName = userName;
-	}
-	public void setPassword(String password)
-	{
-		this.password = password;
-	}
-	
-	
 }
