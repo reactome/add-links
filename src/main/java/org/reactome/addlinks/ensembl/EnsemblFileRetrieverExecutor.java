@@ -124,10 +124,11 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 		{
 			// These don't need multiple steps - rest.ensemblgenomes.org can translate them immediately.
 			List<GKInstance> refGeneProducts = getRefGeneProds(databases);
-			
+			logger.info("{} ReferenceGeneProducts for database {}", refGeneProducts.size(), dbName);
 			Map<String, List<String>> refGeneProdsBySpecies = getRefGeneProdsBySpecies(refGeneProducts);
 			for (String species : refGeneProdsBySpecies.keySet())
 			{
+				logger.info("{} ReferenceGeneProducts for species {}", refGeneProdsBySpecies.get(species).size(), species);
 				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
 				executeEnsemblFileRetrievers(ensemblFileRetrieversNonCore, species, speciesName, refGeneProdsBySpecies.get(species));
 			}
