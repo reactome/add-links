@@ -40,20 +40,20 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>UniProtToENSEMBL</value>
+		<value>EnsemblToALL</value>
+		<value>CTD</value>
 		<value>OpenTargets</value>
 		<value>BrendaRetriever</value>
 		<value>UniProtToUCSC</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToPDB</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>DOCKBlaster</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>EntrezGeneToUniprotReference</value>
-		<value>CTD</value>
-		<value>EnsemblToALL</value>
 		<value>UniProtToEntrez_Gene</value>
-		<value>UniProtToENSEMBL</value>
 		<value>Zinc</value>
 		<value>COSMIC</value>
 		<value>HGNC</value>
@@ -73,6 +73,10 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
+		<value>UniprotToEnsemblFileProcessor</value>
+		<value>CTDProcessor</value>
 		<value>OpenTargetsFileProcessor</value>
 		<value>BrendaProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
@@ -82,10 +86,7 @@
 		<value>FlyBaseFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
-		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>CTDProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
@@ -97,14 +98,17 @@
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
-		<value>UniprotToEnsemblFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>ENSEMBLToWormbaseRefCreator</value>
 		<value>OpenTargetsReferenceCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedUCSCRefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
@@ -112,7 +116,6 @@
 		<value>FlyBaseReferenceCreator</value>
 		<value>proRefCreator</value>
 		<value>dockBlasterRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
@@ -129,9 +132,7 @@
 		<value>KEGGReferenceCreator</value>
 		<value>zincToUniProtReferenceCreator</value>
 		<value>zincToChEBIReferenceCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>upMappedOMIMRefCreator</value>
-		<value>upMappedENSEMBLGeneRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
 		<value>RheaReferenceCreator</value>
 		<value>BrendaRefCreator</value>
@@ -142,6 +143,7 @@
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>ENSEMBL</value>
 		<value>OpenTargets</value>
 		<value>PDB</value>
 		<value>CTD Gene</value>
