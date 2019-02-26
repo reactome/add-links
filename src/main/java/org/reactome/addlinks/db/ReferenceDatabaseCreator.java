@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
@@ -52,11 +53,35 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
 			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
+			
 			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
 			@SuppressWarnings("unchecked")
 			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
-																? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
-																: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+															? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
+															: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+
+			// If there is an accessUrl, filter preexistingReferenceDBs so that it only contains instances with names that match primaryName.
+			// This mostly applies to ReferenceDatabases like ENSEMBL - there are many databases, and some may have the same species-specific URL
+			// but different names such as "ENSEMBL_*_PROTEIN" and "ENSEMBL_*_GENE".
+			if (accessUrl != null)
+			{
+				Predicate<GKInstance> nameIsPreexisting = (GKInstance refDB) -> {
+					try
+					{
+						@SuppressWarnings("unchecked")
+						List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
+						return names.contains(primaryName);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+					return false;
+				};
+				// Now filter out the referenceDBs whose primaryNames don't match
+				preexistingReferenceDBs = preexistingReferenceDBs.stream().filter(nameIsPreexisting).collect(Collectors.toList());
+			}
+			
 			// Now that we have a bunch of things that contain primaryName, we need to find the ones where the rank of that name-attribute is 0.
 			if (preexistingReferenceDBs!=null && preexistingReferenceDBs.size() > 0)
 			{
