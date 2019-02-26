@@ -9,6 +9,7 @@ import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.reactome.addlinks.dataretrieval.COSMICFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.COSMICFileProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,25 @@ public class TestCOSMIC
 	@Autowired
 	COSMICReferenceCreator COSMICReferenceCreator;
 	
+	@Autowired
+	COSMICFileRetriever COSMICFileRetriever;
+	
 	@Test
-	public void testCOSMICFileProcessor()
+	public void testCOSMICDataRetrievalIT()
+	{
+		try
+		{
+			COSMICFileRetriever.fetchData();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testCOSMICFileProcessorIT()
 	{
 		Map<String,String> mapping = this.COSMICProcessor.getIdMappingsFromFile();
 		assertTrue(mapping.keySet().size() > 0);
@@ -44,7 +62,7 @@ public class TestCOSMIC
 	}
 	
 	@Test
-	public void testCOSMICReferenceCreation()
+	public void testCOSMICReferenceCreationIT()
 	{
 		Map<String,String> mapping = this.COSMICProcessor.getIdMappingsFromFile();
 		assertTrue(mapping.keySet().size() > 0);
