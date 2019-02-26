@@ -179,18 +179,22 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	 */
 	private static void createReferenceDB(ReferenceObjectCache objectCache, String speciesName, String speciesURL, String newDBName, String oldStyleDBName) throws Exception
 	{
-		// The problem here is that the objectCache will be constantly invalidated while this code is running.
-		// We need to know which ReferenceDatabases have already been created, without constantly rebuilding the cache.
-		// The cache will only contain ReferenceDatabase names that existed *before* this part of the code runs.
+		// Check the cache for old-style names. If we could normalize/merge the pre-existing ENSEMBL reference database, this probably wouldn't be necesary,
+		// nor would the old-style vs. new-style names.
+		// NOTE: the cache doesn't get updated while this code runs. Fortunately, ReferenceDatabaseCreator.createReferenceDatabaseToURL will
+		// check more carefully by querying the database for name and accessUrl
 		if (objectCache.getRefDbNamesToIds().keySet().contains(oldStyleDBName))
 		{
 			// If the old-style name already exists, try to create a new-style alias to it.
-			logger.debug("Adding alias {} to existing ReferenceDatabase {} for species {} with accessURL: {}", newDBName, oldStyleDBName, speciesName, speciesURL);
+			logger.debug("Trying to add an alias \"{}\" to existing ReferenceDatabase {} for species {} with accessURL: {}", newDBName, oldStyleDBName, speciesName, speciesURL);
 			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseToURL(ENSEMBL_URL, speciesURL, oldStyleDBName, newDBName);
 		}
-		else
+		// Only try to create a new database if it's not already there. If this is the first time youv'e run this code on a database,
+		// then newDBName will probably *not* be in the cache. But, if you're re-running on a database that has already had some
+		// ENSEMBL ReferenceDatabases created, this can help prevent duplicated names/refdbs from being created.
+		else if (!objectCache.getRefDbNamesToIds().keySet().contains(newDBName))
 		{
-			logger.debug("Adding an ENSEMBL ReferenceDatabase {} for species: {} with accessURL: {}", newDBName, speciesName, speciesURL);
+			logger.debug("Trying to add an ENSEMBL ReferenceDatabase {} for species: {} with accessURL: {}", newDBName, speciesName, speciesURL);
 			EnsemblReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(ENSEMBL_URL, speciesURL, newDBName);
 		}
 	}
