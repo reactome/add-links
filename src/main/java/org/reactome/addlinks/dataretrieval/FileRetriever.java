@@ -35,7 +35,7 @@ public class FileRetriever implements DataRetriever {
 	protected URI uri;
 	protected String destination;
 	protected Duration maxAge;
-	private Duration timeout = Duration.ofSeconds(30);
+	protected Duration timeout = Duration.ofSeconds(30);
 	private int numRetries = 1;
 	protected String retrieverName;
 	protected Logger logger;
