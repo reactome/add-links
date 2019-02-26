@@ -57,8 +57,6 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 			// Check if the source UniProt Identifier is in the mapping.
 			if (mappings.containsKey(sourceReferenceIdentifier))
 			{
-//				@SuppressWarnings("unchecked")
-//				Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
 				boolean xrefAlreadyExists = false;
 				
 				List<Map<KEGGKeys, String>> keggMaps = mappings.get(sourceReferenceIdentifier);
@@ -158,20 +156,4 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 				this.sourceRefDB, this.targetRefDB, this.targetRefDB, sourceIdentifiersWithNoMapping);
 	}
 
-//	private synchronized  String createNewKEGGReferenceDatabase(ReferenceObjectCache objectCache, String keggIdentifier, String keggPrefix)
-//	{
-//		String targetDB = null;
-//		// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
-//		String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
-//		if (keggSpeciesName != null)
-//		{
-//			targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, objectCache);
-//			objectCache.rebuildRefDBNamesAndMappings();
-//		}
-//		if (targetDB == null)
-//		{
-//			logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, keggIdentifier);
-//		}
-//		return targetDB;
-//	}
 }
