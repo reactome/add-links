@@ -113,14 +113,13 @@
 		
 		<entry key="Gene Ontology">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="PrimaryName" value="Gene Ontology"/>
+				<entry key="PrimaryName" value="GO"/>
 				<entry key="Aliases">
 					<list value-type="java.lang.String">
-						<value>GO</value>
+						<value>Gene Ontology</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.geneontology.org" />
-				<!-- It looks like the old Release code doesn't have an accessURL for GO... -->
 			</map>
 		</entry>
 		
