@@ -56,10 +56,11 @@ public class COSMICFileRetriever extends AuthenticatableFileRetriever
 		
 		HttpGet get = new HttpGet(this.uri);
 		//Need to multiply by 1000 because timeouts are in milliseconds.
+		int delayInMilliseconds = 1000 * (int)this.timeout.getSeconds();
 		RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-											.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
-											.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
-											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
+											.setConnectTimeout(delayInMilliseconds)
+											.setSocketTimeout(delayInMilliseconds)
+											.setConnectionRequestTimeout(delayInMilliseconds).build();
 		get.setConfig(config);
 		get.setHeader("Authorization", "Basic "+encodedUsernamePassword);
 		String downloadURL = null;
