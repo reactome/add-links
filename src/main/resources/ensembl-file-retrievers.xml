@@ -30,7 +30,7 @@
 	
 	<bean id="EnsemblDB_Gene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
-			<value>ENSEMBLGene</value>
+			<value>EnsemblGene</value>
 		</constructor-arg>
 	</bean>
 	
