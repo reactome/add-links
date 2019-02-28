@@ -144,13 +144,11 @@
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
 		<value>ENSEMBL</value>
-		<value>OpenTargets</value>
 		<value>PDB</value>
 		<value>CTD Gene</value>
 		<value>dbSNP Gene</value>
 		<value>NCBI Gene</value>
 		<value>Monarch</value>
-		<value>HGNC</value>
 		<value>UniProt</value>
 		<value>Flybase</value>
 		<value>Brenda</value>
@@ -177,6 +175,14 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<!--
+		OpenTargets use ENSEMBL identifiers, but
+		the identifiers do not appear in the body of the web page.
+		<value>OpenTargets</value> -->
+		<!-- 
+		HGNC pages are now loaded using JavaScript so a simple GET request is not enough to see if
+		the identifier is on the page. 
+		<value>HGNC</value> -->
 		<!--
 		<value>UCSC</value>
 		The UCSC redirects make it hard to check and since we're linking to them via UniProt ID (not UCSC ID),
