@@ -38,12 +38,17 @@ public class EnsemblFileRetriever extends FileRetriever
 	
 	public enum EnsemblDB
 	{
-		ENSEMBL("ENSEMBL"),
+		// For a list of reference database IDs that ENSEMBL can map to, see: http://rest.ensembl.org/info/external_dbs/homo_sapiens?content-type=text/xml
+		// (change the organism for other databases)
+		// The old Perl code (https://github.com/reactome/Release/blob/master/modules/GKB/IdentifierMapper/ENSEMBLMart.pm) was querying ENSEMBL differently
+		// - it queries against the old ENSEMBL Mart. Some database identifiers referenced in that code (such as "ensembl_peptide_id") don't seem to be
+		// mentioned in responses from the REST API.
+		ENSEMBL("ENSEMBL"), // Does not appear to exist in the ENSEMBL REST API responses - but used to map with uniprot
 		ENSP("ENSP_ident"),
-		ENSEMBLProtein("ENSEMBL_PRO_ID"),
-		ENSEMBLGene("ENSEMBLGENOME_ID"),
-		ENSEMBLTranscript("ENSEMBL_TRS_ID"),
-		ALL_DATABASES("%"),
+//		ENSEMBLProtein("ENSEMBL_PRO_ID"), // Does not appear to exist in the ENSEMBL REST API responses.
+//		ENSEMBLGENOME("ENSEMBLGENOME_ID"), // Does not appear to exist in the ENSEMBL REST API responses.
+//		ENSEMBLTranscript("ENSEMBL_TRS_ID"), // Does not appear to exist in the ENSEMBL REST API responses.
+		ALL_DATABASES("%"), // SQL-like "%" wildcard matches all databases.
 		EnsemblGene("ENSG"),
 		EMBL("EMBL"),
 		OMIM("MIM_GENE"),
@@ -51,8 +56,7 @@ public class EnsemblFileRetriever extends FileRetriever
 		// ENSEMBL Rest API is aware of a  number of external wormbase 
 		// databases (wormbase_id, wormbase_gene, etc...) but wormbase_gene 
 		// is what the old Perl code used.
-//		Wormbase("wormbase_gene"), 
-		Wormbase("wormbase_id"),
+		Wormbase("wormbase_gene"), 
 		EntrezGene("EntrezGene"),
 		RefSeqPeptide("RefSeq_peptide"),
 		RefSeqRNA("RefSeq_mRNA"),

@@ -22,13 +22,13 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBL</value>
 		</constructor-arg>
 	</bean>
 	
-	<bean id="UniprotDB_ENSEMBL_PRO" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+	<!-- <bean id="UniprotDB_ENSEMBL_PRO" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBLProtein</value>
 		</constructor-arg>
@@ -36,7 +36,7 @@
 	
 	<bean id="UniprotDB_ENSEMBL_GENE" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
-			<value>ENSEMBLGene</value>
+			<value>ENSEMBLGenomes</value>
 		</constructor-arg>
 	</bean>
 
@@ -50,7 +50,7 @@
 		<constructor-arg>
 			<value>ENSEMBL</value>
 		</constructor-arg>
-	</bean>
+	</bean> -->
 
 	<!--
 	Base UniProt File Retriever - other UniProt file
@@ -104,9 +104,7 @@
 		<entry key="UniProtToENSEMBL">
 			<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToENSEMBL" parent="baseUniProtRetriever">
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBL.txt" />
-				<property name="mapToDbEnum">
-					<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">ENSEMBL</value>
-				</property>
+				<property name="mapToDbEnum" ref="EnsemblDB_Ensembl" />
 			</bean>
 		</entry>
 		<entry key="UniProtToWormbase">
