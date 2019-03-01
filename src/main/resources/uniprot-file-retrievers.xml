@@ -28,30 +28,6 @@
 		</constructor-arg>
 	</bean>
 	
-	<!-- <bean id="UniprotDB_ENSEMBL_PRO" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBLProtein</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="UniprotDB_ENSEMBL_GENE" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBLGenomes</value>
-		</constructor-arg>
-	</bean>
-
-	<bean id="UniprotDB_ENSEMBL_TRANSCRIPT" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBLTranscript</value>
-		</constructor-arg>
-	</bean>
-
-	<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBL</value>
-		</constructor-arg>
-	</bean> -->
-
 	<!--
 	Base UniProt File Retriever - other UniProt file
 	retriever beans can use this one as the parent,
