@@ -12,7 +12,6 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor.KEGGKeys;
-//import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
 
 public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKeys, String>>>
