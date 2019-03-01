@@ -884,6 +884,10 @@ public class AddLinks
 			}
 			try
 			{
+				if (primaryName == null || "".equals(primaryName.trim()))
+				{
+					throw new RuntimeException("You attempted to create a ReferenceDatabase with a NULL primary name! This is not allowed. The other attributes for this reference database are: " + refDB.toString());
+				}
 				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, (String[]) aliases.toArray(new String[aliases.size()]) );
 			}
 			catch (Exception e)

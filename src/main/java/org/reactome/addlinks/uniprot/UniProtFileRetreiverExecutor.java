@@ -54,7 +54,7 @@ public class UniProtFileRetreiverExecutor implements CustomLoggable
 			{
 				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("PROTEIN")).collect(Collectors.toList()));
 			}
-			else if (fromDb == UniprotDB.ENSEMBLGene)
+			else if (fromDb == UniprotDB.ENSEMBLGenomes)
 			{
 				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().keySet().stream().filter(p -> p.startsWith("ENSEMBL") && p.endsWith("GENE")).collect(Collectors.toList()));
 			}

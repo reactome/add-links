@@ -1,11 +1,12 @@
 package org.reactome.addlinks.fileprocessors;
 
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.csv.CSVFormat;
 
 public class CTDFileProcessor extends FileProcessor<String>
 {
@@ -31,25 +32,23 @@ public class CTDFileProcessor extends FileProcessor<String>
 			AtomicInteger lineCount = new AtomicInteger(0);
 			try
 			{
-				//I added ".sequential()" because I have line counter and I want to ensure that it works properly.
-				Files.lines(Paths.get(unzippedFile)).filter(p -> !p.startsWith("#")).sequential().forEach( line ->
+				// Use the Apache CSVFormat class. The CTD file now contains quoted (single *AND* double) strings which contain commans and that confuses the old process which simply
+				// split each line on commas. I don't really feel like writing a parser for quoted commas.
+				CSVFormat.DEFAULT.withCommentMarker('#').parse(new FileReader(unzippedFile)).forEach(line -> 
 				{
 					lineCount.set(lineCount.get() + 1);
-					String[] parts = line.split(",");
 					// NCBI Gene ID is in column #5 
-					if (parts.length > 5)
+					String ncbiGeneID = line.get(4);
+					if (ncbiGeneID != null && !"".equals(ncbiGeneID.trim()))
 					{
-						if (!"".equals(parts[4].trim()))
-						{
-							// We're mapping the NCBI Gene ID to itself because that's the only part we're interested in, which we will use to filter later.
-							mappings.put(parts[4], parts[4]);
-						}
-						else
-						{
-							logger.warn("Could not extract the NCBI Gene ID from line #{}", lineCount.get());
-							// Only print the bad line in TRACE logging mode.
-							logger.trace("{}",line);
-						}
+						// We're mapping the NCBI Gene ID to itself because that's the only part we're interested in, which we will use to filter later.
+						mappings.put(ncbiGeneID, ncbiGeneID);
+					}
+					else
+					{
+						logger.warn("Could not extract the NCBI Gene ID from line #{}", lineCount.get());
+						// Only print the bad line in TRACE logging mode.
+						logger.trace("{}",line);
 					}
 				});
 			}
@@ -64,7 +63,5 @@ public class CTDFileProcessor extends FileProcessor<String>
 			e.printStackTrace();
 		}
 		return mappings;
-
 	}
-
 }

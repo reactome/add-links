@@ -124,10 +124,11 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 		{
 			// These don't need multiple steps - rest.ensemblgenomes.org can translate them immediately.
 			List<GKInstance> refGeneProducts = getRefGeneProds(databases);
-			
+			logger.info("{} ReferenceGeneProducts for database {}", refGeneProducts.size(), dbName);
 			Map<String, List<String>> refGeneProdsBySpecies = getRefGeneProdsBySpecies(refGeneProducts);
 			for (String species : refGeneProdsBySpecies.keySet())
 			{
+				logger.info("{} ReferenceGeneProducts for species {}", refGeneProdsBySpecies.get(species).size(), species);
 				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
 				executeEnsemblFileRetrievers(ensemblFileRetrieversNonCore, species, speciesName, refGeneProdsBySpecies.get(species));
 			}
@@ -174,7 +175,7 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 		// Don't forget: each EnsemblFileRetriever will execute *n* threads as well, each as big as
 		// stream().parallel() will allow, so we should only try to run 2 retrievers at at time.
 		ForkJoinPool pool = new ForkJoinPool(2);
-		if (pool != null && jobs.size() > 0)
+		if (jobs.size() > 0)
 		{
 			pool.invokeAll(jobs);
 		}

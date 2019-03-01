@@ -98,7 +98,7 @@ public class BRENDAFileRetriever extends FileRetriever
 		});
 		ForkJoinPool pool = new ForkJoinPool(numThreads);
 		
-		if (pool != null && jobs.size() > 0)
+		if (jobs.size() > 0)
 		{
 			pool.invokeAll(jobs);
 		}
