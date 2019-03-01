@@ -16,12 +16,12 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+<!--  	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBL</value>
 		</constructor-arg>
-	</bean>
-	
+	</bean> -->
+<!--	
 	<bean id="EnsemblDB_Protein" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ENSEMBLProtein</value>
@@ -38,7 +38,7 @@
 		<constructor-arg>
 			<value>ENSEMBLTranscript</value>
 		</constructor-arg>
-	</bean>
+	</bean> -->
 	
 	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
@@ -46,7 +46,7 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="EnsemblDB_EntezGene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
+<!-- 	<bean id="EnsemblDB_EntezGene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>EntrezGene</value>
 		</constructor-arg>
@@ -56,7 +56,7 @@
 		<constructor-arg>
 			<value>Wormbase</value>
 		</constructor-arg>
-	</bean>
+	</bean> -->
 	
 	<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup" id="ensemblBatchLookup" scope="prototype">
 		<property name="dataURL" value="http://rest.ensembl.org/lookup/id/" />
