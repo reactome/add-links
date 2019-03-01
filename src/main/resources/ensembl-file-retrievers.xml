@@ -16,45 +16,9 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="EnsemblDB_Ensembl" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBL</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="EnsemblDB_Protein" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBLProtein</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="EnsemblDB_Gene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBLGene</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="EnsemblDB_Transcript" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>ENSEMBLTranscript</value>
-		</constructor-arg>
-	</bean>
-	
 	<bean id="EnsemblDB_ALL" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>ALL_DATABASES</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="EnsemblDB_EntezGene" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>EntrezGene</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="EnsemblDB_Wormbase" class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever$EnsemblDB" factory-method="valueOf">
-		<constructor-arg>
-			<value>Wormbase</value>
 		</constructor-arg>
 	</bean>
 	

@@ -9,10 +9,6 @@
 
 	<context:property-placeholder location="file:resources/*.properties"  />
 	
-<!-- 	<context:annotation-config/>
-	
-	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
- -->	
 	<import resource="reference-databases.xml"/>
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
@@ -40,52 +36,53 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>UniProtToENSEMBL</value>
+		<value>EnsemblToALL</value>
 		<value>OpenTargets</value>
-		<value>BrendaRetriever</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>CTD</value>
+		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToUCSC</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToPDB</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>UniProtToKEGG</value>
+		<value>UniProtToWormbase</value>
+		<value>UniProtToOMIM</value>
 		<value>DOCKBlaster</value>
 		<value>PROToReferencePeptideSequence</value>
-		<value>EntrezGeneToUniprotReference</value>
-		<value>CTD</value>
-		<value>EnsemblToALL</value>
-		<value>UniProtToEntrez_Gene</value>
-		<value>UniProtToENSEMBL</value>
 		<value>Zinc</value>
 		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
-		<value>UniProtToKEGG</value>
 		<value>KEGGRetriever</value>
 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
-		<value>UniProtToOMIM</value>
 		<value>OMIM</value>
-		<value>UniProtToWormbase</value>
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
+		<value>BrendaRetriever</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
+		<value>UniprotToEnsemblFileProcessor</value>
 		<value>OpenTargetsFileProcessor</value>
-		<value>BrendaProcessor</value>
+		<value>FlyBaseFileProcessor</value>
+		<value>CTDProcessor</value>
+		<value>UniprotToEntrezGeneFileProcessor</value>
 		<value>UniprotToRefSeqPeptideFileProcessor</value>
 		<value>UniprotToUCSCFileProcessor</value>
 		<value>UniprotToRefSeqRNAFileProcessor</value>
-		<value>PROFileProcessor</value>
-		<value>FlyBaseFileProcessor</value>
-		<value>DockblasterFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
-		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
-		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>CTDProcessor</value>
+		<value>UniprotToWormbaseFileProcessor</value>
+		<value>BrendaProcessor</value>
+		<value>PROFileProcessor</value>
+		<value>DockblasterFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
@@ -97,23 +94,26 @@
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
-		<value>UniprotToEnsemblFileProcessor</value>
 		<value>OMIMProcessor</value>
-		<value>UniprotToWormbaseFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>ENSEMBLToWormbaseRefCreator</value>
 		<value>OpenTargetsReferenceCreator</value>
+		<value>FlyBaseReferenceCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
 		<value>upMappedRefSeqRNARefCreator</value>
 		<value>upMappedUCSCRefCreator</value>
 		<value>upMappedRefSeqPeptideRefCreator</value>
 		<value>upMappedPDBRefCreator</value>
-		<value>FlyBaseReferenceCreator</value>
+		<value>upMappedOMIMRefCreator</value>
+		<value>upMappedWormbaseRefCreator</value>
 		<value>proRefCreator</value>
 		<value>dockBlasterRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
-		<value>upMappedEntrezGeneRefCreator</value>
 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
@@ -123,16 +123,12 @@
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
 		<value>BrendaRefCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
-		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value>
-		<value>upMappedOMIMRefCreator</value>
-		<value>upMappedENSEMBLGeneRefCreator</value>
-		<value>upMappedWormbaseRefCreator</value>
 		<value>RheaReferenceCreator</value>
 		<value>BrendaRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
@@ -142,13 +138,12 @@
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
-		<value>OpenTargets</value>
+		<value>ENSEMBL</value>
 		<value>PDB</value>
 		<value>CTD Gene</value>
 		<value>dbSNP Gene</value>
 		<value>NCBI Gene</value>
 		<value>Monarch</value>
-		<value>HGNC</value>
 		<value>UniProt</value>
 		<value>Flybase</value>
 		<value>Brenda</value>
@@ -175,6 +170,14 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<!--
+		OpenTargets use ENSEMBL identifiers, but
+		the identifiers do not appear in the body of the web page.
+		<value>OpenTargets</value> -->
+		<!-- 
+		HGNC pages are now loaded using JavaScript so a simple GET request is not enough to see if
+		the identifier is on the page. 
+		<value>HGNC</value> -->
 		<!--
 		<value>UCSC</value>
 		The UCSC redirects make it hard to check and since we're linking to them via UniProt ID (not UCSC ID),
