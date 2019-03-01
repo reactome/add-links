@@ -37,10 +37,8 @@ public class CTDFileProcessor extends FileProcessor<String>
 				CSVFormat.DEFAULT.withCommentMarker('#').parse(new FileReader(unzippedFile)).forEach(line -> 
 				{
 					lineCount.set(lineCount.get() + 1);
-//					String[] parts = line.split(",");
 					// NCBI Gene ID is in column #5 
 					String ncbiGeneID = line.get(4);
-//					if (parts.length > 5)
 					if (ncbiGeneID != null && !"".equals(ncbiGeneID.trim()))
 					{
 						// We're mapping the NCBI Gene ID to itself because that's the only part we're interested in, which we will use to filter later.
@@ -52,7 +50,6 @@ public class CTDFileProcessor extends FileProcessor<String>
 						// Only print the bad line in TRACE logging mode.
 						logger.trace("{}",line);
 					}
-
 				});
 			}
 			catch (IOException e)
@@ -66,7 +63,5 @@ public class CTDFileProcessor extends FileProcessor<String>
 			e.printStackTrace();
 		}
 		return mappings;
-
 	}
-
 }
