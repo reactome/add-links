@@ -281,27 +281,6 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		return targetDB;
 	}
 
-//	private synchronized String createNewKEGGReferenceDatabase(String targetIdentifier, String keggPrefix)
-//	{
-//		String targetDB = null;
-//		if (keggPrefix != null)
-//		{
-//			// we have a valid KEGG prefix, so let's try to use that to create a new RefereneDatabase.
-//			String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
-//			if (keggSpeciesName != null)
-//			{
-//				targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, refObjectCache);
-//				// TODO: Figure out a way to only refresh the cache if a new database was actually created. If the database already existed, it won't be created.
-//				refObjectCache.rebuildRefDBNamesAndMappings();
-//			}
-//			if (targetDB == null)
-//			{
-//				logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, targetIdentifier);
-//			}
-//		}
-//		return targetDB;
-//	}
-
 	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
 	{
 		for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
