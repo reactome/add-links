@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.1.2
+ - New downloader for COSMIC (for new download process, introduced by COSMIC)
+ - Fixed: issues with duplicated ENSEMBL ReferenceDatabase objects
+ - Improved CTD file parsing
+ - Some code cleanup
+ - exclude HGNC and OpenTargets from link validation (they either load content via JavaScript, or don't refer to the identifier in the body of the page)
+
 ## 1.1.1
 Hotfix: Fixes for ENSEMBL species list.
 
