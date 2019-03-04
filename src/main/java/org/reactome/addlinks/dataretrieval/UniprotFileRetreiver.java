@@ -54,13 +54,14 @@ public class UniprotFileRetreiver extends FileRetriever
 	 */
 	public enum UniprotDB
 	{
+		// For a list of database IDs that Uniprot can map from, see: https://www.uniprot.org/help/api_idmapping
 		OMIM("MIM_ID"),
 		PDB("PDB_ID"),
 		RefSeqPeptide("P_REFSEQ_AC"),
 		RefSeqRNA("REFSEQ_NT_ID"), 
 		ENSEMBL("ENSEMBL_ID"),
 		ENSEMBLProtein("ENSEMBL_PRO_ID"),
-		ENSEMBLGene("ENSEMBLGENOME_ID"),
+		ENSEMBLGenomes("ENSEMBLGENOME_ID"),
 		ENSEMBLTranscript("ENSEMBL_TRS_ID"),
 		Ensembl("ENSEMBL_ID"), 
 		Wormbase("WORMBASE_ID"), 

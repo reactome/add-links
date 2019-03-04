@@ -29,8 +29,10 @@
 		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
 		<entry key="OrphanetFileProcessor" value="OrphanetReferenceCreator"/>
 		<entry key="ZincMoleculesFileProcessor" value="zincToChEBIReferenceCreator"/>
-		<entry key="ENSEMBLFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
-		<entry key="ENSEMBLNonCoreFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
+		<!-- You don't need to link ENSEMBL processors to reference creators here -
+		that happens dynamically in the AddLinks class. -->
+		<!-- <entry key="ENSEMBLFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/>
+		<entry key="ENSEMBLNonCoreFileProcessor" value="ENSEMBLToEntrezGeneRefCreator"/> -->
 		<entry key="UniprotToEnsemblFileProcessor" value="upMappedENSEMBLGeneRefCreator"/>
 		<entry key="UniprotToPDBFileProcessor" value="upMappedPDBRefCreator"/>
 		<entry key="UniprotToRefSeqPeptideFileProcessor" value="upMappedRefSeqPeptideRefCreator"/>
