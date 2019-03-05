@@ -10,15 +10,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
-import org.gk.model.PersistenceAdaptor;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
-import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
-import org.gk.util.GKApplicationUtilities;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 
 import com.mysql.jdbc.MysqlDataTruncation;
@@ -145,15 +142,6 @@ public class ReferenceCreator
 				}
 			}
 			
-//			if (this.refDBInstance == null && refDB.matches("^[0-9]+$"))
-//			{
-//				this.refDBInstance = this.dbAdapter.fetchInstance(Long.parseLong(refDB));
-//			}
-//
-//			if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
-//			{
-//				this.refDBInstance = getReferenceDatabase(refDB);
-//			}
 			// If it's still null, there is a problem!
 			if (this.refDBInstance == null)
 			{
