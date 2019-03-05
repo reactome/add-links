@@ -77,7 +77,7 @@ class InstanceEditUtils
 	 * created and had the "author" attribute populated.
 	 * @param person
 	 */
-	public static GKInstance createDefaultInstanceEdit(GKInstance person)
+	private static GKInstance createDefaultInstanceEdit(GKInstance person)
 	{
 		GKInstance instanceEdit = new GKInstance();
 		PersistenceAdaptor adaptor = person.getDbAdaptor();
