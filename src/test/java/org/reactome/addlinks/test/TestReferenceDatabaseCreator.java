@@ -44,7 +44,7 @@ public class TestReferenceDatabaseCreator
 	@Test
 	public void testCreateRefDBWithAliases() throws SQLException, InvalidAttributeException, Exception
 	{
-		
+		long personID = 12345L;
 		String refDBName = "TestReferenceDatabase";
 		String refDBAlias1 = "TestRefDB_alias_1";
 		String refDBAlias2 = "TestRefDB_alias_2";
@@ -65,7 +65,7 @@ public class TestReferenceDatabaseCreator
 			}
 		}
 		
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter, 12345L);
 		creator.createReferenceDatabaseWithAliases(refDBUrl, refDBAccessUrl, refDBName, refDBAlias1, refDBAlias2);
 		// Now that we've created the instance, let's verify that it is there.
 		instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
@@ -130,7 +130,7 @@ public class TestReferenceDatabaseCreator
 			}
 		}
 		
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter, 12345L);
 		creator.createReferenceDatabaseWithAliases(refDBUrl, refDBAccessUrl, refDBName, refDBAlias1, refDBAlias2);
 		creator.createReferenceDatabaseWithAliases(refDBUrl, refDBAccessUrl, refDBName, refDBAlias3, refDBAlias4);
 		// Now that we've created the instance, let's verify that it is there.
@@ -193,7 +193,7 @@ public class TestReferenceDatabaseCreator
 			}
 		}
 		
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter, 12345L);
 		creator.createReferenceDatabaseToURL(refDBUrl, refDBAccessUrl, refDBName, refDBAlias);
 		// Now that we've created the instance, let's verify that it is there.
 		instances = (Collection<GKInstance>)adapter.fetchInstanceByAttribute(refDBNameAttrib, "=", refDBName);
@@ -254,7 +254,7 @@ public class TestReferenceDatabaseCreator
 			}
 		}
 		
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter, 12345L);
 		creator.createReferenceDatabaseToURL(refDBUrl, refDBAccessUrl, refDBName, refDBAlias);
 		
 		//Now, let's try to create another ReferenceDatabase, with one name that matches the first one.
@@ -301,7 +301,7 @@ public class TestReferenceDatabaseCreator
 	{
 		try
 		{
-			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter, 12345L);
 			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
 			EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache );
@@ -319,7 +319,7 @@ public class TestReferenceDatabaseCreator
 		try
 		{
 			ReferenceObjectCache objectCache = new ReferenceObjectCache(adapter);
-			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter);
+			ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(adapter, 12345L);
 			KEGGReferenceDatabaseGenerator.setDBCreator(creator);
 			KEGGReferenceDatabaseGenerator.setDBAdaptor(adapter);
 			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
