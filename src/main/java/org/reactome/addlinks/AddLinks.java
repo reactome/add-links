@@ -141,7 +141,7 @@ public class AddLinks
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
-		this.executeCreateReferenceDatabases();
+		this.executeCreateReferenceDatabases(personID);
 		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
@@ -837,9 +837,9 @@ public class AddLinks
 	 * Create ReferenceDatabase objects, in case they done yet exist in this database. 
 	 */
 	@SuppressWarnings("unchecked")
-	private void executeCreateReferenceDatabases()
+	private void executeCreateReferenceDatabases(long personID)
 	{
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter, personID);
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
 			logger.info("Creating ReferenceDatabase {}", key);
@@ -906,7 +906,7 @@ public class AddLinks
 			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
 			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
 			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
-			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), objectCache, dbAdapter);
+			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), objectCache, dbAdapter, personID);
 		}
 		catch (Exception e)
 		{

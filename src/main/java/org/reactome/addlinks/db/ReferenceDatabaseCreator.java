@@ -23,9 +23,11 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 {
 	private MySQLAdaptor adapter;
 	private static Logger logger ;
+	private long personID;
 	
-	public ReferenceDatabaseCreator(MySQLAdaptor adapter)
+	public ReferenceDatabaseCreator(MySQLAdaptor adapter, long personID)
 	{
+		this.personID = personID;
 		this.adapter = adapter;
 		if (ReferenceDatabaseCreator.logger  == null)
 		{
@@ -141,6 +143,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			newReferenceDB.addAttributeValue(ReactomeJavaConstants.name, alias);
 		}
 		// Set othe attributes.
+		GKInstance createdInstanceEdit = InstanceEditUtils.createInstanceEdit(this.personID, this.adapter, "Added to database by "+this.getClass().getName());
+		newReferenceDB.setAttributeValue(ReactomeJavaConstants.created, createdInstanceEdit);
 		newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
 		newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
 		newReferenceDB.setDbAdaptor(this.adapter);
@@ -197,7 +201,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 				{
 					newReferenceDB.addAttributeValue(dbNameAttrib, name);
 				}
-
+				GKInstance createdInstanceEdit = InstanceEditUtils.createInstanceEdit(this.personID, this.adapter, "Added to database by "+this.getClass().getName());
+				newReferenceDB.setAttributeValue(ReactomeJavaConstants.created, createdInstanceEdit);
 				newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
 				newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
 				newReferenceDB.setDbAdaptor(this.adapter);

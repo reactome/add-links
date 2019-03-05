@@ -36,9 +36,9 @@ public final class BRENDAReferenceDatabaseGenerator
 	 * @param objectCache
 	 * @param dbAdapter
 	 */
-	public static void createReferenceDatabases(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter)
+	public static void createReferenceDatabases(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter, long personID)
 	{
-		BRENDASpeciesCache.buildCache(client, speciesURL, objectCache, dbAdapter);
+		BRENDASpeciesCache.buildCache(client, speciesURL, objectCache, dbAdapter, personID);
 		// Now that the cache exists, loop through it and create a ReferenceDatabase object for each cached species name.
 		for (String speciesName : BRENDASpeciesCache.getCache())
 		{
