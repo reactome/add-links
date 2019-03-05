@@ -201,6 +201,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
 			else
 			{
+				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(personID, adapter, "Updating ReferenceDatabase object from "+this.getClass().getName());
 				for (GKInstance preexistingRefDB : instancesInDB)
 				{
 					@SuppressWarnings("unchecked")
@@ -212,6 +213,10 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					{
 						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB + "( " + preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.name).toString() + " )");
 						preexistingRefDB.addAttributeValue(dbNameAttrib, name);
+						// Load the list of "modified" instance edits
+						preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.modified);
+						// Add the InstanceEdit for modification
+						preexistingRefDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
 						refDBID = preexistingRefDB.getDBID();
 					}
