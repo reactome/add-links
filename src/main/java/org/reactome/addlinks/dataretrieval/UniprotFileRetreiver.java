@@ -39,6 +39,9 @@ import org.apache.http.util.EntityUtils;
 
 public class UniprotFileRetreiver extends FileRetriever
 {
+	// To be used to wait 500 ms to retry if a URL from UniProt returns nothing.
+	private static final int RETRY_DELAY_MS = 500;
+	private static final int MAX_NUM_ATTEMPTS = 5;
 	private String mapFromDb="";
 	private String mapToDb="";
 	private BufferedInputStream inStream;
@@ -148,6 +151,14 @@ public class UniprotFileRetreiver extends FileRetriever
 		return builder;
 	}
 	
+	/**
+	 * Attempt to GET data from UniProt.
+	 * @param get - the HttpGet object.
+	 * @return A byte array of the result's content.
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws InterruptedException
+	 */
 	private byte[] attemptGetFromUniprot(HttpGet get) throws IOException, URISyntaxException, InterruptedException
 	{
 		byte[] result = null;
@@ -206,6 +217,14 @@ public class UniprotFileRetreiver extends FileRetriever
 		return result;
 	}
 	
+	/**
+	 * Attempt to POST to UniProt. If successful, the URL to the *actual* data will be returned.
+	 * @param post - the POST object.
+	 * @return The URL to find the mapped data at, as a string.
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	private String attemptPostToUniprot(HttpPost post) throws ClientProtocolException, IOException, InterruptedException
 	{
 		boolean done = false;
@@ -273,6 +292,12 @@ public class UniprotFileRetreiver extends FileRetriever
 		return mappingLocationURI;
 	}
 	
+	/**
+	 * Getting data from UniProt is a 3-stage process:
+	 * 1) POST a list of identifiers to UniProt. The response received contains a URL to the mapped data.
+	 * 2) GET the data from the URL in the response from 1).
+	 * 3) GET the "not" mapped data from the URL in the response from 1).
+	 */
 	@Override
 	public void downloadData()
 	{
@@ -345,59 +370,10 @@ public class UniprotFileRetreiver extends FileRetriever
 			}
 			if (location != null)
 			{
-				HttpGet get = new HttpGet( this.uriBuilderFromDataLocation(location).build() );
-				byte[] result = this.attemptGetFromUniprot(get);
-				Path path = Paths.get(new URI("file://" + this.destination));
-				if (result != null && result.length > 0)
-				{
-					logger.debug(".tab result size: {}", result.length);
-					
-					
-					
-					Files.createDirectories(path.getParent());
-					//Files.write(path, result);
-					BufferedWriter writer = Files.newBufferedWriter(path);
-					writer.write(new String(result));
-					writer.flush();
-					writer.close();
-					if (!Files.isReadable(path))
-					{
-						throw new Exception("The new file "+ path +" is not readable!");
-					}
-					UniprotFileRetreiver.actualFetchDestinations.add(path.toString());
-				}
-				else
-				{
-					//TODO: download should probably be attempted again in this situation.
-					throw new Exception("Result for .tab file ("+path.toString()+") was null/empty!");
-				}
-
-				URIBuilder builder = uriBuilderFromDataLocation(location);
-				HttpGet getUnmappedIdentifiers = new HttpGet(builder.setHost(builder.getHost().replace(".tab", ".not")).build());
-				byte[] unmappedIdentifiersResult = this.attemptGetFromUniprot(getUnmappedIdentifiers);
-				if (unmappedIdentifiersResult != null && unmappedIdentifiersResult.length > 0)
-				{
-					logger.debug(".not result size: {}", unmappedIdentifiersResult.length);
-					String unmappedIdentifierDestination;
-					String[] filenameParts = this.destination.split("\\.");
-					unmappedIdentifierDestination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
-					Path unmappedIdentifierspath = Paths.get(new URI("file://" + unmappedIdentifierDestination));
-					Files.createDirectories(unmappedIdentifierspath.getParent());
-					//Files.write(unmappedIdentifierspath, unmappedIdentifiersResult);
-					BufferedWriter writer = Files.newBufferedWriter(unmappedIdentifierspath);
-					writer.write(new String(unmappedIdentifiersResult));
-					writer.flush();
-					writer.close();
-					if (!Files.isReadable(unmappedIdentifierspath))
-					{
-						throw new Exception("The new file "+ unmappedIdentifierspath +" is not readable!");
-					}
-					UniprotFileRetreiver.actualFetchDestinations.add(unmappedIdentifierspath.toString());
-				}
-				else
-				{
-					throw new Exception("Result for .not file was null/empty!");
-				}
+				// Get values that Uniprot was able to map.
+				getUniprotValues(location, true);
+				// Now get the unmapped values.
+				getUniprotValues(location, false);
 			}
 			else
 			{
@@ -418,6 +394,84 @@ public class UniprotFileRetreiver extends FileRetriever
 		{
 			logger.error(e.getMessage());
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Get values from Uniprot.
+	 * @param location - the URL that the data will be at. This is returned from the inital query to UniProt.
+	 * @param mapped - Set to true to get the list of successfully mapped values. Set to false to get the list of identifiers which UniProt could not map.
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws Exception
+	 */
+	private void getUniprotValues(String location, boolean mapped) throws URISyntaxException, IOException, InterruptedException, Exception
+	{
+		int numAttempts = 0;
+		boolean done = false;
+		
+		URI uri;
+		if (mapped)
+		{
+			uri = this.uriBuilderFromDataLocation(location).build();
+		}
+		else
+		{
+			URIBuilder builder = uriBuilderFromDataLocation(location);
+			uri = builder.setHost(builder.getHost().replace(".tab", ".not")).build();
+		}
+		
+		while (!done)
+		{
+			HttpGet get = new HttpGet( uri );
+			byte[] result = this.attemptGetFromUniprot(get);
+			numAttempts++;
+			Path path = Paths.get(new URI("file://" + this.destination));
+			// The loop is "done" if the number of attempts exceeds the max allowed, OR if the result is not null/empty.
+			done = (numAttempts >= MAX_NUM_ATTEMPTS) || (result != null && result.length > 0);
+			if (result != null && result.length > 0)
+			{
+				logger.debug(".tab result size: {}", result.length);
+				Files.createDirectories(path.getParent());
+				//Files.write(path, result);
+				BufferedWriter writer = Files.newBufferedWriter(path);
+				writer.write(new String(result));
+				writer.flush();
+				writer.close();
+				if (!Files.isReadable(path))
+				{
+					throw new Exception("The new file "+ path +" is not readable!");
+				}
+				UniprotFileRetreiver.actualFetchDestinations.add(path.toString());
+			}
+			else
+			{
+				handleNullResult(numAttempts, done, path);
+			}
+		}
+	}
+
+	/**
+	 * Handle a NULL result.
+	 * @param numAttempts - The number of attempts that have been made (so far), only needed for logging.
+	 * @param done - Are we done? If this is true, an exception will be thrown since the maximum number of attempts have been made and the result is still null.
+	 * If false, a log message will be printed and this thread will sleep for RETRY_DELAY_MS milliseconds.
+	 * @param path - the path to the file that we were *trying* to download. Used for logging purposes.
+	 * @throws InterruptedException
+	 * @throws Exception
+	 */
+	private void handleNullResult(int numAttempts, boolean done, Path path) throws InterruptedException, Exception
+	{
+		if (!done)
+		{
+			logger.info("Result was NULL. Will sleep for a bit, and try again. {} attempts remaining, {} total are allowed.", MAX_NUM_ATTEMPTS - numAttempts , MAX_NUM_ATTEMPTS);
+			// Sleep a half a second...
+			Thread.sleep(RETRY_DELAY_MS);
+		}
+		else
+		{
+			throw new Exception("Result for .tab file ("+path.toString()+") was null/empty!");
 		}
 	}
 
