@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -318,56 +319,7 @@ public class UniprotFileRetreiver extends FileRetriever
 		
 		try
 		{
-			int attemptCount = 0;
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			byte[] buffer = new byte[2048];
-			int len;
-			while ((len = inStream.read(buffer)) > -1)
-			{
-				baos.write(buffer,0,len);
-			}
-			String location = null;
-			while (location == null && attemptCount < maxAttemptCount)
-			{
-				InputStream fileData = new ByteArrayInputStream(baos.toByteArray());
-				HttpPost post = new HttpPost(this.uri);
-				logger.trace("URI: {}", post.getURI().toURL());
-				HttpEntity attachment = MultipartEntityBuilder.create()
-						.addBinaryBody("file", fileData, ContentType.TEXT_PLAIN, "uniprot_ids.txt")
-						.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
-						.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
-						.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
-						.build();
-				post.setEntity(attachment);
-				
-				try
-				{
-					location = this.attemptPostToUniprot(post);
-				}
-				catch (NoHttpResponseException e)
-				{
-					// If we don't catch this here, but let it go to "catch (IOException e)" in the outer try-block,
-					// then we won't be able to retry. Catching it here lets us continue processing: increment the attempt counter, and loop through again.
-					logger.error("No HTTP Response! Message: {}", e.getMessage());
-					e.printStackTrace();
-				}
-				attemptCount++;
-				if (location == null)
-				{
-					if (attemptCount > 0 && attemptCount < maxAttemptCount)
-					{
-						Random r = new Random(System.nanoTime());
-						long delay = (long) (3000 + (attemptCount * r.nextFloat()));
-						logger.warn("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
-						Thread.sleep( delay );
-					}
-					else if (attemptCount >= maxAttemptCount)
-					{
-						logger.error("Could not get the Location of the data in {} attempts.", attemptCount);
-					}
-				}
-				
-			}
+			String location = getDataLocation();
 			if (location != null)
 			{
 				// Get values that Uniprot was able to map.
@@ -395,6 +347,69 @@ public class UniprotFileRetreiver extends FileRetriever
 			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * This function gets the location of the Uniprot-mapped data.
+	 * @return The location of the data, as a string.
+	 * @throws IOException
+	 * @throws MalformedURLException
+	 * @throws ClientProtocolException
+	 * @throws InterruptedException
+	 */
+	private String getDataLocation() throws IOException, MalformedURLException, ClientProtocolException, InterruptedException
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		byte[] buffer = new byte[2048];
+		int len;
+		while ((len = inStream.read(buffer)) > -1)
+		{
+			baos.write(buffer,0,len);
+		}
+		String location = null;
+		int attemptCount = 0;
+		while (location == null && attemptCount < maxAttemptCount)
+		{
+			InputStream fileData = new ByteArrayInputStream(baos.toByteArray());
+			HttpPost post = new HttpPost(this.uri);
+			logger.trace("URI: {}", post.getURI().toURL());
+			HttpEntity attachment = MultipartEntityBuilder.create()
+					.addBinaryBody("file", fileData, ContentType.TEXT_PLAIN, "uniprot_ids.txt")
+					.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
+					.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
+					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
+					.build();
+			post.setEntity(attachment);
+			
+			try
+			{
+				location = this.attemptPostToUniprot(post);
+			}
+			catch (NoHttpResponseException e)
+			{
+				// If we don't catch this here, but let it go to "catch (IOException e)" in the outer try-block,
+				// then we won't be able to retry. Catching it here lets us continue processing: increment the attempt counter, and loop through again.
+				logger.error("No HTTP Response! Message: {}", e.getMessage());
+				e.printStackTrace();
+			}
+			attemptCount++;
+			if (location == null)
+			{
+				if (attemptCount > 0 && attemptCount < maxAttemptCount)
+				{
+					Random r = new Random(System.nanoTime());
+					long delay = (long) (3000 + (attemptCount * r.nextFloat()));
+					logger.warn("Attempt {} out of {}, next attempt in {} ms", attemptCount, maxAttemptCount, delay);
+					Thread.sleep( delay );
+				}
+				else if (attemptCount >= maxAttemptCount)
+				{
+					logger.error("Could not get the Location of the data in {} attempts.", attemptCount);
+				}
+			}
+			
+		}
+		return location;
 	}
 
 	/**
