@@ -163,58 +163,35 @@ public class UniprotFileRetreiver extends FileRetriever
 	private byte[] attemptGetFromUniprot(HttpGet get) throws IOException, URISyntaxException, InterruptedException
 	{
 		byte[] result = null;
-//		boolean done = false;
-//		int attemptCount = 0;
-//		while(!done)
-//		{
-			logger.trace("getting from: {}",get.getURI());
-			try (CloseableHttpClient getClient = HttpClients.createDefault();
-					CloseableHttpResponse getResponse = getClient.execute(get);)
+		logger.trace("getting from: {}",get.getURI());
+		try (CloseableHttpClient getClient = HttpClients.createDefault();
+				CloseableHttpResponse getResponse = getClient.execute(get);)
+		{
+			switch (getResponse.getStatusLine().getStatusCode())
 			{
-				switch (getResponse.getStatusLine().getStatusCode())
-				{
-					case HttpStatus.SC_SERVICE_UNAVAILABLE:
-					case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-					case HttpStatus.SC_BAD_GATEWAY:
-					case HttpStatus.SC_GATEWAY_TIMEOUT:
-						logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
-						break;
-	
-					case HttpStatus.SC_OK:
-					case HttpStatus.SC_MOVED_PERMANENTLY:
-					case HttpStatus.SC_MOVED_TEMPORARILY:
-						logger.trace("HTTP Status: {}",getResponse.getStatusLine().toString());
-						result = EntityUtils.toByteArray(getResponse.getEntity());
-						if (result != null)
-						{
-//							done = true;
-						}
-						else
-						{
-							logger.warn("Response did not contain data.");
-						}
-						break;
-	
-					default:
-						logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
-						break;
-				}
-//				attemptCount++;
+				case HttpStatus.SC_SERVICE_UNAVAILABLE:
+				case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+				case HttpStatus.SC_BAD_GATEWAY:
+				case HttpStatus.SC_GATEWAY_TIMEOUT:
+					logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
+					break;
+
+				case HttpStatus.SC_OK:
+				case HttpStatus.SC_MOVED_PERMANENTLY:
+				case HttpStatus.SC_MOVED_TEMPORARILY:
+					logger.trace("HTTP Status: {}",getResponse.getStatusLine().toString());
+					result = EntityUtils.toByteArray(getResponse.getEntity());
+					if (result == null)
+					{
+						logger.warn("Response did not contain data.");
+					}
+					break;
+
+				default:
+					logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
+					break;
 			}
-//			if (attemptCount > this.maxAttemptCount)
-//			{
-//				logger.error("Reached max attempt count! No more attempts.");
-//				done = true;
-//			}
-//			else
-//			{
-//				if (attemptCount < this.maxAttemptCount && ! done)
-//				{
-//					logger.warn("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
-//					Thread.sleep(Duration.ofSeconds(5).toMillis());
-//				}
-//			}
-//		}
+		}
 		return result;
 	}
 	
