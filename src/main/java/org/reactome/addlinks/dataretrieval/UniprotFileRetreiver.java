@@ -163,10 +163,10 @@ public class UniprotFileRetreiver extends FileRetriever
 	private byte[] attemptGetFromUniprot(HttpGet get) throws IOException, URISyntaxException, InterruptedException
 	{
 		byte[] result = null;
-		boolean done = false;
-		int attemptCount = 0;
-		while(!done)
-		{
+//		boolean done = false;
+//		int attemptCount = 0;
+//		while(!done)
+//		{
 			logger.trace("getting from: {}",get.getURI());
 			try (CloseableHttpClient getClient = HttpClients.createDefault();
 					CloseableHttpResponse getResponse = getClient.execute(get);)
@@ -187,7 +187,7 @@ public class UniprotFileRetreiver extends FileRetriever
 						result = EntityUtils.toByteArray(getResponse.getEntity());
 						if (result != null)
 						{
-							done = true;
+//							done = true;
 						}
 						else
 						{
@@ -199,22 +199,22 @@ public class UniprotFileRetreiver extends FileRetriever
 						logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
 						break;
 				}
-				attemptCount++;
+//				attemptCount++;
 			}
-			if (attemptCount > this.maxAttemptCount)
-			{
-				logger.error("Reached max attempt count! No more attempts.");
-				done = true;
-			}
-			else
-			{
-				if (attemptCount < this.maxAttemptCount && ! done)
-				{
-					logger.warn("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
-					Thread.sleep(Duration.ofSeconds(5).toMillis());
-				}
-			}
-		}
+//			if (attemptCount > this.maxAttemptCount)
+//			{
+//				logger.error("Reached max attempt count! No more attempts.");
+//				done = true;
+//			}
+//			else
+//			{
+//				if (attemptCount < this.maxAttemptCount && ! done)
+//				{
+//					logger.warn("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+//					Thread.sleep(Duration.ofSeconds(5).toMillis());
+//				}
+//			}
+//		}
 		return result;
 	}
 	
@@ -435,6 +435,8 @@ public class UniprotFileRetreiver extends FileRetriever
 		{
 			URIBuilder builder = uriBuilderFromDataLocation(location);
 			uri = builder.setHost(builder.getHost().replace(".tab", ".not")).build();
+			String[] filenameParts = this.destination.split("\\.");
+			this.destination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
 		}
 		
 		while (!done)
