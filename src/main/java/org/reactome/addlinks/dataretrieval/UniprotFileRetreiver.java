@@ -309,19 +309,21 @@ public class UniprotFileRetreiver extends FileRetriever
 				logger.error("We could not determine the location of the data, file was not downloaded.");
 			}
 		}
-		catch (URISyntaxException | UnsupportedEncodingException | ClientProtocolException | InterruptedException e)
+		catch (URISyntaxException | ClientProtocolException | InterruptedException e)
 		{
-			logger.error(e.getMessage());
+			logger.error("A problem occured while trying to get the data location, or the data: {}", e.getMessage());
 			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
-			logger.error(e.getMessage());
+			// some of the exceptions in the first catch-block are also covered by IOException. They are in the
+			// first catch block so we can treat them differently, if necessary.
+			logger.error("IOException was caught: {}", e.getMessage());
 			e.printStackTrace();
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage());
+			logger.error("Exception occurred: {}", e.getMessage());
 			e.printStackTrace();
 		}
 	}
