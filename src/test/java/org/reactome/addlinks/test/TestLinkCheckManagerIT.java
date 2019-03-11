@@ -65,10 +65,8 @@ public class TestLinkCheckManagerIT
 		
 		GKInstance db = this.dbAdapter.fetchInstance(Long.valueOf(dbID));
 		
-		
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> instances = (Collection<GKInstance>) db.getReferers(ReactomeJavaConstants.referenceDatabase);
-//		Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", value);
 		assertTrue(instances.size() > 0);
 		List<GKInstance> instList = (List<GKInstance>) instances;
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, 3) );
