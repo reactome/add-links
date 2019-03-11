@@ -129,6 +129,12 @@ public class LinkCheckManager implements CustomLoggable
 				logger.debug(refDBCache.get(refDBID));
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBCache.get(refDBID).getAttributeValue("accessUrl"));
+				// special case for Zinc: adding these args will reduce the chance of a timeout.
+				// Example: http://zinc15.docking.org/orthologs/CYH3_HUMAN/predictions/subsets/purchasable/?count=10&sort=no&distinct=no
+				if (accessURL.contains("zinc15.docking.org"))
+				{
+					accessURL += "?count=1&sort=no&distinct=no";
+				}
 				String referenceDatabaseName = ((String)refDBCache.get(refDBID).getDisplayName());
 				
 				checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
