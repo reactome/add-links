@@ -4,12 +4,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
@@ -46,6 +48,29 @@ public class TestLinkCheckManagerIT
 		@SuppressWarnings("unchecked")
 		Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", value);
 		List<GKInstance> instList = new ArrayList<GKInstance>(instances);
+		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, 3) );
+		assertTrue(results.keySet().size() == 3);
+		
+		for(String k : results.keySet())
+		{
+			assertTrue(results.get(k).isKeywordFound());
+			System.out.println(results.get(k));
+		}
+	}
+	
+	@Test
+	public void testLinkCheckManagerZinc() throws InvalidAttributeException, Exception
+	{
+		String dbID = objectCache.getRefDbNamesToIds().get("ZINC - Substances").get(0);
+		
+		GKInstance db = this.dbAdapter.fetchInstance(Long.valueOf(dbID));
+		
+		
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> instances = (Collection<GKInstance>) db.getReferers(ReactomeJavaConstants.referenceDatabase);
+//		Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", value);
+		assertTrue(instances.size() > 0);
+		List<GKInstance> instList = (List<GKInstance>) instances;
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, 3) );
 		assertTrue(results.keySet().size() == 3);
 		
