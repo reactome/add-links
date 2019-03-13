@@ -64,7 +64,7 @@ import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
-import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
+import org.reactome.addlinks.uniprot.UniProtFileRetrieverExecutor;
 
 
 public class AddLinks
@@ -974,7 +974,7 @@ public class AddLinks
 	private void executeUniprotFileRetrievers(int numberOfUniprotDownloadThreads)
 	{
 		logger.info("Executing UniProt file retrievers");
-		UniProtFileRetreiverExecutor executor = new UniProtFileRetreiverExecutor();
+		UniProtFileRetrieverExecutor executor = new UniProtFileRetrieverExecutor();
 		executor.setFileRetrieverFilter(fileRetrieverFilter);
 		executor.setObjectCache(objectCache);
 		executor.setUniprotFileRetrievers(uniprotFileRetrievers);
