@@ -166,13 +166,13 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="UniprotDB_Uniprot" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+	<bean id="UniprotDB_Uniprot" class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>UniProt</value>
 		</constructor-arg>
 	</bean>
 	
-	<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB" factory-method="valueOf">
+	<bean id="UniprotDB_ENSEMBL" class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB" factory-method="valueOf">
 		<constructor-arg>
 			<value>Ensembl</value>
 		</constructor-arg>
@@ -180,12 +180,12 @@
 	
 	
 	<!-- Wormbase -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToWormbase">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToWormbase">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Wormbase</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">Wormbase</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -210,12 +210,12 @@
 	</bean>
 	
 	<!-- OMIM -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToOMIM">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToOMIM">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_OMIM.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">OMIM</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">OMIM</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -267,12 +267,12 @@
 	 requirements only affected data retrieval and file processing (which is where filtering occurs). -->
 
 	<!-- Protein Data Bank (PDB) -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToPDB">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToPDB">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_PDB.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">PDB</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">PDB</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -297,12 +297,12 @@
 	</bean>
 	
 	<!-- RefSeqPeptide database -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqPeptide">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToRefSeqPeptide">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqPeptide.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqPeptide</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">RefSeqPeptide</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -327,12 +327,12 @@
 	</bean>
 	
 	<!-- RefSeqRNA database -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToRefSeqRNA">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToRefSeqRNA">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_RefSeqRNA.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">RefSeqRNA</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">RefSeqRNA</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -357,12 +357,12 @@
 	</bean>
 	
 	<!-- ENSEMBL -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToENSEMBLGene">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToENSEMBLGene">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_ENSEMBLGene.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">ENSEMBLGene</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">ENSEMBLGenomes</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -388,12 +388,12 @@
 	
 	
 	<!-- EntrezGene -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToEntrezGene">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToEntrezGene">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Entrez_Gene.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">Entrez_Gene</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -418,12 +418,12 @@
 	</bean>
 	
 	<!-- Attempted ensembl-to-entrezgene (didn't really work) -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="ENSEMBLToEntrezGeneRetriever">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="ENSEMBLToEntrezGeneRetriever">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_ENSEMBL_To_Entrez_Gene.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_ENSEMBL"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">Entrez_Gene</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">Entrez_Gene</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>
@@ -448,12 +448,12 @@
 	</bean>
 
 	<!-- KEGG -->
-	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver" id="UniProtToKEGG">
+	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToKEGG">
 		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
-			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetreiver$UniprotDB">KEGG</value>
+			<value type="org.reactome.addlinks.dataretrieval.UniprotFileRetriever$UniprotDB">KEGG</value>
 		</property>
 		<property name="maxAge" ref="uniprotTestAge" />
 	</bean>

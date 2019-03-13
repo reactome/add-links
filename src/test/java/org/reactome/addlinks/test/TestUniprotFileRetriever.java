@@ -27,7 +27,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*", "javax.security.*"})
@@ -52,13 +52,13 @@ public class TestUniprotFileRetriever
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
 		
-		UniprotFileRetreiver retriever = new UniprotFileRetreiver();
+		UniprotFileRetriever retriever = new UniprotFileRetriever();
 		retriever.setDataURL(new URI("https://www.uniprot.org/uploadlists/"));
 		FileInputStream inStream = new FileInputStream(this.getClass().getClassLoader().getResource("uniprot_ids.txt").getFile());
 		BufferedInputStream bis = new BufferedInputStream(inStream);
 		retriever.setDataInputStream(bis);
-		String mapFrom=UniprotFileRetreiver.UniprotDB.GeneName.getUniprotName();//"ACC+ID";
-		String mapTo=UniprotFileRetreiver.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
+		String mapFrom=UniprotFileRetriever.UniprotDB.GeneName.getUniprotName();//"ACC+ID";
+		String mapTo=UniprotFileRetriever.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
 		String pathToFile = "/tmp/uniprot_mapping_service/uniprot_xrefs_"+mapFrom+"_to_"+mapTo+".txt";
 		retriever.setFetchDestination(pathToFile);
 		retriever.setMaxAge(Duration.ofSeconds(1));
@@ -94,13 +94,13 @@ public class TestUniprotFileRetriever
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
 		
-		UniprotFileRetreiver retriever = new UniprotFileRetreiver();
+		UniprotFileRetriever retriever = new UniprotFileRetriever();
 		retriever.setDataURL(new URI("https://www.uniprot.org/uploadlists/"));
 		FileInputStream inStream = new FileInputStream(this.getClass().getClassLoader().getResource("uniprot_ids.txt").getFile());
 		BufferedInputStream bis = new BufferedInputStream(inStream);
 		retriever.setDataInputStream(bis);
-		String mapFrom=UniprotFileRetreiver.UniprotDB.GeneName.getUniprotName();//"ACC+ID";
-		String mapTo=UniprotFileRetreiver.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
+		String mapFrom=UniprotFileRetriever.UniprotDB.GeneName.getUniprotName();//"ACC+ID";
+		String mapTo=UniprotFileRetriever.UniprotDB.KEGG.getUniprotName();//"KEGG_ID";
 		String pathToFile = "/tmp/uniprot_mapping_service/uniprot_xrefs_"+mapFrom+"_to_"+mapTo+".txt";
 		retriever.setFetchDestination(pathToFile);
 		retriever.setMaxAge(Duration.ofSeconds(1));
