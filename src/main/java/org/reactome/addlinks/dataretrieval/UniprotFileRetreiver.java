@@ -41,7 +41,7 @@ import org.apache.http.util.EntityUtils;
 public class UniprotFileRetreiver extends FileRetriever
 {
 	// To be used to wait 500 ms to retry if a URL from UniProt returns nothing.
-	private static final int RETRY_DELAY_MS = 500;
+	private static final int RETRY_DELAY_MS = 3000;
 	private static final int MAX_NUM_ATTEMPTS = 5;
 	private String mapFromDb="";
 	private String mapToDb="";
