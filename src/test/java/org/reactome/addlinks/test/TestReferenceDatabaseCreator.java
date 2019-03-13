@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +32,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*","javax.security.*"})
-@RunWith(PowerMockRunner.class)
 @ContextConfiguration("/test-application-context.xml")
 @PrepareForTest({ org.reactome.addlinks.db.ReferenceDatabaseCreator.class,
 				org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator.class })
@@ -49,9 +49,10 @@ public class TestReferenceDatabaseCreator
 		{
 			dbAdapter=new MySQLAdaptor("localhost", "release_current_2","root","root", 3306);
 		}
-		
-		Set<GKInstance> people = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.Person, ReactomeJavaConstants.surname, "=", "Shorser");
-		this.personID = people.stream().findFirst().get().getDBID();
+		// Get a person. Doesn't *really* matter which person.
+		ResultSet rs = this.dbAdapter.executeQuery("SELECT min(DB_ID) FROM Person;", null);
+		rs.next();
+		this.personID = rs.getLong(1);
 	}
 	
 	@Test
