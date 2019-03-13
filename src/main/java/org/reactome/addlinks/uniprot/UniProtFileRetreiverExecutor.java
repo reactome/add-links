@@ -18,14 +18,14 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.CustomLoggable;
-import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
-import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver.UniprotDB;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetriever.UniprotDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 
 public class UniProtFileRetreiverExecutor implements CustomLoggable
 {
 	private Logger logger;// = LogManager.getLogger();
-	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
+	private Map<String, UniprotFileRetriever> uniprotFileRetrievers;
 	private List<String> fileRetrieverFilter;
 	private ReferenceObjectCache objectCache;
 	private int numberOfUniprotDownloadThreads = 10;
@@ -41,7 +41,7 @@ public class UniProtFileRetreiverExecutor implements CustomLoggable
 		for (String key : this.uniprotFileRetrievers.keySet().stream().sequential().filter(p -> this.fileRetrieverFilter.contains(p)).collect(Collectors.toList()))
 		{
 			logger.info("Executing Downloader: {}", key);
-			UniprotFileRetreiver retriever = this.uniprotFileRetrievers.get(key);
+			UniprotFileRetriever retriever = this.uniprotFileRetrievers.get(key);
 			
 			UniprotDB toDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapToDb());
 			UniprotDB fromDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapFromDb());
@@ -125,7 +125,7 @@ public class UniProtFileRetreiverExecutor implements CustomLoggable
 											// if we want to execute multiple retrievers in parallel, we need to create a 
 											// NEW retriever and pass in the relevant values from the retriever that came from the original Uniprot file retriever
 											// defined in the spring config file.
-											UniprotFileRetreiver innerRetriever = new UniprotFileRetreiver(retriever.getRetrieverName());
+											UniprotFileRetriever innerRetriever = new UniprotFileRetriever(retriever.getRetrieverName());
 											innerRetriever.setMapFromDb(retriever.getMapFromDb());
 											innerRetriever.setMapToDb(retriever.getMapToDb());
 											innerRetriever.setDataURL(retriever.getDataURL());
@@ -182,7 +182,7 @@ public class UniProtFileRetreiverExecutor implements CustomLoggable
 		}
 	}
 
-	public void setUniprotFileRetrievers(Map<String, UniprotFileRetreiver> uniprotFileRetrievers)
+	public void setUniprotFileRetrievers(Map<String, UniprotFileRetriever> uniprotFileRetrievers)
 	{
 		this.uniprotFileRetrievers = uniprotFileRetrievers;
 	}
