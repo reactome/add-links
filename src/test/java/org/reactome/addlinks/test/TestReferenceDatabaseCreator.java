@@ -30,7 +30,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*","javax.security.*"})
-@ContextConfiguration("/test-application-context.xml")
 @PrepareForTest({ org.reactome.addlinks.db.ReferenceDatabaseCreator.class,
 				org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator.class })
 public class TestReferenceDatabaseCreator
