@@ -5,13 +5,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.FileInputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Properties;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -20,10 +20,8 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaAttribute;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator;
@@ -47,7 +45,11 @@ public class TestReferenceDatabaseCreator
 	{
 		if (dbAdapter==null)
 		{
-			dbAdapter=new MySQLAdaptor("localhost", "release_current_2","root","root", 3306);
+			Properties props = new Properties();
+			props.load(new FileInputStream("src/test/resources/db.properties"));
+			dbAdapter=new MySQLAdaptor(props.getProperty("database.host"), props.getProperty("database.name"),
+									props.getProperty("database.user", "root"),props.getProperty("database.password", "root"),
+									Integer.parseInt(props.getProperty("database.port","3306")));
 		}
 		// Get a person. Doesn't *really* matter which person.
 		ResultSet rs = this.dbAdapter.executeQuery("SELECT min(DB_ID) FROM Person;", null);
