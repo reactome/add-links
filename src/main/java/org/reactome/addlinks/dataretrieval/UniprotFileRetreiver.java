@@ -300,9 +300,11 @@ public class UniprotFileRetreiver extends FileRetriever
 			if (location != null)
 			{
 				// Get values that Uniprot was able to map.
-				getUniprotValues(location, true);
+				URI mappedUri = createURI(location, true);
+				getUniprotValues(mappedUri);
 				// Now get the unmapped values.
-				getUniprotValues(location, false);
+				URI unmappedUri = createURI(location, false);
+				getUniprotValues(unmappedUri);
 			}
 			else
 			{
@@ -400,23 +402,10 @@ public class UniprotFileRetreiver extends FileRetriever
 	 * @throws InterruptedException
 	 * @throws Exception
 	 */
-	private void getUniprotValues(String location, boolean mapped) throws URISyntaxException, IOException, InterruptedException, Exception
+	private void getUniprotValues(URI uri) throws URISyntaxException, IOException, InterruptedException, Exception
 	{
 		int numAttempts = 0;
 		boolean done = false;
-		
-		URI uri;
-		if (mapped)
-		{
-			uri = this.uriBuilderFromDataLocation(location).build();
-		}
-		else
-		{
-			URIBuilder builder = uriBuilderFromDataLocation(location);
-			uri = builder.setHost(builder.getHost().replace(".tab", ".not")).build();
-			String[] filenameParts = this.destination.split("\\.");
-			this.destination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
-		}
 		
 		while (!done)
 		{
@@ -446,6 +435,32 @@ public class UniprotFileRetreiver extends FileRetriever
 				handleNullResult(numAttempts, done, path);
 			}
 		}
+	}
+
+	/**
+	 * Create the URI to get data from. <code>mapped</code> is used to determine if ".not" will be in the URI, which is used to get 
+	 * identifiers which were not mapped.
+	 * @param location - The URL to the data, for the mapped values. UniProt will return this by default.
+	 * @param mapped - Set to true if you want the URI for mapped values. Set to false if you want values that UniProt couldn't map.
+	 * <b>NOTE:</b> Setting <code>mapped</code> to false will also modify <code>this.destination</code> to include "notMapped" in the filename.
+	 * @return A URI that can be used to get data from UniProt.
+	 * @throws URISyntaxException
+	 */
+	private URI createURI(String location, boolean mapped) throws URISyntaxException
+	{
+		URI uri;
+		if (mapped)
+		{
+			uri = this.uriBuilderFromDataLocation(location).build();
+		}
+		else
+		{
+			URIBuilder builder = uriBuilderFromDataLocation(location);
+			uri = builder.setHost(builder.getHost().replace(".tab", ".not")).build();
+			String[] filenameParts = this.destination.split("\\.");
+			this.destination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
+		}
+		return uri;
 	}
 
 	/**
