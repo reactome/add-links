@@ -22,7 +22,7 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever.UniprotDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 
-public class UniProtFileRetreiverExecutor implements CustomLoggable
+public class UniProtFileRetrieverExecutor implements CustomLoggable
 {
 	private Logger logger;// = LogManager.getLogger();
 	private Map<String, UniprotFileRetriever> uniprotFileRetrievers;
@@ -30,7 +30,7 @@ public class UniProtFileRetreiverExecutor implements CustomLoggable
 	private ReferenceObjectCache objectCache;
 	private int numberOfUniprotDownloadThreads = 10;
 	
-	public UniProtFileRetreiverExecutor()
+	public UniProtFileRetrieverExecutor()
 	{
 		this.logger = this.createLogger("retrievers/Uniprot", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, this.logger, "UniProtFileRetreiverExecutor");
 	}
