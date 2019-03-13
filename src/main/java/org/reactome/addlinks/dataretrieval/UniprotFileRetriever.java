@@ -38,7 +38,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-public class UniprotFileRetreiver extends FileRetriever
+public class UniprotFileRetriever extends FileRetriever
 {
 	// To be used to wait 500 ms to retry if a URL from UniProt returns nothing.
 	private static final int RETRY_DELAY_MS = 3000;
@@ -104,9 +104,9 @@ public class UniprotFileRetreiver extends FileRetriever
 		}
 	}
 	
-	public UniprotFileRetreiver() { super(); }
+	public UniprotFileRetriever() { super(); }
 
-	public UniprotFileRetreiver(String retrieverName)
+	public UniprotFileRetriever(String retrieverName)
 	{
 		super(retrieverName);
 	}
@@ -428,7 +428,7 @@ public class UniprotFileRetreiver extends FileRetriever
 				{
 					throw new Exception("The new file "+ path +" is not readable!");
 				}
-				UniprotFileRetreiver.actualFetchDestinations.add(path.toString());
+				UniprotFileRetriever.actualFetchDestinations.add(path.toString());
 			}
 			else
 			{
@@ -528,6 +528,6 @@ public class UniprotFileRetreiver extends FileRetriever
 
 	public List<String> getActualFetchDestinations()
 	{
-		return UniprotFileRetreiver.actualFetchDestinations;
+		return UniprotFileRetriever.actualFetchDestinations;
 	}
 }
