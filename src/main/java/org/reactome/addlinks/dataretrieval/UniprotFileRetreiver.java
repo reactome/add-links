@@ -376,7 +376,7 @@ public class UniprotFileRetreiver extends FileRetriever
 			attemptCount++;
 			if (location == null)
 			{
-				if (attemptCount > 0 && attemptCount < maxAttemptCount)
+				if (attemptCount < maxAttemptCount)
 				{
 					Random r = new Random(System.nanoTime());
 					long delay = (long) (3000 + (attemptCount * r.nextFloat()));

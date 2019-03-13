@@ -119,7 +119,7 @@ public class TestUniprotFileRetriever
 
 		when(statusLine.getStatusCode()).thenReturn(200);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
-		when(mockEntity.getContent()).thenReturn(null).thenReturn(new ByteArrayInputStream("blah blah".getBytes(StandardCharsets.UTF_8))).thenReturn(null);
+		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream("blah blah".getBytes(StandardCharsets.UTF_8))).thenReturn(null);
 		when(httpResponse.getEntity()).thenReturn(mockEntity);
 		when(httpClient.execute( any())).thenReturn(httpResponse).thenReturn(httpResponse);
 		PowerMockito.mockStatic(HttpClients.class);
