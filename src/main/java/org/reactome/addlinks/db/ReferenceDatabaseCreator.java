@@ -218,6 +218,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 						// Add the InstanceEdit for modification
 						preexistingRefDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
+						this.adapter.updateInstanceAttribute(preexistingRefDB, ReactomeJavaConstants.modified);
 						refDBID = preexistingRefDB.getDBID();
 					}
 				}
