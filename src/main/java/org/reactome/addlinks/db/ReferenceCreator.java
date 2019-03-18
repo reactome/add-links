@@ -10,15 +10,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
-import org.gk.model.PersistenceAdaptor;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
-import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
-import org.gk.util.GKApplicationUtilities;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 
 import com.mysql.jdbc.MysqlDataTruncation;
@@ -145,15 +142,6 @@ public class ReferenceCreator
 				}
 			}
 			
-//			if (this.refDBInstance == null && refDB.matches("^[0-9]+$"))
-//			{
-//				this.refDBInstance = this.dbAdapter.fetchInstance(Long.parseLong(refDB));
-//			}
-//
-//			if (this.refDBInstance == null || !this.refDBInstance.getDisplayName().equals(refDB))
-//			{
-//				this.refDBInstance = getReferenceDatabase(refDB);
-//			}
 			// If it's still null, there is a problem!
 			if (this.refDBInstance == null)
 			{
@@ -246,7 +234,7 @@ public class ReferenceCreator
 
 			if (this.instanceEdit == null)
 			{
-				this.instanceEdit = createInstanceEdit(personID, creatorName);
+				this.instanceEdit = InstanceEditUtils.createInstanceEdit(personID, this.dbAdapter, creatorName);
 			}
 			
 			if (this.instanceEdit != null)
@@ -409,61 +397,6 @@ public class ReferenceCreator
 		return refDb;
 	}
 
-	/**
-	 * Create an InstanceEdit.
-	 * @param personID - ID of the associated Person entity.
-	 * @param creatorName - The name of the thing that is creating this InstanceEdit. Typically, you would want to use the package and classname that 
-	 * uses <i>this</i> object, so it can be traced to the appropriate part of the program. 
-	 * @return
-	 */
-	private GKInstance createInstanceEdit(long personID, String creatorName)
-	{
-		GKInstance instanceEdit = null;
-		try
-		{
-			instanceEdit = createDefaultIE(this.dbAdapter, personID, true, this.referringToSchemaClass.getName() + " inserted by " + creatorName);
-			instanceEdit.getDBID();
-			this.dbAdapter.updateInstance(instanceEdit);
-		}
-		catch (Exception e)
-		{
-			logger.error("Exception caught while trying to create an InstanceEdit: {}", e.getMessage());
-			e.printStackTrace();
-		}
-
-		return instanceEdit;
-	}
-
-	/**
-	 * Create and save in the database a default InstanceEdit associated with the Person entity whose DB_ID is <i>defaultPersonId</i>.
-	 * @param dba
-	 * @param defaultPersonId
-	 * @param needStore
-	 * @return an InstanceEdit object.
-	 * @throws Exception
-	 */
-	private static GKInstance createDefaultIE(MySQLAdaptor dba, Long defaultPersonId, boolean needStore, String note) throws Exception
-	{
-		GKInstance defaultPerson = dba.fetchInstance(defaultPersonId);
-		if (defaultPerson != null)
-		{
-			GKInstance newIE = ReferenceCreator.createDefaultInstanceEdit(defaultPerson);
-			newIE.addAttributeValue(ReactomeJavaConstants.dateTime, GKApplicationUtilities.getDateTime());
-			newIE.addAttributeValue(ReactomeJavaConstants.note, note);
-			InstanceDisplayNameGenerator.setDisplayName(newIE);
-
-			if (needStore)
-			{
-				dba.storeInstance(newIE);
-			}
-			return newIE;
-		}
-		else
-		{
-			throw new Exception("Could not fetch Person entity with ID " + defaultPersonId + ". Please check that a Person entity exists in the database with this ID.");
-		}
-	}
-
 	public void setSchemaClass(SchemaClass schemaClass)
 	{
 		this.schemaClass = schemaClass;
@@ -477,33 +410,5 @@ public class ReferenceCreator
 	public void setReferringAttribute(GKSchemaAttribute referringAttribute)
 	{
 		this.referringAttribute = referringAttribute;
-	}
-	
-	/**
-	 * Create a default IE based on a default Person instance. The returned 
-	 * GKInstance has not filled.
-	 * @param person
-	 */
-	public static GKInstance createDefaultInstanceEdit(GKInstance person)
-	{
-		GKInstance instanceEdit = new GKInstance();
-		PersistenceAdaptor adaptor = person.getDbAdaptor();
-		instanceEdit.setDbAdaptor(adaptor);
-		SchemaClass cls = adaptor.getSchema().getClassByName(ReactomeJavaConstants.InstanceEdit);
-		instanceEdit.setSchemaClass(cls);
-		
-		try
-		{
-			instanceEdit.addAttributeValue(ReactomeJavaConstants.author, person);
-		}
-		catch (InvalidAttributeException | InvalidAttributeValueException e)
-		{
-			e.printStackTrace();
-			// throw this back up the stack - no way to recover from in here. 
-			throw new Error(e);
-		}
-		
-
-		return instanceEdit;
 	}
 }

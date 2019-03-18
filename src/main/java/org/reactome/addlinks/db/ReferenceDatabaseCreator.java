@@ -23,9 +23,11 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 {
 	private MySQLAdaptor adapter;
 	private static Logger logger ;
+	private long personID;
 	
-	public ReferenceDatabaseCreator(MySQLAdaptor adapter)
+	public ReferenceDatabaseCreator(MySQLAdaptor adapter, long personID)
 	{
+		this.personID = personID;
 		this.adapter = adapter;
 		if (ReferenceDatabaseCreator.logger  == null)
 		{
@@ -140,13 +142,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		{
 			newReferenceDB.addAttributeValue(ReactomeJavaConstants.name, alias);
 		}
-		// Set othe attributes.
-		newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
-		newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
-		newReferenceDB.setDbAdaptor(this.adapter);
-		InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
-		//Persist to storage.
-		return this.adapter.storeInstance(newReferenceDB);
+		long refDBID = storeNewReferenceDatabaseObject(url, accessUrl, newReferenceDB);
+		logger.info("New ReferenceDatabase has been created: {}", newReferenceDB);
+		return refDBID;
 	}
 	
 	/**
@@ -197,17 +195,13 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 				{
 					newReferenceDB.addAttributeValue(dbNameAttrib, name);
 				}
-
-				newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
-				newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
-				newReferenceDB.setDbAdaptor(this.adapter);
-				InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
-				refDBID = this.adapter.storeInstance(newReferenceDB);
+				refDBID = storeNewReferenceDatabaseObject(url, accessUrl, newReferenceDB);
 				logger.info("New ReferenceDatabase has been created: {}", newReferenceDB);
 			}
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
 			else
 			{
+				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(personID, adapter, "Updating ReferenceDatabase object from "+this.getClass().getName());
 				for (GKInstance preexistingRefDB : instancesInDB)
 				{
 					@SuppressWarnings("unchecked")
@@ -219,7 +213,12 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					{
 						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB + "( " + preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.name).toString() + " )");
 						preexistingRefDB.addAttributeValue(dbNameAttrib, name);
+						// Load the list of "modified" instance edits
+						preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.modified);
+						// Add the InstanceEdit for modification
+						preexistingRefDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
 						this.adapter.updateInstanceAttribute(preexistingRefDB, dbNameAttrib);
+						this.adapter.updateInstanceAttribute(preexistingRefDB, ReactomeJavaConstants.modified);
 						refDBID = preexistingRefDB.getDBID();
 					}
 				}
@@ -230,6 +229,31 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			logger.error("Error while trying to create a Reference Database object: "+e.getMessage());
 			throw e;
 		}
+		return refDBID;
+	}
+
+	/**
+	 * Populates a new ReferenceDatabase GKInstance, and then stores it in the database.
+	 * This will also create a new InstanceEdit and put it into the "created" attribute of the 
+	 * ReferenceDatabase object.
+	 * @param url
+	 * @param accessUrl
+	 * @param newReferenceDB
+	 * @return
+	 * @throws InvalidAttributeException
+	 * @throws InvalidAttributeValueException
+	 * @throws Exception
+	 */
+	private long storeNewReferenceDatabaseObject(String url, String accessUrl, GKInstance newReferenceDB) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	{
+		long refDBID;
+		GKInstance createdInstanceEdit = InstanceEditUtils.createInstanceEdit(this.personID, this.adapter, "Added to database by "+this.getClass().getName());
+		newReferenceDB.setAttributeValue(ReactomeJavaConstants.created, createdInstanceEdit);
+		newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
+		newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);
+		newReferenceDB.setDbAdaptor(this.adapter);
+		InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
+		refDBID = this.adapter.storeInstance(newReferenceDB);
 		return refDBID;
 	}
 }

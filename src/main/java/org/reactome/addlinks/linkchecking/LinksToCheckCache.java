@@ -1,5 +1,6 @@
 package org.reactome.addlinks.linkchecking;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +17,7 @@ import org.gk.model.GKInstance;
  */
 public class LinksToCheckCache
 {
-	private static List<String> refDBsToCheck;
+	private static List<String> refDBsToCheck = new ArrayList<String>();
 	
 	
 	// cache will be a map: Key is reference DB, value is a list of GKInstances which are Identifiers.
