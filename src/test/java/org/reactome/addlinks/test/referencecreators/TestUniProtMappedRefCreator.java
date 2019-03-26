@@ -13,7 +13,7 @@ import org.gk.model.ReactomeJavaConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
-import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.OMIMFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
@@ -38,7 +38,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedWormbaseRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToWormbase;
+	UniprotFileRetriever UniProtToWormbase;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToWormbaseFileProcessor;
@@ -48,7 +48,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedOMIMRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToOMIM;
+	UniprotFileRetriever UniProtToOMIM;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToOMIMFileProcessor;
@@ -63,7 +63,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedPDBRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToPDB;
+	UniprotFileRetriever UniProtToPDB;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToPDBFileProcessor;
@@ -73,7 +73,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedRefSeqPeptideRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToRefSeqPeptide;
+	UniprotFileRetriever UniProtToRefSeqPeptide;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToRefSeqPeptideFileProcessor;
@@ -83,7 +83,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedRefSeqRNARefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToRefSeqRNA;
+	UniprotFileRetriever UniProtToRefSeqRNA;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToRefSeqRNAFileProcessor;
@@ -93,7 +93,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedENSEMBLGeneRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToENSEMBLGene;
+	UniprotFileRetriever UniProtToENSEMBLGene;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToENSEMBLGeneFileProcessor;
@@ -103,7 +103,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedEntrezGeneRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToEntrezGene;
+	UniprotFileRetriever UniProtToEntrezGene;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToEntrezGeneFileProcessor;
@@ -113,7 +113,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator ENSEMBLToEntrezGeneRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver ENSEMBLToEntrezGeneRetriever;
+	UniprotFileRetriever ENSEMBLToEntrezGeneRetriever;
 	
 	@Autowired
 	UniprotFileProcessor ENSEMBLToEntrezGeneFileProcessor;
@@ -124,7 +124,7 @@ public class TestUniProtMappedRefCreator
 	UPMappedIdentifiersReferenceCreator upMappedKEGGRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToKEGG;
+	UniprotFileRetriever UniProtToKEGG;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToKEGGFileProcessor;
@@ -180,7 +180,7 @@ public class TestUniProtMappedRefCreator
 		return identifiers;
 	}
 
-	private void testReferenceCreation(String refDb, String species, String className, UniprotFileRetreiver retriever, UniprotFileProcessor processor, UPMappedIdentifiersReferenceCreator refCreator) throws Exception, IOException
+	private void testReferenceCreation(String refDb, String species, String className, UniprotFileRetriever retriever, UniprotFileProcessor processor, UPMappedIdentifiersReferenceCreator refCreator) throws Exception, IOException
 	{
 		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
 		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
@@ -198,7 +198,7 @@ public class TestUniProtMappedRefCreator
 		refCreator.createIdentifiers(123456, mappings, identifiers );
 	}
 	
-	private void testReferenceCreation(String refDb, String species, String className, UniprotFileRetreiver retriever, FileRetriever altRetriever, UniprotFileProcessor processor, UPMappedIdentifiersReferenceCreator refCreator) throws Exception, IOException
+	private void testReferenceCreation(String refDb, String species, String className, UniprotFileRetriever retriever, FileRetriever altRetriever, UniprotFileProcessor processor, UPMappedIdentifiersReferenceCreator refCreator) throws Exception, IOException
 	{
 		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
 		String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
