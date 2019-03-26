@@ -35,7 +35,7 @@ import org.reactome.addlinks.brenda.BRENDAReferenceDatabaseGenerator;
 import org.reactome.addlinks.brenda.BRENDASpeciesCache;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
-import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
 import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
@@ -64,7 +64,7 @@ import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
-import org.reactome.addlinks.uniprot.UniProtFileRetreiverExecutor;
+import org.reactome.addlinks.uniprot.UniProtFileRetrieverExecutor;
 
 
 public class AddLinks
@@ -81,7 +81,7 @@ public class AddLinks
 	
 	private List<String> referenceCreatorFilter;
 	
-	private Map<String, UniprotFileRetreiver> uniprotFileRetrievers;
+	private Map<String, UniprotFileRetriever> uniprotFileRetrievers;
 	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	
@@ -488,7 +488,7 @@ public class AddLinks
 		if (this.fileRetrieverFilter.contains("KEGGRetriever"))
 		{
 			logger.info("Executing KEGG retriever");
-			UniprotFileRetreiver uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
+			UniprotFileRetriever uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
 			KEGGFileRetriever keggFileRetriever = (KEGGFileRetriever) this.fileRetrievers.get("KEGGRetriever");
 			
 			// Now we need to loop through the species.
@@ -974,7 +974,7 @@ public class AddLinks
 	private void executeUniprotFileRetrievers(int numberOfUniprotDownloadThreads)
 	{
 		logger.info("Executing UniProt file retrievers");
-		UniProtFileRetreiverExecutor executor = new UniProtFileRetreiverExecutor();
+		UniProtFileRetrieverExecutor executor = new UniProtFileRetrieverExecutor();
 		executor.setFileRetrieverFilter(fileRetrieverFilter);
 		executor.setObjectCache(objectCache);
 		executor.setUniprotFileRetrievers(uniprotFileRetrievers);
@@ -997,7 +997,7 @@ public class AddLinks
 		this.fileRetrieverFilter = fileRetrieverFilter;
 	}
 
-	public void setUniprotFileRetrievers(Map<String, UniprotFileRetreiver> uniprotFileRetrievers)
+	public void setUniprotFileRetrievers(Map<String, UniprotFileRetriever> uniprotFileRetrievers)
 	{
 		this.uniprotFileRetrievers = uniprotFileRetrievers;
 	}
