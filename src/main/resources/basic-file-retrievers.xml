@@ -211,5 +211,15 @@
 			</bean>
 		</entry>
 
+		<entry key="IntEnz">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntEnz">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
+				<property name="maxAge"  ref="maxFileAge"/>
+				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
+				<property name="passiveFTP" value="false" />
+			</bean>
+		</entry>
+
 	</util:map>
 </beans>
