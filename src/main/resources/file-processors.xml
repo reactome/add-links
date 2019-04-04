@@ -311,5 +311,16 @@
 				</property>
 			</bean>
 		</entry>
+		
+		<entry key="IntEnzFileProcessor">
+			<bean id="OpenTargetsFileProcessor" class="org.reactome.addlinks.fileprocessors.IntEnzFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/IntEnzFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/IntEnz.dat"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
