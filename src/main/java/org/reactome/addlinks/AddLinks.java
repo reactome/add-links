@@ -845,7 +845,7 @@ public class AddLinks
 			logger.info("Creating ReferenceDatabase {}", key);
 			
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
-			String url = null, accessUrl = null;
+			String url = null, accessUrl = null, resourceIdentifier = null;
 			List<String> aliases = new ArrayList<String>();
 			String primaryName = null;
 			for(String attributeKey : refDB.keySet())
@@ -879,8 +879,15 @@ public class AddLinks
 					case "URL":
 						url = (String) refDB.get(attributeKey) ;
 						break;
+					case "resourceIdentifier":
+						resourceIdentifier = (String) refDB.get(attributeKey);
+						break;
 				}
-				
+				// If a resourceIdentifier was present, we will need to query identifiers.org to ensure we have the most up-to-date access URL.
+				if (resourceIdentifier != null && !"".equals(resourceIdentifier.trim()))
+				{
+					accessUrl = getUpToDateAccessURL(resourceIdentifier, accessUrl);
+				}
 			}
 			try
 			{
@@ -914,6 +921,14 @@ public class AddLinks
 			e.printStackTrace();
 			throw new Error(e);
 		}
+	}
+
+	private String getUpToDateAccessURL(String resourceIdentifier, String accessURL)
+	{
+		// Call identifiers.org web service to get the most up-to-date accessUrl, and compare with the one in the file.
+		// The WS URL is: https://identifiers.org/rest/resources/${resourceIdentifier}
+		// The response will be in JSON-format, look for the key "accessURL"
+		return null;
 	}
 
 	/**
