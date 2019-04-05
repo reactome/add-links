@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -137,66 +138,19 @@ public class AddLinks
 									: false;
 		if (filterRetrievers)
 		{
-			//fileRetrieverFilter = context.getBean("fileRetrieverFilter",List.class);
 			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases(personID);
 		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
-		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
-		Map<String, Map<String,Integer>> preAddLinksReport = xrefReporter.createReportMap();
-		logger.info("\n"+(xrefReporter.printReport(preAddLinksReport)));
-
-		logger.info("Querying for Duplicated identifiers in the database, BEFORE running AddLinks...");
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
-		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
-		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
-		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
-		logger.info("Report can be found in {}", preAddLinksDuplicateIdentifierReportFileName);
-		Files.write(Paths.get(preAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
+		Map<String, Map<String, Integer>> preAddLinksReport = this.reportsBeforeAddLinks(xrefReporter, duplicateIdentifierReporter);
 		
 		ExecutorService execSrvc = Executors.newFixedThreadPool(5);
-		
-		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
-		List<Callable<Boolean>> retrieverJobs = new ArrayList<Callable<Boolean>>();
+		List<Callable<Boolean>> retrieverJobs = createRetrieverJobs(numUniprotDownloadThreads);
 		// Execute the file retrievers.
-		retrieverJobs.add(new Callable<Boolean>()
-		{
-			@Override
-			public Boolean call() throws Exception
-			{
-				executeSimpleFileRetrievers();
-				return true;
-			}
-		});
-		// Execute the UniProt file retrievers separately.
-		retrieverJobs.add(new Callable<Boolean>()
-		{
-			
-			@Override
-			public Boolean call() throws Exception
-			{
-				executeUniprotFileRetrievers(numUniprotDownloadThreads);
-				return true;
-			}
-		});
-		
-		// Check to see if we should do any Ensembl work
-		if (fileRetrieverFilter.contains("EnsemblToALL"))
-		{
-			retrieverJobs.add(new Callable<Boolean>()
-			{
-				
-				@Override
-				public Boolean call() throws Exception
-				{	
-					executeEnsemblFileRetriever();
-					return true;
-				}
-			});
-		}
 		execSrvc.invokeAll(retrieverJobs);
 		
 		retrieverJobs = new ArrayList<Callable<Boolean>>();
@@ -257,33 +211,30 @@ public class AddLinks
 		
 		//Now we create references.
 		this.createReferences(personID, dbMappings);
-
-		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		//reporter.printReport();
-		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
-		logger.info("\n"+xrefReporter.printReport(postAddLinksReport));
-		
-		logger.info("Differences");
-		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
-		// Save the diff report to a file for future reference.uinm
-		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
-		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
-		logger.info("\n"+diffReport);
-		logger.info("(Differences report can also be found in the file: " + diffReportName);
-		
-		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
-		duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
-		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
-		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
-		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
-		logger.info("Report can be found in {}", postAddLinksDuplicateIdentifierReportFileName);
-		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), postAddLinksduplicateSB.toString().getBytes());
-		
+		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
 		logger.info("Now checking links.");
 		
+		this.checkLinks();
+		
+		// Now... we need to clean up some of the species-specific Reference Database names. Specifically, BRENDA was causing problems for some external team
+		// that was using a file which contained strings of the form "BRENDA (Species Name)". So we will change name[0] for BRENDA ReferenceDatabase objects
+		// to "BRENDA" but leave the _displayName as "BRENDA (Species Name)".
+		// This *CANNOT* be done earlier in the process as the species name in the ReferenceDatabase name is used to do lookups to get the correct species-specific
+		// ReferenceDatabase object. Another option would be to modify the data model by adding a new "species" attribute to the ReferenceDatabase type, but
+		// I'm not sure anyone else will go along with that...
+		fixBrendaRefDBNames();
+		
+		logger.info("Process complete.");
+	}
+
+	/**
+	 * Checks the links to external resources.
+	 */
+	private void checkLinks()
+	{
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
 		linkCheckManager.setDbAdaptor(dbAdapter);
@@ -337,18 +288,118 @@ public class AddLinks
 			}
 			
 		}
-		
-		// Now... we need to clean up some of the species-specific Reference Database names. Specifically, BRENDA was causing problems for some external team
-		// that was using a file which contained strings of the form "BRENDA (Species Name)". So we will change name[0] for BRENDA ReferenceDatabase objects
-		// to "BRENDA" but leave the _displayName as "BRENDA (Species Name)".
-		// This *CANNOT* be done earlier in the process as the species name in the ReferenceDatabase name is used to do lookups to get the correct species-specific
-		// ReferenceDatabase object. Another option would be to modify the data model by adding a new "species" attribute to the ReferenceDatabase type, but
-		// I'm not sure anyone else will go along with that...
-		fixBrendaRefDBNames();
-		
-		logger.info("Process complete.");
 	}
 
+	/**
+	 * Reports on counts and duplicates after running the main AddLinks process. It also reports on differences of counts for the databases.
+	 * @param xrefReporter - cross-reference reporter.
+	 * @param duplicateIdentifierReporter - duplicate reporter.
+	 * @param preAddLinksReport - The report from before the main AddLinks process was run.
+	 * @throws SQLException
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	private void reportsAfterAddLinks(CrossReferenceReporter xrefReporter, DuplicateIdentifierReporter duplicateIdentifierReporter, Map<String, Map<String, Integer>> preAddLinksReport) throws SQLException, IOException, Exception
+	{
+		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
+		//reporter.printReport();
+		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
+		logger.info("\n"+xrefReporter.printReport(postAddLinksReport));
+		
+		logger.info("Differences");
+		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
+		// Save the diff report to a file for future reference.uinm
+		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
+		logger.info("\n"+diffReport);
+		logger.info("(Differences report can also be found in the file: " + diffReportName);
+		
+		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
+		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
+		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
+		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		logger.info("Report can be found in {}", postAddLinksDuplicateIdentifierReportFileName);
+		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), postAddLinksduplicateSB.toString().getBytes());
+	}
+
+	/**
+	 * Reports on counts and duplicates before running the main AddLinks process.
+	 * @param xrefReporter - a cross-reference reporter.
+	 * @param duplicateIdentifierReporter - a duplicate reporter.
+	 * @return A mapping of databases and counts. This gets used AFTER AddLinks to determine how much changed during the process. It is 
+	 * used to create the "diff" report.
+	 * @throws SQLException
+	 * @throws Exception
+	 * @throws IOException
+	 */
+	private Map<String, Map<String, Integer>> reportsBeforeAddLinks(CrossReferenceReporter xrefReporter, DuplicateIdentifierReporter duplicateIdentifierReporter) throws SQLException, Exception, IOException
+	{
+		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
+		Map<String, Map<String,Integer>> preAddLinksReport = xrefReporter.createReportMap();
+		logger.info("\n"+(xrefReporter.printReport(preAddLinksReport)));
+		logger.info("Querying for Duplicated identifiers in the database, BEFORE running AddLinks...");
+		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
+		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
+		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		logger.info("Report can be found in {}", preAddLinksDuplicateIdentifierReportFileName);
+		Files.write(Paths.get(preAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
+		return preAddLinksReport;
+	}
+
+	/**
+	 * @param numUniprotDownloadThreads
+	 * @param retrieverJobs
+	 */
+	private List<Callable<Boolean>> createRetrieverJobs(int numUniprotDownloadThreads)
+	{
+		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
+		
+		List<Callable<Boolean>> retrieverJobs = new ArrayList<>();
+		retrieverJobs.add(new Callable<Boolean>()
+		{
+			@Override
+			public Boolean call() throws Exception
+			{
+				executeSimpleFileRetrievers();
+				return true;
+			}
+		});
+		// Execute the UniProt file retrievers separately.
+		retrieverJobs.add(new Callable<Boolean>()
+		{
+			
+			@Override
+			public Boolean call() throws Exception
+			{
+				executeUniprotFileRetrievers(numUniprotDownloadThreads);
+				return true;
+			}
+		});
+		
+		// Check to see if we should do any Ensembl work
+		if (fileRetrieverFilter.contains("EnsemblToALL"))
+		{
+			retrieverJobs.add(new Callable<Boolean>()
+			{
+				
+				@Override
+				public Boolean call() throws Exception
+				{	
+					executeEnsemblFileRetriever();
+					return true;
+				}
+			});
+		}
+		return retrieverJobs;
+	}
+
+	/**
+	 * Renames all of the BRENDA databases to simply be "BRENDA".
+	 * The names of the BRENDA ReferenceDatabases were getting into a downstream file,
+	 * and the primary consumer of that file had problems processing multiple species-specific databases,
+	 * so now they are all simply renamed to "BRENDA".
+	 * @throws Exception
+	 */
 	private void fixBrendaRefDBNames() throws Exception
 	{
 		logger.info("Fixing BRENDA reference database names.");
@@ -365,6 +416,9 @@ public class AddLinks
 		}
 	}
 	
+	/**
+	 * Finds all ReferenceDatabase objects that have no referrers, and purges them from the database.
+	 */
 	@SuppressWarnings("unchecked")
 	private void purgeUnusedRefDBs()
 	{
@@ -402,6 +456,10 @@ public class AddLinks
 		
 	}
 
+	/**
+	 * Execut ethe ENSEMBL file retriever. 
+	 * @throws Exception
+	 */
 	private void executeEnsemblFileRetriever() throws Exception
 	{
 		if (fileRetrieverFilter.contains("EnsemblToALL"))
@@ -417,6 +475,9 @@ public class AddLinks
 		}
 	}
 	
+	/**
+	 * Execute the BRENDA file retriever. It's complicated enough to warrant it's own method.
+	 */
 	private void executeBrendaFileRetriever()
 	{
 		BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
@@ -483,6 +544,9 @@ public class AddLinks
 		}
 	}
 	
+	/**
+	 * Execute the KEGG file retriever. It's complicated enough to warrant it's own method.
+	 */
 	private void executeKeggFileRetriever()
 	{
 		if (this.fileRetrieverFilter.contains("KEGGRetriever"))
@@ -638,28 +702,7 @@ public class AddLinks
 				
 				if (refCreator instanceof ENSMappedIdentifiersReferenceCreator)
 				{
-					sourceReferences = getENSEMBLIdentifiersList();
-					logger.debug("{} ENSEMBL source references", sourceReferences.size());
-					// This is for ENSP -> ENSG mappings.
-					if (refCreator.getSourceRefDB().equals(((ENSMappedIdentifiersReferenceCreator) refCreator).getTargetRefDB()))
-					{
-						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
-						{
-							logger.info("Ensembl cross-references: {}", k);
-							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
-						}
-					}
-					else
-					{
-						// For ENSEBML, there are many dbmappings
-						for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
-						{
-							logger.info("Ensembl cross-references: {}", k);
-							Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-							((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
-						}
-					}
+					createEnsemblReferences(personID, dbMappings, refCreator);
 				}
 				else
 				{
@@ -728,6 +771,42 @@ public class AddLinks
 	}
 
 	/**
+	 * Create ENSEMBL references.
+	 * @param personID - the personID to us when creating references.
+	 * @param dbMappings - dbMappings is a mapping from source identifier to target identifier.
+	 * @param refCreator - the object that will create the references.
+	 * @throws IOException
+	 */
+	private void createEnsemblReferences(long personID, Map<String, Map<String, ?>> dbMappings, BatchReferenceCreator refCreator) throws IOException
+	{
+		List<GKInstance> sourceReferences;
+		sourceReferences = getENSEMBLIdentifiersList();
+		logger.debug("{} ENSEMBL source references", sourceReferences.size());
+		// This is for ENSP -> ENSG mappings.
+		if (refCreator.getSourceRefDB().equals(((ENSMappedIdentifiersReferenceCreator) refCreator).getTargetRefDB()))
+		{
+			for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
+			{
+				logger.info("Ensembl cross-references: {}", k);
+				@SuppressWarnings("unchecked")
+				Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+				((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
+			}
+		}
+		else
+		{
+			// For ENSEBML, there are many dbmappings
+			for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
+			{
+				logger.info("Ensembl cross-references: {}", k);
+				@SuppressWarnings("unchecked")
+				Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+				((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
+			}
+		}
+	}
+
+	/**
 	 * Process ENSEMBL files. ENSEMBL files need special processing - you can't do it in a single step.
 	 * This function will actually run EnsemblFileAggregators and EnsemblFileAggregatorProcessors.
 	 * These two classes are used to produce an aggregate file containing ALL Ensembl mappings: each line will have the following identifiers:
@@ -772,7 +851,7 @@ public class AddLinks
 	/**
 	 * This function will get a list of ENSEMBL identifiers. Each GKInstance will be a ReferenceGeneProduct from an ENSEMBL_*_PROTEIN database. 
 	 * 
-	 * @return
+	 * @return A list of instances.
 	 */
 	private List<GKInstance> getENSEMBLIdentifiersList()
 	{
