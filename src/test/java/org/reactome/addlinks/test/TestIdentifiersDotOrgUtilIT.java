@@ -66,6 +66,7 @@ public class TestIdentifiersDotOrgUtilIT
 		PowerMockito.when(mockClient.execute( any(HttpGet.class) )).thenReturn(mockResponse );
 		Mockito.when(HttpClients.createDefault()).thenReturn(mockClient);
 		
+		// Now that the mocks are set up, call the method.
 		String accessURL = IdentifiersDotOrgUtil.getAccessUrlForResource("abc123");
 		assertNull(accessURL);
 	}

@@ -923,12 +923,41 @@ public class AddLinks
 		}
 	}
 
+	/**
+	 * Gets an up-to-date URL for an external database ("resource"), identified by an identifiers.org resource identifier.
+	 * If the URL from identifiers.org is different from the one that is given into this function, the URL from identifiers.org
+	 * will be returned, with the Reactome-format identifier token ("###ID###") as a replacement for the identifiers.org token ("{$id}").
+	 * @param resourceIdentifier - the resourceIdentifier.
+	 * @param accessURL - the current accessURL, from reference-databases.xml.
+	 * @return The most up-to-date accessURL for the resource, with the Reactome identifier token.
+	 */
 	private String getUpToDateAccessURL(String resourceIdentifier, String accessURL)
 	{
+		// start off by assuming that the updated URL will be the same as the URL that is given as input here (hopefully, this will usually be the case).
+		String updatedAccessURL = accessURL;
 		// Call identifiers.org web service to get the most up-to-date accessUrl, and compare with the one in the file.
 		// The WS URL is: https://identifiers.org/rest/resources/${resourceIdentifier}
 		// The response will be in JSON-format, look for the key "accessURL"
-		return null;
+		
+		String urlFromIdentifiersDotOrg = IdentifiersDotOrgUtil.getAccessUrlForResource(resourceIdentifier);
+		// If we got a URL back from identifiers.org...
+		if (urlFromIdentifiersDotOrg != null && !urlFromIdentifiersDotOrg.trim().equals(""))
+		{
+			if (!urlFromIdentifiersDotOrg.replace("{$id}", "").equals(accessURL.replace("###ID###", "")))
+			{
+				// If replacing the Identifier tokens cause the two strings to mis-match, we should
+				// use the new accessURL from identifiers.org, and log a message so someone will
+				// know to update reference-databases.xml
+				updatedAccessURL = urlFromIdentifiersDotOrg.replace("{$id}", "###ID###");
+				logger.info("The resource with resourceIdentifier={} got a new accessURL from identifiers.org: {} ; You might want to update reference-databases.xml to contain this new URL.", resourceIdentifier, updatedAccessURL);
+			}
+			// else, the URL in reference-databases.xml matches the URL from identifiers.org so just return the input URL.
+		}
+		else
+		{
+			logger.warn("No accessUrl came back from identifiers.org for the resourceIdentifier {}, so the original accessUrl will be used.", resourceIdentifier);
+		}
+		return updatedAccessURL;
 	}
 
 	/**
