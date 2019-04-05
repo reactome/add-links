@@ -53,6 +53,7 @@
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 		<entry key="CTDProcessor" value="CTDRefCreator"/>
 		<entry key="OpenTargetsFileProcessor" value="OpenTargetsReferenceCreator"/>
+		<entry key="IntEnzFileProcessor" value="IntEnzRefCreator"/>
 	</util:map>
 
 </beans>
