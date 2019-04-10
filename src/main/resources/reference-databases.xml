@@ -33,7 +33,9 @@
 				<entry key="PrimaryName" value="Brenda" />
 				<entry key="URL" value="http://www.brenda-enzymes.info/index.php4"/>
 				<entry key="AccessURL" value="http://www.brenda-enzymes.info/php/result_flat.php4?ecno=###ID###"/>
+				<!-- This might not work as we use species-specific URLs for BRENDA. -->
 				<entry key="resourceIdentifier" value="MIR:00100101"/>
+				<entry key="speciesSpecificURLs" value="true"/>
 			</map>
 		</entry>
 		
@@ -177,8 +179,11 @@
 				</entry>
 				<entry key="URL" value="http://www.genome.jp/" />
 				<entry key="AccessURL" value="http://www.genome.jp/dbget-bin/www_bget?###SP3######ID###" />
-				<!-- KEGG requires a species code in the URL - so it *might* not be possible to just get the accessURL from identifiers.org -->
-				<entry key="resourceIdentifier" value="MIR:00100303"/>
+				<!-- Can't use identifiers.org - they return http://www.kegg.jp/entry/{$id} but we need 
+				something more like http://www.genome.jp/dbget-bin/www_bget?###SP3######ID### which includes
+				a KEGG species code separate from the identifier. -->
+				<!-- <entry key="resourceIdentifier" value="MIR:00100303"/> -->
+				<entry key="speciesSpecificURLs" value="true"/>
 			</map>
 		</entry>
 		
@@ -201,8 +206,10 @@
 				<entry key="PrimaryName" value="Orphanet" />
 				<entry key="URL" value="http://www.orpha.net" />
 				<entry key="AccessURL" value="http://www.orpha.net/consor/cgi-bin/Disease_Genes.php?data_id=###ID###" />
-				<!-- Not sure this will work - the MIR for identifiers.org gives a different accessURL for a different kind of search. -->
-				<entry key="resourceIdentifier" value="MIR:00100279"/>
+				<!-- Can't use identifiers.org, the accessUrl they
+				return is http://www.orpha.net/consor/cgi-bin/OC_Exp.php?Lng=EN&Expert={$id} but we need to use
+				http://www.orpha.net/consor/cgi-bin/Disease_Genes.php?data_id={$id} -->
+				<!-- <entry key="resourceIdentifier" value="MIR:00100279"/> -->
 			</map>
 		</entry>
 		
