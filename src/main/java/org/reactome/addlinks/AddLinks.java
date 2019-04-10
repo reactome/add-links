@@ -65,6 +65,12 @@ import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreat
 
 public class AddLinks
 {
+	private static final String LINK_CHECK_REPORTS_PATH = "reports/linkCheckReports";
+
+	private static final String DUPE_REPORTS_PATH = "reports/duplicateReports";
+
+	private static final String DIFF_REPORTS_PATH = "reports/diffReports";
+
 	private static final String DATE_PATTERN_FOR_FILENAMES = "yyyy-MM-dd_HHmmss";
 
 	private static final Logger logger = LogManager.getLogger();
@@ -116,19 +122,19 @@ public class AddLinks
 			Files.createDirectory(Paths.get("reports"));
 		}
 		
-		if (!Files.exists(Paths.get("reports/diffReports")))
+		if (!Files.exists(Paths.get(DIFF_REPORTS_PATH)))
 		{
-			Files.createDirectory(Paths.get("reports/diffReports"));
+			Files.createDirectory(Paths.get(DIFF_REPORTS_PATH));
 		}
 		
-		if (!Files.exists(Paths.get("reports/duplicateReports")))
+		if (!Files.exists(Paths.get(DUPE_REPORTS_PATH)))
 		{
-			Files.createDirectory(Paths.get("reports/duplicateReports"));
+			Files.createDirectory(Paths.get(DUPE_REPORTS_PATH));
 		}
 		
-		if (!Files.exists(Paths.get("reports/linkCheckReports")))
+		if (!Files.exists(Paths.get(LINK_CHECK_REPORTS_PATH)))
 		{
-			Files.createDirectory(Paths.get("reports/linkCheckReports"));
+			Files.createDirectory(Paths.get(LINK_CHECK_REPORTS_PATH));
 		}
 		
 		// This list will be used at the very end when we are checking links but we need to
@@ -236,7 +242,7 @@ public class AddLinks
 		logger.info("Now checking links.");
 		
 		String linksReport = this.checkLinks();
-		String diffReportName = "reports/linkCheckReports/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
+		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
 		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
 		
 		// Now... we need to clean up some of the species-specific Reference Database names. Specifically, BRENDA was causing problems for some external team
@@ -336,7 +342,7 @@ public class AddLinks
 		logger.info("Differences");
 		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
 		// Save the diff report to a file for future reference.uinm
-		String diffReportName = "reports/diffReports/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		String diffReportName = DIFF_REPORTS_PATH + "/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
@@ -344,7 +350,7 @@ public class AddLinks
 		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
 		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
-		String postAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		String postAddLinksDuplicateIdentifierReportFileName = DUPE_REPORTS_PATH + "/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
 		logger.info("Report can be found in {}", postAddLinksDuplicateIdentifierReportFileName);
 		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), postAddLinksduplicateSB.toString().getBytes());
 	}
@@ -367,7 +373,7 @@ public class AddLinks
 		logger.info("Querying for Duplicated identifiers in the database, BEFORE running AddLinks...");
 		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
-		String preAddLinksDuplicateIdentifierReportFileName = "reports/duplicateReports/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		String preAddLinksDuplicateIdentifierReportFileName = DUPE_REPORTS_PATH + "/preAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
 		logger.info("Report can be found in {}", preAddLinksDuplicateIdentifierReportFileName);
 		Files.write(Paths.get(preAddLinksDuplicateIdentifierReportFileName), duplicateSB.toString().getBytes());
 		return preAddLinksReport;
