@@ -262,8 +262,7 @@ public class AddLinks
 	 */
 	private String checkLinks()
 	{
-		StringBuilder linkCheckReportLines = new StringBuilder();
-		linkCheckReportLines.append("RefDBName").append("\t").append("NumOK").append("\t").append("NumNotOK");
+		StringBuilder linkCheckReportLines = new StringBuilder("RefDBName\tNumOK\tNumNotOK\n");
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
 		linkCheckManager.setDbAdaptor(dbAdapter);
@@ -582,7 +581,7 @@ public class AddLinks
 	 * @param refCreator - the object that will create the references.
 	 * @throws IOException
 	 */
-	private void createEnsemblReferences(long personID, Map<String, Map<String, ?>> dbMappings, BatchReferenceCreator refCreator) throws IOException
+	private void createEnsemblReferences(long personID, Map<String, Map<String, ?>> dbMappings, BatchReferenceCreator<?> refCreator) throws IOException
 	{
 		List<GKInstance> sourceReferences;
 		sourceReferences = getENSEMBLIdentifiersList();
