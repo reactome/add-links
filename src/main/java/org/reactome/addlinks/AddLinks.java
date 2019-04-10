@@ -42,7 +42,7 @@ import org.reactome.addlinks.dataretrieval.executor.UniprotFileRetrieverExecutor
 import org.reactome.addlinks.db.CrossReferenceReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter.REPORT_KEYS;
-import org.reactome.addlinks.db.InstanceEditUtils;
+
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
@@ -61,6 +61,7 @@ import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
+import org.reactome.release.common.database.InstanceEditUtils;
 
 
 public class AddLinks
@@ -790,7 +791,7 @@ public class AddLinks
 		for (GKInstance refDB : refDBs)
 		{
 			String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
-			GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(personID, this.dbAdapter, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
+			GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.dbAdapter, personID, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
 			logger.info("Updating accessUrl for: {} from: {} to: {}", refDB.toString(), oldAccessURL, newAccessUrl);
 			refDB.setAttributeValue(ReactomeJavaConstants.accessUrl, newAccessUrl);
 			refDB.getAttributeValue(ReactomeJavaConstants.modified);

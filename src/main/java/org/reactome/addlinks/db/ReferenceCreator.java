@@ -234,7 +234,7 @@ public class ReferenceCreator
 
 			if (this.instanceEdit == null)
 			{
-				this.instanceEdit = InstanceEditUtils.createInstanceEdit(personID, this.dbAdapter, creatorName);
+				this.instanceEdit = org.reactome.release.common.database.InstanceEditUtils.createInstanceEdit(this.dbAdapter, personID, creatorName);
 			}
 			
 			if (this.instanceEdit != null)

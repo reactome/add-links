@@ -12,6 +12,7 @@ import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaClass;
 import org.gk.util.GKApplicationUtilities;
 
+@Deprecated
 public class InstanceEditUtils
 {
 	private static Logger logger = LogManager.getLogger();
