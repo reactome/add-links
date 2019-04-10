@@ -13,7 +13,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-
+@Deprecated
 public final class EnsemblServiceResponseProcessor
 {
 
