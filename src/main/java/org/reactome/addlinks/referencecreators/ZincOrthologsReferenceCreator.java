@@ -107,7 +107,11 @@ public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< Strin
 			}
 			catch (Exception e)
 			{
-				throw new Error(e);
+				// Only re-throw if the message is not a timeout. If the message is a timeout, keep trying other identifiers, but don't kill the whole process.
+				if (!e.getMessage().matches("Connection timed out. Number of retries (\\d+) exceeded. No further attempts will be made."))
+				{
+					throw new Error(e);
+				}
 			}
 		});
 		
