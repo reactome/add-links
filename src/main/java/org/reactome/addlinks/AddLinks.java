@@ -26,6 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
+import org.gk.schema.InvalidAttributeValueException;
 import org.reactome.addlinks.brenda.BRENDAReferenceDatabaseGenerator;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
@@ -40,6 +42,7 @@ import org.reactome.addlinks.dataretrieval.executor.UniprotFileRetrieverExecutor
 import org.reactome.addlinks.db.CrossReferenceReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter.REPORT_KEYS;
+import org.reactome.addlinks.db.InstanceEditUtils;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
@@ -98,6 +101,8 @@ public class AddLinks
 	
 	private int maxNumberLinksToCheck = 100;
 	
+	private Map<String, String> refDBsForURLUpdate = new HashMap<>();
+	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
@@ -105,6 +110,27 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	public void doAddLinks() throws Exception
 	{
+		// Create report directories.
+		if (!Files.exists(Paths.get("reports")))
+		{
+			Files.createDirectory(Paths.get("reports"));
+		}
+		
+		if (!Files.exists(Paths.get("reports/diffReports")))
+		{
+			Files.createDirectory(Paths.get("reports/diffReports"));
+		}
+		
+		if (!Files.exists(Paths.get("reports/duplicateReports")))
+		{
+			Files.createDirectory(Paths.get("reports/duplicateReports"));
+		}
+		
+		if (!Files.exists(Paths.get("reports/linkCheckReports")))
+		{
+			Files.createDirectory(Paths.get("reports/linkCheckReports"));
+		}
+		
 		// This list will be used at the very end when we are checking links but we need to
 		// seed it in the LinksToCheckCache now, because species-specific reference databases will only 
 		// be created at run-time and we can't anticipate them now. They will be added to
@@ -130,7 +156,7 @@ public class AddLinks
 									: false;
 		if (filterRetrievers)
 		{
-			logger.info("Only the specified FileRetrievers will be executed: {}",fileRetrieverFilter);
+			logger.info("Only the specified FileRetrievers will be executed: {}", this.fileRetrieverFilter);
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases(personID);
@@ -147,9 +173,9 @@ public class AddLinks
 		
 		retrieverJobs = new ArrayList<Callable<Boolean>>();
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
-		retrieverJobs.add(new KeggFileRetrieverExecutor(fileRetrievers, uniprotFileRetrievers, fileRetrieverFilter, objectCache));
+		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
-		retrieverJobs.add( new BrendaFileRetrieverExecutor(fileRetrievers, fileRetrieverFilter, objectCache));
+		retrieverJobs.add(new BrendaFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		execSrvc.invokeAll(retrieverJobs);
 		
 		logger.info("Finished downloading files.");
@@ -190,9 +216,28 @@ public class AddLinks
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
+		// Now that the unused databases have been purged, we need to update any remaining RefDBs
+		// whose accessURLs don't match the ones returned by identifiers.org.
+		for (String key : this.refDBsForURLUpdate.keySet())
+		{
+			String newAccessUrl = this.refDBsForURLUpdate.get(key);
+			try
+			{
+				// Look-up by name.
+				this.updateRefDBAccesssURL(personID, key, newAccessUrl);
+			}
+			catch (Exception e)
+			{
+				logger.error("Error! While updating ReferenceDatabase with name \"{}\", an error was encountered: {}", key, e.getMessage());
+				e.printStackTrace();
+			}
+		}
+		
 		logger.info("Now checking links.");
 		
-		this.checkLinks();
+		String linksReport = this.checkLinks();
+		String diffReportName = "reports/linkCheckReports/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
+		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
 		
 		// Now... we need to clean up some of the species-specific Reference Database names. Specifically, BRENDA was causing problems for some external team
 		// that was using a file which contained strings of the form "BRENDA (Species Name)". So we will change name[0] for BRENDA ReferenceDatabase objects
@@ -206,16 +251,20 @@ public class AddLinks
 	}
 
 	/**
-	 * Checks the links to external resources.
+	 * Checks the links to external resources. Returns a 
+	 * @return
 	 */
-	private void checkLinks()
+	private String checkLinks()
 	{
+		StringBuilder linkCheckReportLines = new StringBuilder();
+		linkCheckReportLines.append("RefDBName").append("\t").append("NumOK").append("\t").append("NumNotOK");
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
 		linkCheckManager.setDbAdaptor(dbAdapter);
 		// Filter by references database name.
 		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
 		{
+			StringBuilder reportLine = new StringBuilder();
 			int numLinkOK = 0;
 			int numLinkNotOK = 0;
 			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
@@ -229,6 +278,7 @@ public class AddLinks
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
 				{
 					logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
+					reportLine.append(refDBInst.getDisplayName()).append("\t");
 					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
 					for (String k : results.keySet())
@@ -250,6 +300,8 @@ public class AddLinks
 							numLinkOK++;
 						}
 					}
+					reportLine.append(numLinkOK).append("\t").append(numLinkNotOK);
+					linkCheckReportLines.append(reportLine.toString()).append("\n");
 					logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
 				}
 				else
@@ -261,8 +313,8 @@ public class AddLinks
 			{
 				logger.info("ReferenceDatabase with name \"{}\" will *not* be link-checked because it was not in the list.", refDBInst.getDisplayName());
 			}
-			
 		}
+		return linkCheckReportLines.toString();
 	}
 
 	/**
@@ -330,9 +382,9 @@ public class AddLinks
 		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
 		
 		List<Callable<Boolean>> retrieverJobs = new ArrayList<>();
-		retrieverJobs.add(new SimpleFileRetrieverExecutor(fileRetrievers, fileRetrieverFilter));
+		retrieverJobs.add(new SimpleFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter));
 		// Execute the UniProt file retrievers separately.
-		retrieverJobs.add(new UniprotFileRetrieverExecutor(uniprotFileRetrievers, fileRetrieverFilter, numUniprotDownloadThreads, objectCache));
+		retrieverJobs.add(new UniprotFileRetrieverExecutor(this.uniprotFileRetrievers, this.fileRetrieverFilter, numUniprotDownloadThreads, this.objectCache));
 		
 		// Check to see if we should do any Ensembl work
 		if (fileRetrieverFilter.contains("EnsemblToALL"))
@@ -624,12 +676,13 @@ public class AddLinks
 	private void executeCreateReferenceDatabases(long personID)
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter, personID);
+		
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
 			logger.info("Creating ReferenceDatabase {}", key);
-			
+			boolean speciesSpecificAccessURL = false;
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
-			String url = null, accessUrl = null, resourceIdentifier = null;
+			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;
 			List<String> aliases = new ArrayList<String>();
 			String primaryName = null;
 			for(String attributeKey : refDB.keySet())
@@ -666,12 +719,21 @@ public class AddLinks
 					case "resourceIdentifier":
 						resourceIdentifier = (String) refDB.get(attributeKey);
 						break;
+					case "speciesSpecificURLs":
+						// speciesSpecificAccessURL will only get set to TRUE if it is present AND "true" in the XML config file.
+						speciesSpecificAccessURL = Boolean.valueOf((String) refDB.get(attributeKey));
+						break;
 				}
-				// If a resourceIdentifier was present, we will need to query identifiers.org to ensure we have the most up-to-date access URL.
-				if (resourceIdentifier != null && !"".equals(resourceIdentifier.trim()))
-				{
-					accessUrl = getUpToDateAccessURL(resourceIdentifier, accessUrl);
-				}
+			}
+			// If a resourceIdentifier was present, we will need to query identifiers.org to ensure we have the most up-to-date access URL.
+			if (resourceIdentifier != null && !"".equals(resourceIdentifier.trim()))
+			{
+				newAccessUrl = getUpToDateAccessURL(resourceIdentifier, accessUrl);
+			}
+			// If this resource does not use species-specific URLs, its accessURL *could* be updated with data from identifiers.org
+			if (!speciesSpecificAccessURL && newAccessUrl != null)
+			{
+				refDBsForURLUpdate.put(primaryName, newAccessUrl);
 			}
 			try
 			{
@@ -708,6 +770,32 @@ public class AddLinks
 	}
 
 	/**
+	 * Updates the accessUrl of a ReferenceDatabase.
+	 * @param personID - the Person ID - needed for InstanceEdit.
+	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
+	 * @param newAccessUrl - the NEW accessURL.
+	 * @throws Exception
+	 * @throws InvalidAttributeException
+	 * @throws InvalidAttributeValueException
+	 */
+	private void updateRefDBAccesssURL(long personID, String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
+	{
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
+		for (GKInstance refDB : refDBs)
+		{
+			String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
+			GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(personID, this.dbAdapter, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
+			logger.info("Updating accessUrl for: {} from: {} to: {}", refDB.toString(), oldAccessURL, newAccessUrl);
+			refDB.setAttributeValue(ReactomeJavaConstants.accessUrl, newAccessUrl);
+			refDB.getAttributeValue(ReactomeJavaConstants.modified);
+			refDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
+			this.dbAdapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.accessUrl);
+			this.dbAdapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.modified);
+		}
+	}
+
+	/**
 	 * Gets an up-to-date URL for an external database ("resource"), identified by an identifiers.org resource identifier.
 	 * If the URL from identifiers.org is different from the one that is given into this function, the URL from identifiers.org
 	 * will be returned, with the Reactome-format identifier token ("###ID###") as a replacement for the identifiers.org token ("{$id}").
@@ -733,7 +821,7 @@ public class AddLinks
 				// use the new accessURL from identifiers.org, and log a message so someone will
 				// know to update reference-databases.xml
 				updatedAccessURL = urlFromIdentifiersDotOrg.replace("{$id}", "###ID###");
-				logger.info("The resource with resourceIdentifier={} got a new accessURL from identifiers.org: {} ; You might want to update reference-databases.xml to contain this new URL.", resourceIdentifier, updatedAccessURL);
+
 			}
 			// else, the URL in reference-databases.xml matches the URL from identifiers.org so just return the input URL.
 		}

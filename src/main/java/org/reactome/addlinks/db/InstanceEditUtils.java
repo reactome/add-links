@@ -12,7 +12,7 @@ import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaClass;
 import org.gk.util.GKApplicationUtilities;
 
-class InstanceEditUtils
+public class InstanceEditUtils
 {
 	private static Logger logger = LogManager.getLogger();
 	/**
@@ -22,7 +22,7 @@ class InstanceEditUtils
 	 * @param note - The text to put into the "note" field of the InstanceEdit
 	 * @return
 	 */
-	static GKInstance createInstanceEdit(long personID, MySQLAdaptor dbAdapter, String note)
+	public static GKInstance createInstanceEdit(long personID, MySQLAdaptor dbAdapter, String note)
 	{
 		GKInstance instanceEdit = null;
 		try
