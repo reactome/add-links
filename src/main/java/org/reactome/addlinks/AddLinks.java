@@ -588,14 +588,16 @@ public class AddLinks
 		sourceReferences = getENSEMBLIdentifiersList();
 		logger.debug("{} ENSEMBL source references", sourceReferences.size());
 		// This is for ENSP -> ENSG mappings.
-		if (refCreator.getSourceRefDB().equals(((ENSMappedIdentifiersReferenceCreator) refCreator).getTargetRefDB()))
+		ENSMappedIdentifiersReferenceCreator ensRefCreator = (ENSMappedIdentifiersReferenceCreator) refCreator;
+		boolean srcRefCreatorIsEnsRefCreatorTarget = refCreator.getSourceRefDB().equals((ensRefCreator).getTargetRefDB());
+		if (srcRefCreatorIsEnsRefCreatorTarget)
 		{
 			for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
 			{
 				logger.info("Ensembl cross-references: {}", k);
 				@SuppressWarnings("unchecked")
 				Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-				((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
+				ensRefCreator.createIdentifiers(personID, mappings, sourceReferences);
 			}
 		}
 		else
@@ -606,7 +608,7 @@ public class AddLinks
 				logger.info("Ensembl cross-references: {}", k);
 				@SuppressWarnings("unchecked")
 				Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-				((ENSMappedIdentifiersReferenceCreator)refCreator).createIdentifiers(personID, mappings, sourceReferences);
+				ensRefCreator.createIdentifiers(personID, mappings, sourceReferences);
 			}
 		}
 	}

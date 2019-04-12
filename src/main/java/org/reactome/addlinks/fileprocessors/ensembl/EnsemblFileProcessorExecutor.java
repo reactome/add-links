@@ -18,6 +18,8 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblAggregateFileProcesso
 
 public class EnsemblFileProcessorExecutor
 {
+	private static final String PATH_TO_DOWNLOADED_ENSEMBL_FILES = "/tmp/addlinks-downloaded-files/ensembl/";
+
 	private MySQLAdaptor dbAdapter;
 	
 	private ReferenceObjectCache objectCache;
@@ -52,14 +54,14 @@ public class EnsemblFileProcessorExecutor
 			}
 		}
 		
-		for (String speciesID : species/*objectCache.getSpeciesNamesByID().keySet()*/)
+		for (String speciesID : species)
 		{
-			List<String> dbNames = new ArrayList<String>(Arrays.asList("EntrezGene", "Wormbase")/*objectCache.getRefDbNamesToIds().keySet()*/);
-			EnsemblFileAggregator ensemblAggregator = new EnsemblFileAggregator(speciesID, dbNames, "/tmp/addlinks-downloaded-files/ensembl/");
+			List<String> dbNames = new ArrayList<String>(Arrays.asList("EntrezGene", "Wormbase"));
+			EnsemblFileAggregator ensemblAggregator = new EnsemblFileAggregator(speciesID, dbNames, PATH_TO_DOWNLOADED_ENSEMBL_FILES);
 			ensemblAggregator.createAggregateFile();
 			
 			EnsemblAggregateFileProcessor aggregateProcessor = new EnsemblAggregateFileProcessor("file-processors/EnsemblAggregateFileProcessor");
-			aggregateProcessor.setPath(Paths.get("/tmp/addlinks-downloaded-files/ensembl/"+ "ensembl_p2xref_mapping."+speciesID+".csv") );
+			aggregateProcessor.setPath(Paths.get(PATH_TO_DOWNLOADED_ENSEMBL_FILES+"ensembl_p2xref_mapping."+speciesID+".csv") );
 			aggregateProcessor.setMode(EnsemblAggregateProcessingMode.XREF);
 			Map<String, Map<String, List<String>>> xrefMapping = aggregateProcessor.getIdMappingsFromFile();
 			dbMappings.put("ENSEMBL_XREF_"+speciesID, xrefMapping);

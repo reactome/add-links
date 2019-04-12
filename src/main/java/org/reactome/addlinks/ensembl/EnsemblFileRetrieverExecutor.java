@@ -250,31 +250,6 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 		return databases;
 	}
 
-//	public void setEnsemblBatchLookup(EnsemblBatchLookup ensemblBatchLookup2)
-//	{
-//		this.ensemblBatchLookup = ensemblBatchLookup2;
-//	}
-//
-//	public void setEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
-//	{
-//		this.ensemblFileRetrievers = ensemblFileRetrievers;
-//	}
-//
-//	public void setEnsemblFileRetrieversNonCore(Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore)
-//	{
-//		this.ensemblFileRetrieversNonCore = ensemblFileRetrieversNonCore;
-//	}
-//
-//	public void setObjectCache(ReferenceObjectCache objectCache)
-//	{
-//		this.objectCache = objectCache;
-//	}
-//
-//	public void setDbAdapter(MySQLAdaptor dbAdapter)
-//	{
-//		this.dbAdapter = dbAdapter;
-//	}
-
 	@Override
 	public Boolean call() throws Exception
 	{

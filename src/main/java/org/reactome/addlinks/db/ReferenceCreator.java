@@ -17,6 +17,7 @@ import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
+import org.reactome.release.common.database.InstanceEditUtils;
 
 import com.mysql.jdbc.MysqlDataTruncation;
 
@@ -234,7 +235,7 @@ public class ReferenceCreator
 
 			if (this.instanceEdit == null)
 			{
-				this.instanceEdit = org.reactome.release.common.database.InstanceEditUtils.createInstanceEdit(this.dbAdapter, personID, creatorName);
+				this.instanceEdit = InstanceEditUtils.createInstanceEdit(this.dbAdapter, personID, creatorName);
 			}
 			
 			if (this.instanceEdit != null)
