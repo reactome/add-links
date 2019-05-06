@@ -84,11 +84,13 @@ public class IdentifiersDotOrgUtil
 			}
 			catch (IOException e)
 			{
+				logger.error(e);
 				e.printStackTrace();
 			}
 		}
 		catch (URISyntaxException e)
 		{
+			logger.error(e);
 			e.printStackTrace();
 		}
 		

@@ -45,17 +45,19 @@ public class BrendaFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 				if (BRENDASpeciesCache.getCache().contains(speciesName.trim()))
 				{
 					// A function that maps a GKInstance to its identifier (or NULL if it does not have one).
-					Function<? super GKInstance, ? extends String> mapper = instance -> {
+					Function<GKInstance, ? extends String> mapper = instance -> {
 						try
 						{
 							return (String)instance.getAttributeValue(ReactomeJavaConstants.identifier);
 						}
 						catch (InvalidAttributeException e)
 						{
+							logger.error(e);
 							e.printStackTrace();
 						}
 						catch (Exception e)
 						{
+							logger.error(e);
 							e.printStackTrace();
 						}
 						return null;

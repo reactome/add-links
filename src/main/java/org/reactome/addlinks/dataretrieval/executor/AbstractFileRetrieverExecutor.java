@@ -13,7 +13,7 @@ import org.reactome.addlinks.dataretrieval.FileRetriever;
  * @author sshorser
  *
  */
-abstract public class AbstractFileRetrieverExecutor implements Callable<Boolean>
+public abstract class AbstractFileRetrieverExecutor implements Callable<Boolean>
 {
 	protected static final Logger logger = LogManager.getLogger();
 	protected Map<String,? extends FileRetriever> fileRetrievers;

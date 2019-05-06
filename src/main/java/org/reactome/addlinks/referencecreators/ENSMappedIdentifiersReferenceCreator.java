@@ -46,7 +46,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 	 * @throws IOException - if an I/O error occurs opening the file
 	 */
 	@Override
-	public void createIdentifiers(long personID, Map<String,Map<String,List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
+	public void createIdentifiers(long personID, Map<String,Map<String,List<String>>> mappings, List<GKInstance> sourceReferences)
 	{
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);

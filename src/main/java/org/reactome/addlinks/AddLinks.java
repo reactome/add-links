@@ -118,26 +118,25 @@ public class AddLinks
 	public void doAddLinks() throws Exception
 	{
 		// Create report directories.
-		if (!Files.exists(Paths.get("reports")))
-		{
+//		if (!Files.exists(Paths.get("reports")))
+//		{
 			Files.createDirectory(Paths.get("reports"));
-		}
+//		}
 		
-		if (!Files.exists(Paths.get(DIFF_REPORTS_PATH)))
-		{
+//		if (!Files.exists(Paths.get(DIFF_REPORTS_PATH)))
+//		{
 			Files.createDirectory(Paths.get(DIFF_REPORTS_PATH));
-		}
+//		}
 		
-		if (!Files.exists(Paths.get(DUPE_REPORTS_PATH)))
-		{
+//		if (!Files.exists(Paths.get(DUPE_REPORTS_PATH)))
+//		{
 			Files.createDirectory(Paths.get(DUPE_REPORTS_PATH));
-		}
+//		}
 		
-		if (!Files.exists(Paths.get(LINK_CHECK_REPORTS_PATH)))
-		{
+//		if (!Files.exists(Paths.get(LINK_CHECK_REPORTS_PATH)))
+//		{
 			Files.createDirectory(Paths.get(LINK_CHECK_REPORTS_PATH));
-		}
-		
+//		}
 		// This list will be used at the very end when we are checking links but we need to
 		// seed it in the LinksToCheckCache now, because species-specific reference databases will only 
 		// be created at run-time and we can't anticipate them now. They will be added to
@@ -225,17 +224,17 @@ public class AddLinks
 		
 		// Now that the unused databases have been purged, we need to update any remaining RefDBs
 		// whose accessURLs don't match the ones returned by identifiers.org.
-		for (String key : this.refDBsForURLUpdate.keySet())
+		for (String refDBName : this.refDBsForURLUpdate.keySet())
 		{
-			String newAccessUrl = this.refDBsForURLUpdate.get(key);
+			String newAccessUrl = this.refDBsForURLUpdate.get(refDBName);
 			try
 			{
 				// Look-up by name.
-				this.updateRefDBAccesssURL(personID, key, newAccessUrl);
+				this.updateRefDBAccesssURL(personID, refDBName, newAccessUrl);
 			}
 			catch (Exception e)
 			{
-				logger.error("Error! While updating ReferenceDatabase with name \"{}\", an error was encountered: {}", key, e.getMessage());
+				logger.error("Error! While updating ReferenceDatabase with name \"{}\", an error was encountered: {}", refDBName, e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -342,7 +341,8 @@ public class AddLinks
 		logger.info("Differences");
 		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
 		// Save the diff report to a file for future reference.uinm
-		String diffReportName = DIFF_REPORTS_PATH + "/diffReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		String currentDateTimeString = DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now());
+		String diffReportName = DIFF_REPORTS_PATH + "/diffReport" + currentDateTimeString + ".txt";
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
@@ -350,7 +350,7 @@ public class AddLinks
 		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
 		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
-		String postAddLinksDuplicateIdentifierReportFileName = DUPE_REPORTS_PATH + "/postAddLinksDuplicatedIdentifiers_" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".txt";
+		String postAddLinksDuplicateIdentifierReportFileName = DUPE_REPORTS_PATH + "/postAddLinksDuplicatedIdentifiers_" + currentDateTimeString + ".txt";
 		logger.info("Report can be found in {}", postAddLinksDuplicateIdentifierReportFileName);
 		Files.write(Paths.get(postAddLinksDuplicateIdentifierReportFileName), postAddLinksduplicateSB.toString().getBytes());
 	}
@@ -580,36 +580,30 @@ public class AddLinks
 	 * @param personID - the personID to us when creating references.
 	 * @param dbMappings - dbMappings is a mapping from source identifier to target identifier.
 	 * @param refCreator - the object that will create the references.
-	 * @throws IOException
 	 */
-	private void createEnsemblReferences(long personID, Map<String, Map<String, ?>> dbMappings, BatchReferenceCreator<?> refCreator) throws IOException
+	private void createEnsemblReferences(long personID, Map<String, Map<String, ?>> dbMappings, BatchReferenceCreator<?> refCreator)
 	{
 		List<GKInstance> sourceReferences;
 		sourceReferences = getENSEMBLIdentifiersList();
 		logger.debug("{} ENSEMBL source references", sourceReferences.size());
 		// This is for ENSP -> ENSG mappings.
 		ENSMappedIdentifiersReferenceCreator ensRefCreator = (ENSMappedIdentifiersReferenceCreator) refCreator;
-		boolean srcRefCreatorIsEnsRefCreatorTarget = refCreator.getSourceRefDB().equals((ensRefCreator).getTargetRefDB());
+		boolean srcRefCreatorIsEnsRefCreatorTarget = refCreator.getSourceRefDB().equals(ensRefCreator.getTargetRefDB());
+		String prefix;
 		if (srcRefCreatorIsEnsRefCreatorTarget)
 		{
-			for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_ENSP_2_ENSG_")).collect(Collectors.toList()))
-			{
-				logger.info("Ensembl cross-references: {}", k);
-				@SuppressWarnings("unchecked")
-				Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-				ensRefCreator.createIdentifiers(personID, mappings, sourceReferences);
-			}
+			prefix = "ENSEMBL_ENSP_2_ENSG_";
 		}
 		else
 		{
-			// For ENSEBML, there are many dbmappings
-			for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith("ENSEMBL_XREF_")).collect(Collectors.toList()))
-			{
-				logger.info("Ensembl cross-references: {}", k);
-				@SuppressWarnings("unchecked")
-				Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
-				ensRefCreator.createIdentifiers(personID, mappings, sourceReferences);
-			}
+			prefix = "ENSEMBL_XREF_";
+		}
+		for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith(prefix)).collect(Collectors.toList()))
+		{
+			logger.info("Ensembl cross-references: {}", k);
+			@SuppressWarnings("unchecked")
+			Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+			ensRefCreator.createIdentifiers(personID, mappings, sourceReferences);
 		}
 	}
 
