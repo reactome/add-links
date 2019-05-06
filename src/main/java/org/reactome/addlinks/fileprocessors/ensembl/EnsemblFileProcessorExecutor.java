@@ -44,7 +44,7 @@ public class EnsemblFileProcessorExecutor
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> enspDatabases = this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, " LIKE ", "ENSEMBL%PROTEIN");
-		Set<String> species = new HashSet<String>();
+		Set<String> species = new HashSet<>();
 		for (GKInstance inst : enspDatabases)
 		{	
 			List<GKInstance> refGeneProds = this.objectCache.getByRefDb(inst.getDBID().toString(), "ReferenceGeneProduct");
