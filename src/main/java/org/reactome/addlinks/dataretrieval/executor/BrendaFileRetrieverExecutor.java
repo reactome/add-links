@@ -63,7 +63,8 @@ public class BrendaFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 						return null;
 					};
 					// Get the uniprot identifiers for the current species.
-					List<String> uniprotIdentifiers = objectCache.getByRefDbAndSpecies("2", speciesId, ReactomeJavaConstants.ReferenceGeneProduct).stream().map(mapper).collect(Collectors.toList());
+					String uniprotID = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
+					List<String> uniprotIdentifiers = objectCache.getByRefDbAndSpecies(uniprotID, speciesId, ReactomeJavaConstants.ReferenceGeneProduct).stream().map(mapper).collect(Collectors.toList());
 					
 					logger.info("Processing for Brenda: Species: "+speciesId+"/"+speciesName);
 					identifiers.addAll(uniprotIdentifiers);

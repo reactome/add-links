@@ -115,8 +115,9 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 							retriever.setDataURL(keggFileRetriever.getDataURL());
 							retriever.setUniprotToKEGGFiles(files);
 							retriever.setMaxAge(keggFileRetriever.getMaxAge());
+							String uniprotID = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
 							// the ".2" is for the ReferenceDatabase - in this case it is UniProt whose DB_ID is 2.
-							retriever.setFetchDestination(downloadDestination.replaceAll(".txt", "." + speciesCode + ".2.txt"));
+							retriever.setFetchDestination(downloadDestination.replaceAll(".txt", "." + speciesCode + "."+uniprotID+".txt"));
 							try
 							{
 								retriever.fetchData();
