@@ -118,25 +118,11 @@ public class AddLinks
 	public void doAddLinks() throws Exception
 	{
 		// Create report directories.
-//		if (!Files.exists(Paths.get("reports")))
-//		{
-			Files.createDirectory(Paths.get("reports"));
-//		}
-		
-//		if (!Files.exists(Paths.get(DIFF_REPORTS_PATH)))
-//		{
-			Files.createDirectory(Paths.get(DIFF_REPORTS_PATH));
-//		}
-		
-//		if (!Files.exists(Paths.get(DUPE_REPORTS_PATH)))
-//		{
-			Files.createDirectory(Paths.get(DUPE_REPORTS_PATH));
-//		}
-		
-//		if (!Files.exists(Paths.get(LINK_CHECK_REPORTS_PATH)))
-//		{
-			Files.createDirectory(Paths.get(LINK_CHECK_REPORTS_PATH));
-//		}
+		Files.createDirectories(Paths.get("reports"));
+		Files.createDirectories(Paths.get(DIFF_REPORTS_PATH));
+		Files.createDirectories(Paths.get(DUPE_REPORTS_PATH));
+		Files.createDirectories(Paths.get(LINK_CHECK_REPORTS_PATH));
+
 		// This list will be used at the very end when we are checking links but we need to
 		// seed it in the LinksToCheckCache now, because species-specific reference databases will only 
 		// be created at run-time and we can't anticipate them now. They will be added to
@@ -598,11 +584,11 @@ public class AddLinks
 		{
 			prefix = "ENSEMBL_XREF_";
 		}
-		for(String k : dbMappings.keySet().stream().filter(k -> k.startsWith(prefix)).collect(Collectors.toList()))
+		for(String ensemblXref : dbMappings.keySet().stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList()))
 		{
-			logger.info("Ensembl cross-references: {}", k);
+			logger.info("Ensembl cross-references: {}", ensemblXref);
 			@SuppressWarnings("unchecked")
-			Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(k);
+			Map<String, Map<String, List<String>>> mappings = (Map<String, Map<String, List<String>>>) dbMappings.get(ensemblXref);
 			ensRefCreator.createIdentifiers(personID, mappings, sourceReferences);
 		}
 	}
