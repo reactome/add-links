@@ -43,7 +43,6 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 	 * Creates identifiers based on the mappings found in files.
 	 * @param personID - The ID of the person ID that will be associated with the identifiers that will be created.
 	 * @param mappings - A map of maps of strings.
-	 * @throws IOException - if an I/O error occurs opening the file
 	 */
 	@Override
 	public void createIdentifiers(long personID, Map<String,Map<String,List<String>>> mappings, List<GKInstance> sourceReferences)
