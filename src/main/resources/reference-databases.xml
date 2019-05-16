@@ -163,6 +163,11 @@
 		<entry key="IntEnz">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="IntEnz"/>
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Integrated relational Enzyme database</value>
+					</list>
+				</entry>
 				<entry key="URL" value="http://www.ebi.ac.uk/intenz/" />
 				<entry key="AccessURL" value="http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&amp;ec=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100001"/>

@@ -78,7 +78,7 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_01.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_02.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="passiveFTP" value="false" />
@@ -208,6 +208,16 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/opentargets_genes_unique.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
+			</bean>
+		</entry>
+
+		<entry key="IntEnz">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntEnz">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
+				<property name="maxAge"  ref="maxFileAge"/>
+				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
+				<property name="passiveFTP" value="false" />
 			</bean>
 		</entry>
 
