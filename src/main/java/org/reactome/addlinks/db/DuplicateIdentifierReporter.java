@@ -63,10 +63,11 @@ public class DuplicateIdentifierReporter
 			"    -- This is because an identifier could be associated with many DatabaseObjects that have different _displayNames, sometimes the\n" + 
 			"    -- _displayName indiciates as version-number change in an object, but the reference identifier remains the same.\n" + 
 			"    group by subq.combined_identifier, ReferenceEntity.identifier, referenceDatabase, _class, _displayName, subq.species_db_id, subq.species_name\n" + 
-			"    having count(ReferenceEntity.db_id) > 1) as subq1\n" + 
+			"    having count(ReferenceEntity.db_id) > 1\n" +
+			"    order by ReferenceEntity.identifier desc ) as subq1\n" + 
 			"inner join ReferenceDatabase_2_name on ReferenceDatabase_2_name.DB_ID = subq1.referenceDatabase\n" + 
 			"where ReferenceDatabase_2_name.name_rank = 0\n" + 
-			"order by duplicate_count, ReferenceDatabase_2_name.name, identifier;";
+			"order by duplicate_count desc, ReferenceDatabase_2_name.name, identifier;";
 	// This is used to keep track of the maximum width of each column. This will be important when
 	// the time comes to actual *print* the report.
 	private Map<REPORT_KEYS, Integer> maxColWidths = new HashMap<>();
