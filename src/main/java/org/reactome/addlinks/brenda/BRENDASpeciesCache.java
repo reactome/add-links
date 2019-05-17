@@ -43,7 +43,7 @@ public final class BRENDASpeciesCache
 	 * @param objectCache
 	 * @param dbAdapter
 	 */
-	public static void buildCache(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter)
+	public static void buildCache(BRENDASoapClient client, String speciesURL, ReferenceObjectCache objectCache, MySQLAdaptor dbAdapter, long personID)
 	{
 		BRENDASpeciesCache.brendaSpeciesCache = new ArrayList<String>();
 		String speciesResult;
@@ -68,7 +68,7 @@ public final class BRENDASpeciesCache
 		List<String> brendaSpecies = Arrays.asList(speciesResult.split("!")).stream().map(species -> species.replace("'", "").replaceAll("\"", "").trim().toUpperCase() ).collect(Collectors.toList());
 		logger.info("{} species known to BRENDA, {} species names in cache from database", brendaSpecies.size(), objectCache.getSetOfSpeciesNames().size());
 
-		ReferenceDatabaseCreator refDBcreator = new ReferenceDatabaseCreator(dbAdapter);
+		ReferenceDatabaseCreator refDBcreator = new ReferenceDatabaseCreator(dbAdapter, personID);
 		BRENDAReferenceDatabaseGenerator.setDBCreator(refDBcreator);
 		for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sorted().collect(Collectors.toList() ) )
 		{
