@@ -24,6 +24,7 @@
 				<entry key="PrimaryName" value="BioModels" />
 				<entry key="URL" value="http://www.ebi.ac.uk/biomodels/"/>
 				<entry key="AccessURL" value="http://www.ebi.ac.uk/biomodels-main/publ-model.do?mid=###ID###"/>
+				<entry key="resourceIdentifier" value="MIR:00100006"/>
 			</map>
 		</entry>
 		
@@ -32,6 +33,9 @@
 				<entry key="PrimaryName" value="Brenda" />
 				<entry key="URL" value="http://www.brenda-enzymes.info/index.php4"/>
 				<entry key="AccessURL" value="http://www.brenda-enzymes.info/php/result_flat.php4?ecno=###ID###"/>
+				<!-- This might not work as we use species-specific URLs for BRENDA. -->
+				<entry key="resourceIdentifier" value="MIR:00100101"/>
+				<entry key="speciesSpecificURLs" value="true"/>
 			</map>
 		</entry>
 		
@@ -40,6 +44,7 @@
 				<entry key="PrimaryName" value="COSMIC (genes)"/>
 				<entry key="URL" value="http://cancer.sanger.ac.uk/cosmic"/>
 				<entry key="AccessURL" value="http://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=###ID###"/>
+				<entry key="resourceIdentifier" value="MIR:00100802"/>
 			</map>
 		</entry>
 		
@@ -48,11 +53,12 @@
 				<entry key="PrimaryName" value="CTD Gene"/>
 				<entry key="Aliases">
 					<list value-type="java.lang.String">
-						<value>Comparative Toxicogenomics Database Gene</value>
+						<value>Comparative Toxicogenomics Database (Gene)</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://ctd.mdibl.org/"/>
 				<entry key="AccessURL" value="http://ctd.mdibl.org/detail.go?type=gene&amp;db=GENE&amp;acc=###ID###"/>
+				<entry key="resourceIdentifier" value="MIR:00100131"/>
 			</map>
 		</entry>
 
@@ -66,6 +72,7 @@
 				</entry>
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/projects/SNP/"/>
 				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?locusId=###ID###"/>
+				<entry key="resourceIdentifier" value="MIR:00100206"/>
 			</map>
 		</entry>
 		
@@ -74,6 +81,7 @@
 				<entry key="PrimaryName" value="Monarch"/>
 				<entry key="URL" value="https://monarchinitiative.org/gene/" />
 				<entry key="AccessURL" value="https://monarchinitiative.org/gene/NCBIGene:###ID###" />
+				<!-- Monarch is not in identifiers.org so there is no resourceIdentifier here -->
 			</map>
 		</entry>
 		
@@ -87,6 +95,7 @@
 				</entry> -->
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/sites/entrez?db=gene" />
 				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&amp;Cmd=ShowDetailView&amp;TermToSearch=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100099"/>
 			</map>
 		</entry>
 		
@@ -100,6 +109,7 @@
 				</entry>
 				<entry key="URL" value="http://flybase.org" />
 				<entry key="AccessURL" value="http://flybase.org/reports/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100050"/>
 			</map>
 		</entry>
 		
@@ -108,6 +118,7 @@
 				<entry key="PrimaryName" value="GeneCards"/>
 				<entry key="URL" value="http://www.genecards.org" />
 				<entry key="AccessURL" value="http://www.genecards.org/cgi-bin/carddisp.pl?id=###ID###&amp;id_type=uniprot" />
+				<entry key="resourceIdentifier" value="MIR:00100407"/>
 			</map>
 		</entry>
 		
@@ -120,6 +131,9 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.geneontology.org" />
+				<!-- AddLinks doesn't create GO links so we don't need an accessURL or an identiferResource to verify the accessUrl.
+				I think this is just here for the sake of completeness. Although, I think OtherIdentifiers creates GO identifiers,
+				but they are not links so an accessURL is still not needed. -->
 			</map>
 		</entry>
 		
@@ -128,6 +142,7 @@
 				<entry key="PrimaryName" value="HapMap"/>
 				<entry key="URL" value="http://www.hapmap.org" />
 				<entry key="AccessURL" value="http://hapmap.ncbi.nlm.nih.gov/cgi-perl/gbrowse/hapmap3r2_B36/?name=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100374"/>
 			</map>
 		</entry>
 		
@@ -141,6 +156,7 @@
 				</entry>
 				<entry key="URL" value="https://www.ebi.ac.uk/intact/complex/" />
 				<entry key="AccessURL" value="https://www.ebi.ac.uk/intact/complex/details/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100875"/>
 			</map>
 		</entry>
 		
@@ -154,6 +170,7 @@
 				</entry>
 				<entry key="URL" value="http://www.ebi.ac.uk/intenz/" />
 				<entry key="AccessURL" value="http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&amp;ec=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100001"/>
 			</map>
 		</entry>
 		
@@ -167,6 +184,11 @@
 				</entry>
 				<entry key="URL" value="http://www.genome.jp/" />
 				<entry key="AccessURL" value="http://www.genome.jp/dbget-bin/www_bget?###SP3######ID###" />
+				<!-- Can't use identifiers.org - they return http://www.kegg.jp/entry/{$id} but we need 
+				something more like http://www.genome.jp/dbget-bin/www_bget?###SP3######ID### which includes
+				a KEGG species code separate from the identifier. -->
+				<!-- <entry key="resourceIdentifier" value="MIR:00100303"/> -->
+				<entry key="speciesSpecificURLs" value="true"/>
 			</map>
 		</entry>
 		
@@ -179,7 +201,8 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=OMIM" />
-				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/omim/###ID###" />
+				<entry key="AccessURL" value="https://omim.org/entry/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100024"/>
 			</map>
 		</entry>
 		
@@ -188,6 +211,10 @@
 				<entry key="PrimaryName" value="Orphanet" />
 				<entry key="URL" value="http://www.orpha.net" />
 				<entry key="AccessURL" value="http://www.orpha.net/consor/cgi-bin/Disease_Genes.php?data_id=###ID###" />
+				<!-- Can't use identifiers.org, the accessUrl they
+				return is http://www.orpha.net/consor/cgi-bin/OC_Exp.php?Lng=EN&Expert={$id} but we need to use
+				http://www.orpha.net/consor/cgi-bin/Disease_Genes.php?data_id={$id} -->
+				<!-- <entry key="resourceIdentifier" value="MIR:00100279"/> -->
 			</map>
 		</entry>
 		
@@ -201,6 +228,7 @@
 				</entry>
 				<entry key="URL" value="http://www.pdb.org" />
 				<entry key="AccessURL" value="http://pdbe.org/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100029"/>
 			</map>
 		</entry>
 		
@@ -215,6 +243,7 @@
 				</entry>
 				<entry key="URL" value="http://pir.georgetown.edu/pro" />
 				<entry key="AccessURL" value="http://purl.obolibrary.org/obo/PR_###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100184"/>
 			</map>
 		</entry>
 		
@@ -223,6 +252,7 @@
 				<entry key="PrimaryName" value="RefSeq" />
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/RefSeq/" />
 				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?val=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100067"/>
 			</map>
 		</entry>
 		
@@ -231,6 +261,7 @@
 				<entry key="PrimaryName" value="Rhea" />
 				<entry key="URL" value="http://www.rhea-db.org/" />
 				<entry key="AccessURL" value="http://www.rhea-db.org/reaction?id=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100113"/>
 			</map>
 		</entry>
 		
@@ -244,6 +275,7 @@
 				</entry>
 				<entry key="URL" value="http://www.uniprot.org" />
 				<entry key="AccessURL" value="http://www.uniprot.org/entry/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100164"/>
 			</map>
 		</entry>
 		
@@ -257,6 +289,7 @@
 				</entry>
 				<entry key="URL" value="https://genome.ucsc.edu/" />
 				<!-- The URL below assumes UniProt identifiers will be used in the URL. -->
+				<!-- identifiers.org has no entry for "UCSC" -->
 				<entry key="AccessURL" value="http://genome.ucsc.edu/cgi-bin/hgLinkIn?id=###ID###&amp;resource=uniprot"/>
 			</map>
 		</entry>
@@ -266,6 +299,8 @@
 				<entry key="PrimaryName" value="Wormbase" />
 				<entry key="URL" value="http://www.wormbase.org/" />
 				<entry key="AccessURL" value="http://www.wormbase.org/db/seq/sequence?name=###ID###;class=Gene_name" />
+				<!-- I think we want to search by Gene Name but I think identifiers.org only returns a URL to search by Wormbase ID -->
+				<entry key="resourceIdentifier" value="MIR:00100038"/>
 			</map>
 		</entry>
 		
@@ -274,6 +309,7 @@
 				<entry key="PrimaryName" value="DOCK Blaster" />
 				<entry key="URL" value="http://blaster.docking.org/" />
 				<entry key="AccessURL" value="http://blaster.docking.org/cgi-bin/parser.pl?code=###ID###" />
+				<!-- No entry in identifiers.org for DOCK Blaster! -->
 			</map>
 		</entry>
 		
@@ -290,6 +326,9 @@
 				<entry key="PrimaryName" value="ZINC" />
 				<entry key="URL" value="http://zinc15.docking.org/" />
 				<entry key="AccessURL" value="http://zinc15.docking.org/substances/###ID###" />
+				<!-- NOTE: identifiers.org ONLY has an entry for ZINC "Substances" - so we can't
+				verify all of the other URLs we use for ZINC. -->
+				<entry key="resourceIdentifier" value="MIR:00100688"/>
 			</map>
 		</entry>
 		<!--
@@ -350,16 +389,28 @@
 		<entry key="HMDB_protein">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="HMDB Protein" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>The Human Metabolome Database - Proteins</value>
+					</list>
+				</entry>
 				<entry key="URL" value="http://www.hmdb.ca/" />
 				<entry key="AccessURL" value="http://www.hmdb.ca/proteins/###ID###" />
+				<!-- NOTE: identifiers.org only has an entry for HMDB Metabolites URL -->
 			</map>
 		</entry>
 		
 		<entry key="HMDB_metabolite">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="HMDB Metabolite" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>The Human Metabolome Database</value>
+					</list>
+				</entry>
 				<entry key="URL" value="http://www.hmdb.ca/" />
 				<entry key="AccessURL" value="http://www.hmdb.ca/metabolites/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100079"/>
 			</map>
 		</entry>
 		
@@ -369,10 +420,12 @@
 				<entry key="Aliases">
 					<list value-type="java.lang.String">
 						<value>Genenames.org</value>
+						<value>HUGO Genome Nomenclature Committee</value>
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.genenames.org/" />
 				<entry key="AccessURL" value="http://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100111"/>
 			</map>
 		</entry>
 		
@@ -381,6 +434,7 @@
 				<entry key="PrimaryName" value="OpenTargets" />
 				<entry key="URL" value="https://www.targetvalidation.org/" />
 				<entry key="AccessURL" value="https://www.targetvalidation.org/target/###ID###" />
+				<!-- NOTE: No identifiers.org entry for OpenTargets or TargetValidation -->
 			</map>
 		</entry>
 	</util:map>

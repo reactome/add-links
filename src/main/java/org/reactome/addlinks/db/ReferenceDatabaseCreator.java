@@ -18,6 +18,7 @@ import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.CustomLoggable;
+import org.reactome.release.common.database.InstanceEditUtils;
 
 public class ReferenceDatabaseCreator implements CustomLoggable
 {
@@ -201,7 +202,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
 			else
 			{
-				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(personID, adapter, "Updating ReferenceDatabase object from "+this.getClass().getName());
+				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(adapter, personID, "Updating ReferenceDatabase object from "+this.getClass().getName());
 				for (GKInstance preexistingRefDB : instancesInDB)
 				{
 					@SuppressWarnings("unchecked")
@@ -247,7 +248,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	private long storeNewReferenceDatabaseObject(String url, String accessUrl, GKInstance newReferenceDB) throws InvalidAttributeException, InvalidAttributeValueException, Exception
 	{
 		long refDBID;
-		GKInstance createdInstanceEdit = InstanceEditUtils.createInstanceEdit(this.personID, this.adapter, "Added to database by "+this.getClass().getName());
+		GKInstance createdInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Added to database by "+this.getClass().getName());
 		newReferenceDB.setAttributeValue(ReactomeJavaConstants.created, createdInstanceEdit);
 		newReferenceDB.setAttributeValue(ReactomeJavaConstants.url, url);
 		newReferenceDB.setAttributeValue(ReactomeJavaConstants.accessUrl, accessUrl);

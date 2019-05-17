@@ -36,9 +36,7 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>IntEnz</value>
-		<value>KEGGRetriever</value>
-		<value>UniProtToKEGG</value>
+		<value>IntEnz</value>		
 		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
 		<value>OpenTargets</value>
@@ -49,6 +47,7 @@
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToPDB</value>
+		<value>UniProtToKEGG</value>
 		<value>UniProtToWormbase</value>
 		<value>UniProtToOMIM</value>
 		<value>DOCKBlaster</value>
@@ -58,6 +57,7 @@
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
+		<value>KEGGRetriever</value>
 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>OMIM</value>
@@ -70,8 +70,6 @@
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
 		<value>IntEnzFileProcessor</value>
-		<value>KEGGFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEnsemblFileProcessor</value>
@@ -91,6 +89,8 @@
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
+		<value>KEGGFileProcessor</value>
+		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
 		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
@@ -101,9 +101,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>IntEnzRefCreator</value>
-		<value>upMappedKEGGRefCreator</value>
-		<value>KEGGReferenceCreator</value>
+		<value>IntEnzRefCreator</value>		
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>ENSEMBLToWormbaseRefCreator</value>
@@ -132,8 +130,9 @@
 		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
 		<value>BrendaRefCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
-		<value>BrendaRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
