@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 1.1.3
+Highlights:
+ - Use identifiers.org to verify/update some of the URLs - look for "resourceIdentifier" in reference-databases.xml
+ - Retry download of Uniprot mapping files on failure.
+ - Improve performance for Zinc link-checking.
+ - Associate new ReferenceDatabase objects with an InstanceEdit.
+ - Include IntEnz as a resource for identifiers.
+ - Make use of release-common-lib (see: https://github.com/reactome/data-release-pipeline/releases/tag/release-common-lib-1.0.2) and remove redundant code.
+ - Link-checking summay report.
+ - Fix the Duplicate Identifier query.
+ - Refactoring and cleanup.
+ 
+
 ## 1.1.2
  - New downloader for COSMIC (for new download process, introduced by COSMIC)
  - Fixed: issues with duplicated ENSEMBL ReferenceDatabase objects
