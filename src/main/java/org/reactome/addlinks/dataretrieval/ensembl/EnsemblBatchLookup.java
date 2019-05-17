@@ -15,7 +15,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
-import org.reactome.addlinks.dataretrieval.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
+import org.reactome.util.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
+import org.reactome.util.ensembl.EnsemblServiceResponseProcessor;
 
 public class EnsemblBatchLookup  extends FileRetriever
 {

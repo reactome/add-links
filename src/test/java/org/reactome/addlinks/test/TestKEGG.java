@@ -20,7 +20,7 @@ import org.gk.persistence.MySQLAdaptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
-import org.reactome.addlinks.dataretrieval.UniprotFileRetreiver;
+import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.KEGGFileProcessor;
 import org.reactome.addlinks.fileprocessors.UniprotFileProcessor;
@@ -46,7 +46,7 @@ public class TestKEGG
 	UPMappedIdentifiersReferenceCreator upMappedKEGGRefCreator;
 	
 	@Autowired
-	UniprotFileRetreiver UniProtToKEGG;
+	UniprotFileRetriever UniProtToKEGG;
 	
 	@Autowired
 	UniprotFileProcessor UniprotToKEGGFileProcessor;

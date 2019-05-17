@@ -21,12 +21,14 @@ import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidClassException;
 import org.reactome.addlinks.CustomLoggable;
+import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
+import org.reactome.addlinks.dataretrieval.executor.AbstractFileRetrieverExecutor;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
 
-public class EnsemblFileRetrieverExecutor implements CustomLoggable
+public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor implements CustomLoggable
 {
 	private Logger logger;
 	
@@ -37,12 +39,18 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 
 	private MySQLAdaptor dbAdapter;
 	
-	public EnsemblFileRetrieverExecutor()
+	public EnsemblFileRetrieverExecutor(Map<String, ? extends FileRetriever> retrievers, Map<String, ? extends FileRetriever> nonCoreRetrievers, List<String> retrieverFilter, EnsemblBatchLookup batchLookup, ReferenceObjectCache cache, MySQLAdaptor adaptor)
 	{
+		super(retrievers, retrieverFilter);
 		this.logger = this.createLogger("EnsemblFileRetrieverExecutor", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
+		this.ensemblFileRetrievers = (Map<String, EnsemblFileRetriever>) retrievers;
+		this.ensemblFileRetrieversNonCore = (Map<String, EnsemblFileRetriever>) nonCoreRetrievers;
+		this.ensemblBatchLookup = batchLookup;
+		this.objectCache = cache;
+		this.dbAdapter = adaptor;
 	}
 	
-	public void execute() throws Exception
+	private void execute() throws Exception
 	{
 		// Getting cross-references from ENSEMBL requires first getting doing a batch mapping from ENSP to ENST, then batch mapping ENST to ENSG.
 		// Then, individual xref lookups on ENSG.
@@ -242,29 +250,11 @@ public class EnsemblFileRetrieverExecutor implements CustomLoggable
 		return databases;
 	}
 
-	public void setEnsemblBatchLookup(EnsemblBatchLookup ensemblBatchLookup2)
+	@Override
+	public Boolean call() throws Exception
 	{
-		this.ensemblBatchLookup = ensemblBatchLookup2;
-	}
-
-	public void setEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
-	{
-		this.ensemblFileRetrievers = ensemblFileRetrievers;
-	}
-
-	public void setEnsemblFileRetrieversNonCore(Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore)
-	{
-		this.ensemblFileRetrieversNonCore = ensemblFileRetrieversNonCore;
-	}
-
-	public void setObjectCache(ReferenceObjectCache objectCache)
-	{
-		this.objectCache = objectCache;
-	}
-
-	public void setDbAdapter(MySQLAdaptor dbAdapter)
-	{
-		this.dbAdapter = dbAdapter;
+		this.execute();
+		return true;
 	}
 
 }
