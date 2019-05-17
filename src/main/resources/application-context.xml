@@ -65,7 +65,7 @@
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
-		<value>BrendaRetriever</value>
+		<!-- <value>BrendaRetriever</value> -->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -82,7 +82,7 @@
 		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>BrendaProcessor</value>
+		<!-- <value>BrendaProcessor</value> -->
 		<value>PROFileProcessor</value>
 		<value>DockblasterFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
@@ -129,7 +129,7 @@
 		<value>zincToUniProtReferenceCreator</value>
 		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-		<value>BrendaRefCreator</value>
+		<!-- <value>BrendaRefCreator</value> -->
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
@@ -149,7 +149,7 @@
 		<value>Monarch</value>
 		<value>UniProt</value>
 		<value>Flybase</value>
-		<value>Brenda</value>
+		<!-- <value>Brenda</value> -->
 		<value>BioModels</value>
 		<value>Flybase</value>
 		<value>Gene Ontology</value>
