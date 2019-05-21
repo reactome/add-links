@@ -11,6 +11,7 @@ Highlights:
  - Link-checking summay report.
  - Fix the Duplicate Identifier query.
  - Refactoring and cleanup.
+ - Stop creating references for BRENDA and DOCKBlaster.
  
 
 ## 1.1.2
