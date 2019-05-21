@@ -50,7 +50,6 @@
 		<value>UniProtToKEGG</value>
 		<value>UniProtToWormbase</value>
 		<value>UniProtToOMIM</value>
-		<value>DOCKBlaster</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>Zinc</value>
 		<value>COSMIC</value>
@@ -82,7 +81,6 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>PROFileProcessor</value>
-		<value>DockblasterFileProcessor</value>
 		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
@@ -114,7 +112,6 @@
 		<value>upMappedOMIMRefCreator</value>
 		<value>upMappedWormbaseRefCreator</value>
 		<value>proRefCreator</value>
-		<value>dockBlasterRefCreator</value>
 		<value>COSMICReferenceCreator</value>
 		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
