@@ -126,8 +126,9 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 		}
 		
 		url = "%www.ensembl.org%";
+		dbName = "ENSEMBL_%";
 		databases = getRefDatabaseObjects(dbName, url, " NOT LIKE ");
-		logger.debug("{} databases found for non-core ENSEMBL databases.", databases.size());
+		logger.info("{} databases found for non-core ENSEMBL databases.", databases.size());
 		if (databases.size() > 0)
 		{
 			// These don't need multiple steps - rest.ensemblgenomes.org can translate them immediately.
@@ -143,7 +144,7 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 		}
 		else
 		{
-			logger.debug("Could not find a database with name = {} and url NOT LIKE {}", dbName, url);
+			logger.info("Could not find a database with name = {} and url NOT LIKE {}", dbName, url);
 		}
 	}
 
