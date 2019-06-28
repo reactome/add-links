@@ -26,7 +26,8 @@ import org.apache.logging.log4j.Logger;
 public class IdentifiersDotOrgUtil
 {
 
-	private static final String RESOURCE_IDENTIFIER_ENDPOINT = "https://identifiers.org/rest/resources/";
+	private static final String ACCESS_URL_TOKEN = "urlPattern";
+	private static final String RESOURCE_IDENTIFIER_ENDPOINT = "https://registry.api.identifiers.org/restApi/resources/search/findByMirId?mirId=";
 	private static final Logger logger = LogManager.getLogger();
 	
 	/**
@@ -69,7 +70,7 @@ public class IdentifiersDotOrgUtil
 						JsonReader reader = Json.createReader(new StringReader(responseString));
 						JsonObject responseObject = reader.readObject();
 						// Leave the {$id} in the URL and let the caller replace it.
-						accessUrl = responseObject.getString("accessURL").toString().replaceAll("\"", "");
+						accessUrl = responseObject.getString(ACCESS_URL_TOKEN).toString().replaceAll("\"", "");
 						break;
 					case HttpStatus.SC_NOT_FOUND:
 						// For a 404, we want to tell the user specifically what happened. 
