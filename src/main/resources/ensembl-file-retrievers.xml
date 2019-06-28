@@ -40,7 +40,7 @@
 			<bean id="ensemblToALL" parent="ensemblBaseXrefRetriever">
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/ensembl/ensemblNonCore_to_ALL.xml" />
 				<property name="mapToDbEnum" ref="EnsemblDB_ALL"/>
-				<property name="dataURL" value="http://rest.ensemblgenomes.org/xrefs/id/" />
+				<property name="dataURL" value="http://rest.ensembl.org/xrefs/id/" />
 				<constructor-arg name="retrieverName" value="retrievers/EnsemblNonCore"/>
 			</bean>
 		</entry>
