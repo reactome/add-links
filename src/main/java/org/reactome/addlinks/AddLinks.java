@@ -809,6 +809,7 @@ public class AddLinks
 				// use the new accessURL from identifiers.org, and log a message so someone will
 				// know to update reference-databases.xml
 				updatedAccessURL = urlFromIdentifiersDotOrg.replace("{$id}", "###ID###");
+				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org", accessURL, urlFromIdentifiersDotOrg.replace("{$id}", "###ID###"));
 
 			}
 			// else, the URL in reference-databases.xml matches the URL from identifiers.org so just return the input URL.
