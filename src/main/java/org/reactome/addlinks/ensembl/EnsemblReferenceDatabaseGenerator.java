@@ -45,6 +45,9 @@ import org.reactome.addlinks.linkchecking.LinksToCheckCache;
  */
 public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 {
+	private static final String FUNGI_URL = "fungi.ensembl.org";
+	private static final String PROTISTS_URL = "protists.ensembl.org";
+	private static final String METAZOA_URL = "metazoa.ensembl.org";
 	private static final String ENSEMBL_URL = "http://www.ensembl.org";
 	private static Logger logger; // = LogManager.getLogger();
 	private static ReferenceDatabaseCreator dbCreator;
@@ -56,14 +59,14 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	
 	static
 	{
-		nonCoreSpeciesURLs.put("drosophila_melanogaster", "metazoa.ensembl.org");
-		nonCoreSpeciesURLs.put("caenorhabditis_elegans", "metazoa.ensembl.org");
+		nonCoreSpeciesURLs.put("drosophila_melanogaster", METAZOA_URL);
+		nonCoreSpeciesURLs.put("caenorhabditis_elegans", METAZOA_URL);
 		
-		nonCoreSpeciesURLs.put("dictyostelium_discoideum", "protists.ensembl.org");
-		nonCoreSpeciesURLs.put("plasmodium_falciparum", "protists.ensembl.org");
+		nonCoreSpeciesURLs.put("dictyostelium_discoideum", PROTISTS_URL);
+		nonCoreSpeciesURLs.put("plasmodium_falciparum", PROTISTS_URL);
 		
-		nonCoreSpeciesURLs.put("schizosaccharomyces_pombe", "fungi.ensembl.org");
-		nonCoreSpeciesURLs.put("saccharomyces_cerevisiae", "fungi.ensembl.org");
+		nonCoreSpeciesURLs.put("schizosaccharomyces_pombe", FUNGI_URL);
+		nonCoreSpeciesURLs.put("saccharomyces_cerevisiae", FUNGI_URL);
 	}
 	
 	/**
