@@ -28,17 +28,16 @@
 			</map>
 		</entry>
 		
+<!-- 		
 		<entry key="Brenda">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Brenda" />
 				<entry key="URL" value="http://www.brenda-enzymes.info/index.php4"/>
 				<entry key="AccessURL" value="http://www.brenda-enzymes.info/php/result_flat.php4?ecno=###ID###"/>
-				<!-- This might not work as we use species-specific URLs for BRENDA. -->
-				<entry key="resourceIdentifier" value="MIR:00100101"/>
 				<entry key="speciesSpecificURLs" value="true"/>
 			</map>
 		</entry>
-		
+-->		
 		<entry key="COSMIC">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="PrimaryName" value="COSMIC (genes)"/>
