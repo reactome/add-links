@@ -48,7 +48,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 		
@@ -81,7 +81,7 @@
 				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_02.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
@@ -146,7 +146,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/RheaRetriever"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 		
@@ -168,7 +168,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 		
@@ -217,7 +217,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
