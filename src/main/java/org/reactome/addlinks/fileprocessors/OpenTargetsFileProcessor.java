@@ -34,10 +34,11 @@ public class OpenTargetsFileProcessor extends FileProcessor<String>
 	{
 		Map<String, String> uniprotToEnsemblForOpenTargetsMap = new HashMap<>();
 		AtomicInteger lineCount = new AtomicInteger(0);
+		Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".zip", ""));
 		try
 		{
 			this.unzipFile(this.pathToFile, true);
-			Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".zip", ""));
+			
 			Files.readAllLines(inputFile).forEach( line -> {
 				String[] parts = line.split(",");
 				lineCount.incrementAndGet();
@@ -50,20 +51,16 @@ public class OpenTargetsFileProcessor extends FileProcessor<String>
 					String ensemblID = parts[0].replaceAll("\"", "");
 					uniprotToEnsemblForOpenTargetsMap.put(hgncGeneName, ensemblID);
 				}
-				else
-				{
-					logger.warn("File from OpenTargets could not be split to exactly two parts: \"{}\"", line);
-				}
 			} );
 		}
 		catch (IOException e) // potentially thrown by Files.readAllLines 
 		{
-			logger.error("Error reading file: {}", e.getMessage());
+			logger.error("Error reading file ({}): {}", inputFile.toString(), e.getMessage());
 			e.printStackTrace();
 		}
 		catch (Exception e) // potentially thrown by this.unzipFile
 		{
-			logger.error("Error accessing/unzipping file: {}", e.getMessage());
+			logger.error("Error accessing/unzipping file({}): {}", this.pathToFile, e.getMessage());
 			e.printStackTrace();
 		}
 		logger.info("{} lines processed, {} keys added to map.", lineCount.get(), uniprotToEnsemblForOpenTargetsMap.keySet().size());
