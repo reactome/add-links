@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -40,11 +45,30 @@ import org.reactome.addlinks.linkchecking.LinksToCheckCache;
  */
 public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 {
+	private static final String FUNGI_URL = "fungi.ensembl.org";
+	private static final String PROTISTS_URL = "protists.ensembl.org";
+	private static final String METAZOA_URL = "metazoa.ensembl.org";
 	private static final String ENSEMBL_URL = "http://www.ensembl.org";
 	private static Logger logger; // = LogManager.getLogger();
 	private static ReferenceDatabaseCreator dbCreator;
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
+	
+//	private static final Set<String> nonCoreSpecies = new HashSet<>(Arrays.asList("drosophila_melanogaster", "caenorhabditis_elegans", "dictyostelium_discoideum", "schizosaccharomyces_pombe", "saccharomyces_cerevisiae", "plasmodium_falciparum"));
 
+	private static Map<String, String> nonCoreSpeciesURLs = new HashMap<>(6);
+	
+	static
+	{
+		nonCoreSpeciesURLs.put("drosophila_melanogaster", METAZOA_URL);
+		nonCoreSpeciesURLs.put("caenorhabditis_elegans", METAZOA_URL);
+		
+		nonCoreSpeciesURLs.put("dictyostelium_discoideum", PROTISTS_URL);
+		nonCoreSpeciesURLs.put("plasmodium_falciparum", PROTISTS_URL);
+		
+		nonCoreSpeciesURLs.put("schizosaccharomyces_pombe", FUNGI_URL);
+		nonCoreSpeciesURLs.put("saccharomyces_cerevisiae", FUNGI_URL);
+	}
+	
 	/**
 	 * private constructor (to prevent instantiation) in a final class: This class is really more of a utility
 	 * class - creating multiple instances of it probably wouldn't make sense. 
@@ -129,9 +153,16 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	{
 		try
 		{
+			String normalizedSpeciesName = speciesName.toLowerCase().replaceAll(" ", "_");
 			//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
 			//and only create a ReferenceDatbase object when it's discovered that one is needed.
-			String speciesURL = "http://www.ensembl.org/"+speciesName.replaceAll(" ", "_")+"/geneview?gene=###ID###&db=core";
+			String speciesURL = "http://www.ensembl.org/"+normalizedSpeciesName+"/geneview?gene=###ID###&db=core";
+			
+			// Special case: "Non-core" species use a different URL prefix than other species.
+			if (nonCoreSpeciesURLs.containsKey(normalizedSpeciesName))
+			{
+				speciesURL = speciesURL.replace("www.ensembl.org", nonCoreSpeciesURLs.get(normalizedSpeciesName));
+			}
 			
 			// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
 			String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";

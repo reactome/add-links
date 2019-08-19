@@ -48,7 +48,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 		
@@ -78,10 +78,10 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_02.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_03.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
@@ -146,7 +146,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/RheaRetriever"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 		
@@ -168,7 +168,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/HGNC"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 		
@@ -204,8 +204,8 @@
 
 		<entry key="OpenTargets">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OpenTargets">
-				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/18.10/output/summaries/opentargets_genes_unique.tsv" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/opentargets_genes_unique.tsv" />
+				<property name="dataURL" value="https://github.com/opentargets/platform/files/3427996/OT1906_target_list.csv.zip" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/OT1906_target_list.csv.zip" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
 			</bean>
@@ -217,7 +217,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
-				<property name="passiveFTP" value="false" />
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 

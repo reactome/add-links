@@ -306,7 +306,7 @@
 				<constructor-arg name="processorName" value="file-processors/OpenTargetsFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/opentargets_genes_unique.tsv"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/OT1906_target_list.csv.zip"/>
 					</bean>
 				</property>
 			</bean>
