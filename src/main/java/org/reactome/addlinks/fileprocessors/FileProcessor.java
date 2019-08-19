@@ -62,7 +62,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	
 	/**
 	 * Unzips a file.
-	 * @param p - the Path to the file to unzip.
+	 * @param pathToZipfile - the Path to the file to unzip.
 	 * @param flattenZipOutput - Flatten the output? This is only relevant for .zip files which could contain multiple files.
 	 * If this is <em>false</em>, then a new directory will be created with the same name as <code>p</code>, minus the .zip file extension,
 	 * and the contents will be unzipped into directory.
@@ -70,26 +70,26 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	 * @return The path to the directory that contains the unzipped file(s).
 	 * @throws Exception
 	 */
-	public String unzipFile(Path p, boolean flattenZipOutput) throws Exception
+	public String unzipFile(Path pathToZipfile, boolean flattenZipOutput) throws Exception
 	{
 		String fileName = null ;
-		logger.debug("Unzipping {}",p);
+		logger.debug("Unzipping {}",pathToZipfile);
 
-		String extension = p.toString().substring(p.toString().lastIndexOf(".")).toLowerCase();
-		String outFileName = p.toString().replace(extension, "");
+		String extension = pathToZipfile.toString().substring(pathToZipfile.toString().lastIndexOf(".")).toLowerCase();
+		String outFileName = pathToZipfile.toString().replace(extension, "");
 		
 		logger.debug("unzipping as {}",extension);
 		if (!extension.equals(".gz") && !(extension.equals(".zip")))
 		{
-			logger.error("The file extension {} for the file {} is not supported by this function.",extension, p.getFileName());
+			logger.error("The file extension {} for the file {} is not supported by this function.",extension, pathToZipfile.getFileName());
 			throw new Exception("Unsupported file extension was received by unzip function: " + extension);
 		}
 
 		// If the extension is .gz or .gzip, use GZIPInputStream to read the file,
 		// otherwise, use ZipInputStream.
 		try (InflaterInputStream inflaterStream = (extension.equals(".gz") || extension.equals(".gzip"))
-										? new GZIPInputStream(new FileInputStream(p.toFile()))
-										: new ZipInputStream(new FileInputStream(p.toFile()));
+										? new GZIPInputStream(new FileInputStream(pathToZipfile.toFile()))
+										: new ZipInputStream(new FileInputStream(pathToZipfile.toFile()));
 			)
 		{
 			//This Consumer will write a zip stream to a file. 
@@ -116,13 +116,10 @@ public abstract class FileProcessor<T> implements CustomLoggable
 			//If it's a ZIP file, there could be multiple files but if it's a GZIP file, there is only one file.
 			if (inflaterStream instanceof ZipInputStream)
 			{
-				String prefixToOutput = p.getParent().toAbsolutePath().toString();
+				String prefixToOutput = pathToZipfile.getParent().toAbsolutePath().toString();
 				if (!flattenZipOutput)
 				{
-					if (!Files.exists(Paths.get(outFileName)))
-					{
-						Files.createDirectory(Paths.get(outFileName));
-					}
+					Files.createDirectories(Paths.get(outFileName));
 					prefixToOutput = outFileName ;
 				}
 				ZipEntry entry;
@@ -156,12 +153,12 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	
 	/**
 	 * Unzips a file.
-	 * @param p - The path to the file.
+	 * @param pathToZipfile - The path to the file.
 	 * @return The directory where the files are unzipped.
 	 * @throws Exception
 	 */
-	public String unzipFile(Path p) throws Exception 
+	public String unzipFile(Path pathToZipfile) throws Exception 
 	{
-		return this.unzipFile(p, false);
+		return this.unzipFile(pathToZipfile, false);
 	}
 }

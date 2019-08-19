@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Processes TSV files for mapping to OpenTargets.
  * Files will be formatted like this: "${ENSEMBL ID}","${HGNC Gene Symbol}",...other stuff, including ACTUAL UniProt identifiers...
+ * Example: "ENSG00000205002","AARD","Q4LEZ3|A5PKU8",56
+ * See: https://github.com/opentargets/platform/issues/657#issuecomment-514718929 for details on this format, but the relevant quote 
+ * is: "Ensembl gene ID, UniProt accessions, HGNC approved symbol and Number of associations"
  * @author sshorser
  *
  */
