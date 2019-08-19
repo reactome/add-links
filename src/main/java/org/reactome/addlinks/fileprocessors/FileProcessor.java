@@ -60,13 +60,17 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	 */
 	public abstract Map<String, T> getIdMappingsFromFile();
 	
-		/**
+	/**
 	 * Unzips a file.
-	 * @param p - The path to the file.
-	 * @return The directory where the files are unzipped.
+	 * @param p - the Path to the file to unzip.
+	 * @param flattenZipOutput - Flatten the output? This is only relevant for .zip files which could contain multiple files.
+	 * If this is <em>false</em>, then a new directory will be created with the same name as <code>p</code>, minus the .zip file extension,
+	 * and the contents will be unzipped into directory.
+	 * If set to <em>true</em>, then the contents of <code>p</code> will be extracted into the same directory that contains <code>p</code>.
+	 * @return The path to the directory that contains the unzipped file(s).
 	 * @throws Exception
 	 */
-	public String unzipFile(Path p) throws Exception 
+	public String unzipFile(Path p, boolean flattenZipOutput) throws Exception
 	{
 		String fileName = null ;
 		logger.debug("Unzipping {}",p);
@@ -112,18 +116,24 @@ public abstract class FileProcessor<T> implements CustomLoggable
 			//If it's a ZIP file, there could be multiple files but if it's a GZIP file, there is only one file.
 			if (inflaterStream instanceof ZipInputStream)
 			{
-				if (!Files.exists(Paths.get(outFileName)))
+				String prefixToOutput = p.getParent().toAbsolutePath().toString();
+				if (!flattenZipOutput)
 				{
-					Files.createDirectory(Paths.get(outFileName));
+					if (!Files.exists(Paths.get(outFileName)))
+					{
+						Files.createDirectory(Paths.get(outFileName));
+					}
+					prefixToOutput = outFileName ;
 				}
 				ZipEntry entry;
 				int i=0;
 				while( (entry = ((ZipInputStream)inflaterStream).getNextEntry()) != null )
 				{
 					i++;
-					dataWriter.accept(inflaterStream, outFileName+"/"+entry.getName());
+					dataWriter.accept(inflaterStream, prefixToOutput+"/"+entry.getName());
 				}
-				logger.info("Extracted {} files from zip archive.",i);
+				logger.info("Extracted {} files from zip archive.", i);
+
 			}
 			else
 			{
@@ -141,5 +151,17 @@ public abstract class FileProcessor<T> implements CustomLoggable
 		logger.debug("File was unzipped to {}", outFileName);
 		//TODO: Re-write to return a list of the full paths of all unzipped files, instead of just the directory where they were unzipped to.
 		return fileName;
+	}
+	
+	
+	/**
+	 * Unzips a file.
+	 * @param p - The path to the file.
+	 * @return The directory where the files are unzipped.
+	 * @throws Exception
+	 */
+	public String unzipFile(Path p) throws Exception 
+	{
+		return this.unzipFile(p, false);
 	}
 }
