@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.1.4
+ - Use a new OpenTargets file with a new format.
+ - Fixed some ENSEMBL endpoints.
+ - Some fixes for better MIR lookups for identifiers.org
+
 ## 1.1.3
 Highlights:
  - Use identifiers.org to verify/update some of the URLs - look for "resourceIdentifier" in reference-databases.xml
