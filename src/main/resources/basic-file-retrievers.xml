@@ -39,6 +39,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PROToReferencePeptideSequence"/>
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
