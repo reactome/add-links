@@ -274,21 +274,38 @@ public class AddLinks
 					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
 					for (String k : results.keySet())
 					{
+						int statusCode = results.get(k).getStatusCode();
+						String identifier = results.get(k).getIdentifier();
+						// If the keyword is NOT found...
 						if (!results.get(k).isKeywordFound())
 						{
-							if (results.get(k).getStatusCode() == HttpStatus.SC_OK)
+							if (statusCode == HttpStatus.SC_OK)
 							{
-								logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", results.get(k).getIdentifier(), results.get(k).getURI());
+								logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", identifier, results.get(k).getURI());
 							}
 							else
 							{
-								logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", results.get(k).getIdentifier(), results.get(k).getStatusCode());
+								logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", identifier, statusCode);
 							}
 							numLinkNotOK++;
 						}
+						// This block handles where the keyword (AKA: the Identifier!!) IS found in the response body.
 						else
 						{
-							numLinkOK++;
+							// Only increment numLinkOK if the keyword is found AND the response code
+							// is 200 or 3xx (some resources will redirect to the correct page, so
+							// 3xx is still "OK enough").
+							if (statusCode == HttpStatus.SC_OK || (statusCode >= 300 && statusCode < 400 ))
+							{
+								numLinkOK++;
+							}
+							else
+							{
+								// Sometimes the keyword is in the response body, but the respone code is 404, such as "Sorry, identifier 12345 is not in the database".
+								// So we have to make sure that we increment numLinkNotOK in this case.
+								logger.warn("Link-checking error: Identifier {} was found in the respone, but a non-200 response code was returned with it: {}", identifier, statusCode);
+								numLinkNotOK++;	
+							}
 						}
 					}
 					reportLine.append(numLinkOK).append("\t").append(numLinkNotOK);
