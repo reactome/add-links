@@ -43,13 +43,22 @@ public class TestLinkCheckManagerIT
 	{
 		SchemaAttribute att = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
 		
-		String value = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
+		String refDbId = objectCache.getRefDbNamesToIds().get("NCBI dbSNP").get(0);
 		
 		@SuppressWarnings("unchecked")
-		Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", value);
+		Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", refDbId);
 		List<GKInstance> instList = new ArrayList<GKInstance>(instances);
-		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, 3) );
-		assertTrue(results.keySet().size() == 3);
+		
+//		dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceEntity, ReactomeJavaConstants.identifier, " = ", "100525522");
+		
+		GKInstance refDBInst = dbAdapter.fetchInstance(Long.parseLong(refDbId));
+		refDBInst.setAttributeValue(ReactomeJavaConstants.accessUrl, "https://www.ncbi.nlm.nih.gov/snp/###ID###");
+		final int size = 1;
+		instList = instList.subList(0, size);
+//		instList.addAll(dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceEntity, ReactomeJavaConstants.identifier, " = ", "100525522"));
+		instList.addAll(dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ","10787100") );
+		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instList , 1.0f, 20);
+		assertTrue(results.keySet().size() >= size);
 		
 		for(String k : results.keySet())
 		{
