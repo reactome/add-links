@@ -35,14 +35,12 @@ import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
 import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
-import org.reactome.addlinks.dataretrieval.executor.BrendaFileRetrieverExecutor;
 import org.reactome.addlinks.dataretrieval.executor.KeggFileRetrieverExecutor;
 import org.reactome.addlinks.dataretrieval.executor.SimpleFileRetrieverExecutor;
 import org.reactome.addlinks.dataretrieval.executor.UniprotFileRetrieverExecutor;
 import org.reactome.addlinks.db.CrossReferenceReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter.REPORT_KEYS;
-
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
@@ -167,7 +165,7 @@ public class AddLinks
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
-		retrieverJobs.add(new BrendaFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter, this.objectCache));
+//		retrieverJobs.add(new BrendaFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter, this.objectCache)); // Disabled BRENDA retriever because we're not linking out to BRENDA anymore.
 		execSrvc.invokeAll(retrieverJobs);
 		
 		logger.info("Finished downloading files.");
