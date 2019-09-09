@@ -88,6 +88,7 @@ public class TestKEGG
 		String identifiers = getIdentifiersList(refDb, species, className);
 		assertTrue(identifiers.length()>0);
 		System.out.print(identifiers);
+//		UniProtToKEGG.setMapToDb("KEGG");
 		UniProtToKEGG.setFetchDestination(UniProtToKEGG.getFetchDestination().replace(".txt","." + speciesDBID + "." + refDBID + ".txt"));
 		BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiers.getBytes()));
 		UniProtToKEGG.setDataInputStream(inStream);
@@ -98,7 +99,7 @@ public class TestKEGG
 		KEGGRetriever.setFetchDestination("/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries."+speciesDBID+".txt");
 		KEGGRetriever.setDataURL(new URI("http://rest.kegg.jp/get/"));
 		List<Path> uniprotToKEGGFiles = new ArrayList<Path>();
-		uniprotToKEGGFiles.add(Paths.get(UniProtToKEGG.getFetchDestination()));
+		uniprotToKEGGFiles.add(Paths.get(UniProtToKEGG.getFetchDestination().replace(".notMapped", "")));
 		KEGGRetriever.setUniprotToKEGGFiles(uniprotToKEGGFiles);
 		KEGGRetriever.setMaxAge(Duration.ofSeconds(1));		
 		KEGGRetriever.fetchData();

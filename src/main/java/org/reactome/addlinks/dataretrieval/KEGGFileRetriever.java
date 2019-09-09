@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.http.HttpStatus;
@@ -34,6 +35,8 @@ public class KEGGFileRetriever extends FileRetriever
 	// 4) Extract other xrefs from KEGG entry? Ask Robin. Answer: No.
 	// 5) KEGG for non-humans? ask Robin. Answer: Yes.
 	
+	private static int maxAttempts = 10;
+	private static final int sleepIncrSeconds = 10;
 	private MySQLAdaptor adapter;
 	
 	//private static final Logger logger = LogManager.getLogger();
@@ -55,6 +58,7 @@ public class KEGGFileRetriever extends FileRetriever
 	@Override
 	protected void downloadData() throws Exception
 	{
+		Random rand = new Random();
 		logger.debug("{} Uniprot-to-Kegg mapping files: {}", this.uniprotToKEGGFiles.size(), this.uniprotToKEGGFiles);
 		for (Path uniprot2kegg : this.uniprotToKEGGFiles)
 		{
@@ -98,6 +102,7 @@ public class KEGGFileRetriever extends FileRetriever
 			// Could these API requests be made in parallel?
 			for (int i = 0; i < keggIdentifiers.size(); i+=10)
 			{
+				int sleepMillis = 0;
 				String identifiersForRequest = "";
 				// KEGG only accepts 10 identifiers at a time.
 				for (int j = i; j < i+10; j++ )
@@ -108,51 +113,82 @@ public class KEGGFileRetriever extends FileRetriever
 						identifiersForRequest += (keggIdentifiers.get(j) + "+");
 					}
 				}
-				
-				URIBuilder builder = new URIBuilder();
-				// Append the list of identifiers to the URL string
-				builder.setHost(this.uri.getHost())
-						.setPath(this.uri.getPath() + identifiersForRequest)
-						.setScheme(this.uri.getScheme());
-				HttpGet get = new HttpGet(builder.build());
-				logger.trace("URI: "+get.getURI());
-				
-				try (CloseableHttpClient getClient = HttpClients.createDefault();
-						CloseableHttpResponse getResponse = getClient.execute(get);)
+				int attemptCount = 0;
+				boolean done = false;
+				while(!done && attemptCount < KEGGFileRetriever.maxAttempts)
 				{
-	
-					switch (getResponse.getStatusLine().getStatusCode())
-					{
+					URIBuilder builder = new URIBuilder();
+					// Append the list of identifiers to the URL string
+					builder.setHost(this.uri.getHost())
+							.setPath(this.uri.getPath() + identifiersForRequest)
+							.setScheme(this.uri.getScheme());
+					HttpGet get = new HttpGet(builder.build());
+					logger.trace("URI: "+get.getURI());
 					
-						case HttpStatus.SC_OK:
-							// Write the response to a file. Because we can only do 10 at a time, we need to constantly APPEND to the file.
-							// File creation should have been performed earlier, outside the loop.
-							String responseEntityString = EntityUtils.toString(getResponse.getEntity());
-							
-							Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
-							if (!Files.isReadable(path))
-							{
-								throw new Exception("The new file "+ path +" is not readable!");
-							} 
-							break;
-						case HttpStatus.SC_NOT_FOUND:
-							logger.error("\"NOT FOUND\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
-							break;
-						case HttpStatus.SC_BAD_REQUEST:
-							logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
-							break;
-						default:
-							logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), this.uri);
-							break;
-							
-							// From KEGG response: use DEFINITION as name, 
-							// For Identifier: use the KEGG name if available, otherwise use the KEGG ID.
-							// Actually, maybe ALWAYS include the "hsa:####" as an extra ReferenceEntity name.
+					try (CloseableHttpClient getClient = HttpClients.createDefault();
+							CloseableHttpResponse getResponse = getClient.execute(get);)
+					{
+						attemptCount++;
+						switch (getResponse.getStatusLine().getStatusCode())
+						{
+						
+							case HttpStatus.SC_OK:
+								// Write the response to a file. Because we can only do 10 at a time, we need to constantly APPEND to the file.
+								// File creation should have been performed earlier, outside the loop.
+								String responseEntityString = EntityUtils.toString(getResponse.getEntity());
+								
+								Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
+								if (!Files.isReadable(path))
+								{
+									throw new Exception("The new file "+ path +" is not readable!");
+								}
+								done = true;
+								break;
+							case HttpStatus.SC_NOT_FOUND:
+								logger.error("\"NOT FOUND\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
+								done = true;
+								break;
+							case HttpStatus.SC_BAD_REQUEST:
+								logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
+								done = true;
+								break;
+							case HttpStatus.SC_FORBIDDEN:
+								logger.error("\"FORBIDDEN\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
+								// If we get a FORBIDDEN response, we might have some luck if we back off and wait for a little bit.
+								if (attemptCount <= KEGGFileRetriever.maxAttempts)
+								{
+									done = false;
+									// increase the sleep amount by 10 seconds PLUS some random number of milliseconds, to ensure that if multiple requests are happening,
+									// they don't all go at the exact same moment.
+									sleepMillis += (KEGGFileRetriever.sleepIncrSeconds * 1000) + rand.nextInt(2000);
+									logger.info("Backing off for {} seconds, will try again.", sleepMillis);
+									Thread.sleep(sleepMillis);
+								}
+								else
+								{
+									// We've exhausted all attempts and still couldn't get data. Log an error telling the user they may
+									// need to retry for this particular file.
+									done = true;
+									logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
+												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}\n"
+												+ "(HINT: move/rename the aforementioned file and then re-run the download process - you can delete it "
+												+ "too but that makes it impossible to compare results, if that's something you think you might want to do).",
+												KEGGFileRetriever.maxAttempts, path);
+								}
+								break;
+							default:
+								logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), this.uri);
+								done = true;
+								break;
+								// From KEGG response: use DEFINITION as name, 
+								// For Identifier: use the KEGG name if available, otherwise use the KEGG ID.
+								// Actually, maybe ALWAYS include the "hsa:####" as an extra ReferenceEntity name.
+						}
 					}
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
 				}
 			}
 
@@ -182,5 +218,10 @@ public class KEGGFileRetriever extends FileRetriever
 	public String getFetchDestination()
 	{
 		return this.destination;
+	}
+
+	public static void setMaxAttempts(int maxAttempts)
+	{
+		KEGGFileRetriever.maxAttempts = maxAttempts;
 	}
 }
