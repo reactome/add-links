@@ -36,7 +36,7 @@ public class FileRetriever implements DataRetriever {
 	protected String destination;
 	protected Duration maxAge;
 	protected Duration timeout = Duration.ofSeconds(30);
-	private int numRetries = 1;
+	protected int numRetries = 1;
 	protected String retrieverName;
 	protected Logger logger;
 	protected boolean passiveFTP = false;
@@ -331,6 +331,11 @@ public class FileRetriever implements DataRetriever {
 	public boolean isPassiveFTP()
 	{
 		return this.passiveFTP ;
+	}
+
+	public int getNumRetries()
+	{
+		return this.numRetries;
 	}
 	
 }

@@ -37,6 +37,7 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 		{
 			logger.info("Executing KEGG retriever");
 			UniprotFileRetriever uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
+			// Get the KEGG retriever that is defined in the Spring config.
 			KEGGFileRetriever keggFileRetriever = (KEGGFileRetriever) this.fileRetrievers.get("KEGGRetriever");
 			
 			// Now we need to loop through the species.
@@ -111,6 +112,8 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 						public Boolean call() throws Exception
 						{
 							KEGGFileRetriever retriever = new KEGGFileRetriever(keggFileRetriever.getRetrieverName());
+							// Use the values set in the KEGG retriever that was defined by Spring to populate the fields of NEW KEGG retrievers!
+							retriever.setNumRetries(keggFileRetriever.getNumRetries());
 							retriever.setAdapter(keggFileRetriever.getAdapter());
 							retriever.setDataURL(keggFileRetriever.getDataURL());
 							retriever.setUniprotToKEGGFiles(files);

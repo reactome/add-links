@@ -36,8 +36,7 @@ public class KEGGFileRetriever extends FileRetriever
 	// 4) Extract other xrefs from KEGG entry? Ask Robin. Answer: No.
 	// 5) KEGG for non-humans? ask Robin. Answer: Yes.
 	
-	private static int maxAttempts = 10;
-	private static final int sleepIncrSeconds = 10;
+	private static final int sleepIncrSeconds = 5;
 	private MySQLAdaptor adapter;
 	
 	//private static final Logger logger = LogManager.getLogger();
@@ -117,7 +116,7 @@ public class KEGGFileRetriever extends FileRetriever
 				}
 				int attemptCount = 0;
 				boolean done = false;
-				while(!done && attemptCount < KEGGFileRetriever.maxAttempts)
+				while(!done)
 				{
 					URIBuilder builder = new URIBuilder();
 					// Append the list of identifiers to the URL string
@@ -157,25 +156,25 @@ public class KEGGFileRetriever extends FileRetriever
 							case HttpStatus.SC_FORBIDDEN:
 								this.logger.error("\"FORBIDDEN\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
 								// If we get a FORBIDDEN response, we might have some luck if we back off and wait for a little bit.
-								if (attemptCount <= KEGGFileRetriever.maxAttempts)
+								if (attemptCount <= this.numRetries)
 								{
 									done = false;
-									// increase the sleep amount by 10 seconds PLUS some random number of milliseconds (could be up to 2 seconds' worth),
+									// increase the sleep amount by sleepIncrSeconds PLUS some random number of milliseconds (could be *up to* 2 seconds' worth),
 									// to ensure that if multiple requests are happening, they don't all go at the exact same moment.
 									sleepMillis += ((KEGGFileRetriever.sleepIncrSeconds * 1000) + rand.nextInt(2000));
-									this.logger.info("Backing off for {} seconds, then will try again.", Duration.ofMillis(sleepMillis).toString() );
+									this.logger.info("Backing off for {} seconds after {} attempts, then will try again.", Duration.ofMillis(sleepMillis).toString(), attemptCount);
 									Thread.sleep(sleepMillis);
 								}
 								else
 								{
 									// We've exhausted all attempts and still couldn't get data. Log an error telling the user they may
 									// need to retry for this particular file.
-									done = true;
 									this.logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
-												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}\n"
+												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}  "
 												+ "(HINT: move/rename the aforementioned file and then re-run the download process - you can delete it "
 												+ "too but that makes it impossible to compare results, if that's something you think you might want to do).",
-												KEGGFileRetriever.maxAttempts, path);
+												this.numRetries, path);
+									done = true;
 								}
 								break;
 							default:
@@ -220,10 +219,5 @@ public class KEGGFileRetriever extends FileRetriever
 	public String getFetchDestination()
 	{
 		return this.destination;
-	}
-
-	public static void setMaxAttempts(int maxAttempts)
-	{
-		KEGGFileRetriever.maxAttempts = maxAttempts;
 	}
 }
