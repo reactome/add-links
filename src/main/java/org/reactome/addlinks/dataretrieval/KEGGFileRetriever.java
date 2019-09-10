@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -59,14 +60,14 @@ public class KEGGFileRetriever extends FileRetriever
 	protected void downloadData() throws Exception
 	{
 		Random rand = new Random();
-		logger.debug("{} Uniprot-to-Kegg mapping files: {}", this.uniprotToKEGGFiles.size(), this.uniprotToKEGGFiles);
+		this.logger.debug("{} Uniprot-to-Kegg mapping files: {}", this.uniprotToKEGGFiles.size(), this.uniprotToKEGGFiles);
 		for (Path uniprot2kegg : this.uniprotToKEGGFiles)
 		{
 			// UniProt-to-KEGG files should be named like this: uniprot_mapping_Uniprot_To_KEGG.48887.2.txt
 			// We need to extract the species code from the file name, and then get its name from the ReferenceObject cache.
 			String[] parts = uniprot2kegg.getFileName().toString().split("\\.");
 			String speciesCode = parts[1];
-			logger.debug("Species code: {}", speciesCode);
+			this.logger.debug("Species code: {}", speciesCode);
 			//ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter); 
 			//String speciesName = cache.getSpeciesMappings().get(speciesCode).get(0);
 			// Get the KEGG species code:
@@ -98,8 +99,9 @@ public class KEGGFileRetriever extends FileRetriever
 				throw new Error(e);
 			}
 
-			logger.debug("Total # of identifiers to lookup: {}", keggIdentifiers.size());
-			// Could these API requests be made in parallel?
+			this.logger.debug("Total # of identifiers to lookup: {}", keggIdentifiers.size());
+			// Could these API requests be made in parallel? Probably not be a good idea if we're already running multiple KEGGFileRetrievers in parallel.
+			// We seem to run into problems when we send too many simultaneous requests to KEGG.
 			for (int i = 0; i < keggIdentifiers.size(); i+=10)
 			{
 				int sleepMillis = 0;
@@ -123,7 +125,7 @@ public class KEGGFileRetriever extends FileRetriever
 							.setPath(this.uri.getPath() + identifiersForRequest)
 							.setScheme(this.uri.getScheme());
 					HttpGet get = new HttpGet(builder.build());
-					logger.trace("URI: "+get.getURI());
+					this.logger.trace("URI: "+get.getURI());
 					
 					try (CloseableHttpClient getClient = HttpClients.createDefault();
 							CloseableHttpResponse getResponse = getClient.execute(get);)
@@ -145,23 +147,23 @@ public class KEGGFileRetriever extends FileRetriever
 								done = true;
 								break;
 							case HttpStatus.SC_NOT_FOUND:
-								logger.error("\"NOT FOUND\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
+								this.logger.error("\"NOT FOUND\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
 								done = true;
 								break;
 							case HttpStatus.SC_BAD_REQUEST:
-								logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
+								this.logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
 								done = true;
 								break;
 							case HttpStatus.SC_FORBIDDEN:
-								logger.error("\"FORBIDDEN\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), this.uri);
+								this.logger.error("\"FORBIDDEN\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
 								// If we get a FORBIDDEN response, we might have some luck if we back off and wait for a little bit.
 								if (attemptCount <= KEGGFileRetriever.maxAttempts)
 								{
 									done = false;
-									// increase the sleep amount by 10 seconds PLUS some random number of milliseconds, to ensure that if multiple requests are happening,
-									// they don't all go at the exact same moment.
-									sleepMillis += (KEGGFileRetriever.sleepIncrSeconds * 1000) + rand.nextInt(2000);
-									logger.info("Backing off for {} seconds, will try again.", sleepMillis);
+									// increase the sleep amount by 10 seconds PLUS some random number of milliseconds (could be up to 2 seconds' worth),
+									// to ensure that if multiple requests are happening, they don't all go at the exact same moment.
+									sleepMillis += ((KEGGFileRetriever.sleepIncrSeconds * 1000) + rand.nextInt(2000));
+									this.logger.info("Backing off for {} seconds, then will try again.", Duration.ofMillis(sleepMillis).toString() );
 									Thread.sleep(sleepMillis);
 								}
 								else
@@ -169,7 +171,7 @@ public class KEGGFileRetriever extends FileRetriever
 									// We've exhausted all attempts and still couldn't get data. Log an error telling the user they may
 									// need to retry for this particular file.
 									done = true;
-									logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
+									this.logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
 												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}\n"
 												+ "(HINT: move/rename the aforementioned file and then re-run the download process - you can delete it "
 												+ "too but that makes it impossible to compare results, if that's something you think you might want to do).",
@@ -177,7 +179,7 @@ public class KEGGFileRetriever extends FileRetriever
 								}
 								break;
 							default:
-								logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), this.uri);
+								this.logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), get.getURI());
 								done = true;
 								break;
 								// From KEGG response: use DEFINITION as name, 
