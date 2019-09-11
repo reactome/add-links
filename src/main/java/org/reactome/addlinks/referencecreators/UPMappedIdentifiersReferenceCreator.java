@@ -75,7 +75,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				}
 				else
 				{
-					sourceRefMap.put(identifier, new ArrayList<GKInstance>( Arrays.asList( (GKInstance)sourceRef) ) );
+					sourceRefMap.put(identifier, new ArrayList<>( Arrays.asList( (GKInstance)sourceRef) ) );
 				}
 			}
 			catch (InvalidAttributeException e1)
@@ -97,11 +97,11 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			{
 				if (mappings.get(speciesID).keySet().size() > 0)
 				{
-					logger.info("Creating (up to) {} references for species {}", mappings.get(speciesID).keySet().size(), speciesID);
+					this.logger.info("Creating (up to) {} references for species {}", mappings.get(speciesID).keySet().size(), speciesID);
 				}
 				else
 				{
-					logger.info("No references to create for species {}", speciesID);
+					this.logger.info("No references to create for species {}", speciesID);
 				}
 				
 				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
@@ -128,7 +128,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 								if (sourceInstances.size() > 1)
 								{
 									//Actually, it's OK to have > 1 instances. This just means that the SOURCE ID has multiple entities that will be references, such as a ReferenceGeneProduct and a ReferenceIsoform.
-									logger.info("Fetch instance by attribute ({}.{}={})yields {} items",this.classReferringToRefName, this.referringAttributeName, sourceIdentifier,sourceInstances.size());
+									this.logger.info("Fetch instance by attribute ({}.{}={})yields {} items",this.classReferringToRefName, this.referringAttributeName, sourceIdentifier,sourceInstances.size());
 								}
 			
 								for (GKInstance inst : sourceInstances)
@@ -136,10 +136,10 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									String targetDB = this.targetRefDB;
 									if (sourceInstances.size() > 1)
 									{
-										logger.trace("\tDealing with duplicate instances (w.r.t. Identifier), instance: {} mapping to {}", inst, targetIdentifier);
+										this.logger.trace("\tDealing with duplicate instances (w.r.t. Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 									}
 									
-									logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
+									this.logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 									
 									if (this.targetRefDB.contains("UCSC"))
 									{
@@ -181,7 +181,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 							}
 							else
 							{
-								logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
+								this.logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
 								notCreatedCounter.getAndIncrement();
 							}
 						}
@@ -214,7 +214,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
 						if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 						{
-							runNCBIGeneRefCreators(personID, parts);
+							runNCBIGeneRefCreators(personID, parts, this.refObjectCache);
 						}
 					}
 					// The string did NOT have a species-part.
@@ -231,16 +231,16 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 					throw new RuntimeException(e);
 				}
 			} );
-			logger.info("{} Reference creation summary:\n"
-					+ "\t# Identifiers created: {}\n"
-					+ "\t# Identifiers which already existed: {} \n"
-					+ "\t# Identifiers that were not created: {}",
+			this.logger.info("{} Reference creation summary:\n"
+							+ "\t# Identifiers created: {}\n"
+							+ "\t# Identifiers which already existed: {} \n"
+							+ "\t# Identifiers that were not created: {}",
 					this.targetRefDB, 
 					createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 		}
 		else
 		{
-			logger.info("UniProt mapping is empty for {} to {}", sourceRefDB, targetRefDB);
+			this.logger.info("UniProt mapping is empty for {} to {}", this.sourceRefDB, this.targetRefDB);
 		}
 	}
 
@@ -263,10 +263,10 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			// Since we're not mapping to Transcript, we don't need to worry about that here.
 			targetDB = generateENSEMBLRefDBName.apply(speciesName);
 			// Ok, now let's check that that the db we want actually exists
-			if (refObjectCache.getRefDbNamesToIds().get(targetDB) == null
-				|| refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
+			if (this.refObjectCache.getRefDbNamesToIds().get(targetDB) == null
+				|| this.refObjectCache.getRefDbNamesToIds().get(targetDB).size() == 0)
 			{
-				logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
+				this.logger.error("You wanted the database with the name {} but that does not exist.", targetDB);
 				throw new RuntimeException("Requested ENSEMBL ReferenceDatabase \""+targetDB+"\" does not exists.");
 			}
 		}
@@ -276,24 +276,8 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			// Not ideal, but what else can you do here?
 			targetDB = this.targetRefDB;
 			// ...also, let's issue a warning.
-			logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", speciesID, this.targetRefDB);
+			this.logger.warn("No ENSEMBL species-specific database found for species ID: {}, so Ref DB {} will be used", speciesID, this.targetRefDB);
 		}
 		return targetDB;
-	}
-
-	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
-	{
-		for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
-		{
-			if (entrezGeneCreator instanceof CTDReferenceCreator )
-			{
-				((CTDReferenceCreator) entrezGeneCreator).setNcbiGenesInCTD(this.ctdGenes);
-				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
-			}
-			else
-			{
-				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
-			}
-		}
 	}
 }

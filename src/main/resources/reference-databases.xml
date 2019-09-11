@@ -69,8 +69,8 @@
 						<value>NCBI dbSNP</value>
 					</list>
 				</entry>
-				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/projects/SNP/"/>
-				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?locusId=###ID###"/>
+				<entry key="URL" value="https://www.ncbi.nlm.nih.gov/snp/"/>
+				<entry key="AccessURL" value="https://www.ncbi.nlm.nih.gov/snp/###ID###"/>
 				<entry key="resourceIdentifier" value="MIR:00100206"/>
 			</map>
 		</entry>

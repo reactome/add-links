@@ -463,7 +463,7 @@ public class AddLinks
 		for (String refCreatorName : this.referenceCreatorFilter)
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
-			List<GKInstance> sourceReferences = new ArrayList<GKInstance>();
+			List<GKInstance> sourceReferences = new ArrayList<>();
 			// Try to get the processor name, except for E
 			Optional<?> fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> {
 				if (this.processorCreatorLink.get(k) instanceof String)
@@ -481,10 +481,10 @@ public class AddLinks
 				}
 					
 			} ).map( m -> m ).findFirst();
-			if (referenceCreators.containsKey(refCreatorName))
+			if (this.referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")
-				BatchReferenceCreator refCreator = referenceCreators.get(refCreatorName);
+				BatchReferenceCreator refCreator = this.referenceCreators.get(refCreatorName);
 				
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
@@ -500,12 +500,12 @@ public class AddLinks
 					// Rhea reference creator is special - its source references is a simple list of all Reactions.
 					if (refCreator instanceof RHEAReferenceCreator)
 					{
-						sourceReferences = objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
+						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
 					}
 					else if (refCreator instanceof ComplexPortalReferenceCreator)
 					{
 						// The ComplexPortalReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
-						sourceReferences = new ArrayList<GKInstance>();
+						sourceReferences = new ArrayList<>();
 					}
 					else if ( refCreator instanceof COSMICReferenceCreator)
 					{
@@ -548,9 +548,9 @@ public class AddLinks
 				
 			}
 			// There is a separate list of reference creators to create UniProt references.
-			else if (uniprotReferenceCreators.containsKey(refCreatorName))
+			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
 			{
-				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(refCreatorName);
+				UPMappedIdentifiersReferenceCreator refCreator = this.uniprotReferenceCreators.get(refCreatorName);
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
 					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get("CTDProcessor") );
@@ -667,7 +667,6 @@ public class AddLinks
 		
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
-			logger.info("Creating ReferenceDatabase {}", key);
 			boolean speciesSpecificAccessURL = false;
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
 			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;
