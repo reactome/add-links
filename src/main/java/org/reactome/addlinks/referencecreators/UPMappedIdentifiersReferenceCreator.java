@@ -197,12 +197,13 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			thingsToCreate.stream().sequential().forEach( newIdentifier -> {
 				String[] newIdentifierParts = newIdentifier.split(",");
 				String identifierValue = newIdentifierParts[0];
+				String referenceToValue = newIdentifierParts[1];
+				String species = newIdentifierParts[2];
 				String targetDB = newIdentifierParts[3];
 				//logger.trace("Creating new identifier {} ", identifierValue );
 				try
 				{
-					String species = newIdentifierParts[2];
-					String referenceToValue = newIdentifierParts[1];
+					
 					// The string had a species-part.
 					if (species != null && !species.trim().equals(""))
 					{
