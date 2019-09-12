@@ -42,7 +42,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * Creates a reference database with a primary name and some (optional) aliases.
 	 * This will not create a reference database if an existing reference database has the same primaryName. 
 	 * @param url - The URL of the ReferenceDatabase.
-	 * @param accessUrl - The access URL of the RefereneDatabase.
+	 * @param accessUrl - The access URL of the RefereneDatabase (cannot be null).
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
 	 * @param aliases - Other names.
 	 * @return the DB_ID of the new ReferenceDatabase.
@@ -100,6 +100,12 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 						logger.warn("The primaryName {} appears to already be in use by {}", primaryName, refDBInst);
 						// If the ReferenceDatabase already exists, it's possible that the accessURLs don't match and will need an update, do that here...
 						
+						String accessUrlInDB = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
+						// Uh-oh! we will need to update the object in the database.
+						if (!accessUrl.equals(accessUrlInDB))
+						{
+							this.updateRefDBAccesssURL(refDBInst, accessUrl);
+						}
 						
 						dbid = refDBInst.getDBID();
 					}
@@ -255,5 +261,45 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		InstanceDisplayNameGenerator.setDisplayName(newReferenceDB);
 		refDBID = this.adapter.storeInstance(newReferenceDB);
 		return refDBID;
+	}
+	
+	/**
+	 * Updates the accessUrl of a ReferenceDatabase. There is the potential to update more than one object, if multiple ReferenceDatabases have the same primary name, 
+	 * but if they all have the same primary name, updating them all is probably desirable.
+	 * @param personID - the Person ID - needed for InstanceEdit.
+	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
+	 * @param newAccessUrl - the NEW accessURL.
+	 * @throws Exception
+	 * @throws InvalidAttributeException
+	 * @throws InvalidAttributeValueException
+	 */
+	public void updateRefDBAccesssURL(/* long personID, */String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
+	{
+		@SuppressWarnings("unchecked")
+		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
+		for (GKInstance refDB : refDBs)
+		{
+			updateRefDBAccesssURL(refDB, newAccessUrl);
+		}
+	}
+	
+	/**
+	 * Updates a SINGLE ReferenceDatabase object.
+	 * @param refDB
+	 * @param newAccessUrl
+	 * @throws Exception
+	 * @throws InvalidAttributeException
+	 * @throws InvalidAttributeValueException
+	 */
+	public void updateRefDBAccesssURL(GKInstance refDB, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
+	{
+		String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
+		GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
+		logger.info("Updating accessUrl for: {} from: {} to: {}", refDB.toString(), oldAccessURL, newAccessUrl);
+		refDB.setAttributeValue(ReactomeJavaConstants.accessUrl, newAccessUrl);
+		refDB.getAttributeValue(ReactomeJavaConstants.modified);
+		refDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
+		this.adapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.accessUrl);
+		this.adapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.modified);
 	}
 }

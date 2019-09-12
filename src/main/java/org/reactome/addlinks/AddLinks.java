@@ -211,13 +211,14 @@ public class AddLinks
 		
 		// Now that the unused databases have been purged, we need to update any remaining RefDBs
 		// whose accessURLs don't match the ones returned by identifiers.org.
+		ReferenceDatabaseCreator refDBCreator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
 		for (String refDBName : this.refDBsForURLUpdate.keySet())
 		{
 			String newAccessUrl = this.refDBsForURLUpdate.get(refDBName);
 			try
 			{
 				// Look-up by name.
-				this.updateRefDBAccesssURL(personID, refDBName, newAccessUrl);
+				refDBCreator.updateRefDBAccesssURL(refDBName, newAccessUrl);
 			}
 			catch (Exception e)
 			{
@@ -726,7 +727,7 @@ public class AddLinks
 			{
 //				this.refDBsForURLUpdate.put(primaryName, newAccessUrl);
 				
-				// Instead of deferring the update, let's just try to use it now. 
+				// Instead of deferring the update, let's just try to use it now.
 				accessUrl = newAccessUrl;
 			}
 			try
@@ -760,32 +761,6 @@ public class AddLinks
 			logger.error("Error while creating ENSEMBL species-specific ReferenceDatabase objects: {}", e.getMessage());
 			e.printStackTrace();
 			throw new Error(e);
-		}
-	}
-
-	/**
-	 * Updates the accessUrl of a ReferenceDatabase.
-	 * @param personID - the Person ID - needed for InstanceEdit.
-	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
-	 * @param newAccessUrl - the NEW accessURL.
-	 * @throws Exception
-	 * @throws InvalidAttributeException
-	 * @throws InvalidAttributeValueException
-	 */
-	private void updateRefDBAccesssURL(long personID, String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
-	{
-		@SuppressWarnings("unchecked")
-		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
-		for (GKInstance refDB : refDBs)
-		{
-			String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
-			GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.dbAdapter, personID, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
-			logger.info("Updating accessUrl for: {} from: {} to: {}", refDB.toString(), oldAccessURL, newAccessUrl);
-			refDB.setAttributeValue(ReactomeJavaConstants.accessUrl, newAccessUrl);
-			refDB.getAttributeValue(ReactomeJavaConstants.modified);
-			refDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
-			this.dbAdapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.accessUrl);
-			this.dbAdapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.modified);
 		}
 	}
 
