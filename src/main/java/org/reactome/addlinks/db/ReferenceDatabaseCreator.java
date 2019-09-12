@@ -54,20 +54,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		//First, let's check that the Reference Database doesn't already exist. all we have to go on is the name...
 		try
 		{
-			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
-			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
-//			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
-			
-			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
-//			@SuppressWarnings("unchecked")
-//			Set<GKInstance> preexistingReferenceDBs = accessUrl != null
-//															? (Set<GKInstance>) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.accessUrl, "=", accessUrl)
-//															: (Set<GKInstance>) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", primaryName);
 			// Because accessUrls could change (because of updated data from identifiers.org), we should do the lookup by NAME.
 			@SuppressWarnings("unchecked")
-			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
-															? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
-															: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+			Collection<GKInstance> preexistingReferenceDBs = this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", primaryName);
 
 			// If there is an accessUrl, filter preexistingReferenceDBs so that it only contains instances with names that match primaryName.
 			// This mostly applies to ReferenceDatabases like ENSEMBL - there are many databases, and some may have the same species-specific URL
@@ -90,7 +79,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 				// Now filter out the referenceDBs whose primaryNames don't match
 				preexistingReferenceDBs = preexistingReferenceDBs.stream().filter(nameIsPreexisting).collect(Collectors.toSet());
 			}
-			
+			SchemaClass refDBClass = this.adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			// Now that we have a bunch of things that contain primaryName, we need to find the ones where the rank of that name-attribute is 0.
 			if (preexistingReferenceDBs!=null && preexistingReferenceDBs.size() > 0)
 			{
@@ -177,8 +166,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		{
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
 			
-			List<String> namesNotYetInDB = new ArrayList<String>(names.length);
-			List<GKInstance> instancesInDB = new ArrayList<GKInstance>();
+			List<String> namesNotYetInDB = new ArrayList<>(names.length);
+			List<GKInstance> instancesInDB = new ArrayList<>();
 			for (String name : names)
 			{
 				@SuppressWarnings("unchecked")
@@ -212,7 +201,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
 			else
 			{
-				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(adapter, personID, "Updating ReferenceDatabase object from "+this.getClass().getName());
+				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Updating ReferenceDatabase object from "+this.getClass().getName());
 				for (GKInstance preexistingRefDB : instancesInDB)
 				{
 					@SuppressWarnings("unchecked")
