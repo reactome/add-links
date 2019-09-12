@@ -181,7 +181,7 @@
 	
 	<!-- Wormbase -->
 	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToWormbase">
-		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="dataURL" value="https://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_Wormbase.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
@@ -449,7 +449,7 @@
 
 	<!-- KEGG -->
 	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="UniProtToKEGG">
-		<property name="dataURL" value="http://www.uniprot.org/uploadlists/" />
+		<property name="dataURL" value="https://www.uniprot.org/uploadlists/" />
 		<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-mappings/uniprot_mapping_Uniprot_To_KEGG.txt" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="mapToDbEnum">
