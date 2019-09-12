@@ -3,6 +3,7 @@ package org.reactome.addlinks.db;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -68,7 +69,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					try
 					{
 						@SuppressWarnings("unchecked")
-						List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
+						Set<String> names = new HashSet<>(refDB.getAttributeValuesList(ReactomeJavaConstants.name));
 						return names.contains(primaryName);
 					}
 					catch (Exception e)
@@ -203,7 +204,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 				for (GKInstance preexistingRefDB : instancesInDB)
 				{
 					@SuppressWarnings("unchecked")
-					List<String> preexistingNames = (List<String>)preexistingRefDB.getAttributeValuesList(dbNameAttrib);
+					Set<String> preexistingNames = new HashSet<>(preexistingRefDB.getAttributeValuesList(dbNameAttrib));
 					// the names to add: everything that is in the input parameter "names" but not in "preexistingNames"
 					List<String> namesToAdd = (Arrays.asList(names)).stream().filter(p -> !preexistingNames.contains(p)).collect(Collectors.toList());
 					
