@@ -184,39 +184,42 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			}
 		}
 		
-		thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-			if (newIdentifier != null)
+		thingsToCreate.stream().sequential().forEach( thingToCreate -> {
+			if (thingToCreate != null)
 			{
-				String[] parts = newIdentifier.split(":");
-				this.logger.trace("Creating new identifier {} ", parts[0]);
+				String[] newIdentifierParts = thingToCreate.split(":");
+				String newIdentifier = newIdentifierParts[0];
+				this.logger.trace("Creating new identifier {} ", newIdentifier);
 				try
 				{
 					if (!this.testMode)
 					{
 						// The string had a species-part.
-						if (parts[2] != null && !parts[2].trim().equals(""))
+						String idOfReferencedObject = newIdentifierParts[1];
+						String speciesID = newIdentifierParts[2];
+						if (speciesID != null && !speciesID.trim().equals(""))
 						{
 							String targetRefDBName = this.targetRefDB;
 							// If target is ENSEMBL, we need to figure out *which* ENSEMBL target database to use.
 							if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 							{
-								String speciesName = objectCache.getSpeciesNamesByID().get(parts[2]).get(0);
+								String speciesName = objectCache.getSpeciesNamesByID().get(speciesID).get(0);
 								// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 								// Since we're not mapping to Transcript, we don't need to worry about that here.
 								targetRefDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase()
 													+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
 							}
-							this.refCreator.createIdentifier(parts[0], parts[1], targetRefDBName, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							this.refCreator.createIdentifier(newIdentifier, idOfReferencedObject, targetRefDBName, personID, this.getClass().getName(), Long.valueOf(speciesID));
 							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
 							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 							{
-								runNCBIGeneRefCreators(personID, parts, objectCache);
+								runNCBIGeneRefCreators(personID, newIdentifier, idOfReferencedObject, speciesID, objectCache);
 							}
 						}
 						// The string did NOT have a species-part.
 						else
 						{
-							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+							this.refCreator.createIdentifier(newIdentifier, idOfReferencedObject, this.targetRefDB, personID, this.getClass().getName());
 						}
 					}
 				}

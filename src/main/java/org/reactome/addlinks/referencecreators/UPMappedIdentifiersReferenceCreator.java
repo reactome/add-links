@@ -195,14 +195,14 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			}
 			// Go through the list of references that need to be created, and create them!
 			thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-				String[] parts = newIdentifier.split(",");
-				String identifierValue = parts[0];
-				String targetDB = parts[3];
+				String[] newIdentifierParts = newIdentifier.split(",");
+				String identifierValue = newIdentifierParts[0];
+				String targetDB = newIdentifierParts[3];
 				//logger.trace("Creating new identifier {} ", identifierValue );
 				try
 				{
-					String species = parts[2];
-					String referenceToValue = parts[1];
+					String species = newIdentifierParts[2];
+					String referenceToValue = newIdentifierParts[1];
 					// The string had a species-part.
 					if (species != null && !species.trim().equals(""))
 					{
@@ -214,7 +214,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						// NOTE: "EntrezGene" should really be referred to now as "NCBI Gene".
 						if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 						{
-							runNCBIGeneRefCreators(personID, parts, this.refObjectCache);
+							runNCBIGeneRefCreators(personID, identifierValue, referenceToValue, species, this.refObjectCache);
 						}
 					}
 					// The string did NOT have a species-part.

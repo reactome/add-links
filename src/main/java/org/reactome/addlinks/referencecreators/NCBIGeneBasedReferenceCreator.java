@@ -27,7 +27,16 @@ public abstract class NCBIGeneBasedReferenceCreator extends SimpleReferenceCreat
 		this.ctdGenes = mapping;
 	}
 
-	protected void runNCBIGeneRefCreators(long personID, String[] parts, ReferenceObjectCache objectCache) throws Exception
+	/**
+	 * Executes reference creators. This will run reference creators for Entrezgene based references such as CTD, dbSNP, Monarch, BioGPS
+	 * @param personID - the ID of the person creating the references.
+	 * @param identifier - the new identifier.
+	 * @param referencedObject - a string representation that this new identifier is an identifier for (can be as simple as the DB_ID of the object, or the toString representation - it's only used for logging).
+	 * @param speciesID - the species ID of the referencedObject.
+	 * @param objectCache - a ReferenceObject cache.
+	 * @throws Exception
+	 */
+	protected void runNCBIGeneRefCreators(long personID, String identifier, String referencedObject, String speciesID, ReferenceObjectCache objectCache) throws Exception
 	{
 		for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
 		{
@@ -43,7 +52,7 @@ public abstract class NCBIGeneBasedReferenceCreator extends SimpleReferenceCreat
 				((CTDReferenceCreator) entrezGeneCreator).setNcbiGenesInCTD(this.ctdGenes);
 			}
 			
-			entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
+			entrezGeneCreator.createEntrezGeneReference(identifier, referencedObject, speciesID, personID);
 		}
 	}
 }
