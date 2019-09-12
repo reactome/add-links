@@ -31,7 +31,7 @@
 			<constructor-arg index="6" name="refCreatorName" value="refCreators/CTDRefCreator"/>
 			<property name="testMode" value="false"/>
 		</bean>
-		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="dbSNPRefCreator">
+		<bean class="org.reactome.addlinks.referencecreators.DbSNPReferenceCreator" id="dbSNPRefCreator">
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 			<constructor-arg index="1" name="classToCreate" ref="ReferenceDNASequenceBean"/>
 			<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>

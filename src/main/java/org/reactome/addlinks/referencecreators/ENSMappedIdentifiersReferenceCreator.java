@@ -1,6 +1,5 @@
 package org.reactome.addlinks.referencecreators;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,8 +18,6 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 
 public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //extends SimpleReferenceCreator<Map<String,List<String>>>
 {
-	private List<EntrezGeneBasedReferenceCreator> entrezGeneReferenceCreators;
-	
 	private static ReferenceObjectCache objectCache;
 	
 	public ENSMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
@@ -56,15 +53,15 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			objectCache = new ReferenceObjectCache(this.adapter, true);
 		}
 		
-		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
+		List<String> identifiersToCreate = Collections.synchronizedList(new ArrayList<String>());
 		Map<Long,MySQLAdaptor> adapterPool = Collections.synchronizedMap( new HashMap<Long,MySQLAdaptor>() );
 
 		// Loop for each database
 		mappings.keySet().stream().sequential().forEach( dbName -> {
-			logger.debug("DB: {}", dbName);
+			this.logger.debug("DB: {}", dbName);
 			// Loop for all ENS identifiers under the named DB.
 			Set<String> ensemblIdentifiers = mappings.get(dbName).keySet();
-			logger.debug("{} identifiers to map.", ensemblIdentifiers.size());
+			this.logger.debug("{} identifiers to map.", ensemblIdentifiers.size());
 			ensemblIdentifiers.stream().parallel().forEach( ensemblIdentifier -> {
 				String sourceIdentifier = ensemblIdentifier;
 				List<String> targetIdentifiers = mappings.get(dbName).get(ensemblIdentifier);
@@ -80,7 +77,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 					}
 					else
 					{
-						logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
+						this.logger.debug("Creating new SQL Adaptor for thread {}", Thread.currentThread().getId());
 						localAdapter = new MySQLAdaptor(this.adapter.getDBHost(), this.adapter.getDBName(), this.adapter.getDBUser(),this.adapter.getDBPwd(), this.adapter.getDBPort());
 						adapterPool.put(threadID, localAdapter);
 					}
@@ -102,7 +99,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 						if (sourceInstances.size() > 1)
 						{
 							//Actually, it's OK to have > 1 instances. This just means that the SOURCE ID has multiple entities that will be references, such as a ReferenceGeneProduct and a ReferenceIsoform.
-							logger.info("Got {} elements when fetching instances by attribute value: {}.{} {} \"{}\"",sourceInstances.size(),this.classReferringToRefName, this.referringAttributeName, "=", sourceIdentifier);
+							this.logger.info("Got {} elements when fetching instances by attribute value: {}.{} {} \"{}\"",sourceInstances.size(),this.classReferringToRefName, this.referringAttributeName, "=", sourceIdentifier);
 						}
 						
 						for (GKInstance inst : sourceInstances)
@@ -111,7 +108,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 							{
 								if (sourceInstances.size() > 1)
 								{
-									logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
+									this.logger.debug("\tDealing with duplicated instances (in terms of Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 								}
 								
 								// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
@@ -128,7 +125,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 										speciesID = new Long(speciesInst.getDBID());
 									}
 								}
-								logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
+								this.logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
 								// check and make sure the cross refernces don't already exist.
 								@SuppressWarnings("unchecked")
 								List<GKInstance> xrefs = (List<GKInstance>) inst.getAttributeValuesList(referringAttributeName);
@@ -139,7 +136,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 									String xrefIdentifier = xref.getAttributeValue(ReactomeJavaConstants.identifier) != null
 															? xref.getAttributeValue(ReactomeJavaConstants.identifier).toString()
 															: null;
-									logger.trace("\tcross-reference: {}",xrefIdentifier);
+									this.logger.trace("\tcross-reference: {}",xrefIdentifier);
 									// We won't add a cross-reference if it already exists
 									if (targetIdentifier.equals(xrefIdentifier))
 									{
@@ -152,9 +149,9 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 									}
 								}
 								String thingToCreate = targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID;
-								if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
+								if (!xrefAlreadyExists && !identifiersToCreate.contains(thingToCreate))
 								{
-									thingsToCreate.add(thingToCreate);
+									identifiersToCreate.add(thingToCreate);
 									createdCounter.getAndIncrement();
 								}
 							}
@@ -162,7 +159,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 					}
 					else
 					{
-						logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
+						this.logger.error("Somehow, there is a mapping file with identifier {} that was originally found in the database, but no longer seems to be there! You might want to investigate this...", sourceIdentifier);
 						notCreatedCounter.getAndIncrement();
 					}
 				}
@@ -182,44 +179,47 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			} 
 			catch (Exception e)
 			{
-				logger.error("Could not clean up the database adapter: {}",e.getMessage());
+				this.logger.error("Could not clean up the database adapter: {}",e.getMessage());
 				throw new Error(e);
 			}
 		}
 		
-		thingsToCreate.stream().sequential().forEach( newIdentifier -> {
-			if (newIdentifier != null)
+		identifiersToCreate.stream().sequential().forEach( identifierToCreate -> {
+			if (identifierToCreate != null)
 			{
-				String[] parts = newIdentifier.split(":");
-				logger.trace("Creating new identifier {} ", parts[0]);
+				String[] newIdentifierParts = identifierToCreate.split(":");
+				String newIdentifier = newIdentifierParts[0];
+				this.logger.trace("Creating new identifier {} ", newIdentifier);
 				try
 				{
 					if (!this.testMode)
 					{
 						// The string had a species-part.
-						if (parts[2] != null && !parts[2].trim().equals(""))
+						String idOfReferencedObject = newIdentifierParts[1];
+						String speciesID = newIdentifierParts[2];
+						if (speciesID != null && !speciesID.trim().equals(""))
 						{
 							String targetRefDBName = this.targetRefDB;
 							// If target is ENSEMBL, we need to figure out *which* ENSEMBL target database to use.
 							if (this.targetRefDB.toUpperCase().contains("ENSEMBL"))
 							{
-								String speciesName = objectCache.getSpeciesNamesByID().get(parts[2]).get(0);
+								String speciesName = objectCache.getSpeciesNamesByID().get(speciesID).get(0);
 								// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 								// Since we're not mapping to Transcript, we don't need to worry about that here.
 								targetRefDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase()
 													+ "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
 							}
-							this.refCreator.createIdentifier(parts[0], parts[1], targetRefDBName, personID, this.getClass().getName(), Long.valueOf(parts[2]));
+							this.refCreator.createIdentifier(newIdentifier, idOfReferencedObject, targetRefDBName, personID, this.getClass().getName(), Long.valueOf(speciesID));
 							// If target is EntrezGene, there are references to other databases that need to be created using the EntrezGene ID: BioGPS, CTD, DbSNP
 							if (this.targetRefDB.toUpperCase().contains("ENTREZGENE") || this.targetRefDB.toUpperCase().contains("ENTREZ GENE") || this.targetRefDB.toUpperCase().contains("NCBI GENE"))
 							{
-								runNCBIGeneRefCreators(personID, parts);
+								runNCBIGeneRefCreators(personID, newIdentifier, idOfReferencedObject, speciesID, objectCache);
 							}
 						}
 						// The string did NOT have a species-part.
 						else
 						{
-							this.refCreator.createIdentifier(parts[0], parts[1], this.targetRefDB, personID, this.getClass().getName());
+							this.refCreator.createIdentifier(newIdentifier, idOfReferencedObject, this.targetRefDB, personID, this.getClass().getName());
 						}
 					}
 				}
@@ -230,35 +230,19 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			}
 			else
 			{
-				logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things to create: {}", thingsToCreate);
+				this.logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things (identifiers) to create: {}", identifiersToCreate);
 			}
 		} );
-		if (createdCounter.get() != thingsToCreate.size())
+		if (createdCounter.get() != identifiersToCreate.size())
 		{
-			logger.warn("The \"created\" counter says: {} but the size of the thingsToCreate list is: {}",createdCounter.get(), thingsToCreate.size());
+			this.logger.warn("The \"created\" counter says: {} but the size of the identifiersToCreate list is: {}",createdCounter.get(), identifiersToCreate.size());
 		}
-		logger.info("{} Reference creation summary:\n"
-				+ "\t# Identifiers created: {}\n"
-				+ "\t# Identifiers which already existed: {} \n"
-				+ "\t# Identifiers that were not created: {}",
-				this.targetRefDB, 
+		this.logger.info("{} Reference creation summary:\n"
+						+ "\t# Identifiers created: {}\n"
+						+ "\t# Identifiers which already existed: {} \n"
+						+ "\t# Identifiers that were not created: {}",
+						this.targetRefDB, 
 				createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 	
-	}
-
-	private void runNCBIGeneRefCreators(long personID, String[] parts) throws Exception
-	{
-		for (EntrezGeneBasedReferenceCreator entrezGeneCreator : this.entrezGeneReferenceCreators)
-		{
-			if (entrezGeneCreator instanceof CTDReferenceCreator )
-			{
-				((CTDReferenceCreator) entrezGeneCreator).setNcbiGenesInCTD(this.ctdGenes);
-				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
-			}
-			else
-			{
-				entrezGeneCreator.createEntrezGeneReference(parts[0], parts[1], parts[2], personID);
-			}
-		}
 	}
 }

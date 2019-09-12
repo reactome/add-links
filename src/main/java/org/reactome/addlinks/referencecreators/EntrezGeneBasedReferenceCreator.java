@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.addlinks.db.ReferenceObjectCache;
 
 /**
  * This class will create a single reference based on an EntrezGene ID for another EntrezGeneID-based database, such as BioGPS.
@@ -26,7 +27,7 @@ public class EntrezGeneBasedReferenceCreator extends SimpleReferenceCreator<Stri
 	
 	public void createEntrezGeneReference(String identifierValue, String referencedObject, String speciesID, Long personID) throws Exception
 	{
-		logger.trace("Possible new identifier {} for {}", identifierValue, referencedObject);
+		this.logger.trace("Possible new identifier {} for {}", identifierValue, referencedObject);
 		GKInstance inst = this.adapter.fetchInstance(new Long(referencedObject));
 		@SuppressWarnings("unchecked")
 		List<GKInstance> xrefs = (List<GKInstance>) inst.getAttributeValuesList(referringAttributeName);
@@ -53,11 +54,11 @@ public class EntrezGeneBasedReferenceCreator extends SimpleReferenceCreator<Stri
 		}
 		if (!xrefString.equals(""))
 		{
-			logger.trace("\t {}",xrefString);
+			this.logger.trace("\t {}",xrefString);
 		}
 		if (!xrefAlreadyExists)
 		{
-			logger.trace("\tCreate identifier {} for {}@{}", identifierValue, referencedObject, this.targetRefDB);
+			this.logger.trace("\tCreate identifier {} for {}@{}", identifierValue, referencedObject, this.targetRefDB);
 			this.refCreator.createIdentifier(identifierValue, referencedObject, this.targetRefDB, personID, this.getClass().getName() + "( for " + this.targetRefDB + " )", Long.valueOf(speciesID));
 		}
 	}
