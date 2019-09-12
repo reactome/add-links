@@ -35,14 +35,12 @@ import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
 import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
-import org.reactome.addlinks.dataretrieval.executor.BrendaFileRetrieverExecutor;
 import org.reactome.addlinks.dataretrieval.executor.KeggFileRetrieverExecutor;
 import org.reactome.addlinks.dataretrieval.executor.SimpleFileRetrieverExecutor;
 import org.reactome.addlinks.dataretrieval.executor.UniprotFileRetrieverExecutor;
 import org.reactome.addlinks.db.CrossReferenceReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter;
 import org.reactome.addlinks.db.DuplicateIdentifierReporter.REPORT_KEYS;
-
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.ensembl.EnsemblFileRetrieverExecutor;
@@ -167,7 +165,7 @@ public class AddLinks
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
-		retrieverJobs.add(new BrendaFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter, this.objectCache));
+//		retrieverJobs.add(new BrendaFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter, this.objectCache)); // Disabled BRENDA retriever because we're not linking out to BRENDA anymore.
 		execSrvc.invokeAll(retrieverJobs);
 		
 		logger.info("Finished downloading files.");
@@ -463,7 +461,7 @@ public class AddLinks
 		for (String refCreatorName : this.referenceCreatorFilter)
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
-			List<GKInstance> sourceReferences = new ArrayList<GKInstance>();
+			List<GKInstance> sourceReferences = new ArrayList<>();
 			// Try to get the processor name, except for E
 			Optional<?> fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> {
 				if (this.processorCreatorLink.get(k) instanceof String)
@@ -481,10 +479,10 @@ public class AddLinks
 				}
 					
 			} ).map( m -> m ).findFirst();
-			if (referenceCreators.containsKey(refCreatorName))
+			if (this.referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")
-				BatchReferenceCreator refCreator = referenceCreators.get(refCreatorName);
+				BatchReferenceCreator refCreator = this.referenceCreators.get(refCreatorName);
 				
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
@@ -500,12 +498,12 @@ public class AddLinks
 					// Rhea reference creator is special - its source references is a simple list of all Reactions.
 					if (refCreator instanceof RHEAReferenceCreator)
 					{
-						sourceReferences = objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
+						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
 					}
 					else if (refCreator instanceof ComplexPortalReferenceCreator)
 					{
 						// The ComplexPortalReferenceCreator does not *need* a list of source references since the mapping it gets is sufficient.
-						sourceReferences = new ArrayList<GKInstance>();
+						sourceReferences = new ArrayList<>();
 					}
 					else if ( refCreator instanceof COSMICReferenceCreator)
 					{
@@ -548,9 +546,9 @@ public class AddLinks
 				
 			}
 			// There is a separate list of reference creators to create UniProt references.
-			else if (uniprotReferenceCreators.containsKey(refCreatorName))
+			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
 			{
-				UPMappedIdentifiersReferenceCreator refCreator = uniprotReferenceCreators.get(refCreatorName);
+				UPMappedIdentifiersReferenceCreator refCreator = this.uniprotReferenceCreators.get(refCreatorName);
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
 					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get("CTDProcessor") );
@@ -667,7 +665,6 @@ public class AddLinks
 		
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
-			logger.info("Creating ReferenceDatabase {}", key);
 			boolean speciesSpecificAccessURL = false;
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
 			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;

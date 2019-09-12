@@ -137,6 +137,7 @@
 				<property name="dataURL" value="http://rest.kegg.jp/get/" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/KEGGRetriever"/>
+				<property name="numRetries" value="5"/>
 				<!-- You will need to set UniprotToKEGGFiles at runtime. -->
 			</bean>
 		</entry>
