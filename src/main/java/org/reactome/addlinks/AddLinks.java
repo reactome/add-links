@@ -128,7 +128,7 @@ public class AddLinks
 		LinksToCheckCache.setRefDBsToCheck(this.referenceDatabasesToLinkCheck);
 		
 		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
-		if (objectCache == null)
+		if (this.objectCache == null)
 		{
 			throw new Error("ObjectCache cannot be null.");
 		}
@@ -136,7 +136,10 @@ public class AddLinks
 		Properties applicationProps = new Properties();
 		String propertiesLocation = System.getProperty("config.location");
 		
-		applicationProps.load(new FileInputStream(propertiesLocation));
+		try(FileInputStream fis = new FileInputStream(propertiesLocation))
+		{
+			applicationProps.load(fis);
+		}
 		
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
 		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
@@ -161,7 +164,7 @@ public class AddLinks
 		// Execute the file retrievers.
 		execSrvc.invokeAll(retrieverJobs);
 		
-		retrieverJobs = new ArrayList<Callable<Boolean>>();
+		retrieverJobs = new ArrayList<>();
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
@@ -249,7 +252,7 @@ public class AddLinks
 		StringBuilder linkCheckReportLines = new StringBuilder("RefDBName\tNumOK\tNumNotOK\n");
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
-		linkCheckManager.setDbAdaptor(dbAdapter);
+		linkCheckManager.setDbAdaptor(this.dbAdapter);
 		// Filter by references database name.
 		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
 		{
@@ -268,7 +271,7 @@ public class AddLinks
 				{
 					logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
 					reportLine.append(refDBInst.getDisplayName()).append("\t");
-					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
 					for (String k : results.keySet())
 					{
@@ -377,7 +380,7 @@ public class AddLinks
 		retrieverJobs.add(new UniprotFileRetrieverExecutor(this.uniprotFileRetrievers, this.fileRetrieverFilter, numUniprotDownloadThreads, this.objectCache));
 		
 		// Check to see if we should do any Ensembl work
-		if (fileRetrieverFilter.contains("EnsemblToALL"))
+		if (this.fileRetrieverFilter.contains("EnsemblToALL"))
 		{
 			retrieverJobs.add(new EnsemblFileRetrieverExecutor(this.ensemblFileRetrievers, this.ensemblFileRetrieversNonCore , this.fileRetrieverFilter, this.ensemblBatchLookup, this.objectCache, this.dbAdapter));
 		}
@@ -423,7 +426,7 @@ public class AddLinks
 				//@SuppressWarnings("unchecked")
 				List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
 				//@SuppressWarnings("unchecked")
-				Collection<GKInstance> refMap = new ArrayList<GKInstance> ();
+				Collection<GKInstance> refMap = new ArrayList<> ();
 				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
 				
 				int refCount = 0;
@@ -598,15 +601,15 @@ public class AddLinks
 	 */
 	private List<GKInstance> getENSEMBLIdentifiersList()
 	{
-		List<GKInstance> identifiers = new ArrayList<GKInstance>();
+		List<GKInstance> identifiers = new ArrayList<>();
 		
-		List<String> ensemblDBNames = objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
+		List<String> ensemblDBNames = this.objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
 		
 		for (String dbName : ensemblDBNames)
 		{
-			for (String s : objectCache.getRefDbNamesToIds().get(dbName))
+			for (String dbid : this.objectCache.getRefDbNamesToIds().get(dbName))
 			{
-				identifiers.addAll(objectCache.getByRefDb(s, "ReferenceGeneProduct"));
+				identifiers.addAll(this.objectCache.getByRefDb(dbid, "ReferenceGeneProduct"));
 			}
 		}
 		
@@ -634,21 +637,21 @@ public class AddLinks
 	private List<GKInstance> getIdentifiersList(String refDb, String species, String className)
 	{
 		// Need a list of identifiers.
-		if (objectCache.getRefDbNamesToIds().get(refDb) == null)
+		if (this.objectCache.getRefDbNamesToIds().get(refDb) == null)
 		{
 			throw new Error("Could not find a reference database for name: " + refDb);
 		}
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String refDBID = this.objectCache.getRefDbNamesToIds().get(refDb).get(0);
 		List<GKInstance> identifiers;
 		if (species!=null)
 		{
-			String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-			identifiers = objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
+			String speciesDBID = this.objectCache.getSpeciesNamesToIds().get(species).get(0);
+			identifiers = this.objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
 			logger.debug(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
 		}
 		else
 		{
-			identifiers = objectCache.getByRefDb(refDBID, className);
+			identifiers = this.objectCache.getByRefDb(refDBID, className);
 			logger.debug(refDb + " " + refDBID + " ; " );
 		}
 		
@@ -830,12 +833,12 @@ public class AddLinks
 	 */
 	private Map<String, Map<String, ?>> executeFileProcessors()
 	{
-		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
+		Map<String,Map<String,?>> dbMappings = new HashMap<>();
 		logger.info("{} file processors to execute.", this.fileProcessorFilter.size());
-		this.fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
+		this.fileProcessors.keySet().stream().filter(k -> this.fileProcessorFilter.contains(k)).forEach( k -> 
 			{
 				logger.info("Executing file processor: {}", k);
-				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
+				dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
 			}
 		);
 		return dbMappings;
