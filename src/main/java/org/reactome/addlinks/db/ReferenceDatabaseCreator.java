@@ -264,29 +264,33 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	}
 	
 	/**
-	 * Updates the accessUrl of a ReferenceDatabase. There is the potential to update more than one object, if multiple ReferenceDatabases have the same primary name, 
-	 * but if they all have the same primary name, updating them all is probably desirable.
-	 * @param personID - the Person ID - needed for InstanceEdit.
+	 * Updates the accessUrl of a ReferenceDatabase. There is the <em>potential</em> to update more than one object, if multiple ReferenceDatabases have the same primary name, 
+	 * but if they all have the same primary name, updating them all is probably desirable. If you would rather update exactly one ReferenceDatabase, fetch it from the database and
+	 * then pass it to {@link ReferenceDatabaseCreator#updateRefDBAccesssURL(GKInstance, String)}
 	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
 	 * @param newAccessUrl - the NEW accessURL.
 	 * @throws Exception
 	 * @throws InvalidAttributeException
 	 * @throws InvalidAttributeValueException
 	 */
-	public void updateRefDBAccesssURL(/* long personID, */String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
+	public void updateRefDBAccesssURL(String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
+		if (refDBs.size() > 1)
+		{
+			logger.info("{} ReferenceDatabase objects have the primary name {}, they will all have their accessURL updated to {}", refDBs.size(), name, newAccessUrl);
+		}
 		for (GKInstance refDB : refDBs)
 		{
-			updateRefDBAccesssURL(refDB, newAccessUrl);
+			this.updateRefDBAccesssURL(refDB, newAccessUrl);
 		}
 	}
 	
 	/**
 	 * Updates a SINGLE ReferenceDatabase object.
-	 * @param refDB
-	 * @param newAccessUrl
+	 * @param refDB - The ReferenceDatabase object to update.
+	 * @param newAccessUrl - the new value for the accessUrl attribute of refDB.
 	 * @throws Exception
 	 * @throws InvalidAttributeException
 	 * @throws InvalidAttributeValueException
