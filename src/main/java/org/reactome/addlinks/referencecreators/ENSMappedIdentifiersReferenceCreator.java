@@ -53,7 +53,7 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			objectCache = new ReferenceObjectCache(this.adapter, true);
 		}
 		
-		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
+		List<String> identifiersToCreate = Collections.synchronizedList(new ArrayList<String>());
 		Map<Long,MySQLAdaptor> adapterPool = Collections.synchronizedMap( new HashMap<Long,MySQLAdaptor>() );
 
 		// Loop for each database
@@ -149,9 +149,9 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 									}
 								}
 								String thingToCreate = targetIdentifier+":"+String.valueOf(inst.getDBID())+":"+speciesID;
-								if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate))
+								if (!xrefAlreadyExists && !identifiersToCreate.contains(thingToCreate))
 								{
-									thingsToCreate.add(thingToCreate);
+									identifiersToCreate.add(thingToCreate);
 									createdCounter.getAndIncrement();
 								}
 							}
@@ -184,10 +184,10 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			}
 		}
 		
-		thingsToCreate.stream().sequential().forEach( thingToCreate -> {
-			if (thingToCreate != null)
+		identifiersToCreate.stream().sequential().forEach( identifierToCreate -> {
+			if (identifierToCreate != null)
 			{
-				String[] newIdentifierParts = thingToCreate.split(":");
+				String[] newIdentifierParts = identifierToCreate.split(":");
 				String newIdentifier = newIdentifierParts[0];
 				this.logger.trace("Creating new identifier {} ", newIdentifier);
 				try
@@ -230,12 +230,12 @@ public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReference
 			}
 			else
 			{
-				this.logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things to create: {}", thingsToCreate);
+				this.logger.error("newIdentifier is null. How does that even happen?!?! Here's the list of things (identifiers) to create: {}", identifiersToCreate);
 			}
 		} );
-		if (createdCounter.get() != thingsToCreate.size())
+		if (createdCounter.get() != identifiersToCreate.size())
 		{
-			this.logger.warn("The \"created\" counter says: {} but the size of the thingsToCreate list is: {}",createdCounter.get(), thingsToCreate.size());
+			this.logger.warn("The \"created\" counter says: {} but the size of the identifiersToCreate list is: {}",createdCounter.get(), identifiersToCreate.size());
 		}
 		this.logger.info("{} Reference creation summary:\n"
 						+ "\t# Identifiers created: {}\n"
