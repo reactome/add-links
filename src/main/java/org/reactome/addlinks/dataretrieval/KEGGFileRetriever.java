@@ -170,9 +170,8 @@ public class KEGGFileRetriever extends FileRetriever
 									// We've exhausted all attempts and still couldn't get data. Log an error telling the user they may
 									// need to retry for this particular file.
 									this.logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
-												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}  "
-												+ "(HINT: move/rename the aforementioned file and then re-run the download process - you can delete it "
-												+ "too but that makes it impossible to compare results, if that's something you think you might want to do).",
+												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}\t "
+												+ "Suggested remdiation: (re)move/rename the aforementioned file and then re-run the download process to force repopulation of the file.",
 												this.numRetries, path);
 									done = true;
 								}
