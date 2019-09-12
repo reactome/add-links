@@ -663,7 +663,7 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	private void executeCreateReferenceDatabases(long personID)
 	{
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter, personID);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
 		
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
@@ -671,7 +671,7 @@ public class AddLinks
 			boolean speciesSpecificAccessURL = false;
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
 			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;
-			List<String> aliases = new ArrayList<String>();
+			List<String> aliases = new ArrayList<>();
 			String primaryName = null;
 			for(String attributeKey : refDB.keySet())
 			{
@@ -711,6 +711,9 @@ public class AddLinks
 						// speciesSpecificAccessURL will only get set to TRUE if it is present AND "true" in the XML config file.
 						speciesSpecificAccessURL = Boolean.valueOf((String) refDB.get(attributeKey));
 						break;
+					default:
+						logger.warn("Unrecognized key: {}", attributeKey);
+						break;
 				}
 			}
 			// If a resourceIdentifier was present, we will need to query identifiers.org to ensure we have the most up-to-date access URL.
@@ -721,7 +724,10 @@ public class AddLinks
 			// If this resource does not use species-specific URLs, its accessURL *could* be updated with data from identifiers.org
 			if (!speciesSpecificAccessURL && newAccessUrl != null)
 			{
-				refDBsForURLUpdate.put(primaryName, newAccessUrl);
+//				this.refDBsForURLUpdate.put(primaryName, newAccessUrl);
+				
+				// Instead of deferring the update, let's just try to use it now. 
+				accessUrl = newAccessUrl;
 			}
 			try
 			{
@@ -729,7 +735,7 @@ public class AddLinks
 				{
 					throw new RuntimeException("You attempted to create a ReferenceDatabase with a NULL primary name! This is not allowed. The other attributes for this reference database are: " + refDB.toString());
 				}
-				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, (String[]) aliases.toArray(new String[aliases.size()]) );
+				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, aliases.toArray(new String[aliases.size()]) );
 			}
 			catch (Exception e)
 			{
@@ -743,11 +749,11 @@ public class AddLinks
 		BRENDAReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
-			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
-			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(this.objectCache);
+			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(this.objectCache);
 			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
 			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
-			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), objectCache, dbAdapter, personID);
+			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), this.objectCache, this.dbAdapter, personID);
 		}
 		catch (Exception e)
 		{

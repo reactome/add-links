@@ -54,14 +54,18 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		{
 			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
-			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
+//			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
 			
 			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
-			@SuppressWarnings("unchecked")
-			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
-															? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
-															: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+//			@SuppressWarnings("unchecked")
+//			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
+//															? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
+//															: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
 
+			// Because accessUrls could change (because of updated data from identifiers.org), we should do the lookup by NAME.
+			@SuppressWarnings("unchecked")
+			Collection<GKInstance> preexistingReferenceDBs = this.adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+			
 			// If there is an accessUrl, filter preexistingReferenceDBs so that it only contains instances with names that match primaryName.
 			// This mostly applies to ReferenceDatabases like ENSEMBL - there are many databases, and some may have the same species-specific URL
 			// but different names such as "ENSEMBL_*_PROTEIN" and "ENSEMBL_*_GENE".
@@ -102,6 +106,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					else
 					{
 						logger.warn("The primaryName {} appears to already be in use by {}", primaryName, refDBInst);
+						// If the ReferenceDatabase already exists, it's possible that the accessURLs don't match and will need an update, do that here...
+						
+						
 						dbid = refDBInst.getDBID();
 					}
 				}
