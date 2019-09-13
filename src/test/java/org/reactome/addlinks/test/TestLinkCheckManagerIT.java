@@ -43,20 +43,19 @@ public class TestLinkCheckManagerIT
 	{
 		SchemaAttribute att = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
 		
-		String refDbId = objectCache.getRefDbNamesToIds().get("NCBI dbSNP").get(0);
+		String refDbId = this.objectCache.getRefDbNamesToIds().get("NCBI dbSNP").get(0);
 		
 		@SuppressWarnings("unchecked")
 		Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", refDbId);
-		List<GKInstance> instList = new ArrayList<GKInstance>(instances);
+		List<GKInstance> instList = new ArrayList<>(instances);
 		
-//		dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceEntity, ReactomeJavaConstants.identifier, " = ", "100525522");
-		
-		GKInstance refDBInst = dbAdapter.fetchInstance(Long.parseLong(refDbId));
+//		dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceEntity, ReactomeJavaConstants.identifier, " = ", "100525522"); // a different entity to test.
+		GKInstance refDBInst = this.dbAdapter.fetchInstance(Long.parseLong(refDbId));
 		refDBInst.setAttributeValue(ReactomeJavaConstants.accessUrl, "https://www.ncbi.nlm.nih.gov/snp/###ID###");
 		final int size = 1;
 		instList = instList.subList(0, size);
-//		instList.addAll(dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceEntity, ReactomeJavaConstants.identifier, " = ", "100525522"));
-		instList.addAll(dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ","10787100") );
+//		instList.addAll(dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceEntity, ReactomeJavaConstants.identifier, " = ", "100525522")); // a different entity to test.
+		instList.addAll(this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ","10787100") );
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instList , 1.0f, 20);
 		assertTrue(results.keySet().size() >= size);
 		
@@ -70,7 +69,7 @@ public class TestLinkCheckManagerIT
 	@Test
 	public void testLinkCheckManagerZinc() throws InvalidAttributeException, Exception
 	{
-		String dbID = objectCache.getRefDbNamesToIds().get("ZINC - Substances").get(0);
+		String dbID = this.objectCache.getRefDbNamesToIds().get("ZINC - Substances").get(0);
 		
 		GKInstance db = this.dbAdapter.fetchInstance(Long.valueOf(dbID));
 		
@@ -91,7 +90,7 @@ public class TestLinkCheckManagerIT
 	@Test
 	public void testLinkCheckManager2() throws Exception
 	{
-		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("UniProt").get(0)) );
+		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get("UniProt").get(0)) );
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
 		List<GKInstance> instances = new ArrayList<GKInstance> (this.dbAdapter.fetchInstanceByAttribute(att1 , " = ", refDBInst.getDBID()));
 		float proportionToCheck = 0.25f;
@@ -109,7 +108,7 @@ public class TestLinkCheckManagerIT
 	@Test
 	public void testLinkCheckManagerKEGG() throws Exception
 	{
-		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("KEGG Gene (Homo sapiens)").get(0)) );
+		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get("KEGG Gene (Homo sapiens)").get(0)) );
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceDNASequence").getAttribute("referenceDatabase");
 		SchemaAttribute att2 = this.dbAdapter.fetchSchema().getClassByName("ReferenceDNASequence").getAttribute("species");
 
@@ -129,7 +128,7 @@ public class TestLinkCheckManagerIT
 			System.out.println(results.get(k));
 		}
 		
-		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(objectCache.getRefDbNamesToIds().get("KEGG Gene (Danio rerio)").get(0)) );
+		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get("KEGG Gene (Danio rerio)").get(0)) );
 		aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
 		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", "68323");
 		instances.clear();
@@ -172,7 +171,7 @@ public class TestLinkCheckManagerIT
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
 		SchemaAttribute att2 = this.dbAdapter.fetchSchema().getClassByName("DatabaseIdentifier").getAttribute("referenceDatabase");
 		
-		List<SchemaAttribute> attributes = new ArrayList<SchemaAttribute>(2);
+		List<SchemaAttribute> attributes = new ArrayList<>(2);
 		attributes.add(att2);
 		attributes.add(att1);
 		//String value = objectCache.getRefDbNamesToIds().get("UniProt").get(0);
@@ -180,14 +179,14 @@ public class TestLinkCheckManagerIT
 		for (SchemaAttribute att : attributes)
 		{
 			System.out.println("Trying attribute " + att.getName() + " from class " +att.getSchemaClass());
-			for (String refDBID : objectCache.getRefDBMappings().keySet())
+			for (String refDBID : this.objectCache.getRefDBMappings().keySet())
 			{
-				System.out.println(">> Now checking links for " + objectCache.getRefDBMappings().get(refDBID));
+				System.out.println(">> Now checking links for " + this.objectCache.getRefDBMappings().get(refDBID));
 				
 				@SuppressWarnings("unchecked")
 				Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", refDBID);
 				
-				List<GKInstance> instList = new ArrayList<GKInstance>(instances);
+				List<GKInstance> instList = new ArrayList<>(instances);
 				if (instList.size() > 0)
 				{
 					Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, (instList.size() >= 3 ? 3 : instList.size()) ) );
@@ -201,7 +200,7 @@ public class TestLinkCheckManagerIT
 				}
 				else
 				{
-					System.out.println("No instances for " + refDBID + " / " + objectCache.getRefDBMappings().get(refDBID) );
+					System.out.println("No instances for " + refDBID + " / " + this.objectCache.getRefDBMappings().get(refDBID) );
 				}
 			}
 		}
