@@ -102,7 +102,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 						
 						String accessUrlInDB = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
 						// Uh-oh! we will need to update the object in the database.
-						if (!accessUrl.equals(accessUrlInDB))
+						if (accessUrl != null && !accessUrl.equals(accessUrlInDB))
 						{
 							this.updateRefDBAccesssURL(refDBInst, accessUrl);
 						}
