@@ -106,8 +106,6 @@ public class AddLinks
 	
 	private int maxNumberLinksToCheck = 100;
 	
-	private Map<String, String> refDBsForURLUpdate = new HashMap<>();
-	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
@@ -208,24 +206,6 @@ public class AddLinks
 		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
-		
-		// Now that the unused databases have been purged, we need to update any remaining RefDBs
-		// whose accessURLs don't match the ones returned by identifiers.org.
-		ReferenceDatabaseCreator refDBCreator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
-		for (String refDBName : this.refDBsForURLUpdate.keySet())
-		{
-			String newAccessUrl = this.refDBsForURLUpdate.get(refDBName);
-			try
-			{
-				// Look-up by name.
-				refDBCreator.updateRefDBAccesssURL(refDBName, newAccessUrl);
-			}
-			catch (Exception e)
-			{
-				logger.error("Error! While updating ReferenceDatabase with name \"{}\", an error was encountered: {}", refDBName, e.getMessage());
-				e.printStackTrace();
-			}
-		}
 		
 		logger.info("Now checking links.");
 		
@@ -725,8 +705,6 @@ public class AddLinks
 			// If this resource does not use species-specific URLs, its accessURL *could* be updated with data from identifiers.org
 			if (!speciesSpecificAccessURL && newAccessUrl != null)
 			{
-//				this.refDBsForURLUpdate.put(primaryName, newAccessUrl);
-				
 				// Instead of deferring the update, let's just try to use it now.
 				accessUrl = newAccessUrl;
 			}
