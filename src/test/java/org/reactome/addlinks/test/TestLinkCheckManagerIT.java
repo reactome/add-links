@@ -42,7 +42,7 @@ public class TestLinkCheckManagerIT
 	
 	@Test
 	/**
-	 * This test method can be used to test a *specific* ReferenceDatabase and a *specfic* entity. 
+	 * This test method can be used to test link-checking for a *specific* ReferenceDatabase and a *specfic* entity. 
 	 * NOTE: You must be certain that the ReferenceDatabase and ReferenceEntity exist before running
 	 * this test method or an exception WILL be thrown. If you plan to run unit tests in batch mode
 	 * for all of AddLinks, you should probably disable this specific test.
