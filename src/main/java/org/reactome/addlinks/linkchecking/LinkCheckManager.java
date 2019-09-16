@@ -86,7 +86,7 @@ public class LinkCheckManager implements CustomLoggable
 				String identifierString = (String) inst.getAttributeValue(ReactomeJavaConstants.identifier);
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl));
-				accessURL = LinkCheckManager.tweakZincURL(accessURL);
+				accessURL = LinkCheckManager.tweakIfZinc(accessURL);
 				String referenceDatabaseName = refDBInst.getDisplayName();
 				
 				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
@@ -120,11 +120,12 @@ public class LinkCheckManager implements CustomLoggable
 	}
 
 	/**
-	 * Tweaks the Zinc URL to perform better.
+	 * Tweaks the Zinc URL to perform better. This is done by appending "?count=1&sort=no&distinct=no" to the URL string.
+	 * In theory, this is supposed to reduce the amount of time it takes for Zinc to respond.
 	 * @param accessURL
 	 * @return
 	 */
-	private static String tweakZincURL(String accessURL)
+	private static String tweakIfZinc(String accessURL)
 	{
 		String newURL = accessURL;
 		if (accessURL.contains("zinc15.docking.org"))
@@ -169,7 +170,7 @@ public class LinkCheckManager implements CustomLoggable
 				logger.debug(refDBCache.get(refDBID));
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBCache.get(refDBID).getAttributeValue("accessUrl"));
-				accessURL = LinkCheckManager.tweakZincURL(accessURL);
+				accessURL = LinkCheckManager.tweakIfZinc(accessURL);
 				String referenceDatabaseName = ((String)refDBCache.get(refDBID).getDisplayName());
 				
 				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
