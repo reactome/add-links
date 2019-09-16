@@ -47,15 +47,18 @@ public class LinkCheckManager implements CustomLoggable
 	 * @param maxToCheck - The maximum actual number to check. If the list has 100000 elements, and proportionToCheck is 0.75, that means 75000 could be checked.
 	 * If you set maxToCheck to 100, that overrides the number calculated by proportionToCheck and only 100 will be checked.
 	 * @return A map. The key is the identifier, the value is a LinkCheckInfo object, {@link org.reactome.addlinks.linkchecking.LinkCheckInfo}
-	 * @throws IllegalArgumentException This exception is thrown if proportionToCheck or maxToCheck are less than zero.
+	 * @throws IllegalArgumentException This exception is thrown if proportionToCheck or maxToCheck are less than zero, or proportionToCheck is greater than 1.0.
 	 */
 	public Map<String, LinkCheckInfo> checkLinks(GKInstance refDBInst, List<GKInstance> instances, float proportionToCheck, int maxToCheck) throws IllegalArgumentException
 	{
-		if (proportionToCheck < 0)
+		if (proportionToCheck < 0.0)
 		{
 			throw new IllegalArgumentException("\"proportionToCheck\" cannot be negative.");
 		}
-		
+		if (proportionToCheck > 1.0)
+		{
+			throw new IllegalArgumentException("\"proportionToCheck\" cannot be greater than 1.");
+		}
 		if (maxToCheck < 0)
 		{
 			throw new IllegalArgumentException("\"maxToCheck\" cannot be negative.");
