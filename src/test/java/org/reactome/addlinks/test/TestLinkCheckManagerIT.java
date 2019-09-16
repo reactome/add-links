@@ -9,8 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -26,6 +24,19 @@ import org.reactome.addlinks.linkchecking.LinkCheckManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+/**
+ * Test methods in this test class are used to test *successful* link-checking. These methods will
+ * attempt to perform link-checking on some entities from some ReferenceDatabase, and then they 
+ * will assert that the LinkCheckManager (and other associated classes) can properly check links.
+ * 
+ * These test are INTEGRATION tests: they require a valid connection to a valid database and they 
+ * need to be able to connect to external resources to check links.
+ * 
+ * Also: you may need to run the code that updates accessURLs with new URLs from identifiers.org, in case your local
+ * database has out-of-date accessURLs. Stale accessURLs could cause the testing of link-checking to fail.
+ * @author sshorser
+ *
+ */
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
 public class TestLinkCheckManagerIT
@@ -42,7 +53,8 @@ public class TestLinkCheckManagerIT
 	
 	@Test
 	/**
-	 * This test method can be used to test link-checking for a *specific* ReferenceDatabase and a *specfic* entity. 
+	 * This test method can be used to test link-checking for a *specific* ReferenceDatabase and a *specfic* entity.
+	 * This method be useful to test/debug situations where one particular identifier is causing problems for the link-checker.
 	 * NOTE: You must be certain that the ReferenceDatabase and ReferenceEntity exist before running
 	 * this test method or an exception WILL be thrown. If you plan to run unit tests in batch mode
 	 * for all of AddLinks, you should probably disable this specific test.
@@ -86,7 +98,10 @@ public class TestLinkCheckManagerIT
 	}
 	
 	/**
-	 * Test ZINC links. Specifically will test with "ZINC - Substances". Please ensure that 
+	 * Test link-checking for ZINC links. Zinc links have special code to "tweak" their URL,
+	 * so that's why there is a special test method for Zinc.
+	 * 
+	 * Specifically will test with "ZINC - Substances". Please ensure that 
 	 * this reference database exists BEFORE running this test.
 	 * @throws InvalidAttributeException
 	 * @throws Exception
@@ -119,7 +134,8 @@ public class TestLinkCheckManagerIT
 	
 	/**
 	 * Tests links for 10 randomly selected ReferenceEntities that have UniProt identifiers.
-	 * Should always be safe to run this test.
+	 * Should always be safe to run this test, since RefDB "UniProt" should exist in the database
+	 * before AddLinks runs.
 	 * @throws Exception
 	 */
 	@Test
@@ -141,7 +157,10 @@ public class TestLinkCheckManagerIT
 	}
 	
 	/**
-	 * Test KEGG links. Please ensure that "KEGG Gene (Homo sapiens)" and "KEGG Gene (Danio rerio)"
+	 * Test link-checking for KEGG links. 
+	 * This test was written because sometimes KEGG identifiers have unusual prefixes.
+	 * 
+	 * Please ensure that "KEGG Gene (Homo sapiens)" and "KEGG Gene (Danio rerio)"
 	 * exist as reference databases before running this test.
 	 * @throws Exception
 	 */
@@ -240,28 +259,31 @@ public class TestLinkCheckManagerIT
 			// Some load their pages with JavaScript so you can't actually check for the identifier. Some don't actually display the identifier (they display their own internal identifier, or the Name of the entity).
 			// Some don't respond well to programmatic access (it seems they can detect non-browser access and reject it). See notes in src/main/resources/application-context.xml for details.
 			dbsToExclude.addAll(Arrays.asList("OpenTargets", "HGNC", "DOCK Blaster", "UCSC", "BioGPS", "GeneCards", "OMIM", "ComplexPortal", "PRO"));
-			for (String refDBID : this.objectCache.getRefDBMappings().keySet().stream().filter(refDBName -> { return !dbsToExclude.contains(refDBName); }).collect(Collectors.toList()) )
+			for (String refDBID : this.objectCache.getRefDBMappings().keySet())
 			{
-				System.out.println(">> Now checking links for " + this.objectCache.getRefDBMappings().get(refDBID));
-				
-				@SuppressWarnings("unchecked")
-				Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", refDBID);
-				
-				List<GKInstance> instList = new ArrayList<>(instances);
-				if (instList.size() > 0)
+				if (!this.objectCache.getRefDBMappings().get(refDBID).stream().anyMatch(name -> dbsToExclude.contains(name)) )
 				{
-					Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, (instList.size() >= 3 ? 3 : instList.size()) ) );
-					//assertTrue(results.keySet().size() == 3);
+					System.out.println(">> Now checking links for " + this.objectCache.getRefDBMappings().get(refDBID));
 					
-					for(String k : results.keySet())
+					@SuppressWarnings("unchecked")
+					Set<GKInstance> instances = (HashSet<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(att , " = ", refDBID);
+					
+					List<GKInstance> instList = new ArrayList<>(instances);
+					if (instList.size() > 0)
 					{
-						assertTrue(results.get(k).isKeywordFound());
-						System.out.println(results.get(k));
+						Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, (instList.size() >= 3 ? 3 : instList.size()) ) );
+						//assertTrue(results.keySet().size() == 3);
+						
+						for(String k : results.keySet())
+						{
+							assertTrue(results.get(k).isKeywordFound());
+							System.out.println(results.get(k));
+						}
 					}
-				}
-				else
-				{
-					System.out.println("No instances for " + refDBID + " / " + this.objectCache.getRefDBMappings().get(refDBID) );
+					else
+					{
+						System.out.println("No instances for " + refDBID + " / " + this.objectCache.getRefDBMappings().get(refDBID) );
+					}
 				}
 			}
 		}

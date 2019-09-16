@@ -17,12 +17,12 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.CustomLoggable;
-import org.springframework.beans.support.ArgumentConvertingMethodInvoker;
 
 
 public class LinkCheckManager implements CustomLoggable
 {
 
+	private static final String IDENTIFIER_TOKEN = "###ID###";
 	private static Logger logger ;
 	private MySQLAdaptor dbAdaptor;
 	
@@ -202,23 +202,38 @@ public class LinkCheckManager implements CustomLoggable
 	private static void checkTheLink(Map<String, LinkCheckInfo> linkCheckResults, String refDBID, GKInstance inst, String identifierString, String accessURL, String referenceDatabaseName)
 			throws URISyntaxException, HttpHostConnectException, IOException, Exception, InterruptedException
 	{
-		URI uri = new URI(  accessURL.replace("###ID###", identifierString) );
-		LinkChecker checker = new LinkChecker(uri, identifierString);
-		LinkCheckInfo info = checker.checkLink();
-		if (!(info.isKeywordFound() && info.getStatusCode() == 200))
+		// Some ReferenceDatabases that are added by Curators do not have an Identifer Token (the string: "###ID###".)
+		// Normally, we don't create references for these databases so we normally do not check links for these databases. BUT...
+		// just in cas someone tries to run link-checking on such a database OR if somehow, a ReferenceDatabase accessURL loses it's token,
+		// we will check for the token before proceeding, and issue a warning if no token was found.
+		// 
+		// This should not be an exception because there are legitimate ReferenceDatabases that do not have this value, but still, it's 
+		// a good idea to warn the user about it. Most likely, this will happen if they try to link-check on something that they should not
+		// be checking.
+		if (!accessURL.contains(IDENTIFIER_TOKEN))
 		{
-			LinkCheckManager.logger.warn("Link {} produced status code: {} ; keyword {} was not found.",uri.toString(), info.getStatusCode(), identifierString );
+			logger.warn("Access URL ({}) for ReferenceDatabase \"{}\" does not contain an ID token that can be replaced! Link checking cannot proceed!", accessURL, referenceDatabaseName);
 		}
 		else
 		{
-			LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
+			URI uri = new URI(  accessURL.replace(IDENTIFIER_TOKEN, identifierString) );
+			LinkChecker checker = new LinkChecker(uri, identifierString);
+			LinkCheckInfo info = checker.checkLink();
+			if (!(info.isKeywordFound() && info.getStatusCode() == 200))
+			{
+				LinkCheckManager.logger.warn("Link {} produced status code: {} ; keyword {} was not found.",uri.toString(), info.getStatusCode(), identifierString );
+			}
+			else
+			{
+				LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
+			}
+			info.setIdentifier(identifierString);
+			info.setReferenceDatabaseDBID(refDBID);
+			info.setIdentifierDBID(inst.getDBID().toString());
+			info.setReferenceDatabaseName(referenceDatabaseName);
+			linkCheckResults.put(inst.getDBID().toString(), info);
+			// Sleep for 2 seconds between requests so that the server we're talking to doesn't think we're trying to DOS them.
+			Thread.sleep(Duration.ofSeconds(2).toMillis());
 		}
-		info.setIdentifier(identifierString);
-		info.setReferenceDatabaseDBID(refDBID);
-		info.setIdentifierDBID(inst.getDBID().toString());
-		info.setReferenceDatabaseName(referenceDatabaseName);
-		linkCheckResults.put(inst.getDBID().toString(), info);
-		// Sleep for 2 seconds between requests so that the server we're talking to doesn't think we're trying to DOS them.
-		Thread.sleep(Duration.ofSeconds(2).toMillis());
 	}
 }
