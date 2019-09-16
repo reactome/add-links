@@ -89,7 +89,7 @@ public class LinkCheckManager implements CustomLoggable
 				String identifierString = (String) inst.getAttributeValue(ReactomeJavaConstants.identifier);
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl));
-				accessURL = LinkCheckManager.tweakIfZinc(accessURL);
+				accessURL = LinkCheckManager.tweakIfZinc(refDBInst);
 				String referenceDatabaseName = refDBInst.getDisplayName();
 				
 				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
@@ -125,13 +125,19 @@ public class LinkCheckManager implements CustomLoggable
 	/**
 	 * Tweaks the Zinc URL to perform better. This is done by appending "?count=1&sort=no&distinct=no" to the URL string.
 	 * In theory, this is supposed to reduce the amount of time it takes for Zinc to respond.
-	 * @param accessURL
-	 * @return
+	 * @param refDBInst - The ReferenceDatabase to tweak.
+	 * @return The updated URL IF it is for a Zinc URL. If not Zinc, the original accessURL will be returned.
+	 * @throws Exception 
+	 * @throws InvalidAttributeException 
 	 */
-	private static String tweakIfZinc(String accessURL)
+	private static String tweakIfZinc(GKInstance refDBInst) throws InvalidAttributeException, Exception
 	{
+		String refDBName = refDBInst.getDisplayName();
+		
+		String accessURL = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
 		String newURL = accessURL;
-		if (accessURL.contains("zinc15.docking.org"))
+		// Zinc databases all start with "Zinc" such as "Zinc - Substances". But we'll normalize to lowercase.
+		if (refDBName.toLowerCase().startsWith("zinc"))
 		{
 			newURL += "?count=1&sort=no&distinct=no";
 		}
@@ -165,15 +171,20 @@ public class LinkCheckManager implements CustomLoggable
 				String identifierString = (String) inst.getAttributeValue("identifier");
 				
 				String refDBID =  ((GKInstance) inst.getAttributeValue("referenceDatabase")).getDBID().toString();
+				GKInstance refDBInstance;
 				if (!refDBCache.containsKey(refDBID))
 				{
-					GKInstance refDBInstance = this.dbAdaptor.fetchInstance(Long.valueOf(refDBID));
+					refDBInstance = this.dbAdaptor.fetchInstance(Long.valueOf(refDBID));
 					refDBCache.put(refDBID, refDBInstance);
+				}
+				else
+				{
+					refDBInstance = refDBCache.get(refDBID);
 				}
 				logger.debug(refDBCache.get(refDBID));
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBCache.get(refDBID).getAttributeValue("accessUrl"));
-				accessURL = LinkCheckManager.tweakIfZinc(accessURL);
+				accessURL = LinkCheckManager.tweakIfZinc(refDBInstance);
 				String referenceDatabaseName = ((String)refDBCache.get(refDBID).getDisplayName());
 				
 				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
