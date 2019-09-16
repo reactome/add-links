@@ -51,12 +51,11 @@ public class TestLinkCheckManagerIT
 	 */
 	public void testLinkCheckManager() throws InvalidAttributeException, Exception
 	{
-		final String refDBName = "NCBI dbSNP";
-		final String entityDBID = "100525522"; //"10787100"; // "100525522" - a different entity to test.
+		final String refDBName = "NCBI dbSNP"; // change this to test with a different ReferenceDatabase.
+		final String entityDBID = "10787100"; // "100525522" - a different entity to test.
 		final float proportionToCheck = 1.0f;
 		final int maxToCheck = 20;
-		// Get the Attribute
-		SchemaAttribute att = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.ReferenceEntity).getAttribute(ReactomeJavaConstants.referenceDatabase);
+
 		if (!this.objectCache.getRefDbNamesToIds().containsKey(refDBName))
 		{
 			throw new Exception("You tried to run the test with the ReferenceDatabase \""+refDBName+"\" but that does not exist in the database. Please create this reference database before attempting to link-check it.");
@@ -69,7 +68,7 @@ public class TestLinkCheckManagerIT
 		final int size = 1;
 
 		@SuppressWarnings("unchecked")
-		List<GKInstance> instList = (List<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ",entityDBID); 
+		List<GKInstance> instList = new ArrayList<>(this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ",entityDBID)); 
 		
 		if (instList.size() == 0)
 		{
@@ -256,7 +255,7 @@ public class TestLinkCheckManagerIT
 					
 					for(String k : results.keySet())
 					{
-						//assertTrue(results.get(k).isKeywordFound());
+						assertTrue(results.get(k).isKeywordFound());
 						System.out.println(results.get(k));
 					}
 				}
