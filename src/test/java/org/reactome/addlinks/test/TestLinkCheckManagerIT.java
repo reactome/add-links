@@ -1,6 +1,9 @@
 package org.reactome.addlinks.test;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -18,6 +22,7 @@ import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.SchemaAttribute;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.matchers.GreaterThan;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.linkchecking.LinkCheckInfo;
 import org.reactome.addlinks.linkchecking.LinkCheckManager;
@@ -68,10 +73,12 @@ public class TestLinkCheckManagerIT
 		final float proportionToCheck = 1.0f;
 		final int maxToCheck = 20;
 
-		if (!this.objectCache.getRefDbNamesToIds().containsKey(refDBName))
-		{
-			throw new Exception("You tried to run the test with the ReferenceDatabase \""+refDBName+"\" but that does not exist in the database. Please create this reference database before attempting to link-check it.");
-		}
+		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
+		
+//		if (!this.objectCache.getRefDbNamesToIds().containsKey(refDBName))
+//		{
+//			throw new Exception("You tried to run the test with the ReferenceDatabase \""+refDBName+"\" but that does not exist in the database. Please create this reference database before attempting to link-check it.");
+//		}
 		String refDbId = this.objectCache.getRefDbNamesToIds().get(refDBName).get(0);
 		
 
@@ -82,10 +89,12 @@ public class TestLinkCheckManagerIT
 		@SuppressWarnings("unchecked")
 		List<GKInstance> instList = new ArrayList<>(this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ",entityDBID)); 
 		
-		if (instList.size() == 0)
-		{
-			throw new Exception("You tried to run the test with a ReferenceEntity whose DB ID ("+entityDBID+") was not in the database. Please ensure that the DB ID exists before running this test.");
-		}
+		assumeThat(new GreaterThan<>(0).matches(instList.size()), is(true) );
+		
+//		if (instList.size() == 0)
+//		{
+//			throw new Exception("You tried to run the test with a ReferenceEntity whose DB ID ("+entityDBID+") was not in the database. Please ensure that the DB ID exists before running this test.");
+//		}
 		
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instList , proportionToCheck, maxToCheck);
 		assertTrue(results.keySet().size() >= size);
@@ -110,10 +119,13 @@ public class TestLinkCheckManagerIT
 	public void testLinkCheckManagerZinc() throws InvalidAttributeException, Exception
 	{
 		final String refDBName = "ZINC - Substances";
-		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
-		{
-			throw new Exception("Please ensure that the reference databse \""+refDBName+"\" exists before running this test.");
-		}
+		
+		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
+		
+//		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
+//		{
+//			throw new Exception("Please ensure that the reference databse \""+refDBName+"\" exists before running this test.");
+//		}
 
 		String dbID = this.objectCache.getRefDbNamesToIds().get(refDBName).get(0);
 		GKInstance db = this.dbAdapter.fetchInstance(Long.valueOf(dbID));
@@ -171,10 +183,13 @@ public class TestLinkCheckManagerIT
 		final String otherSpeciedID = "68323";
 		
 		String refDBName = "KEGG Gene (Homo sapiens)";
-		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
-		{
-			throw new Exception("Please ensure that \""+refDBName+"\" exists before running this test.");
-		}
+		
+		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
+		
+//		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
+//		{
+//			throw new Exception("Please ensure that \""+refDBName+"\" exists before running this test.");
+//		}
 		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get(refDBName).get(0)) );
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence).getAttribute(ReactomeJavaConstants.referenceDatabase);
 		SchemaAttribute att2 = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence).getAttribute(ReactomeJavaConstants.species);
@@ -195,10 +210,13 @@ public class TestLinkCheckManagerIT
 		}
 		
 		refDBName = "KEGG Gene (Danio rerio)";
-		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
-		{
-			throw new Exception("Please ensure that \""+refDBName+"\" exists before running this test.");
-		}
+		
+		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
+		
+//		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
+//		{
+//			throw new Exception("Please ensure that \""+refDBName+"\" exists before running this test.");
+//		}
 		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get(refDBName).get(0)) );
 		aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
 		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", otherSpeciedID);
@@ -258,8 +276,9 @@ public class TestLinkCheckManagerIT
 			// A list of ReferenceDatabases that are difficult to link-check. The reasons vary:
 			// Some load their pages with JavaScript so you can't actually check for the identifier. Some don't actually display the identifier (they display their own internal identifier, or the Name of the entity).
 			// Some don't respond well to programmatic access (it seems they can detect non-browser access and reject it). See notes in src/main/resources/application-context.xml for details.
+			// ALSO: Make sure the ReferenceDatabases in the database have up-to-date accessUrls or this test might fail.
 			dbsToExclude.addAll(Arrays.asList("OpenTargets", "HGNC", "DOCK Blaster", "UCSC", "BioGPS", "GeneCards", "OMIM", "ComplexPortal", "PRO"));
-			for (String refDBID : this.objectCache.getRefDBMappings().keySet())
+			for (String refDBID : this.objectCache.getRefDBMappings().keySet().stream().sorted().collect(Collectors.toList()))
 			{
 				if (!this.objectCache.getRefDBMappings().get(refDBID).stream().anyMatch(name -> dbsToExclude.contains(name)) )
 				{
@@ -272,10 +291,14 @@ public class TestLinkCheckManagerIT
 					if (instList.size() > 0)
 					{
 						Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, (instList.size() >= 3 ? 3 : instList.size()) ) );
-						//assertTrue(results.keySet().size() == 3);
+						assertTrue(results.keySet().size() == 3);
 						
 						for(String k : results.keySet())
 						{
+							if (!results.get(k).isKeywordFound())
+							{
+								fail("Result error: "+ results.get(k).toString());
+							}
 							assertTrue(results.get(k).isKeywordFound());
 							System.out.println(results.get(k));
 						}
