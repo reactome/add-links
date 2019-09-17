@@ -52,15 +52,15 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		//First, let's check that the Reference Database doesn't already exist. all we have to go on is the name...
 		try
 		{
-			SchemaClass refDBClass = adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
+			SchemaClass refDBClass = this.adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
 			SchemaAttribute accessUrlAttrib = refDBClass.getAttribute(ReactomeJavaConstants.accessUrl);
 			
 			// Try to get pre-existing ReferenceDatabase objects based on accessURL, but if there is no accessUrl, use the name.
 			@SuppressWarnings("unchecked")
 			Collection<GKInstance> preexistingReferenceDBs = accessUrl != null
-															? (Collection<GKInstance>) adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
-															: (Collection<GKInstance>) adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
+															? (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(accessUrlAttrib, "=", accessUrl)
+															: (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(dbNameAttrib, "=", primaryName);
 
 			// If there is an accessUrl, filter preexistingReferenceDBs so that it only contains instances with names that match primaryName.
 			// This mostly applies to ReferenceDatabases like ENSEMBL - there are many databases, and some may have the same species-specific URL
@@ -167,8 +167,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		{
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
 			
-			List<String> namesNotYetInDB = new ArrayList<String>(names.length);
-			List<GKInstance> instancesInDB = new ArrayList<GKInstance>();
+			List<String> namesNotYetInDB = new ArrayList<>(names.length);
+			List<GKInstance> instancesInDB = new ArrayList<>();
 			for (String name : names)
 			{
 				@SuppressWarnings("unchecked")
