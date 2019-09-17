@@ -106,8 +106,6 @@ public class AddLinks
 	
 	private int maxNumberLinksToCheck = 100;
 	
-	private Map<String, String> refDBsForURLUpdate = new HashMap<>();
-	
 	private EnsemblBatchLookup ensemblBatchLookup;
 	
 	private MySQLAdaptor dbAdapter;
@@ -128,7 +126,7 @@ public class AddLinks
 		LinksToCheckCache.setRefDBsToCheck(this.referenceDatabasesToLinkCheck);
 		
 		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
-		if (objectCache == null)
+		if (this.objectCache == null)
 		{
 			throw new Error("ObjectCache cannot be null.");
 		}
@@ -136,7 +134,10 @@ public class AddLinks
 		Properties applicationProps = new Properties();
 		String propertiesLocation = System.getProperty("config.location");
 		
-		applicationProps.load(new FileInputStream(propertiesLocation));
+		try(FileInputStream fis = new FileInputStream(propertiesLocation))
+		{
+			applicationProps.load(fis);
+		}
 		
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
 		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
@@ -161,7 +162,7 @@ public class AddLinks
 		// Execute the file retrievers.
 		execSrvc.invokeAll(retrieverJobs);
 		
-		retrieverJobs = new ArrayList<Callable<Boolean>>();
+		retrieverJobs = new ArrayList<>();
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
@@ -206,23 +207,6 @@ public class AddLinks
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 		
-		// Now that the unused databases have been purged, we need to update any remaining RefDBs
-		// whose accessURLs don't match the ones returned by identifiers.org.
-		for (String refDBName : this.refDBsForURLUpdate.keySet())
-		{
-			String newAccessUrl = this.refDBsForURLUpdate.get(refDBName);
-			try
-			{
-				// Look-up by name.
-				this.updateRefDBAccesssURL(personID, refDBName, newAccessUrl);
-			}
-			catch (Exception e)
-			{
-				logger.error("Error! While updating ReferenceDatabase with name \"{}\", an error was encountered: {}", refDBName, e.getMessage());
-				e.printStackTrace();
-			}
-		}
-		
 		logger.info("Now checking links.");
 		
 		String linksReport = this.checkLinks();
@@ -249,7 +233,7 @@ public class AddLinks
 		StringBuilder linkCheckReportLines = new StringBuilder("RefDBName\tNumOK\tNumNotOK\n");
 		// Now, check the links that were created to ensure that they are all valid.
 		LinkCheckManager linkCheckManager = new LinkCheckManager();
-		linkCheckManager.setDbAdaptor(dbAdapter);
+		linkCheckManager.setDbAdaptor(this.dbAdapter);
 		// Filter by references database name.
 		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
 		{
@@ -268,7 +252,7 @@ public class AddLinks
 				{
 					logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
 					reportLine.append(refDBInst.getDisplayName()).append("\t");
-					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<GKInstance>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
 					for (String k : results.keySet())
 					{
@@ -377,7 +361,7 @@ public class AddLinks
 		retrieverJobs.add(new UniprotFileRetrieverExecutor(this.uniprotFileRetrievers, this.fileRetrieverFilter, numUniprotDownloadThreads, this.objectCache));
 		
 		// Check to see if we should do any Ensembl work
-		if (fileRetrieverFilter.contains("EnsemblToALL"))
+		if (this.fileRetrieverFilter.contains("EnsemblToALL"))
 		{
 			retrieverJobs.add(new EnsemblFileRetrieverExecutor(this.ensemblFileRetrievers, this.ensemblFileRetrieversNonCore , this.fileRetrieverFilter, this.ensemblBatchLookup, this.objectCache, this.dbAdapter));
 		}
@@ -423,7 +407,7 @@ public class AddLinks
 				//@SuppressWarnings("unchecked")
 				List<String> names = (List<String>) refDB.getAttributeValuesList(ReactomeJavaConstants.name);
 				//@SuppressWarnings("unchecked")
-				Collection<GKInstance> refMap = new ArrayList<GKInstance> ();
+				Collection<GKInstance> refMap = new ArrayList<> ();
 				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
 				
 				int refCount = 0;
@@ -598,15 +582,15 @@ public class AddLinks
 	 */
 	private List<GKInstance> getENSEMBLIdentifiersList()
 	{
-		List<GKInstance> identifiers = new ArrayList<GKInstance>();
+		List<GKInstance> identifiers = new ArrayList<>();
 		
-		List<String> ensemblDBNames = objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
+		List<String> ensemblDBNames = this.objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
 		
 		for (String dbName : ensemblDBNames)
 		{
-			for (String s : objectCache.getRefDbNamesToIds().get(dbName))
+			for (String dbid : this.objectCache.getRefDbNamesToIds().get(dbName))
 			{
-				identifiers.addAll(objectCache.getByRefDb(s, "ReferenceGeneProduct"));
+				identifiers.addAll(this.objectCache.getByRefDb(dbid, "ReferenceGeneProduct"));
 			}
 		}
 		
@@ -634,21 +618,21 @@ public class AddLinks
 	private List<GKInstance> getIdentifiersList(String refDb, String species, String className)
 	{
 		// Need a list of identifiers.
-		if (objectCache.getRefDbNamesToIds().get(refDb) == null)
+		if (this.objectCache.getRefDbNamesToIds().get(refDb) == null)
 		{
 			throw new Error("Could not find a reference database for name: " + refDb);
 		}
-		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
+		String refDBID = this.objectCache.getRefDbNamesToIds().get(refDb).get(0);
 		List<GKInstance> identifiers;
 		if (species!=null)
 		{
-			String speciesDBID = objectCache.getSpeciesNamesToIds().get(species).get(0);
-			identifiers = objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
+			String speciesDBID = this.objectCache.getSpeciesNamesToIds().get(species).get(0);
+			identifiers = this.objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
 			logger.debug(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
 		}
 		else
 		{
-			identifiers = objectCache.getByRefDb(refDBID, className);
+			identifiers = this.objectCache.getByRefDb(refDBID, className);
 			logger.debug(refDb + " " + refDBID + " ; " );
 		}
 		
@@ -661,14 +645,14 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	private void executeCreateReferenceDatabases(long personID)
 	{
-		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(dbAdapter, personID);
+		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
 		
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
 			boolean speciesSpecificAccessURL = false;
 			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
 			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;
-			List<String> aliases = new ArrayList<String>();
+			List<String> aliases = new ArrayList<>();
 			String primaryName = null;
 			for(String attributeKey : refDB.keySet())
 			{
@@ -708,6 +692,9 @@ public class AddLinks
 						// speciesSpecificAccessURL will only get set to TRUE if it is present AND "true" in the XML config file.
 						speciesSpecificAccessURL = Boolean.valueOf((String) refDB.get(attributeKey));
 						break;
+					default:
+						logger.warn("Unrecognized key: {}", attributeKey);
+						break;
 				}
 			}
 			// If a resourceIdentifier was present, we will need to query identifiers.org to ensure we have the most up-to-date access URL.
@@ -718,7 +705,8 @@ public class AddLinks
 			// If this resource does not use species-specific URLs, its accessURL *could* be updated with data from identifiers.org
 			if (!speciesSpecificAccessURL && newAccessUrl != null)
 			{
-				refDBsForURLUpdate.put(primaryName, newAccessUrl);
+				// Instead of deferring the update, let's just try to use it now.
+				accessUrl = newAccessUrl;
 			}
 			try
 			{
@@ -726,7 +714,7 @@ public class AddLinks
 				{
 					throw new RuntimeException("You attempted to create a ReferenceDatabase with a NULL primary name! This is not allowed. The other attributes for this reference database are: " + refDB.toString());
 				}
-				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, (String[]) aliases.toArray(new String[aliases.size()]) );
+				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, aliases.toArray(new String[aliases.size()]) );
 			}
 			catch (Exception e)
 			{
@@ -740,43 +728,17 @@ public class AddLinks
 		BRENDAReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
-			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
-			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(objectCache);
+			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(this.objectCache);
+			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(this.objectCache);
 			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
 			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
-			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), objectCache, dbAdapter, personID);
+			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), this.objectCache, this.dbAdapter, personID);
 		}
 		catch (Exception e)
 		{
 			logger.error("Error while creating ENSEMBL species-specific ReferenceDatabase objects: {}", e.getMessage());
 			e.printStackTrace();
 			throw new Error(e);
-		}
-	}
-
-	/**
-	 * Updates the accessUrl of a ReferenceDatabase.
-	 * @param personID - the Person ID - needed for InstanceEdit.
-	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
-	 * @param newAccessUrl - the NEW accessURL.
-	 * @throws Exception
-	 * @throws InvalidAttributeException
-	 * @throws InvalidAttributeValueException
-	 */
-	private void updateRefDBAccesssURL(long personID, String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
-	{
-		@SuppressWarnings("unchecked")
-		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
-		for (GKInstance refDB : refDBs)
-		{
-			String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
-			GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.dbAdapter, personID, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
-			logger.info("Updating accessUrl for: {} from: {} to: {}", refDB.toString(), oldAccessURL, newAccessUrl);
-			refDB.setAttributeValue(ReactomeJavaConstants.accessUrl, newAccessUrl);
-			refDB.getAttributeValue(ReactomeJavaConstants.modified);
-			refDB.addAttributeValue(ReactomeJavaConstants.modified, updateRefDBInstanceEdit);
-			this.dbAdapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.accessUrl);
-			this.dbAdapter.updateInstanceAttribute(refDB, ReactomeJavaConstants.modified);
 		}
 	}
 
@@ -824,12 +786,12 @@ public class AddLinks
 	 */
 	private Map<String, Map<String, ?>> executeFileProcessors()
 	{
-		Map<String,Map<String,?>> dbMappings = new HashMap<String, Map<String,?>>();
+		Map<String,Map<String,?>> dbMappings = new HashMap<>();
 		logger.info("{} file processors to execute.", this.fileProcessorFilter.size());
-		this.fileProcessors.keySet().stream().filter(k -> fileProcessorFilter.contains(k)).forEach( k -> 
+		this.fileProcessors.keySet().stream().filter(k -> this.fileProcessorFilter.contains(k)).forEach( k -> 
 			{
 				logger.info("Executing file processor: {}", k);
-				dbMappings.put(k, fileProcessors.get(k).getIdMappingsFromFile() );
+				dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
 			}
 		);
 		return dbMappings;
