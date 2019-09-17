@@ -74,11 +74,7 @@ public class TestLinkCheckManagerIT
 		final int maxToCheck = 20;
 
 		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
-		
-//		if (!this.objectCache.getRefDbNamesToIds().containsKey(refDBName))
-//		{
-//			throw new Exception("You tried to run the test with the ReferenceDatabase \""+refDBName+"\" but that does not exist in the database. Please create this reference database before attempting to link-check it.");
-//		}
+
 		String refDbId = this.objectCache.getRefDbNamesToIds().get(refDBName).get(0);
 		
 
@@ -90,12 +86,7 @@ public class TestLinkCheckManagerIT
 		List<GKInstance> instList = new ArrayList<>(this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDNASequence, ReactomeJavaConstants.DB_ID, " = ",entityDBID)); 
 		
 		assumeThat(new GreaterThan<>(0).matches(instList.size()), is(true) );
-		
-//		if (instList.size() == 0)
-//		{
-//			throw new Exception("You tried to run the test with a ReferenceEntity whose DB ID ("+entityDBID+") was not in the database. Please ensure that the DB ID exists before running this test.");
-//		}
-		
+
 		Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks(refDBInst, instList , proportionToCheck, maxToCheck);
 		assertTrue(results.keySet().size() >= size);
 		
@@ -121,11 +112,6 @@ public class TestLinkCheckManagerIT
 		final String refDBName = "ZINC - Substances";
 		
 		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
-		
-//		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
-//		{
-//			throw new Exception("Please ensure that the reference databse \""+refDBName+"\" exists before running this test.");
-//		}
 
 		String dbID = this.objectCache.getRefDbNamesToIds().get(refDBName).get(0);
 		GKInstance db = this.dbAdapter.fetchInstance(Long.valueOf(dbID));
@@ -186,10 +172,6 @@ public class TestLinkCheckManagerIT
 		
 		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
 		
-//		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
-//		{
-//			throw new Exception("Please ensure that \""+refDBName+"\" exists before running this test.");
-//		}
 		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get(refDBName).get(0)) );
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence).getAttribute(ReactomeJavaConstants.referenceDatabase);
 		SchemaAttribute att2 = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.ReferenceDNASequence).getAttribute(ReactomeJavaConstants.species);
@@ -213,10 +195,6 @@ public class TestLinkCheckManagerIT
 		
 		assumeThat(this.objectCache.getRefDbNamesToIds().containsKey(refDBName), is(true));
 		
-//		if (this.objectCache.getRefDbNamesToIds().get(refDBName) == null)
-//		{
-//			throw new Exception("Please ensure that \""+refDBName+"\" exists before running this test.");
-//		}
 		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get(refDBName).get(0)) );
 		aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
 		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", otherSpeciedID);
