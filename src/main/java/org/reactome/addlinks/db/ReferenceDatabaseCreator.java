@@ -42,7 +42,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * Creates a reference database with a primary name and some (optional) aliases.
 	 * This will not create a reference database if an existing reference database has the same primaryName. 
 	 * @param url - The URL of the ReferenceDatabase.
-	 * @param accessUrl - The access URL of the RefereneDatabase (cannot be null).
+	 * @param accessUrl - The access URL of the ReferenceDatabase (cannot be null).
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
 	 * @param aliases - Other names.
 	 * @return the DB_ID of the new ReferenceDatabase.
@@ -134,11 +134,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param refDBClass - The SchemaClass for the object that will be created.
 	 * @param aliases - A list of alternate names for the ReferenceDatabase object.
 	 * @return The DB_ID of the new ReferenceDatabase object that was just created.
-	 * @throws InvalidAttributeException
-	 * @throws InvalidAttributeValueException
 	 * @throws Exception
 	 */
-	private long createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	private long createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws Exception
 	{
 		// Create new GKInstance, with the appropriate primary name.
 		GKInstance newReferenceDB = new GKInstance(refDBClass);
@@ -156,7 +154,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	/**
 	 * Creates a ReferenceDatabase. If the ReferenceDatabase already exists, it will not be created.
 	 * @param url - The URL of the ReferenceDatabase.
-	 * @param accessUrl - The access URL of the RefereneDatabase.
+	 * @param accessUrl - The access URL of the ReferenceDatabase.
 	 * @param names - A list of names for this ReferenceDatabase. If *none* of these values are already in the database, then a new ReferenceDatabase
 	 * will be created and these names will be associated with it. If *any* of these names already exist, then the other names will be associated with it.
 	 * The URLs will *not* be updated in the case that a ReferenceDatabase name is pre-existing in the database.
@@ -245,12 +243,10 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param url
 	 * @param accessUrl
 	 * @param newReferenceDB
-	 * @return
-	 * @throws InvalidAttributeException
-	 * @throws InvalidAttributeValueException
+	 * @return the DB_ID of the new ReferenceDatabase object.
 	 * @throws Exception
 	 */
-	private long storeNewReferenceDatabaseObject(String url, String accessUrl, GKInstance newReferenceDB) throws InvalidAttributeException, InvalidAttributeValueException, Exception
+	private long storeNewReferenceDatabaseObject(String url, String accessUrl, GKInstance newReferenceDB) throws Exception
 	{
 		long refDBID;
 		GKInstance createdInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Added to database by "+this.getClass().getName());
@@ -270,10 +266,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
 	 * @param newAccessUrl - the NEW accessURL.
 	 * @throws Exception
-	 * @throws InvalidAttributeException
-	 * @throws InvalidAttributeValueException
 	 */
-	public void updateRefDBAccesssURL(String name, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
+	public void updateRefDBAccesssURL(String name, String newAccessUrl) throws Exception
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
@@ -292,10 +286,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param refDB - The ReferenceDatabase object to update.
 	 * @param newAccessUrl - the new value for the accessUrl attribute of refDB.
 	 * @throws Exception
-	 * @throws InvalidAttributeException
-	 * @throws InvalidAttributeValueException
 	 */
-	public void updateRefDBAccesssURL(GKInstance refDB, String newAccessUrl) throws Exception, InvalidAttributeException, InvalidAttributeValueException
+	public void updateRefDBAccesssURL(GKInstance refDB, String newAccessUrl) throws Exception
 	{
 		String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
 		GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
