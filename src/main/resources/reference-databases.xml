@@ -121,7 +121,7 @@
 			</map>
 		</entry>
 		
-		<entry key="Gene Ontology">
+<!--		<entry key="Gene Ontology">
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="PrimaryName" value="GO"/>
 				<entry key="Aliases">
@@ -129,12 +129,12 @@
 						<value>Gene Ontology</value>
 					</list>
 				</entry>
-				<entry key="URL" value="http://www.geneontology.org" />
+				<entry key="URL" value="http://www.geneontology.org" /> -->
 				<!-- AddLinks doesn't create GO links so we don't need an accessURL or an identiferResource to verify the accessUrl.
 				I think this is just here for the sake of completeness. Although, I think OtherIdentifiers creates GO identifiers,
 				but they are not links so an accessURL is still not needed. -->
-			</map>
-		</entry>
+<!-- 			</map>
+		</entry>  -->
 		
 		<entry key="HapMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">

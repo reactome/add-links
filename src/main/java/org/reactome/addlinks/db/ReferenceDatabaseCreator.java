@@ -51,16 +51,21 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * Creates a reference database with a primary name and some (optional) aliases.
 	 * This will not create a reference database if an existing reference database has the same primaryName. 
 	 * @param url - The URL of the ReferenceDatabase.
-	 * @param accessUrl - The access URL of the ReferenceDatabase (cannot be null).
+	 * @param accessUrl - The access URL of the ReferenceDatabase (cannot be null or IllegalArgumentException will be thrown).
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
 	 * @param aliases - Other names.
-	 * @return the DB_ID of the new ReferenceDatabase.
+	 * @return the DB_ID of the new ReferenceDatabase, or of a preexisting ReferenceDatabase if one is found.
 	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
 	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
 	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
+	 * This method will also throw an `IllegalArgumentException` if accessUrl is null.
 	 */
 	public Long createReferenceDatabaseWithAliases(String url, String accessUrl, String primaryName, String ... aliases) throws Exception
 	{
+		if (accessUrl == null)
+		{
+			throw new IllegalArgumentException("accessUrl cannot be null for ReferenceDatabase with primaryName=\""+primaryName+"\"");
+		}
 		Long dbid = null;
 		//First, let's check that the Reference Database doesn't already exist. all we have to go on is the name...
 		try
@@ -69,27 +74,24 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			@SuppressWarnings("unchecked")
 			Collection<GKInstance> preexistingReferenceDBs = this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", primaryName);
 
-			// If there is an accessUrl, filter preexistingReferenceDBs so that it only contains instances with names that match primaryName.
+			// filter preexistingReferenceDBs so that it only contains instances with names that match primaryName.
 			// This mostly applies to ReferenceDatabases like ENSEMBL - there are many databases, and some may have the same species-specific URL
 			// but different names such as "ENSEMBL_*_PROTEIN" and "ENSEMBL_*_GENE".
-			if (accessUrl != null)
-			{
-				Predicate<GKInstance> nameIsPreexisting = (GKInstance refDB) -> {
-					try
-					{
-						@SuppressWarnings("unchecked")
-						Set<String> names = new HashSet<>(refDB.getAttributeValuesList(ReactomeJavaConstants.name));
-						return names.contains(primaryName);
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-					}
-					return false;
-				};
-				// Now filter out the referenceDBs whose primaryNames don't match
-				preexistingReferenceDBs = preexistingReferenceDBs.stream().filter(nameIsPreexisting).collect(Collectors.toSet());
-			}
+			Predicate<GKInstance> nameIsPreexisting = (GKInstance refDB) -> {
+				try
+				{
+					@SuppressWarnings("unchecked")
+					Set<String> names = new HashSet<>(refDB.getAttributeValuesList(ReactomeJavaConstants.name));
+					return names.contains(primaryName);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				return false;
+			};
+			// Now filter out the referenceDBs whose primaryNames don't match
+			preexistingReferenceDBs = preexistingReferenceDBs.stream().filter(nameIsPreexisting).collect(Collectors.toSet());
 			SchemaClass refDBClass = this.adapter.getSchema().getClassByName(ReactomeJavaConstants.ReferenceDatabase);
 			// Now that we have a bunch of things that contain primaryName, we need to find the ones where the rank of that name-attribute is 0.
 			if (preexistingReferenceDBs!=null && preexistingReferenceDBs.size() > 0)
@@ -113,7 +115,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 						
 						String accessUrlInDB = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
 						// Uh-oh! we will need to update the object in the database.
-						if (accessUrl != null && !accessUrl.equals(accessUrlInDB))
+						if (!accessUrl.equals(accessUrlInDB))
 						{
 							this.updateRefDBAccessURL(refDBInst, accessUrl);
 						}
