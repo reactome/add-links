@@ -20,12 +20,23 @@ import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.CustomLoggable;
 import org.reactome.release.common.database.InstanceEditUtils;
 
+/**
+ * This class represents an object that creates ReferenceDatabase objects in the database.
+ * @author sshorser
+ *
+ */
 public class ReferenceDatabaseCreator implements CustomLoggable
 {
 	private MySQLAdaptor adapter;
 	private static Logger logger ;
 	private long personID;
 	
+	/**
+	 * Creates a new ReferenceDatabase creator which uses a specified database adaptor
+	 * and a specified Person ID which will be used in InstanceEdits when objects are updated/created.
+	 * @param adapter - The database adapator to use.
+	 * @param personID - The Person ID to use in InstanceEdits that are associated with creation/modification of ReferenceDatabase objects.
+	 */
 	public ReferenceDatabaseCreator(MySQLAdaptor adapter, long personID)
 	{
 		this.personID = personID;
