@@ -301,7 +301,7 @@ public class AddLinks
 							}
 							else
 							{
-								// Sometimes the keyword is in the response body, but the respone code is 404, such as "Sorry, identifier 12345 is not in the database".
+								// Sometimes the keyword is in the response body, but the response code is 404, such as "Sorry, identifier 12345 is not in the database".
 								// So we have to make sure that we increment numLinkNotOK in this case.
 								logger.warn("Link-checking error: Identifier {} was found in the respone, but a non-200 response code was returned with it: {}", identifier, statusCode);
 								numLinkNotOK++;	
