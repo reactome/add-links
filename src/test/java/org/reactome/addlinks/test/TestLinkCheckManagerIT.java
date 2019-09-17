@@ -242,7 +242,7 @@ public class TestLinkCheckManagerIT
 	{
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.ReferenceEntity).getAttribute(ReactomeJavaConstants.referenceDatabase);
 		SchemaAttribute att2 = this.dbAdapter.fetchSchema().getClassByName(ReactomeJavaConstants.DatabaseIdentifier).getAttribute(ReactomeJavaConstants.referenceDatabase);
-		
+		final int numberOfLinksToCheck = 3;
 		List<SchemaAttribute> attributes = new ArrayList<>(2);
 		attributes.add(att2);
 		attributes.add(att1);
@@ -268,8 +268,8 @@ public class TestLinkCheckManagerIT
 					List<GKInstance> instList = new ArrayList<>(instances);
 					if (instList.size() > 0)
 					{
-						Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, (instList.size() >= 3 ? 3 : instList.size()) ) );
-						assertTrue(results.keySet().size() == 3);
+						Map<String, LinkCheckInfo> results = this.linkCheckManager.checkLinks( instList.subList(0, (instList.size() >= numberOfLinksToCheck ? numberOfLinksToCheck : instList.size()) ) );
+						assertTrue(results.keySet().size() == numberOfLinksToCheck);
 						
 						for(String k : results.keySet())
 						{
