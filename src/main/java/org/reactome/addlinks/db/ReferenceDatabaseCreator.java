@@ -102,7 +102,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 						// Uh-oh! we will need to update the object in the database.
 						if (accessUrl != null && !accessUrl.equals(accessUrlInDB))
 						{
-							this.updateRefDBAccesssURL(refDBInst, accessUrl);
+							this.updateRefDBAccessURL(refDBInst, accessUrl);
 						}
 						
 						dbid = refDBInst.getDBID();
@@ -260,12 +260,12 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	/**
 	 * Updates the accessUrl of a ReferenceDatabase. There is the <em>potential</em> to update more than one object, if multiple ReferenceDatabases have the same primary name, 
 	 * but if they all have the same primary name, updating them all is probably desirable. If you would rather update exactly one ReferenceDatabase, fetch it from the database and
-	 * then pass it to {@link ReferenceDatabaseCreator#updateRefDBAccesssURL(GKInstance, String)}
+	 * then pass it to {@link ReferenceDatabaseCreator#updateRefDBAccessURL(GKInstance, String)}
 	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
 	 * @param newAccessUrl - the NEW accessURL.
 	 * @throws Exception
 	 */
-	public void updateRefDBAccesssURL(String name, String newAccessUrl) throws Exception
+	public void updateRefDBAccessURL(String name, String newAccessUrl) throws Exception
 	{
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> refDBs = (Collection<GKInstance>) this.adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
@@ -275,7 +275,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		}
 		for (GKInstance refDB : refDBs)
 		{
-			this.updateRefDBAccesssURL(refDB, newAccessUrl);
+			this.updateRefDBAccessURL(refDB, newAccessUrl);
 		}
 	}
 	
@@ -285,7 +285,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param newAccessUrl - the new value for the accessUrl attribute of refDB.
 	 * @throws Exception
 	 */
-	public void updateRefDBAccesssURL(GKInstance refDB, String newAccessUrl) throws Exception
+	public void updateRefDBAccessURL(GKInstance refDB, String newAccessUrl) throws Exception
 	{
 		String oldAccessURL = (String) refDB.getAttributeValue(ReactomeJavaConstants.accessUrl);
 		GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Updating accessURL (old value: "+oldAccessURL+" ) with new value from identifiers.org: " + newAccessUrl);
