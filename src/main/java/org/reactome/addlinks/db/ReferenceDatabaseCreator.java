@@ -44,7 +44,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
 	 * @param aliases - Other names.
 	 * @return the DB_ID of the new ReferenceDatabase.
-	 * @throws Exception 
+	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
+	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
+	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
 	 */
 	public Long createReferenceDatabaseWithAliases(String url, String accessUrl, String primaryName, String ... aliases) throws Exception
 	{
@@ -132,7 +134,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param refDBClass - The SchemaClass for the object that will be created.
 	 * @param aliases - A list of alternate names for the ReferenceDatabase object.
 	 * @return The DB_ID of the new ReferenceDatabase object that was just created.
-	 * @throws Exception
+	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
+	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
+	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
 	 */
 	private long createRefDBWithAliases(String url, String accessUrl, String primaryName, SchemaClass refDBClass, String... aliases) throws Exception
 	{
@@ -157,7 +161,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * will be created and these names will be associated with it. If *any* of these names already exist, then the other names will be associated with it.
 	 * The URLs will *not* be updated in the case that a ReferenceDatabase name is pre-existing in the database.
 	 * @return - The ID of the reference database, whether it was created by this function call, or if it was pre-existing.
-	 * @throws Exception 
+	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
+	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
+	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
 	 */
 	public long createReferenceDatabaseToURL(String url, String accessUrl, String ... names) throws Exception
 	{
@@ -242,7 +248,10 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * @param accessUrl
 	 * @param newReferenceDB
 	 * @return the DB_ID of the new ReferenceDatabase object.
-	 * @throws Exception
+	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
+	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
+	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
+
 	 */
 	private long storeNewReferenceDatabaseObject(String url, String accessUrl, GKInstance newReferenceDB) throws Exception
 	{
@@ -263,7 +272,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * then pass it to {@link ReferenceDatabaseCreator#updateRefDBAccessURL(GKInstance, String)}
 	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
 	 * @param newAccessUrl - the NEW accessURL.
-	 * @throws Exception
+	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
+	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
+	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
 	 */
 	public void updateRefDBAccessURL(String name, String newAccessUrl) throws Exception
 	{
@@ -283,7 +294,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	 * Updates a SINGLE ReferenceDatabase object.
 	 * @param refDB - The ReferenceDatabase object to update.
 	 * @param newAccessUrl - the new value for the accessUrl attribute of refDB.
-	 * @throws Exception
+	 * @throws Exception - comes from the Reactome Java API. Typically caused by some sort of bad data access. This method does queries AND updates so there's a lot of things that could cause this.
+	 * You might get lucky and get something specific such as `InvalidClassException` or `InvalidAttributeException`,
+	 * but you could also get a generic Exception and then you'll need to read the message to figure out what went wrong.
 	 */
 	public void updateRefDBAccessURL(GKInstance refDB, String newAccessUrl) throws Exception
 	{
