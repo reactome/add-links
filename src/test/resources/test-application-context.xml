@@ -34,7 +34,8 @@
 	</bean>
 
 	<!-- test BRENDA file retrieval -->
-	<bean id="brendaRetriever" class="org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever">
+	<!-- BRENDA is no longer used. -->
+	<!-- <bean id="brendaRetriever" class="org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever">
 		<property name="userName" value="${brenda.user}"/>
 		<property name="password" value="${brenda.password}"/>
 		<property name="dataURL" value="http://www.brenda-enzymes.org/soap/brenda_server.php"/>
@@ -57,7 +58,7 @@
 		<constructor-arg index="4" name="sourceDB" value="UniProt"/>
 		<constructor-arg index="5" name="targetDB" value="BRENDA"/>
 		<property name="testMode" value="true"/>
-	</bean>
+	</bean> -->
 
 	<!-- Beans for Orphanet testing. -->
 	<bean id="OrphanetToUniprotReferenceDNASequence"

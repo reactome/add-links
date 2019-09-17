@@ -15,6 +15,8 @@ import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
+import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.CustomLoggable;

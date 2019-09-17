@@ -44,12 +44,6 @@ public class LinkChecker implements CustomLoggable
 	public LinkChecker(CheckableLink link)
 	{
 		this(link.getURI(), link.getSearchKeyword());
-//		this.uri = link.getURI();
-//		this.keyword = link.getSearchKeyword();
-//		if (LinkChecker.logger == null)
-//		{
-//			LinkChecker.logger = this.createLogger("LinkChecker", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, logger, "Link Checker");
-//		}
 	}
 	
 	/**
@@ -70,7 +64,7 @@ public class LinkChecker implements CustomLoggable
 		RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
 											.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
 											.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
-											// Redirects should be enabled.
+											// Redirects should be enabled, some resources WILL redirect you to the correct page.
 											.setRedirectsEnabled(true)
 											.setRelativeRedirectsAllowed(true)
 											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
