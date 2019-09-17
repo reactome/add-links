@@ -58,7 +58,7 @@ public class TestLinkCheckManagerIT
 	
 	@Test
 	/**
-	 * This test method can be used to test link-checking for a *specific* ReferenceDatabase and a *specfic* entity.
+	 * This test method can be used to test link-checking for a *specific* ReferenceDatabase and a *specific* entity.
 	 * This method be useful to test/debug situations where one particular identifier is causing problems for the link-checker.
 	 * NOTE: You must be certain that the ReferenceDatabase and ReferenceEntity exist before running
 	 * this test method or an exception WILL be thrown. If you plan to run unit tests in batch mode
@@ -66,7 +66,7 @@ public class TestLinkCheckManagerIT
 	 * @throws InvalidAttributeException
 	 * @throws Exception
 	 */
-	public void testLinkCheckManager() throws InvalidAttributeException, Exception
+	public void testLinkCheckManagerForSomeSpecificReferenceDatabaseAndEntity() throws InvalidAttributeException, Exception
 	{
 		final String refDBName = "NCBI dbSNP"; // change this to test with a different ReferenceDatabase.
 		final String entityDBID = "10787100"; // "100525522" - a different entity to test.
@@ -137,7 +137,7 @@ public class TestLinkCheckManagerIT
 	 * @throws Exception
 	 */
 	@Test
-	public void testLinkCheckManager2() throws Exception
+	public void testLinkCheckManagerFor10UniProtIdentifiers() throws Exception
 	{
 		GKInstance refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get("UniProt").get(0)) );
 		SchemaAttribute att1 = this.dbAdapter.fetchSchema().getClassByName("ReferenceEntity").getAttribute("referenceDatabase");
@@ -166,7 +166,7 @@ public class TestLinkCheckManagerIT
 	public void testLinkCheckManagerKEGG() throws Exception
 	{
 		final String humanSpeciesID = "48887";
-		final String otherSpeciedID = "68323";
+		final String dRerioSpeciesID = "68323";
 		
 		String refDBName = "KEGG Gene (Homo sapiens)";
 		
@@ -197,7 +197,7 @@ public class TestLinkCheckManagerIT
 		
 		refDBInst = this.dbAdapter.fetchInstance( Long.valueOf(this.objectCache.getRefDbNamesToIds().get(refDBName).get(0)) );
 		aqr1 = this.dbAdapter.new AttributeQueryRequest(att1, "=", refDBInst.getDBID());
-		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", otherSpeciedID);
+		aqr2 = this.dbAdapter.new AttributeQueryRequest(att2, "=", dRerioSpeciesID);
 		instances.clear();
 		instances = new ArrayList<GKInstance> (this.dbAdapter._fetchInstance(Arrays.asList(aqr1, aqr2)));
 		System.out.println("Number of instances found: " + instances.size());
