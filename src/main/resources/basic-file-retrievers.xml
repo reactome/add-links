@@ -223,5 +223,13 @@
 			</bean>
 		</entry>
 
+		<entry key="TargetPathogen">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="TargetPathogen">
+				<property name="dataURL" value="https://target.sbg.qb.fcen.uba.ar/patho/reactome_map" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/target_pathogen_reactome_map.txt" />
+				<property name="maxAge" ref="maxFileAge"/>
+				<constructor-arg name="retrieverName" value="retrievers/TargetPathogen"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
