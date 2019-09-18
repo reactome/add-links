@@ -110,7 +110,6 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 
 	private void createReferencesForReactomeIdentifiers(List<GKInstance> sourceReferences) throws Exception
 	{
-		final String refDB = "Reactome";
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
@@ -124,7 +123,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 					for (String targetPathogenID : TargetPathogenReferenceCreator.reactomeToTargetPathogen.get(reactomeIdentifier))
 					{
 						String referenceToValue = sourceRef.getDBID().toString();
-						this.refCreator.createIdentifier(targetPathogenID, referenceToValue, refDB, this.personID, this.getClass().getName());
+						this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
 					}
 				}
 			}
@@ -133,7 +132,6 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 
 	private void createReferencesForUniProtIdentifiers(List<GKInstance> sourceReferences) throws InvalidAttributeException, Exception
 	{
-		final String refDB = "UniProt";
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
@@ -146,7 +144,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 					for (String targetPathogenID : TargetPathogenReferenceCreator.uniProtToTargetPathogen.get(uniProtIdentifier))
 					{
 						String referenceToValue = sourceRef.getDBID().toString();
-						this.refCreator.createIdentifier(targetPathogenID, referenceToValue, refDB, this.personID, this.getClass().getName());
+						this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
 					}
 				}
 			}
