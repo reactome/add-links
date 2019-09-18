@@ -40,7 +40,7 @@ public class TargetPathogenFileProcessor extends FileProcessor<String>
 		Map<String, String> mapping = new HashMap<>();
 		try
 		{
-			Files.lines(this.pathToFile).sequential().forEach( line ->
+			Files.lines(this.pathToFile).skip(1).sequential().forEach( line ->
 			{
 				String[] lineParts = line.split(",");
 				// the URL is always the first item. we will need to extract the Target Pathogen identifier from the URL.
@@ -72,6 +72,10 @@ public class TargetPathogenFileProcessor extends FileProcessor<String>
 			e.printStackTrace();
 		}
 		this.logger.info("Lines in mapping file: {}; Mappings from TargetPathogen: {}.", lineCount.get(), mapping.keySet().size());
+		for (String tpIdentifier : mapping.keySet())
+		{
+			this.logger.debug("{}\t{}",tpIdentifier, mapping.get(tpIdentifier));
+		}
 		return mapping;
 	}
 
