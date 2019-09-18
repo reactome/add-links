@@ -58,6 +58,7 @@ import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCrea
 import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
+import org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
 import org.reactome.release.common.database.InstanceEditUtils;
 
@@ -510,6 +511,12 @@ public class AddLinks
 					{
 						// COSMIC should use ALL human ReferenceGeneProduct, regarless of source database.
 						sourceReferences = this.objectCache.getBySpecies("48887", "ReferenceGeneProduct");
+					}
+					else if ( refCreator instanceof TargetPathogenReferenceCreator)
+					{
+						// The list of source references is a list of reactions AND a list of EWASes.
+						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
+						sourceReferences.addAll(this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.EntityWithAccessionedSequence));
 					}
 					else
 					{
