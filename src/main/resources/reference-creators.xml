@@ -500,5 +500,31 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
+		
+		<entry key="TargetPathogenReactionsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator" id="TargetPathogenReactionsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReactionBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="Reactome"/>
+				<constructor-arg index="5" name="targetDB" value="TargetPathogen"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/TargetPathogenReactionsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
+		
+		<entry key="TargetPathogenProteinsReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator" id="TargetPathogenProteinsReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="EWASBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="TargetPathogen"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/TargetPathogenProteinsReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
