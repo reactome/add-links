@@ -87,8 +87,8 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 			}
 		}
 		this.logger.info("{} mappings in input (keyed by TargetPathogen identifier)", mapping.keySet().size());
-		this.logger.info("{} identifiers in reactomeIdentifiers set", reactomeToTargetPathogen.size());
-		this.logger.info("{} identifiers in uniProtIdentifiers set", uniProtToTargetPathogen.size());
+		this.logger.info("{} identifiers in reactome-to-TargetPathogen map", reactomeToTargetPathogen.size());
+		this.logger.info("{} identifiers in uniProt-to-TargetPathogen map", uniProtToTargetPathogen.size());
 		// Now we need to go through the sourceReferences and create references based on reactomeIdentifiers and uniProtIdentifiers.
 		// It might be necessary to have two instances of TargetPathogenReferenceCreator: one for creating cross-refs for Reactions and the other for creating cross-refs for Proteins.
 		// But... that would not be terribly efficient.
