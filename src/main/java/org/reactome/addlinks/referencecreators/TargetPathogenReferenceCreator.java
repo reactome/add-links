@@ -52,7 +52,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 			{
 				for (String targetPathogenIdentifier : mapping.keySet())
 				{
-					String[] mappedIdentifierParts = mapping.get(targetPathogenIdentifier).split("|");
+					String[] mappedIdentifierParts = mapping.get(targetPathogenIdentifier).split("\\|");
 					for (String identifier : mappedIdentifierParts)
 					{
 						// If the string matches the Reactome pattern, it is a Reactome identifier.
@@ -137,7 +137,8 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 			// Filter for Reactions.
 			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.EntityWithAccessionedSequence))
 			{
-				String uniProtIdentifier = (String) sourceRef.getAttributeValue(ReactomeJavaConstants.identifier);
+				GKInstance refEnt = (GKInstance) sourceRef.getAttributeValue(ReactomeJavaConstants.referenceEntity);
+				String uniProtIdentifier = (String) refEnt.getAttributeValue(ReactomeJavaConstants.identifier);
 				
 				if (TargetPathogenReferenceCreator.uniProtToTargetPathogen.containsKey(uniProtIdentifier))
 				{
