@@ -64,10 +64,4 @@
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Complex"/>
 		</constructor-arg>
 	</bean>
-	
-	<bean id="EWASBean" class="java.lang.String">
-		<constructor-arg>
-			<util:constant static-field="org.gk.model.ReactomeJavaConstants.EntityWithAccessionedSequence"/>
-		</constructor-arg>
-	</bean>
 </beans>

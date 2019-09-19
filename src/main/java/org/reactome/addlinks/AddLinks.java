@@ -510,13 +510,15 @@ public class AddLinks
 					else if ( refCreator instanceof COSMICReferenceCreator)
 					{
 						// COSMIC should use ALL human ReferenceGeneProduct, regarless of source database.
-						sourceReferences = this.objectCache.getBySpecies("48887", "ReferenceGeneProduct");
+						sourceReferences = this.objectCache.getBySpecies("48887", ReactomeJavaConstants.ReferenceGeneProduct);
 					}
-					else if ( refCreator instanceof TargetPathogenReferenceCreator)
+					else if ( refCreator instanceof TargetPathogenReferenceCreator && refCreator.getSourceRefDB().equals("Reactome"))
 					{
-						// The list of source references is a list of reactions AND a list of EWASes.
+						// The list of source references is a list of reactions. TargetPathogenReferenceCreator does
+						// not need special code if it's *not* creating references for reactions.
 						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
-						sourceReferences.addAll(this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.EntityWithAccessionedSequence));
+						// ... AND a list of EWASes.
+//						sourceReferences.addAll(this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.EntityWithAccessionedSequence));
 					}
 					else
 					{
@@ -614,7 +616,7 @@ public class AddLinks
 		{
 			for (String dbid : this.objectCache.getRefDbNamesToIds().get(dbName))
 			{
-				identifiers.addAll(this.objectCache.getByRefDb(dbid, "ReferenceGeneProduct"));
+				identifiers.addAll(this.objectCache.getByRefDb(dbid, ReactomeJavaConstants.ReferenceGeneProduct));
 			}
 		}
 		

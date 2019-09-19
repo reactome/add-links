@@ -94,7 +94,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		// But... that would not be terribly efficient.
 		
 		// So... which instance are we? We can determine from how the SourceRefDB and classReferring are set.
-		if (this.sourceRefDB.equals("UniProt") && this.classReferringToRefName.equals(ReactomeJavaConstants.EntityWithAccessionedSequence))
+		if (this.sourceRefDB.equals("UniProt") && this.classReferringToRefName.equals(ReactomeJavaConstants.ReferenceGeneProduct))
 		{
 			this.createReferencesForUniProtIdentifiers(sourceReferences);
 		}
@@ -123,7 +123,13 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 					for (String targetPathogenID : TargetPathogenReferenceCreator.reactomeToTargetPathogen.get(reactomeIdentifier))
 					{
 						String referenceToValue = sourceRef.getDBID().toString();
-						this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
+						if (!this.checkXRefExists(sourceRef, targetPathogenID))
+						{
+							if (!this.testMode)
+							{
+								this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
+							}
+						}
 					}
 				}
 			}
@@ -135,17 +141,23 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
-			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.EntityWithAccessionedSequence))
+			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.ReferenceGeneProduct))
 			{
-				GKInstance refEnt = (GKInstance) sourceRef.getAttributeValue(ReactomeJavaConstants.referenceEntity);
-				String uniProtIdentifier = (String) refEnt.getAttributeValue(ReactomeJavaConstants.identifier);
+//				GKInstance refEnt = (GKInstance) sourceRef.gektAttributeValue(ReactomeJavaConstants.referenceEntity);
+				String uniProtIdentifier = (String) sourceRef.getAttributeValue(ReactomeJavaConstants.identifier);
 				
 				if (TargetPathogenReferenceCreator.uniProtToTargetPathogen.containsKey(uniProtIdentifier))
 				{
 					for (String targetPathogenID : TargetPathogenReferenceCreator.uniProtToTargetPathogen.get(uniProtIdentifier))
 					{
 						String referenceToValue = sourceRef.getDBID().toString();
-						this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
+						if (!this.checkXRefExists(sourceRef, targetPathogenID))
+						{
+							if (!this.testMode)
+							{
+								this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
+							}
+						}
 					}
 				}
 			}
