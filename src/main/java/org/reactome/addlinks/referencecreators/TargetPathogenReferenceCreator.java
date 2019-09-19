@@ -86,6 +86,10 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 				}
 			}
 		}
+		else
+		{
+			this.logger.info("Identifier sets appear to be already populated. Continuing with the process...");
+		}
 		this.logger.info("{} mappings in input (keyed by TargetPathogen identifier)", mapping.keySet().size());
 		this.logger.info("{} identifiers in reactome-to-TargetPathogen map", reactomeToTargetPathogen.size());
 		this.logger.info("{} identifiers in uniProt-to-TargetPathogen map", uniProtToTargetPathogen.size());
@@ -104,7 +108,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		}
 		else
 		{
-			this.logger.error("sourceRefDB was: {} and classReferring was: {} - THIS IS NOT A VALID COMBINATION!", this.sourceRefDB, this.classReferringToRefName);
+			this.logger.error("sourceRefDB was: {} and classReferring was: {} - THIS IS NOT A VALID COMBINATION! Valid options are: UniProt/ReferenceGeneProduct and Reactome/Reaction.", this.sourceRefDB, this.classReferringToRefName);
 		}
 	}
 
