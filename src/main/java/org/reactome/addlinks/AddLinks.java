@@ -508,10 +508,15 @@ public class AddLinks
 					else if ( refCreator instanceof TargetPathogenReferenceCreator && refCreator.getSourceRefDB().equals(REACTOME))
 					{
 						// The list of source references is a list of reactions. TargetPathogenReferenceCreator does
-						// not need special code if it's *not* creating references for reactions.
+						// not need special handling if it's *not* creating references for reactions.
+						// Creating ReferenceGeneProducts from UniProt identfiers works like other ReferenceCreators...
+						// 
+						// The reason this code is here is because the database does not contain Reactome as a 
+						// ReferenceDatabase so looking for Reactions in the cache whose source is Reactome will fail.
+						// And even if Reactome *was* a ReferenceDatabase, somewhere there would need to be code to check 
+						// the stableIdentifier attribute (via DatabaseObject) instead of the regular identifier attribute
+						// attached to the Reaction.
 						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
-						// ... AND a list of EWASes.
-//						sourceReferences.addAll(this.dbAdapter.fetchInstancesByClass(ReactomeJavaConstants.EntityWithAccessionedSequence));
 					}
 					else
 					{
