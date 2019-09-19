@@ -110,6 +110,9 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 
 	private void createReferencesForReactomeIdentifiers(List<GKInstance> sourceReferences) throws Exception
 	{
+		int numRefsCreated = 0;
+		int numRefsPreexisting = 0;
+		int numTargetIdentifiers = 0;
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
@@ -122,6 +125,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 				{
 					for (String targetPathogenID : TargetPathogenReferenceCreator.reactomeToTargetPathogen.get(reactomeIdentifier))
 					{
+						numTargetIdentifiers++;
 						String referenceToValue = sourceRef.getDBID().toString();
 						if (!this.checkXRefExists(sourceRef, targetPathogenID))
 						{
@@ -129,27 +133,39 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 							{
 								this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
 							}
+							numRefsCreated++;
+						}
+						else
+						{
+							numRefsPreexisting++;
 						}
 					}
 				}
 			}
 		}
+		this.logger.info("Inspected {} objects, {} identifiers for TargetPathogen.\n"
+				+ " {} new references were created.\n"
+				+ "{} references already existed (and were NOT re-created).",
+				sourceReferences.size(), numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
 	}
 
 	private void createReferencesForUniProtIdentifiers(List<GKInstance> sourceReferences) throws InvalidAttributeException, Exception
 	{
+		int numRefsCreated = 0;
+		int numRefsPreexisting = 0;
+		int numTargetIdentifiers = 0;
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
 			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.ReferenceGeneProduct))
 			{
-//				GKInstance refEnt = (GKInstance) sourceRef.gektAttributeValue(ReactomeJavaConstants.referenceEntity);
 				String uniProtIdentifier = (String) sourceRef.getAttributeValue(ReactomeJavaConstants.identifier);
 				
 				if (TargetPathogenReferenceCreator.uniProtToTargetPathogen.containsKey(uniProtIdentifier))
 				{
 					for (String targetPathogenID : TargetPathogenReferenceCreator.uniProtToTargetPathogen.get(uniProtIdentifier))
 					{
+						numTargetIdentifiers++;
 						String referenceToValue = sourceRef.getDBID().toString();
 						if (!this.checkXRefExists(sourceRef, targetPathogenID))
 						{
@@ -157,10 +173,19 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 							{
 								this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
 							}
+							numRefsCreated++;
+						}
+						else
+						{
+							numRefsPreexisting++;
 						}
 					}
 				}
 			}
 		}
+		this.logger.info("Inspected {} objects, {} identifiers for TargetPathogen.\n"
+				+ " {} new references were created.\n"
+				+ "{} references already existed (and were NOT re-created).",
+				sourceReferences.size(), numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
 	}
 }
