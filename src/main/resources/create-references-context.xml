@@ -44,32 +44,53 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>IntEnzFileProcessor</value>
+		<value>ENSEMBLFileProcessor</value>
+		<value>ENSEMBLNonCoreFileProcessor</value>
+		<value>UniprotToEnsemblFileProcessor</value>
+		<value>OpenTargetsFileProcessor</value>
+		<value>FlyBaseFileProcessor</value>
+		<value>CTDProcessor</value>
+		<value>UniprotToEntrezGeneFileProcessor</value>
+		<value>UniprotToRefSeqPeptideFileProcessor</value>
+		<value>UniprotToUCSCFileProcessor</value>
+		<value>UniprotToRefSeqRNAFileProcessor</value>
+		<value>UniprotToPDBFileProcessor</value>
+		<value>UniprotToWormbaseFileProcessor</value>
+		<value>PROFileProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
+		<value>COSMICProcessor</value>
+		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>KEGGFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
- 		<value>RheaFileProcessor</value>
-		<value>FlyBaseFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
 		<value>zincProtFileProcessor</value>
-		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
-		<value>DockblasterFileProcessor</value>
+		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
-		<value>PROFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
- 		<value>UniprotToEnsemblFileProcessor</value>
-		<value>UniprotToPDBFileProcessor</value>
-		<value>UniprotToRefSeqPeptideFileProcessor</value>
-		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>OMIMProcessor</value>
-		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>UniprotToWormbaseFileProcessor</value>
-		<value>BrendaProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>IntEnzRefCreator</value>		
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>ENSEMBLToWormbaseRefCreator</value>
+		<value>OpenTargetsReferenceCreator</value>
+		<value>FlyBaseReferenceCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
+		<value>upMappedRefSeqRNARefCreator</value>
+		<value>upMappedUCSCRefCreator</value>
+		<value>upMappedRefSeqPeptideRefCreator</value>
+		<value>upMappedPDBRefCreator</value>
+		<value>upMappedOMIMRefCreator</value>
+		<value>upMappedWormbaseRefCreator</value>
+		<value>proRefCreator</value>
+		<value>COSMICReferenceCreator</value>
+		<value>geneCardsRefCreator</value>
 		<value>zincSubstancesReferenceCreator</value>
 		<value>zincFDAReferenceCreator</value>
 		<value>zincWorldDrugsReferenceCreator</value>
@@ -77,29 +98,92 @@
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
-		<value>KEGGReferenceCreator</value>
-		<value>upMappedKEGGRefCreator</value>
-		<value>upMappedPDBRefCreator</value>
-		<value>upMappedOMIMRefCreator</value>
-		<value>upMappedENSEMBLGeneRefCreator</value>
-		<value>upMappedEntrezGeneRefCreator</value>
-		<value>upMappedRefSeqRNARefCreator</value>
-		<value>upMappedRefSeqPeptideRefCreator</value>
-		<value>upMappedWormbaseRefCreator</value>
-		<value>FlyBaseReferenceCreator</value>
 		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value> 
+		<value>zincToChEBIReferenceCreator</value>
+		<value>HGNCReferenceCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
-		<value>BrendaRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>OrphanetReferenceCreator</value>
-		<value>proRefCreator</value>
-		<value>pdbRefCreator</value>
-		<value>geneCardsRefCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>ComplexPortalRefCreator</value>
+	</util:list>
+	
+	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>IntEnz</value>
+		<value>ENSEMBL</value>
+		<value>PDB</value>
+		<value>CTD Gene</value>
+		<value>dbSNP Gene</value>
+		<value>NCBI Gene</value>
+		<value>Monarch</value>
+		<value>UniProt</value>
+		<value>Flybase</value>
+		<value>BioModels</value>
+		<value>Flybase</value>
+		<value>Gene Ontology</value>
+		<value>HapMap</value>
+		<value>IntEnz</value>
+		<value>KEGG</value>
+		<value>Orphanet</value>
+		<value>RefSeq</value>
+		<value>Rhea</value>
+		<value>UCSC human</value>
+		<value>Wormbase</value>
+		<value>ZINC target</value>
+		<value>ZINC</value>
+		<value>ZINC - Substances</value>
+		<value>ZINC - FDA approved</value>
+		<value>ZINC - World Drugs</value>
+		<value>ZINC - Metabolites</value>
+		<value>ZINC - Biogenic</value>
+		<value>ZINC - Investigational</value>
+		<value>ZINC - Predictions - Purchasable</value>
+		<value>HMDB Protein</value>
+		<value>HMDB Metabolite</value>
+		<value>COSMIC</value>
+		<!--
+		OpenTargets use ENSEMBL identifiers, but
+		the identifiers do not appear in the body of the web page.
+		<value>OpenTargets</value> -->
+		<!-- 
+		HGNC pages are now loaded using JavaScript so a simple GET request is not enough to see if
+		the identifier is on the page. 
+		<value>HGNC</value> -->
+		<!--
+		<value>UCSC</value>
+		The UCSC redirects make it hard to check and since we're linking to them via UniProt ID (not UCSC ID),
+		their redirect service might take the user to a page that is correct but does not display the UniProt ID that
+		got them there.
+		-->
+		<!-- 
+		<value>DOCK Blaster</value>
+		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
+		Even loading one page seems to make it take effort.
+		-->
+		<!--
+		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,
+		because the ID won't get loaded until after the JavaScript runs.
+		<value>BioGPS Gene</value>
+		-->
+		<!--
+		GeneCards returns a 403 for every request.
+		<value>GeneCards</value> 
+		-->
+		<!--
+		Don't bother testing OMIM - they will return a 403 each time you hit their page.
+		It probably has something to do with the JavaScript pop-over asking for donations...
+		If they change the way their pages load it might be worth re-activating link checking
+		for OMIM. Or... try to code around it, if you're feeling REALLY ambitious.
+		<value>OMIM</value> -->
+		<!--
+		<value>ComplexPortal</value>
+		ComplexPortal does not actually contain the identifier in the page content, so we can't properly check it.
+		 -->
+		 <!--
+		 PRO returns a 503 error when accessed via Java 
+		 <value>PRO</value> -->
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
@@ -108,6 +192,8 @@
 		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
 		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
 		<property name="processorCreatorLink" ref="processorCreatorLink"/>
+		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
+		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
 	</bean>
 	
 	
