@@ -40,30 +40,34 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>OrthologsCSVFromZinc</value>
- 		<value>UniProtToKEGG</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value>
- 		<value>OrphanetToUniprotReferenceDNASequence</value>
-		<value>Zinc</value>
-		<value>OrthologsFromZinc</value>
-		<value>RheaRetriever</value>
+		<value>IntEnz</value>		
+		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
-		<value>UniProtToOMIM</value>
+		<value>OpenTargets</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>CTD</value>
 		<value>UniProtToEntrez_Gene</value>
-		<value>UniProtToPDB</value>
+		<value>UniProtToUCSC</value>
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
-		<value>UniProtToENSEMBL</value>
+		<value>UniProtToPDB</value>
+		<value>UniProtToKEGG</value>
 		<value>UniProtToWormbase</value>
- 		<value>PROToReferencePeptideSequence</value>
-		<value>EntrezGeneToUniprotReference</value>
+		<value>UniProtToOMIM</value>
+		<value>PROToReferencePeptideSequence</value>
+		<value>Zinc</value>
+		<value>COSMIC</value>
+		<value>HGNC</value>
+		<value>OrthologsFromZinc</value>
+		<value>OrthologsCSVFromZinc</value>
+		<value>KEGGRetriever</value>
+		<value>OrphanetToUniprotReferenceDNASequence</value>
+		<value>RheaRetriever</value>
+		<value>OMIM</value>
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
-		<value>DOCKBlaster</value>
-		<value>RHEAIdentifierToReactionlikeEvent</value> 
-		<value>KEGGRetriever</value>
-		<value>BrendaRetriever</value>
- 		<value>ComplexPortal</value>
+		<value>RHEAIdentifierToReactionlikeEvent</value>
+		<value>ComplexPortal</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -73,6 +77,10 @@
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 		 
 	</util:list>
+	
+	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		
+	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
 		depends-on="objectCache,fileRetrievers,fileRetrieverFilter,fileProcessorFilter,fileProcessors,uniProtFileRetrievers,ensemblFileRetrievers,referenceDatabases,processorCreatorLink,referenceCreatorFilter">
@@ -80,6 +88,8 @@
 		<property name="referenceDatabasesToCreate" ref="referenceDatabases"/>
 		<property name="ensemblBatchLookup" ref="ensemblBatchLookup" />
 		<property name="processorCreatorLink" ref="processorCreatorLink"/>
+		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
+		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
 	</bean>
 	
 	
