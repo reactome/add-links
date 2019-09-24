@@ -11,6 +11,18 @@ pipeline{
           	    }
             }
         }
+		stage('Setup: Backup DB'){
+			steps{
+				script{
+					dir('add-links'){
+						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
+							sh 'mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump'
+							sh 'gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump'
+						}
+					}
+				}
+			}
+		}
 		stage('Main: AddLinks Insertions'){
 			steps{
 				script{
@@ -21,6 +33,18 @@ pipeline{
 							sh 'rm -f src/main/resources/db.properties'
 					    	sh 'java -cp "$(pwd)/resources" -Dconfig.location=$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=$(pwd)/resources/log4j2.xml -jar target/AddLinks-1.1.4-SHADED.jar file://$(pwd)/resources/create-references-context.xml'
 							sh 'rm src/main/resources/auth.properties'
+						}
+					}
+				}
+			}
+		}
+		stage('Post: Backup DB'){
+			steps{
+				script{
+					dir('add-links'){
+						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
+							sh 'mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump'
+							sh 'gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump'
 						}
 					}
 				}
