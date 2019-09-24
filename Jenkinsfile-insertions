@@ -7,7 +7,6 @@ pipeline{
 				script{
 					dir('add-links'){
 						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							sh "[ -f ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump.gz ] && mv --backup=numbered ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump.gz"
 							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
 							sh "gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
 						}
