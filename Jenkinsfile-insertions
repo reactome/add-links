@@ -2,6 +2,18 @@ pipeline{
     agent any
 
     stages{
+		stage('Setup: Backup DB'){
+			steps{
+				script{
+					dir('add-links'){
+						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
+							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
+							sh "gzip -f ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
+						}
+					}
+				}
+			}
+		}
 		stage('Setup: Build jar file'){
             steps{
 		        script{
@@ -11,18 +23,6 @@ pipeline{
           	    }
             }
         }
-		stage('Setup: Backup DB'){
-			steps{
-				script{
-					dir('add-links'){
-						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
-							sh "gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
-						}
-					}
-				}
-			}
-		}
 		stage('Main: AddLinks Insertions'){
 			steps{
 				script{
@@ -46,6 +46,16 @@ pipeline{
 							sh 'mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump'
 							sh 'gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump'
 						}
+					}
+				}
+			}
+		}
+		stage('Post:Archive logs and backups'){
+			steps{
+				script{
+					dir('add-links'){
+						sh "mkdir -p archive/${env.RELEASE_NUMBER}/logs"
+						sh "mv --backup=numbered *_${env.RELEASE_NUMBER}_*.dump.gz archive/${env.RELEASE_NUMBER}/"
 					}
 				}
 			}
