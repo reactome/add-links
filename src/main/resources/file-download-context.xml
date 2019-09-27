@@ -25,11 +25,11 @@
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
 	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
-		<constructor-arg name="host" index="0" value="${database.host}"/>
-		<constructor-arg name="database" index="1" value="${database.name}"/>
-		<constructor-arg name="username" index="2" value="${database.user}"/>
-		<constructor-arg name="password" index="3" value="${database.password}"/>
-		<constructor-arg name="port" index="4" value="${database.port}"/>
+		<constructor-arg name="host" index="0" value="${release.database.host}"/>
+		<constructor-arg name="database" index="1" value="${release_current.name}"/>
+		<constructor-arg name="username" index="2" value="${release.database.user}"/>
+		<constructor-arg name="password" index="3" value="${release.database.password}"/>
+		<constructor-arg name="port" index="4" value="${release.database.port}"/>
 	</bean>
 	
 	
