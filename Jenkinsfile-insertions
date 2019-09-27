@@ -56,6 +56,10 @@ pipeline{
 					dir('add-links'){
 						sh "mkdir -p archive/${env.RELEASE_NUMBER}/logs"
 						sh "mv --backup=numbered *_${env.RELEASE_NUMBER}_*.dump.gz archive/${env.RELEASE_NUMBER}/"
+						sh "gzip logs/*.log"
+						sh "gzip logs/retrievers/*
+						sh "gzip logs/*.log logs/retrievers/* logs/file-processors/* logs/refCreators/*"
+						sh "mv logs/* archive/${env.RELEASE_NUMBER}/logs"
 					}
 				}
 			}
