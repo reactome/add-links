@@ -43,8 +43,8 @@ pipeline{
 				script{
 					dir('add-links'){
 						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							sh 'mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump'
-							sh 'gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump'
+							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump"
+							sh "gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump"
 						}
 					}
 				}
