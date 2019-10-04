@@ -1,7 +1,25 @@
 pipeline{
-    agent any
+	agent any
 
-    stages{
+	stages{
+		stage('Check upstream builds succeeded'){
+			steps{
+				script{
+					def addLinksDownloadStatusUrl = httpRequest authentication: 'jenkinsKey', url: "${env.JENKINS_JOB_URL}/job/${env.RELEASE_NUMBER}/job/AddLinks-Download/lastBuild/api/json"
+					def addLinksDownloadJson = new JsonSlurper().parseText(addLinksDownloadUrl.getContent())
+					if(addLinksDownloadJson['result'] != "SUCCESS"){
+						error("Most recent AddLinks-Download build status: " + addLinksDownloadJson['result'] + ". Please complete a successful build.")
+					}
+			    	}
+				script{
+					def orthoinferenceDownloadStatusUrl = httpRequest authentication: 'jenkinsKey', url: "${env.JENKINS_JOB_URL}/job/${env.RELEASE_NUMBER}/job/Orthoinference/lastBuild/api/json"
+					def orthoinferenceJson = new JsonSlurper().parseText(orthoinferenceUrl.getContent())
+					if(orthoinferenceJson['result'] != "SUCCESS"){
+						error("Most recent Orthoinference build status: " + addLinksDownloadJson['result'] + ". Please complete a successful build.")
+					}
+			    	}
+		    	}
+	    	}
 		stage('Setup: Backup DB'){
 			steps{
 				script{
@@ -15,14 +33,14 @@ pipeline{
 			}
 		}
 		stage('Setup: Build jar file'){
-            steps{
-		        script{
-                    dir('add-links'){
-					    sh 'mvn clean package -DskipTests'
-                    }
-          	    }
-            }
-        }
+            		steps{
+		        	script{
+                    			dir('add-links'){
+						sh 'mvn clean package -DskipTests'
+                    			}
+          	    		}
+            		}
+        	}
 		stage('Main: AddLinks Insertions'){
 			steps{
 				script{
@@ -64,5 +82,5 @@ pipeline{
 				}
 			}
 		}
-    }
+    	}
 }
