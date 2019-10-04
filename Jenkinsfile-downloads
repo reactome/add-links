@@ -19,7 +19,7 @@ pipeline{
             		steps{
 	    			script{
                     			dir('add-links'){
-						sh 'mvn clean package -DskipTests'
+						sh "mvn clean package -DskipTests"
                     			}
           	    		}
             		}		
