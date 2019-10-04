@@ -32,7 +32,7 @@ pipeline{
 							sh 'cp $FILE src/main/resources/auth.properties'
 							sh 'ln -sf src/main/resources resources'
 							sh 'rm -f src/main/resources/db.properties'
-					    		sh "java -cp $(pwd)/resources -Dconfig.location=$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=$(pwd)/resources/log4j2.xml -jar target/AddLinks-1.1.4-SHADED.jar file://$(pwd)/resources/file-download-context.xml"							
+					    		sh """java -cp "$(pwd)/resources" -Dconfig.location=$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=$(pwd)/resources/log4j2.xml -jar target/AddLinks-1.1.4-SHADED.jar file://$(pwd)/resources/create-references-context.xml"""							
 							sh 'rm -f src/main/resources/auth.properties'
 						}
 					}
