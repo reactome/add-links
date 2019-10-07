@@ -18,18 +18,18 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 	private static final String REACTOME_IDENTIFIER_PATTERN_STRING = "R-[A-Z]{3}-.*";
 	private static final Pattern REACTOME_IDENTIFIER_PATTERN = Pattern.compile(REACTOME_IDENTIFIER_PATTERN_STRING);
 
-	// These sets are static so that the first instance of this class can populate them, and all other instances can 
+	// These sets are static so that the first instance of this class can populate them, and all other instances can
 	// just rely on the data that has already been set.
 	private static Map<String, Set<String>> reactomeToTargetPathogen = new HashMap<>();
 	private static Map<String, Set<String>> uniProtToTargetPathogen = new HashMap<>();
 
 	private long personID;
-	
+
 	public TargetPathogenReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
-	
+
 	public TargetPathogenReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
@@ -46,7 +46,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		if (reactomeToTargetPathogen.size() == 0 && uniProtToTargetPathogen.size() == 0)
 		{
 			this.logger.info("Identifier sets are empty, populating them now...");
-			
+
 			// the maps are static, shared between instances. Synchronized block should ensure that they cannot be accessed asynchronously.
 			synchronized (this)
 			{
@@ -96,7 +96,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		// Now we need to go through the sourceReferences and create references based on reactomeIdentifiers and uniProtIdentifiers.
 		// It might be necessary to have two instances of TargetPathogenReferenceCreator: one for creating cross-refs for Reactions and the other for creating cross-refs for Proteins.
 		// But... that would not be terribly efficient.
-		
+
 		// So... which instance are we? We can determine from how the SourceRefDB and classReferring are set.
 		if (this.sourceRefDB.equals("UniProt") && this.classReferringToRefName.equals(ReactomeJavaConstants.ReferenceGeneProduct))
 		{
@@ -112,11 +112,17 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		}
 	}
 
+	/**
+	 * Create references for Reactome Identifiers.
+	 * @param sourceReferences
+	 * @throws Exception
+	 */
 	private void createReferencesForReactomeIdentifiers(List<GKInstance> sourceReferences) throws Exception
 	{
 		int numRefsCreated = 0;
 		int numRefsPreexisting = 0;
 		int numTargetIdentifiers = 0;
+		int[] counts = { numTargetIdentifiers, numRefsCreated, numRefsPreexisting  };
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
@@ -124,72 +130,90 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 			{
 				GKInstance reactomeStableIdentifier = (GKInstance) sourceRef.getAttributeValue(ReactomeJavaConstants.stableIdentifier);
 				String reactomeIdentifier = (String) reactomeStableIdentifier.getAttributeValue(ReactomeJavaConstants.identifier);
-				
+
 				if (TargetPathogenReferenceCreator.reactomeToTargetPathogen.containsKey(reactomeIdentifier))
 				{
 					for (String targetPathogenID : TargetPathogenReferenceCreator.reactomeToTargetPathogen.get(reactomeIdentifier))
 					{
-						numTargetIdentifiers++;
-						String referenceToValue = sourceRef.getDBID().toString();
-						if (!this.checkXRefExists(sourceRef, targetPathogenID))
-						{
-							if (!this.testMode)
-							{
-								this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
-							}
-							numRefsCreated++;
-						}
-						else
-						{
-							numRefsPreexisting++;
-						}
+						counts = createReferencesForIdentifier(sourceRef, targetPathogenID, counts);
 					}
 				}
 			}
 		}
+		numTargetIdentifiers = counts[0];
+		numRefsCreated = counts[1];
+		numRefsPreexisting = counts[2];
 		this.logger.info("Inspected {} objects, {} identifiers for TargetPathogen.\n"
 				+ " {} new references were created.\n"
 				+ "{} references already existed (and were NOT re-created).",
 				sourceReferences.size(), numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
 	}
 
+	/**
+	 * Create references for UniProt Identifiers.
+	 * @param sourceReferences
+	 * @throws InvalidAttributeException
+	 * @throws Exception
+	 */
 	private void createReferencesForUniProtIdentifiers(List<GKInstance> sourceReferences) throws InvalidAttributeException, Exception
 	{
 		int numRefsCreated = 0;
 		int numRefsPreexisting = 0;
 		int numTargetIdentifiers = 0;
+		int[] counts = { numTargetIdentifiers, numRefsCreated, numRefsPreexisting  };
 		for (GKInstance sourceRef : sourceReferences)
 		{
 			// Filter for Reactions.
 			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.ReferenceGeneProduct))
 			{
 				String uniProtIdentifier = (String) sourceRef.getAttributeValue(ReactomeJavaConstants.identifier);
-				
+
 				if (TargetPathogenReferenceCreator.uniProtToTargetPathogen.containsKey(uniProtIdentifier))
 				{
 					for (String targetPathogenID : TargetPathogenReferenceCreator.uniProtToTargetPathogen.get(uniProtIdentifier))
 					{
-						numTargetIdentifiers++;
-						String referenceToValue = sourceRef.getDBID().toString();
-						if (!this.checkXRefExists(sourceRef, targetPathogenID))
-						{
-							if (!this.testMode)
-							{
-								this.refCreator.createIdentifier(targetPathogenID, referenceToValue, this.targetRefDB, this.personID, this.getClass().getName());
-							}
-							numRefsCreated++;
-						}
-						else
-						{
-							numRefsPreexisting++;
-						}
+						counts = createReferencesForIdentifier(sourceRef, targetPathogenID, counts);
 					}
 				}
 			}
 		}
+		numTargetIdentifiers = counts[0];
+		numRefsCreated = counts[1];
+		numRefsPreexisting = counts[2];
 		this.logger.info("Inspected {} objects, {} identifiers for TargetPathogen.\n"
 				+ " {} new references were created.\n"
 				+ "{} references already existed (and were NOT re-created).",
 				sourceReferences.size(), numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
+	}
+
+	/**
+	 * Creates the reference and updates the counts.
+	 * @param sourceRef - The thing that will be referenced by the cross-reference.
+	 * @param targetPathogenID - The ID for Target Pathogen.
+	 * @param counts - Counts, in an array. Must be ordered as: { numTargetIdentifiers, numRefsCreated, numRefsPreexisting }
+	 * @return An array of updated counts.
+	 * @throws Exception
+	 */
+	private int[] createReferencesForIdentifier(GKInstance sourceRef, String targetPathogenID, int[] counts) throws Exception
+	{
+		int numTargetIdentifiers = counts[0];
+		int numRefsCreated = counts[1];
+		int numRefsPreexisting = counts[2];
+
+		numTargetIdentifiers++;
+		// Check that the cross-reference doesn't exist.
+		if (!this.checkXRefExists(sourceRef, targetPathogenID))
+		{
+			if (!this.testMode)
+			{
+				this.refCreator.createIdentifier(targetPathogenID, sourceRef.getDBID().toString(), this.targetRefDB, this.personID, this.getClass().getName());
+			}
+			numRefsCreated++;
+		}
+		else
+		{
+			numRefsPreexisting++;
+		}
+		return new int[]{ numTargetIdentifiers, numRefsCreated, numRefsPreexisting };
 	}
 }
