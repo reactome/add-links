@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.reactome.addlinks.fileprocessors;
 
@@ -32,7 +32,7 @@ public class TargetPathogenFileProcessor extends FileProcessor<String>
 	{
 		super(null);
 	}
-	
+
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
@@ -40,6 +40,7 @@ public class TargetPathogenFileProcessor extends FileProcessor<String>
 		Map<String, String> mapping = new HashMap<>();
 		try
 		{
+			// Skip the fist line because it's the header line.
 			Files.lines(this.pathToFile).skip(1).sequential().forEach( line ->
 			{
 				String[] lineParts = line.split(",");
@@ -49,8 +50,8 @@ public class TargetPathogenFileProcessor extends FileProcessor<String>
 				String uniprotID = lineParts[lineParts.length - 1];
 				// the Reactome ID is the second last item.
 				String reactomeID = lineParts[lineParts.length - 2];
-				// not going to bother extracting genes from this file, I don't think we will need them if we already have the UniProt and Reactome identifier. 
-				
+				// not going to bother extracting genes from this file, I don't think we will need them if we already have the UniProt and Reactome identifier.
+
 				// URLs look like this: http://target.sbg.qb.fcen.uba.ar/patho/protein/5642590bbe737e6c7a9fd9a0
 				// We need to extract "5642590bbe737e6c7a9fd9a0" as the identifier.
 				String[] urlParts = urlToTargetPathogen.split("\\/");
