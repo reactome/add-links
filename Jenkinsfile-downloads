@@ -1,12 +1,15 @@
 import groovy.json.JsonSlurper
-
+// This Jenkinsfile is used by Jenkins to run the AddLinks-Downloads step of Reactome's release.
+// It requires that the ConfirmReleaseConfigs step has been run successfully before it can be run.
 pipeline{
 	agent any
 
 	stages{
-		stage('Check upstream builds succeeded'){
+		// This stage checks that an upstream project, ConfirmReleaseConfigs, was run successfully for its last build.
+		stage('Check ConfirmReleaseConfigs build succeeded'){
 			steps{
 				script{
+					// This queries the Jenkins API to confirm that the most recent build of ConfirmReleaseConfigs was successful.
 					def configStatusUrl = httpRequest authentication: 'jenkinsKey', url: "${env.JENKINS_JOB_URL}/job/${env.RELEASE_NUMBER}/job/ConfirmReleaseConfigs/lastBuild/api/json"
 					def configStatusJson = new JsonSlurper().parseText(configStatusUrl.getContent())
 					if(configStatusJson['result'] != "SUCCESS"){
@@ -15,6 +18,7 @@ pipeline{
 			    	}	
 		    	}
 	    	}
+		// This stage builds the jar file using maven.
         	stage('Setup: Build jar file'){
             		steps{
 	    			script{
@@ -24,12 +28,14 @@ pipeline{
           	    		}
             		}		
         	}
+		// This stage executes the AddLinks file download step. It will download all files needed to run the AddLinks insertion step, storing them
+		// at /tmp/addlinks-downloaded-files/.
 		stage('Main: Download AddLinks files'){
 			steps{
 				script{
 					dir('add-links'){
-						withCredentials([file(credentialsId: 'Config', variable: 'FILE')]){
-							sh "cp $FILE src/main/resources/auth.properties"
+						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+							sh "cp $ConfigFile src/main/resources/auth.properties"
 							sh "ln -sf src/main/resources resources"
 							sh "rm -f src/main/resources/db.properties"
 					    		sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-${env.ADDLINKS_VERSION}.jar file://\$(pwd)/resources/create-references-context.xml"""							
