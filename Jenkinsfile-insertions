@@ -1,39 +1,34 @@
 import groovy.json.JsonSlurper
-
+// This Jenkinsfile is used by Jenkins to run the AddLinks-Insertion step of Reactome's release.
+// It requires that the AddLinks-Download and Orthoinference steps have been run successfully before it can be run.
 pipeline{
 	agent any
 
 	stages{
-		stage('Check upstream builds succeeded'){
+		// This stage checks that upstream projects AddLinks-Download and Orthoinference were run successfully for their last build.
+		stage('Check AddLinks-Download and Orthoinference builds succeeded'){
 			steps{
 				script{
-					def addLinksDownloadStatusUrl = httpRequest authentication: 'jenkinsKey', url: "${env.JENKINS_JOB_URL}/job/${env.RELEASE_NUMBER}/job/AddLinks-Download/lastBuild/api/json"
-					def addLinksDownloadJson = new JsonSlurper().parseText(addLinksDownloadUrl.getContent())
-					if(addLinksDownloadJson['result'] != "SUCCESS"){
-						error("Most recent AddLinks-Download build status: " + addLinksDownloadJson['result'] + ". Please complete a successful build.")
-					}
-			    	}
-				script{
-					def orthoinferenceDownloadStatusUrl = httpRequest authentication: 'jenkinsKey', url: "${env.JENKINS_JOB_URL}/job/${env.RELEASE_NUMBER}/job/Orthoinference/lastBuild/api/json"
-					def orthoinferenceJson = new JsonSlurper().parseText(orthoinferenceUrl.getContent())
-					if(orthoinferenceJson['result'] != "SUCCESS"){
-						error("Most recent Orthoinference build status: " + addLinksDownloadJson['result'] + ". Please complete a successful build.")
-					}
+					checkUpstreamBuildsSucceeded("AddLinks-Download")
+					checkUpstreamBuildsSucceeded("Orthoinference")
 			    	}
 		    	}
 	    	}
-		stage('Setup: Backup DB'){
+		// This stage backs up the release_current database before it is modified.
+		stage('Setup: Backup release_current'){
 			steps{
 				script{
 					dir('add-links'){
 						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
-							sh "gzip -f ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
+							def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
+							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
+							sh "gzip -f $release_current_before_addlinks_dump"
 						}
 					}
 				}
 			}
 		}
+		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
             		steps{
 		        	script{
@@ -43,12 +38,14 @@ pipeline{
           	    		}
             		}
         	}
+		// This stage runs the insertion component of AddLinks. It will build links to various external resources and connect them to the relevant instances.
+		// It also connects these linkouts to ReferenceDatabase objects that pertain to their original resource.
 		stage('Main: AddLinks Insertions'){
 			steps{
 				script{
 					dir('add-links'){
-						withCredentials([file(credentialsId: 'Config', variable: 'FILE')]){
-							sh "cp $FILE src/main/resources/auth.properties"
+						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+							sh "cp $ConfigFile src/main/resources/auth.properties"
 							sh "ln -sf src/main/resources resources"
 							sh "rm -f src/main/resources/db.properties"
 					    		sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-${env.ADDLINKS_VERSION}.jar file://\$(pwd)/resources/create-references-context.xml"""
@@ -58,18 +55,21 @@ pipeline{
 				}
 			}
 		}
-		stage('Post: Backup DB'){
+		// This stage backs up the release_current database after it is modified.
+		stage('Post: Backup release_current'){
 			steps{
 				script{
 					dir('add-links'){
 						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump"
-							sh "gzip ${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump"
+							def release_current_after_addlinks_dump = "${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump"
+							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_after_addlinks_dump"
+							sh "gzip $release_current_after_addlinks_dump"
 						}
 					}
 				}
 			}
 		}
+		// This stage archives all logs and database backups produced by AddLink-Insertion. 
 		stage('Post:Archive logs and backups'){
 			steps{
 				script{
@@ -85,4 +85,13 @@ pipeline{
 			}
 		}
     	}
+}
+
+// Utility function that checks upstream builds of this project were successfully built.
+def checkUpstreamBuildsSucceeded(String stepName) {
+	def statusUrl = httpRequest authentication: 'jenkinsKey', url: "${env.JENKINS_JOB_URL}/job/${env.RELEASE_NUMBER}/job/$stepName/lastBuild/api/json"
+	def statusJson = new JsonSlurper().parseText(statusUrl.getContent())
+	if(statusJson['result'] != "SUCCESS"){
+		error("Most recent $stepName build status: " + statusJson['result'])
+	}
 }
