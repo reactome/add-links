@@ -11,8 +11,8 @@ pipeline{
 				script{
 					def currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
-					checkUpstreamBuildsSucceeded("AddLinks-Download", $currentRelease)
-					checkUpstreamBuildsSucceeded("Orthoinference", $currentRelease)
+					checkUpstreamBuildsSucceeded("AddLinks-Download", "$currentRelease")
+					checkUpstreamBuildsSucceeded("Orthoinference", "$currentRelease")
 	    			}
     			}
   		}
