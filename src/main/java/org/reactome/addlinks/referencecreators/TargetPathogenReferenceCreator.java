@@ -140,13 +140,7 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 				}
 			}
 		}
-		numTargetIdentifiers = counts[0];
-		numRefsCreated = counts[1];
-		numRefsPreexisting = counts[2];
-		this.logger.info("Inspected {} objects, {} identifiers for TargetPathogen.\n"
-				+ " {} new references were created.\n"
-				+ "{} references already existed (and were NOT re-created).",
-				sourceReferences.size(), numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
+		logPostReferenceCreationMessage(sourceReferences.size(), counts);
 	}
 
 	/**
@@ -177,13 +171,26 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 				}
 			}
 		}
+		logPostReferenceCreationMessage(sourceReferences.size(), counts);
+	}
+
+	/**
+	 * Logs a summary message.
+	 * @param sourceReferencesSize - how many source references there were.
+	 * @param counts - an array of counts of things. Must be ordered as: { numTargetIdentifiers, numRefsCreated, numRefsPreexisting }
+	 */
+	private void logPostReferenceCreationMessage(int sourceReferencesSize, int[] counts)
+	{
+		int numRefsCreated;
+		int numRefsPreexisting;
+		int numTargetIdentifiers;
 		numTargetIdentifiers = counts[0];
 		numRefsCreated = counts[1];
 		numRefsPreexisting = counts[2];
 		this.logger.info("Inspected {} objects, {} identifiers for TargetPathogen.\n"
 				+ " {} new references were created.\n"
 				+ "{} references already existed (and were NOT re-created).",
-				sourceReferences.size(), numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
+				sourceReferencesSize, numTargetIdentifiers, numRefsCreated, numRefsPreexisting);
 	}
 
 	/**
