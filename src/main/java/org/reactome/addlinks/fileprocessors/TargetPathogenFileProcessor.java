@@ -30,7 +30,7 @@ public class TargetPathogenFileProcessor extends FileProcessor<String>
 
 	public TargetPathogenFileProcessor()
 	{
-		super(null);
+		super(TargetPathogenFileProcessor.class.getName());
 	}
 
 	@Override
