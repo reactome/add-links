@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -100,11 +101,11 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		// So... which instance are we? We can determine from how the SourceRefDB and classReferring are set.
 		if (this.sourceRefDB.equals("UniProt") && this.classReferringToRefName.equals(ReactomeJavaConstants.ReferenceGeneProduct))
 		{
-			this.createReferencesForUniProtIdentifiers(sourceReferences);
+			this.createReferencesForSourceIdentifiers(sourceReferences, TargetPathogenReferenceCreator.uniProtToTargetPathogen, ReactomeJavaConstants.ReferenceGeneProduct);
 		}
 		else if (this.sourceRefDB.equals("Reactome") && this.classReferringToRefName.equals(ReactomeJavaConstants.Reaction))
 		{
-			this.createReferencesForReactomeIdentifiers(sourceReferences);
+			this.createReferencesForSourceIdentifiers(sourceReferences, TargetPathogenReferenceCreator.reactomeToTargetPathogen, ReactomeJavaConstants.Reaction);
 		}
 		else
 		{
@@ -112,62 +113,44 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 		}
 	}
 
-	/**
-	 * Create references for Reactome Identifiers.
-	 * @param sourceReferences
-	 * @throws Exception
-	 */
-	private void createReferencesForReactomeIdentifiers(List<GKInstance> sourceReferences) throws Exception
+	private static String getIdentifier(GKInstance instance) throws InvalidAttributeException, Exception
 	{
-		int numRefsCreated = 0;
-		int numRefsPreexisting = 0;
-		int numTargetIdentifiers = 0;
-		int[] counts = { numTargetIdentifiers, numRefsCreated, numRefsPreexisting  };
-		for (GKInstance sourceRef : sourceReferences)
+		String identifier = null;
+		if (instance.getSchemClass().getName().equals(ReactomeJavaConstants.Reaction))
 		{
-			// Filter for Reactions.
-			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.Reaction))
-			{
-				GKInstance reactomeStableIdentifier = (GKInstance) sourceRef.getAttributeValue(ReactomeJavaConstants.stableIdentifier);
-				String reactomeIdentifier = (String) reactomeStableIdentifier.getAttributeValue(ReactomeJavaConstants.identifier);
-
-				if (TargetPathogenReferenceCreator.reactomeToTargetPathogen.containsKey(reactomeIdentifier))
-				{
-					for (String targetPathogenID : TargetPathogenReferenceCreator.reactomeToTargetPathogen.get(reactomeIdentifier))
-					{
-						counts = createReferencesForIdentifier(sourceRef, targetPathogenID, counts);
-					}
-				}
-			}
+			GKInstance reactomeStableIdentifier = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier);
+			identifier = (String) reactomeStableIdentifier.getAttributeValue(ReactomeJavaConstants.identifier);
 		}
-		logPostReferenceCreationMessage(sourceReferences.size(), counts);
+		else // Only really expecting ReactomeJavaConstants.ReferenceGeneProduct here, but I don't think it's necessary to strictly enforce that.
+		{
+			identifier = (String) instance.getAttributeValue(ReactomeJavaConstants.identifier);
+		}
+
+		return identifier;
 	}
 
 	/**
-	 * Create references for UniProt Identifiers.
-	 * @param sourceReferences
-	 * @throws InvalidAttributeException
+	 * Create references for Reactome Identifiers.
+	 * @param sourceReferences A list of source-reference objects that are already in the database. New TargetPathogen identifiers identify these objects.
+	 * @param mapToTargetPathogen A mapping of identifiers that map TO TargetPathogen, FROM some other source (Reactome or UniProt).
+	 * @param typeToFilterFor The Type to filter for (should be a valid Reactome "class" from ReactomeJavaConstants).
 	 * @throws Exception
 	 */
-	private void createReferencesForUniProtIdentifiers(List<GKInstance> sourceReferences) throws InvalidAttributeException, Exception
+	private void createReferencesForSourceIdentifiers(List<GKInstance> sourceReferences, Map<String, Set<String>> mapToTargetPathogen, String typeToFilterFor) throws Exception
 	{
 		int numRefsCreated = 0;
 		int numRefsPreexisting = 0;
 		int numTargetIdentifiers = 0;
-		int[] counts = { numTargetIdentifiers, numRefsCreated, numRefsPreexisting  };
-		for (GKInstance sourceRef : sourceReferences)
+		int[] counts = { numTargetIdentifiers, numRefsCreated, numRefsPreexisting };
+		for (GKInstance sourceRef : sourceReferences.stream()
+									.filter(inst -> inst.getSchemClass().getName().equals(typeToFilterFor)).collect(Collectors.toList()))
 		{
-			// Filter for Reactions.
-			if (sourceRef.getSchemClass().getName().equals(ReactomeJavaConstants.ReferenceGeneProduct))
+			String sourceRefIdentifier = getIdentifier(sourceRef);
+			if (mapToTargetPathogen.containsKey(sourceRefIdentifier))
 			{
-				String uniProtIdentifier = (String) sourceRef.getAttributeValue(ReactomeJavaConstants.identifier);
-
-				if (TargetPathogenReferenceCreator.uniProtToTargetPathogen.containsKey(uniProtIdentifier))
+				for (String targetPathogenID : mapToTargetPathogen.get(sourceRefIdentifier))
 				{
-					for (String targetPathogenID : TargetPathogenReferenceCreator.uniProtToTargetPathogen.get(uniProtIdentifier))
-					{
-						counts = createReferencesForIdentifier(sourceRef, targetPathogenID, counts);
-					}
+					counts = createReferencesForIdentifier(sourceRef, targetPathogenID, counts);
 				}
 			}
 		}
