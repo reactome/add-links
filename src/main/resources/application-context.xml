@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<context:property-placeholder location="file:resources/*.properties"  />
-	
+
 	<import resource="reference-databases.xml"/>
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
@@ -17,7 +17,7 @@
 	<import resource="file-processors-ref-creators-link.xml"/>
 	<import resource="reference-creators.xml"/>
 
-	<!-- DB Adapter 
+	<!-- DB Adapter
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
 	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
@@ -27,19 +27,20 @@
 		<constructor-arg name="password" index="3" value="${database.password}"/>
 		<constructor-arg name="port" index="4" value="${database.port}"/>
 	</bean>
-	
-	
+
+
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" type="boolean" name="lazyLoad" value="${lazyLoadCache}" />
 	</bean>
-	
+
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>IntEnz</value>		
+		<value>TargetPathogen</value>
+		<value>OpenTargets</value>
+		<value>IntEnz</value>
 		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
-		<value>OpenTargets</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>CTD</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -67,11 +68,12 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>TargetPathogenFileProcessor</value>
+		<value>OpenTargetsFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEnsemblFileProcessor</value>
-		<value>OpenTargetsFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
 		<value>CTDProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
@@ -97,11 +99,13 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>IntEnzRefCreator</value>		
+		<value>TargetPathogenReactionsReferenceCreator</value>
+		<value>TargetPathogenProteinsReferenceCreator</value>
+		<value>OpenTargetsReferenceCreator</value>
+		<value>IntEnzRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>ENSEMBLToWormbaseRefCreator</value>
-		<value>OpenTargetsReferenceCreator</value>
 		<value>FlyBaseReferenceCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
@@ -132,8 +136,9 @@
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 	</util:list>
-	
+
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>
@@ -170,9 +175,9 @@
 		OpenTargets use ENSEMBL identifiers, but
 		the identifiers do not appear in the body of the web page.
 		<value>OpenTargets</value> -->
-		<!-- 
+		<!--
 		HGNC pages are now loaded using JavaScript so a simple GET request is not enough to see if
-		the identifier is on the page. 
+		the identifier is on the page.
 		<value>HGNC</value> -->
 		<!--
 		<value>UCSC</value>
@@ -180,7 +185,7 @@
 		their redirect service might take the user to a page that is correct but does not display the UniProt ID that
 		got them there.
 		-->
-		<!-- 
+		<!--
 		<value>DOCK Blaster</value>
 		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
 		Even loading one page seems to make it take effort.
@@ -192,7 +197,7 @@
 		-->
 		<!--
 		GeneCards returns a 403 for every request.
-		<value>GeneCards</value> 
+		<value>GeneCards</value>
 		-->
 		<!--
 		Don't bother testing OMIM - they will return a 403 each time you hit their page.
@@ -205,7 +210,7 @@
 		ComplexPortal does not actually contain the identifier in the page content, so we can't properly check it.
 		 -->
 		 <!--
-		 PRO returns a 503 error when accessed via Java 
+		 PRO returns a 503 error when accessed via Java
 		 <value>PRO</value> -->
 	</util:list>
 
@@ -218,6 +223,6 @@
 		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
 		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
 	</bean>
-	
-	
+
+
 </beans>

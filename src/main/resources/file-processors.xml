@@ -313,11 +313,22 @@
 		</entry>
 		
 		<entry key="IntEnzFileProcessor">
-			<bean id="OpenTargetsFileProcessor" class="org.reactome.addlinks.fileprocessors.IntEnzFileProcessor">
+			<bean id="IntEnzFileProcessor" class="org.reactome.addlinks.fileprocessors.IntEnzFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/IntEnzFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/IntEnz.dat"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		
+		<entry key="TargetPathogenFileProcessor">
+			<bean id="TargetPathogenFileProcessor" class="org.reactome.addlinks.fileprocessors.TargetPathogenFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/TargetPathogenFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/target_pathogen_reactome_map.txt"/>
 					</bean>
 				</property>
 			</bean>

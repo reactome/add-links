@@ -62,19 +62,19 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		// Y'know, this code was lifted straight from OrphanetReferenceCreator and is pretty much unchanged. Perhaps these two (and others to follow) could pull
 		// this code up into a common parent class/interface...
 		this.adapter = adapter;
-		SchemaClass schemaClass = this.adapter.getSchema().getClassByName(classToCreateName);
+		SchemaClass schemaClass = this.adapter.getSchema().getClassByName(this.classToCreateName);
 
-		SchemaClass referringSchemaClass = adapter.getSchema().getClassByName(classReferringToRefName);
+		SchemaClass referringSchemaClass = adapter.getSchema().getClassByName(this.classReferringToRefName);
 		
 		GKSchemaAttribute referringSchemaAttribute = null;
 		try
 		{
 			// This should never fail, but we still need to handle the exception.
-			referringSchemaAttribute = (GKSchemaAttribute) referringSchemaClass.getAttribute(referringAttributeName);
+			referringSchemaAttribute = (GKSchemaAttribute) referringSchemaClass.getAttribute(this.referringAttributeName);
 		}
 		catch (InvalidAttributeException e)
 		{
-			logger.error("Failed to get GKSchemaAttribute with name {} from class {}. This shouldn't have happened, but somehow it did."
+			this.logger.error("Failed to get GKSchemaAttribute with name {} from class {}. This shouldn't have happened, but somehow it did."
 						+ " Check that the classes/attributes you have chosen match the data model in the database.",
 						referringSchemaAttribute, referringSchemaClass );
 			e.printStackTrace();
@@ -85,7 +85,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		{
 			this.cache = new ReferenceObjectCache(this.adapter, true);
 		}
-		refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
+		this.refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		AtomicInteger sourceIdentifiersWithNoMapping = new AtomicInteger(0);
 		AtomicInteger sourceIdentifiersWithNewIdentifier = new AtomicInteger(0);
 		AtomicInteger sourceIdentifiersWithExistingIdentifier = new AtomicInteger(0);
-		logger.traceEntry();
+		this.logger.traceEntry();
 		
 		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 		
@@ -131,12 +131,12 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 					}
 					
 					String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
-					logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
+					this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
 					// Look for cross-references.
 					boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
 					if (!xrefAlreadyExists)
 					{
-						logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
+						this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
 						sourceIdentifiersWithNewIdentifier.incrementAndGet();
 						thingsToCreate.add(targetRefDBIdentifier+","+String.valueOf(sourceReference.getDBID())+","+speciesID);
 					}
@@ -170,7 +170,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 
 		}
 		
-		logger.info("{} reference creation summary: \n"
+		this.logger.info("{} reference creation summary: \n"
 				+ "\t# {} IDs with a new {} identifier (a new {} reference was created): {};\n"
 				+ "\t# {} identifiers which already had the same {} reference (nothing new was created): {};\n"
 				+ "\t# {} identifiers not in the {} mapping file (no new {} reference was created for them): {} ",
@@ -233,7 +233,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	protected boolean checkXRefExists(GKInstance sourceReference, String targetRefDBIdentifier, GKInstance targetReferenceDB) throws InvalidAttributeException, Exception
 	{
 		@SuppressWarnings("unchecked")
-		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(referringAttributeName);
+		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(this.referringAttributeName);
 		StringBuilder xrefsb = new StringBuilder();
 		if (xrefs.size() > 0)
 		{
@@ -252,17 +252,17 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 					//if (refdbDisplayName.equals(targetReferenceDB))
 					if (xrefRefDB.getDBID().equals(targetReferenceDB.getDBID()))
 					{
-						logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
+						this.logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 						return true;	
 					}
 					else
 					{
-						logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, refdbDisplayName, targetReferenceDB);
+						this.logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, refdbDisplayName, targetReferenceDB);
 					}
 					
 				}
 			}
-			logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
+			this.logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 		}
 		return false;
 	}

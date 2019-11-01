@@ -4,14 +4,14 @@
 	<groupId>org.reactome.release</groupId>
 	<artifactId>AddLinks</artifactId>
 	<version>1.1.4</version>
-	
+
 	<organization>
 		<name>Reactome</name>
 		<url>https://reactome.org</url>
 	</organization>
-	
+
 	<name>AddLinks</name>
-	
+
 	<developers>
 		<developer>
 			<organization>OICR</organization>
@@ -19,14 +19,14 @@
 			<email>solomon.shorser@oicr.on.ca</email>
 		</developer>
 	</developers>
-	
+
 	<properties>
-		<spring.version>4.3.5.RELEASE</spring.version>
+		<spring.version>5.1.10.RELEASE</spring.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<powermock.version>1.7.4</powermock.version>
 		<mockito.version>2.8.9</mockito.version>
 	</properties>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -152,7 +152,7 @@
 			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.json</groupId>
 			<artifactId>javax.json-api</artifactId>
@@ -175,7 +175,7 @@
 			<version>1.0.2</version>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -266,7 +266,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-		
+
 		<resources>
 			<resource>
 				<!-- config should come from the user, not the jar itself. But don't exclude the XSL files - those should be included in the jar. -->
@@ -279,7 +279,7 @@
 			</resource>
 		</resources>
 	</build>
-	
+
 	<repositories>
 		<repository>
 			<id>nexus-ebi-repo</id>
@@ -333,5 +333,5 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	
+
 </project>

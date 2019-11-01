@@ -26,8 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.schema.InvalidAttributeException;
-import org.gk.schema.InvalidAttributeValueException;
 import org.reactome.addlinks.brenda.BRENDAReferenceDatabaseGenerator;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
@@ -58,18 +56,23 @@ import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCrea
 import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
+import org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
-import org.reactome.release.common.database.InstanceEditUtils;
 
 
 public class AddLinks
 {
+	private static final String PROTEIN = "PROTEIN";
+	private static final String CTD_PROCESSOR = "CTDProcessor";
+	private static final String BRENDA_UC = "BRENDA";
+	private static final String KEGG = "KEGG";
+	private static final String BRENDA = "Brenda";
+	private static final String ENSEMBL = "ENSEMBL";
+	private static final String REACTOME = "Reactome";
+	private static final String HUMAN_SPECIES_ID = "48887";
 	private static final String LINK_CHECK_REPORTS_PATH = "reports/linkCheckReports";
-
 	private static final String DUPE_REPORTS_PATH = "reports/duplicateReports";
-
 	private static final String DIFF_REPORTS_PATH = "reports/diffReports";
-
 	private static final String DATE_PATTERN_FOR_FILENAMES = "yyyy-MM-dd_HHmmss";
 
 	private static final Logger logger = LogManager.getLogger();
@@ -77,33 +80,24 @@ public class AddLinks
 	private ReferenceObjectCache objectCache;
 	
 	private List<String> fileProcessorFilter;
-	
 	private List<String> fileRetrieverFilter;
-	
 	private List<String> referenceCreatorFilter;
 	
 	private Map<String, UniprotFileRetriever> uniprotFileRetrievers;
-	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
-	
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
 	
 	private Map<String, FileProcessor<?>> fileProcessors;
-	
 	private Map<String,FileRetriever> fileRetrievers;
-	
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
-	
 	private Map<String, Object> processorCreatorLink;
 	
 	private Map<String, UPMappedIdentifiersReferenceCreator> uniprotReferenceCreators;
-	
 	private Map<String, BatchReferenceCreator<?>> referenceCreators;
 	
 	private List<String> referenceDatabasesToLinkCheck;
 	
 	private float proportionToLinkCheck = 0.1f;
-	
 	private int maxNumberLinksToCheck = 100;
 	
 	private EnsemblBatchLookup ensemblBatchLookup;
@@ -243,9 +237,9 @@ public class AddLinks
 			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
 			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
 			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
-					|| (refDBInst.getDisplayName().toUpperCase().contains("ENSEMBL") && LinksToCheckCache.getRefDBsToCheck().contains("ENSEMBL"))
-					|| (refDBInst.getDisplayName().toUpperCase().contains("BRENDA") && LinksToCheckCache.getRefDBsToCheck().contains("Brenda"))
-					|| (refDBInst.getDisplayName().toUpperCase().contains("KEGG") && LinksToCheckCache.getRefDBsToCheck().contains("KEGG"))
+					|| (refDBInst.getDisplayName().toUpperCase().contains(ENSEMBL) && LinksToCheckCache.getRefDBsToCheck().contains(ENSEMBL))
+					|| (refDBInst.getDisplayName().toUpperCase().contains(BRENDA_UC) && LinksToCheckCache.getRefDBsToCheck().contains(BRENDA))
+					|| (refDBInst.getDisplayName().toUpperCase().contains(KEGG) && LinksToCheckCache.getRefDBsToCheck().contains(KEGG))
 				)
 			{
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
@@ -401,7 +395,7 @@ public class AddLinks
 		{
 			@SuppressWarnings("unchecked")
 			List<String> names = (List<String>) brendaRefDB.getAttributeValuesList(ReactomeJavaConstants.name);
-			names.set(0, "BRENDA");
+			names.set(0, BRENDA_UC);
 			brendaRefDB.setAttributeValue(ReactomeJavaConstants.name, names);
 			this.dbAdapter.updateInstanceAttribute(brendaRefDB, ReactomeJavaConstants.name);
 			logger.info("BRENDA RefDB {} now has names: {}", brendaRefDB.toString(), brendaRefDB.getAttributeValue(ReactomeJavaConstants.name));
@@ -487,7 +481,7 @@ public class AddLinks
 				
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
-					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get("CTDProcessor") );
+					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get(CTD_PROCESSOR) );
 				}
 				
 				if (refCreator instanceof ENSMappedIdentifiersReferenceCreator)
@@ -509,7 +503,20 @@ public class AddLinks
 					else if ( refCreator instanceof COSMICReferenceCreator)
 					{
 						// COSMIC should use ALL human ReferenceGeneProduct, regarless of source database.
-						sourceReferences = this.objectCache.getBySpecies("48887", "ReferenceGeneProduct");
+						sourceReferences = this.objectCache.getBySpecies(HUMAN_SPECIES_ID, ReactomeJavaConstants.ReferenceGeneProduct);
+					}
+					else if ( refCreator instanceof TargetPathogenReferenceCreator && refCreator.getSourceRefDB().equals(REACTOME))
+					{
+						// The list of source references is a list of reactions. TargetPathogenReferenceCreator does
+						// not need special handling if it's *not* creating references for reactions.
+						// Creating ReferenceGeneProducts from UniProt identfiers works like other ReferenceCreators...
+						// 
+						// The reason this code is here is because the database does not contain Reactome as a 
+						// ReferenceDatabase so looking for Reactions in the cache whose source is Reactome will fail.
+						// And even if Reactome *was* a ReferenceDatabase, somewhere there would need to be code to check 
+						// the stableIdentifier attribute (via DatabaseObject) instead of the regular identifier attribute
+						// attached to the Reaction.
+						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
 					}
 					else
 					{
@@ -552,7 +559,7 @@ public class AddLinks
 				UPMappedIdentifiersReferenceCreator refCreator = this.uniprotReferenceCreators.get(refCreatorName);
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
-					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get("CTDProcessor") );
+					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get(CTD_PROCESSOR) );
 				}
 				sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName.get()), sourceReferences);
@@ -601,13 +608,13 @@ public class AddLinks
 	{
 		List<GKInstance> identifiers = new ArrayList<>();
 		
-		List<String> ensemblDBNames = this.objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith("ENSEMBL") && k.toUpperCase().contains("PROTEIN")).collect(Collectors.toList());
+		List<String> ensemblDBNames = this.objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith(ENSEMBL) && k.toUpperCase().contains(PROTEIN)).collect(Collectors.toList());
 		
 		for (String dbName : ensemblDBNames)
 		{
 			for (String dbid : this.objectCache.getRefDbNamesToIds().get(dbName))
 			{
-				identifiers.addAll(this.objectCache.getByRefDb(dbid, "ReferenceGeneProduct"));
+				identifiers.addAll(this.objectCache.getByRefDb(dbid, ReactomeJavaConstants.ReferenceGeneProduct));
 			}
 		}
 		
