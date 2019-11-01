@@ -17,7 +17,7 @@
 			<value type="java.time.temporal.ChronoUnit">HOURS</value>
 		</constructor-arg>
 	</bean>
-	
+
 	<util:map id="fileRetrievers"
 		value-type="org.reactome.addlinks.dataretrieval.FileRetriever"
 		key-type="java.lang.String">
@@ -52,8 +52,8 @@
 				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
-		
-		<!-- Not sure this one is needed. The old code references gene2accession.gz, but it looks like that reference is in dead code, 
+
+		<!-- Not sure this one is needed. The old code references gene2accession.gz, but it looks like that reference is in dead code,
 		see: EntrezGeneToUniprotReferenceDNASequence.pm, old_buildPart -->
 		<!-- <entry key="EntrezGeneToUniprotReference">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="EntrezGeneToUniprotReference">
@@ -64,7 +64,7 @@
 				</property>
 			</bean>
 		</entry> -->
-		
+
 		<entry key="DOCKBlaster">
 			<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="DOCKBlaster">
 				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
@@ -75,11 +75,11 @@
 				<constructor-arg name="retrieverName" value="retrievers/DOCKBlaster"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_04.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2019_05.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="passiveFTP" value="true" />
@@ -112,7 +112,7 @@
 				<constructor-arg name="retrieverName" value="retrievers/OrthologsFromZinc"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="OrthologsCSVFromZinc">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsCSVFromZinc">
 				<property name="dataURL" value="http://zinc15.docking.org/orthologs.csv?count=all" />
@@ -130,7 +130,7 @@
 				<constructor-arg name="retrieverName" value="retrievers/Zinc"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="KEGGRetriever">
 			<bean class="org.reactome.addlinks.dataretrieval.KEGGFileRetriever">
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/kegg_entries/kegg_entries.txt"/>
@@ -141,7 +141,7 @@
 				<!-- You will need to set UniprotToKEGGFiles at runtime. -->
 			</bean>
 		</entry>
-		
+
 		<entry key="RheaRetriever">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RheaRetriever">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
@@ -151,7 +151,7 @@
 				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
-		
+
 		<entry key="BrendaRetriever">
 			<bean id="BrendaRetriever" class="org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever">
 				<constructor-arg name="retrieverName" value="retrievers/BrendaRetriever"/>
@@ -163,7 +163,7 @@
 				<property name="numThreads" value="${numberOfBrendaDownloadThreads}" />
 			</bean>
 		</entry>
-		
+
 		<entry key="HGNC">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HGNC">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" />
@@ -173,7 +173,7 @@
 				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
-		
+
 		<entry key="COSMIC">
 			<bean class="org.reactome.addlinks.dataretrieval.COSMICFileRetriever" id="COSMIC">
 				<property name="userName" value="${cosmic.user}"/>
@@ -184,7 +184,7 @@
 				<constructor-arg name="retrieverName" value="retrievers/COSMIC"/>
 			</bean>
 		</entry>
-		
+
 		<!-- The OMIM file is not used directly for mappings, but it used to filter out non-gene OMIM IDs. -->
 		<entry key="OMIM">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OMIM">
@@ -206,8 +206,8 @@
 
 		<entry key="OpenTargets">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OpenTargets">
-				<property name="dataURL" value="https://github.com/opentargets/platform/files/3427996/OT1906_target_list.csv.zip" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/OT1906_target_list.csv.zip" />
+				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/19.09/output/19.09_target_list.csv.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/open_target_list.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
 			</bean>
