@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Processes TSV files for mapping to OpenTargets.
  * Files will be formatted like this: "${ENSEMBL ID}","${HGNC Gene Symbol}",...other stuff, including ACTUAL UniProt identifiers...
  * Example: "ENSG00000205002","AARD","Q4LEZ3|A5PKU8",56
- * See: https://github.com/opentargets/platform/issues/657#issuecomment-514718929 for details on this format, but the relevant quote 
+ * See: https://github.com/opentargets/platform/issues/657#issuecomment-514718929 for details on this format, but the relevant quote
  * is: "Ensembl gene ID, UniProt accessions, HGNC approved symbol and Number of associations"
  * @author sshorser
  *
@@ -23,22 +23,22 @@ public class OpenTargetsFileProcessor extends FileProcessor<String>
 	{
 		super();
 	}
-	
+
 	public OpenTargetsFileProcessor(String processorName)
 	{
 		super(processorName);
 	}
-	
+
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
 		Map<String, String> uniprotToEnsemblForOpenTargetsMap = new HashMap<>();
 		AtomicInteger lineCount = new AtomicInteger(0);
-		Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".zip", ""));
+		Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
 		try
 		{
 			this.unzipFile(this.pathToFile, true);
-			
+
 			Files.readAllLines(inputFile).forEach( line -> {
 				String[] parts = line.split(",");
 				lineCount.incrementAndGet();
@@ -53,7 +53,7 @@ public class OpenTargetsFileProcessor extends FileProcessor<String>
 				}
 			} );
 		}
-		catch (IOException e) // potentially thrown by Files.readAllLines 
+		catch (IOException e) // potentially thrown by Files.readAllLines
 		{
 			logger.error("Error reading file ({}): {}", inputFile.toString(), e.getMessage());
 			e.printStackTrace();
