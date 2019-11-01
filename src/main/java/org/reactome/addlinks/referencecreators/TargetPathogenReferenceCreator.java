@@ -59,28 +59,28 @@ public class TargetPathogenReferenceCreator extends SimpleReferenceCreator<Strin
 						// If the string matches the Reactome pattern, it is a Reactome identifier.
 						if (REACTOME_IDENTIFIER_PATTERN.matcher(identifier).matches())
 						{
-							if (!reactomeToTargetPathogen.containsKey(identifier))
+							if (!TargetPathogenReferenceCreator.reactomeToTargetPathogen.containsKey(identifier))
 							{
-								reactomeToTargetPathogen.put(identifier, new HashSet<>(Arrays.asList(targetPathogenIdentifier)));
+								TargetPathogenReferenceCreator.reactomeToTargetPathogen.put(identifier, new HashSet<>(Arrays.asList(targetPathogenIdentifier)));
 							}
 							else
 							{
-								Set<String> tmpSet = reactomeToTargetPathogen.get(identifier);
+								Set<String> tmpSet = TargetPathogenReferenceCreator.reactomeToTargetPathogen.get(identifier);
 								tmpSet.add(targetPathogenIdentifier);
-								reactomeToTargetPathogen.put(identifier, tmpSet);
+								TargetPathogenReferenceCreator.reactomeToTargetPathogen.put(identifier, tmpSet);
 							}
 						}
 						else
 						{
-							if (!uniProtToTargetPathogen.containsKey(identifier))
+							if (!TargetPathogenReferenceCreator.uniProtToTargetPathogen.containsKey(identifier))
 							{
-								uniProtToTargetPathogen.put(identifier, new HashSet<>(Arrays.asList(targetPathogenIdentifier)));
+								TargetPathogenReferenceCreator.uniProtToTargetPathogen.put(identifier, new HashSet<>(Arrays.asList(targetPathogenIdentifier)));
 							}
 							else
 							{
-								Set<String> tmpSet = uniProtToTargetPathogen.get(identifier);
+								Set<String> tmpSet = TargetPathogenReferenceCreator.uniProtToTargetPathogen.get(identifier);
 								tmpSet.add(targetPathogenIdentifier);
-								uniProtToTargetPathogen.put(identifier, tmpSet);
+								TargetPathogenReferenceCreator.uniProtToTargetPathogen.put(identifier, tmpSet);
 							}
 						}
 					}
