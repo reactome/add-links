@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.2.0
+ - New: Create references for TargetPathogen
+ - Major Fixes:
+  - Fixed https://github.com/reactome/add-links/issues/118 - Avoid extra dummy ReferenceDatabase objects
+  - Fixed https://github.com/reactome/add-links/issues/119 - Link checker failing to report "404" responses
+  - Fixed https://github.com/reactome/add-links/issues/120 - dbSNP only supports Human identifiers
+  - Fixed https://github.com/reactome/add-links/issues/117 - log "403" responses
+
 ## 1.1.4
  - Use a new OpenTargets file with a new format.
  - Fixed some ENSEMBL endpoints.
