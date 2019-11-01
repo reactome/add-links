@@ -13,6 +13,7 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
+import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.CustomLoggable;
@@ -21,6 +22,7 @@ import org.reactome.addlinks.CustomLoggable;
 public class LinkCheckManager implements CustomLoggable
 {
 
+	private static final String IDENTIFIER_TOKEN = "###ID###";
 	private static Logger logger ;
 	private MySQLAdaptor dbAdaptor;
 	
@@ -37,8 +39,31 @@ public class LinkCheckManager implements CustomLoggable
 		this.dbAdaptor = adaptor;	
 	}
 	
-	public Map<String, LinkCheckInfo> checkLinks(GKInstance refDBInst, List<GKInstance> instances, float proportionToCheck, int maxToCheck)
+	/**
+	 * Takes in a list of instances that have Identifier attributes and checks them as links.
+	 * @param refDBInst - This accessURL of refDBInst will be used to generate the links that will be checked.
+	 * @param instances - The instances.
+	 * @param proportionToCheck - The proportion to check. 1.0 means ALL links could be checked.
+	 * @param maxToCheck - The maximum actual number to check. If the list has 100000 elements, and proportionToCheck is 0.75, that means 75000 could be checked.
+	 * If you set maxToCheck to 100, that overrides the number calculated by proportionToCheck and only 100 will be checked.
+	 * @return A map. The key is the identifier, the value is a LinkCheckInfo object, {@link org.reactome.addlinks.linkchecking.LinkCheckInfo}
+	 * @throws IllegalArgumentException This exception is thrown if proportionToCheck or maxToCheck are less than zero, or proportionToCheck is greater than 1.0.
+	 */
+	public Map<String, LinkCheckInfo> checkLinks(GKInstance refDBInst, List<GKInstance> instances, float proportionToCheck, int maxToCheck) throws IllegalArgumentException
 	{
+		if (proportionToCheck < 0.0)
+		{
+			throw new IllegalArgumentException("\"proportionToCheck\" cannot be negative.");
+		}
+		if (proportionToCheck > 1.0)
+		{
+			throw new IllegalArgumentException("\"proportionToCheck\" cannot be greater than 1.");
+		}
+		if (maxToCheck < 0)
+		{
+			throw new IllegalArgumentException("\"maxToCheck\" cannot be negative.");
+		}
+		
 		Map<String, LinkCheckInfo> linkCheckResults = Collections.synchronizedMap( new HashMap<String, LinkCheckInfo>(instances.size()) );
 		
 		int numberOfInstancesToCheck ;
@@ -61,12 +86,13 @@ public class LinkCheckManager implements CustomLoggable
 		instancesToCheck.parallelStream().forEach( inst -> {
 			try
 			{
-				String identifierString = (String) inst.getAttributeValue("identifier");
+				String identifierString = (String) inst.getAttributeValue(ReactomeJavaConstants.identifier);
 				//get the reference DB from the database (if it's not in local cache)
-				String accessURL = ((String)refDBInst.getAttributeValue("accessUrl"));
+				String accessURL = ((String)refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl));
+				accessURL = LinkCheckManager.tweakIfZinc(refDBInst);
 				String referenceDatabaseName = refDBInst.getDisplayName();
 				
-				checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
+				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
 			}
 			catch (URISyntaxException e)
 			{
@@ -95,14 +121,38 @@ public class LinkCheckManager implements CustomLoggable
 		});
 		return linkCheckResults;
 	}
+
+	/**
+	 * Tweaks the Zinc URL to perform better. This is done by appending "?count=1&sort=no&distinct=no" to the URL string.
+	 * In theory, this is supposed to reduce the amount of time it takes for Zinc to respond.
+	 * @param refDBInst - The ReferenceDatabase to tweak.
+	 * @return The updated URL IF it is for a Zinc URL. If not Zinc, the original accessURL will be returned.
+	 * @throws Exception 
+	 * @throws InvalidAttributeException 
+	 */
+	private static String tweakIfZinc(GKInstance refDBInst) throws InvalidAttributeException, Exception
+	{
+		String refDBName = refDBInst.getDisplayName();
+		
+		String accessURL = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
+		String newURL = accessURL;
+		// Zinc databases all start with "Zinc" such as "Zinc - Substances". But we'll normalize to lowercase.
+		if (refDBName.toLowerCase().startsWith("zinc"))
+		{
+			newURL += "?count=1&sort=no&distinct=no";
+		}
+		return newURL;
+	}
 	
 	/**
-	 * Takes in a list of Identifier instances and then gets links out of them and then checks them.
-	 * @param linksData
+	 * Takes in a (possibly) heterogeneous list of instances with Identifier attributes and then gets links out of them and then checks them.
+	 * The instances do NOT need to be associated with the same Reference Database.
+	 * @param linksData - A list of instances. ALL of them will be checked.
+	 * @return A map. The key is the identifier, the value is a LinkCheckInfo object, {@link org.reactome.addlinks.linkchecking.LinkCheckInfo}
 	 */
 	public Map<String, LinkCheckInfo> checkLinks(List<GKInstance> instances)
 	{
-		Map<String,GKInstance> refDBCache = new HashMap<String,GKInstance>();
+		Map<String, GKInstance> refDBCache = new HashMap<>();
 		
 		// This map stores results, keyed by DB_ID of the objects.
 		Map<String, LinkCheckInfo> linkCheckResults = Collections.synchronizedMap( new HashMap<String, LinkCheckInfo>(instances.size()) );
@@ -121,27 +171,26 @@ public class LinkCheckManager implements CustomLoggable
 				String identifierString = (String) inst.getAttributeValue("identifier");
 				
 				String refDBID =  ((GKInstance) inst.getAttributeValue("referenceDatabase")).getDBID().toString();
+				GKInstance refDBInstance;
 				if (!refDBCache.containsKey(refDBID))
 				{
-					GKInstance refDBInstance = this.dbAdaptor.fetchInstance(Long.valueOf(refDBID));
+					refDBInstance = this.dbAdaptor.fetchInstance(Long.valueOf(refDBID));
 					refDBCache.put(refDBID, refDBInstance);
+				}
+				else
+				{
+					refDBInstance = refDBCache.get(refDBID);
 				}
 				logger.debug(refDBCache.get(refDBID));
 				//get the reference DB from the database (if it's not in local cache)
 				String accessURL = ((String)refDBCache.get(refDBID).getAttributeValue("accessUrl"));
-				// special case for Zinc: adding these args will reduce the chance of a timeout.
-				// Example: http://zinc15.docking.org/orthologs/CYH3_HUMAN/predictions/subsets/purchasable/?count=10&sort=no&distinct=no
-				if (accessURL.contains("zinc15.docking.org"))
-				{
-					accessURL += "?count=1&sort=no&distinct=no";
-				}
+				accessURL = LinkCheckManager.tweakIfZinc(refDBInstance);
 				String referenceDatabaseName = ((String)refDBCache.get(refDBID).getDisplayName());
 				
-				checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
+				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				throw new Error(e);
 			}
@@ -150,26 +199,41 @@ public class LinkCheckManager implements CustomLoggable
 		return linkCheckResults;
 	}
 	
-	private void checkTheLink(Map<String, LinkCheckInfo> linkCheckResults, String refDBID, GKInstance inst, String identifierString, String accessURL, String referenceDatabaseName)
+	private static void checkTheLink(Map<String, LinkCheckInfo> linkCheckResults, String refDBID, GKInstance inst, String identifierString, String accessURL, String referenceDatabaseName)
 			throws URISyntaxException, HttpHostConnectException, IOException, Exception, InterruptedException
 	{
-		URI uri = new URI(  accessURL.replace("###ID###", identifierString) );
-		LinkChecker checker = new LinkChecker(uri, identifierString);
-		LinkCheckInfo info = checker.checkLink();
-		if (!(info.isKeywordFound() && info.getStatusCode() == 200))
+		// Some ReferenceDatabases that are added by Curators do not have an Identifer Token (the string: "###ID###".)
+		// Normally, we don't create references for these databases so we normally do not check links for these databases. BUT...
+		// just in cas someone tries to run link-checking on such a database OR if somehow, a ReferenceDatabase accessURL loses it's token,
+		// we will check for the token before proceeding, and issue a warning if no token was found.
+		// 
+		// This should not be an exception because there are legitimate ReferenceDatabases that do not have this value, but still, it's 
+		// a good idea to warn the user about it. Most likely, this will happen if they try to link-check on something that they should not
+		// be checking.
+		if (!accessURL.contains(IDENTIFIER_TOKEN))
 		{
-			LinkCheckManager.logger.warn("Link {} produced status code: {} ; keyword {} was not found.",uri.toString(), info.getStatusCode(), identifierString );
+			logger.warn("Access URL ({}) for ReferenceDatabase \"{}\" does not contain an ID token that can be replaced! Link checking cannot proceed!", accessURL, referenceDatabaseName);
 		}
 		else
 		{
-			LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
+			URI uri = new URI(  accessURL.replace(IDENTIFIER_TOKEN, identifierString) );
+			LinkChecker checker = new LinkChecker(uri, identifierString);
+			LinkCheckInfo info = checker.checkLink();
+			if (!(info.isKeywordFound() && info.getStatusCode() == 200))
+			{
+				LinkCheckManager.logger.warn("Link {} produced status code: {} ; keyword {} was not found.",uri.toString(), info.getStatusCode(), identifierString );
+			}
+			else
+			{
+				LinkCheckManager.logger.debug("Link {} produced status code: {} ; keyword {} was found.",uri.toString(), info.getStatusCode(), identifierString );
+			}
+			info.setIdentifier(identifierString);
+			info.setReferenceDatabaseDBID(refDBID);
+			info.setIdentifierDBID(inst.getDBID().toString());
+			info.setReferenceDatabaseName(referenceDatabaseName);
+			linkCheckResults.put(inst.getDBID().toString(), info);
+			// Sleep for 2 seconds between requests so that the server we're talking to doesn't think we're trying to DOS them.
+			Thread.sleep(Duration.ofSeconds(2).toMillis());
 		}
-		info.setIdentifier(identifierString);
-		info.setReferenceDatabaseDBID(refDBID);
-		info.setIdentifierDBID(inst.getDBID().toString());
-		info.setReferenceDatabaseName(referenceDatabaseName);
-		linkCheckResults.put(inst.getDBID().toString(), info);
-		// Sleep for 2 seconds between requests so that the server we're talking to doesn't think we're trying to DOS them.
-		Thread.sleep(Duration.ofSeconds(2).toMillis());
 	}
 }
