@@ -1,6 +1,8 @@
 import groovy.json.JsonSlurper
 // This Jenkinsfile is used by Jenkins to run the AddLinks-Insertion step of Reactome's release.
 // It requires that the AddLinks-Download and Orthoinference steps have been run successfully before it can be run.
+def currentRelease
+def previousRelease
 pipeline{
 	agent any
 
@@ -10,6 +12,7 @@ pipeline{
 			steps{
 				script{
 					def currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
+					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
 					checkUpstreamBuildsSucceeded("AddLinks-Download", "$currentRelease")
 					checkUpstreamBuildsSucceeded("Orthoinference", "$currentRelease")
@@ -22,7 +25,7 @@ pipeline{
 				script{
 					dir('add-links'){
 						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_before_addlinks.dump"
+							def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_before_addlinks.dump"
 							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
 							sh "gzip -f $release_current_before_addlinks_dump"
 						}
@@ -63,7 +66,7 @@ pipeline{
 				script{
 					dir('add-links'){
 						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							def release_current_after_addlinks_dump = "${env.RELEASE_CURRENT}_${env.RELEASE_NUMBER}_after_addlinks.dump"
+							def release_current_after_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_after_addlinks.dump"
 							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_after_addlinks_dump"
 							sh "gzip $release_current_after_addlinks_dump"
 						}
@@ -76,12 +79,12 @@ pipeline{
 			steps{
 				script{
 					dir('add-links'){
-						sh "mkdir -p archive/${env.RELEASE_NUMBER}/logs"
-						sh "mv --backup=numbered *_${env.RELEASE_NUMBER}_*.dump.gz archive/${env.RELEASE_NUMBER}/"
+						sh "mkdir -p archive/${currentRelease}/logs"
+						sh "mv --backup=numbered *_${currentRelease}_*.dump.gz archive/${currentRelease}/"
 						sh "gzip logs/*.log"
 						sh "gzip logs/retrievers/*"
 						sh "gzip logs/*.log logs/retrievers/* logs/file-processors/* logs/refCreators/*"
-						sh "mv logs/* archive/${env.RELEASE_NUMBER}/logs"
+						sh "mv logs/* archive/${currentRelease}/logs"
 					}
 				}
 			}
