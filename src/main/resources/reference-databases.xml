@@ -436,5 +436,14 @@
 				<!-- NOTE: No identifiers.org entry for OpenTargets or TargetValidation -->
 			</map>
 		</entry>
+		
+		<entry key="TargetPathogen">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Target Pathogen"/>
+				<entry key="URL" value="https://target.sbg.qb.fcen.uba.ar/patho/"/>
+				<entry key="AccessURL" value="https://target.sbg.qb.fcen.uba.ar/patho/protein/###ID###"/>
+				<!-- NOTE: No identifiers.org entry for TargetPathogen -->
+			</map>
+		</entry>
 	</util:map>
 </beans>

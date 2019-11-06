@@ -36,10 +36,11 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>TargetPathogen</value>
+		<value>OpenTargets</value>
 		<value>IntEnz</value>
 		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
-		<value>OpenTargets</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
 		<value>CTD</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -67,11 +68,12 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>TargetPathogenFileProcessor</value>
+		<value>OpenTargetsFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEnsemblFileProcessor</value>
-		<value>OpenTargetsFileProcessor</value>
 		<value>FlyBaseFileProcessor</value>
 		<value>CTDProcessor</value>
 		<value>UniprotToEntrezGeneFileProcessor</value>
@@ -97,11 +99,13 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>TargetPathogenReactionsReferenceCreator</value>
+		<value>TargetPathogenProteinsReferenceCreator</value>
+		<value>OpenTargetsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>ENSEMBLToWormbaseRefCreator</value>
-		<value>OpenTargetsReferenceCreator</value>
 		<value>FlyBaseReferenceCreator</value>
 		<value>upMappedEntrezGeneRefCreator</value>
 		<value>upMappedENSEMBLGeneRefCreator</value>
@@ -134,6 +138,7 @@
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>

@@ -164,7 +164,7 @@ public class ReferenceCreator
 			
 			if (identifierValue == null || identifierValue.trim().equals(""))
 			{
-				logger.error("You tried to create a reference to ref DB {} via attribute {} for the object with DB_ID: {} with an empty/NULL Identifier", refDB, this.referringAttribute, referenceToValue);
+				this.logger.error("You tried to create a reference to ref DB {} via attribute {} for the object with DB_ID: {} with an empty/NULL Identifier", refDB, this.referringAttribute, referenceToValue);
 				throw new NullPointerException("Enmpty-string/NULL identifier value is not allowed!");
 			}
 			
@@ -175,7 +175,7 @@ public class ReferenceCreator
 			// It's possible that the Identifier might already exist but for a different object. Note that by querying the cache-by-identifier cache,
 			// objects created *during* the execution of AddLinks will not be found since they won't have been added to the cache which gets populated 
 			// when the application starts.
-			Collection<GKInstance> identifiers = objectCache.getByIdentifier(identifierValue, this.schemaClass.getName());
+			Collection<GKInstance> identifiers = this.objectCache.getByIdentifier(identifierValue, this.schemaClass.getName());
 
 			// TODO: Maybe have a flag that can turn this functionality (check for pre-existing "new" identifiers) on or off.
 			if (identifiers != null && identifiers.size() > 0)
@@ -202,7 +202,7 @@ public class ReferenceCreator
 								// it means we need to delete that instance and re-create it.
 								if (inst.getDBID() == Long.valueOf(referenceToValue))
 								{
-									logger.warn( "Identifier {} already existed (and has DB_ID {}), *and* was referred to by {}, but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID), referenceToValue);
+									this.logger.warn( "Identifier {} already existed (and has DB_ID {}), *and* was referred to by {}, but it shouldn't have existed (maybe you've already tried to creat this identifier?). We will delete it so it can be added fresh.", identifier.getAttributeValue(identifierAttribute), identifier.getAttributeValue(ReactomeJavaConstants.DB_ID), referenceToValue);
 									try
 									{
 										needToDeleteIdentifier = true;
@@ -219,13 +219,13 @@ public class ReferenceCreator
 					}
 					else
 					{
-						logger.error("The GKInstance for the Identifier was NULL. That should not happen, you should probably investigate this deeper. Some debug info: identifierValue: {}; referenceToValue: {}; refDB: {}; creatorName: {}; speciesID: {}; class queried: {}", identifierValue, referenceToValue, refDB, creatorName, speciesID, this.schemaClass.getName());
-						logger.error("The identifiers list contains {} elements, and {} were NULL.", identifiers.size(), identifiers.stream().filter(p -> p == null).count());
+						this.logger.error("The GKInstance for the Identifier was NULL. That should not happen, you should probably investigate this deeper. Some debug info: identifierValue: {}; referenceToValue: {}; refDB: {}; creatorName: {}; speciesID: {}; class queried: {}", identifierValue, referenceToValue, refDB, creatorName, speciesID, this.schemaClass.getName());
+						this.logger.error("The identifiers list contains {} elements, and {} were NULL.", identifiers.size(), identifiers.stream().filter(p -> p == null).count());
 					}
 				}
 				if (!needToDeleteIdentifier)
 				{
-					logger.trace("Pre-existing identifier {} did not need to be deleted because it was not already referred to by {}", identifierValue, referenceToValue);
+					this.logger.trace("Pre-existing identifier {} did not need to be deleted because it was not already referred to by {}", identifierValue, referenceToValue);
 				}
 			}
 			
@@ -240,7 +240,7 @@ public class ReferenceCreator
 			
 			if (this.instanceEdit != null)
 			{
-				identifierInstance.addAttributeValue(ReactomeJavaConstants.created, instanceEdit);
+				identifierInstance.addAttributeValue(ReactomeJavaConstants.created, this.instanceEdit);
 				
 				GKSchemaAttribute refDBAttribute = (GKSchemaAttribute) this.schemaClass.getAttribute(ReactomeJavaConstants.referenceDatabase);
 				
@@ -253,7 +253,7 @@ public class ReferenceCreator
 					identifierInstance.addAttributeValue(ReactomeJavaConstants.species, species);
 				}
 				
-				identifierInstance.addAttributeValue(refDBAttribute, refDBInstance);
+				identifierInstance.addAttributeValue(refDBAttribute, this.refDBInstance);
 								
 				// If the user wanted to specify any other attributes, add them here. 
 				if (otherAttribs != null && otherAttribs.keySet().size() > 0)
@@ -308,7 +308,7 @@ public class ReferenceCreator
 				}
 				catch (InvalidAttributeValueException e)
 				{
-					logger.error("Invalid Attribute: {} added to object: {}", xrefAttrib, instanceReferredToByIdentifier);
+					this.logger.error("Invalid Attribute: {} added to object: {}", xrefAttrib, instanceReferredToByIdentifier);
 					throw new Error(e);
 				}
 
@@ -322,12 +322,12 @@ public class ReferenceCreator
 				}
 				catch (InvalidAttributeValueException e)
 				{
-					logger.error("Invalid Attribute: {} with value {} was added to object: {}", ReactomeJavaConstants.modified,  this.instanceEdit, instanceReferredToByIdentifier);
+					this.logger.error("Invalid Attribute: {} with value {} was added to object: {}", ReactomeJavaConstants.modified,  this.instanceEdit, instanceReferredToByIdentifier);
 					throw new Error(e);
 				}
 				// Only update the relevant attribute, better than updating the entire instance.
 				this.dbAdapter.updateInstanceAttribute(instanceReferredToByIdentifier, xrefAttrib);
-				logger.trace("Object with DB_ID: {} has new reference (via {} attribute): DB_ID: {}, Type: {}, Identifier Value: {}",
+				this.logger.trace("Object with DB_ID: {} has new reference (via {} attribute): DB_ID: {}, Type: {}, Identifier Value: {}",
 							instanceReferredToByIdentifier.getDBID(), xrefAttrib.getName(), newInstanceID, createdIdentifier.getSchemClass().getName(), identifierValue );
 				// Only now that the reference has been created, we will update the Links-to-check cache. This cache will be used later to ensure
 				// that the external links we created are valid.
@@ -336,18 +336,18 @@ public class ReferenceCreator
 			}
 			else
 			{
-				logger.error("InstanceEdit was null! Could not create Reference because there was no InstanceEdit to associate it with.");
+				this.logger.error("InstanceEdit was null! Could not create Reference because there was no InstanceEdit to associate it with.");
 			}
 		}
 		catch (MysqlDataTruncation e)
 		{
 			// This could happen if a string from an external source is too long for the field you are trying to fit it into.
-			logger.error("Data truncation error: \"{}\" while trying to insert reference with identifier value: {} ", e.getMessage(), identifierValue);
+			this.logger.error("Data truncation error: \"{}\" while trying to insert reference with identifier value: {} ", e.getMessage(), identifierValue);
 			throw new Error(e);
 		}
 		catch (Exception e)
 		{
-			logger.catching(Level.ERROR, e);
+			this.logger.catching(Level.ERROR, e);
 			e.printStackTrace();
 			throw e;
 		}
@@ -386,7 +386,7 @@ public class ReferenceCreator
 		{
 			if (dbIds.size() > 1)
 			{
-				logger.trace("{} DB_IDs came back for \"{}\": {}", dbIds.size(), dbName, dbIds);
+				this.logger.trace("{} DB_IDs came back for \"{}\": {}", dbIds.size(), dbName, dbIds);
 			}
 			refDb = this.dbAdapter.fetchInstance(Long.valueOf(dbIds.get(0)));
 		}
