@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.3.0
+ - New: Changes for Jenkins
+
 ## 1.2.0
  - New: Create references for TargetPathogen
  - Major Fixes:
