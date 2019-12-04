@@ -6,8 +6,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-		
-	<!-- 
+
+	<!--
 	This file is a mapping that maps file processors to reference creators.
 	-->
 	<util:list id="zincCreators" value-type="java.lang.String" list-class="java.util.ArrayList">
@@ -18,7 +18,7 @@
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
-	</util:list> 
+	</util:list>
 
 	<util:list id="targetPathogenCreators" value-type="java.lang.String" list-class="java.util.ArrayList">
 		<value>TargetPathogenReactionsReferenceCreator</value>
@@ -52,7 +52,6 @@
 		<entry key="HmdbMetabolitesFileProcessor" value="HmdbMoleculeReferenceCreator"/>
 		<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
 		<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
-		<entry key="BrendaProcessor" value="BrendaRefCreator"/>
 		<entry key="ComplexPortalFileProcessor" value="ComplexPortalRefCreator"/>
 		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
