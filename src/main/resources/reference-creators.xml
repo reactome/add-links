@@ -9,7 +9,7 @@
 						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<import resource="reactome-java-constants4spring.xml"/>
-	
+
 	<util:list id="entrezGeneBasedReferenceCreators">
 		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="BioGPSRefCreator">
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -350,7 +350,7 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="HmdbMoleculeReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator" id="HmdbMoleculeReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -424,19 +424,7 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
-		<entry key="BrendaRefCreator">
-			<bean class="org.reactome.addlinks.referencecreators.BRENDAReferenceCreator" id="BrendaRefCreator">
-				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
-				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
-				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
-				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
-				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="Brenda"/>
-				<constructor-arg index="6" name="refCreatorName" value="refCreators/BrendaRefCreator"/>
-				<property name="testMode" value="false"/>
-			</bean>
-		</entry>
-		
+
 		<entry key="ComplexPortalRefCreator">
 			<bean class="org.reactome.addlinks.referencecreators.ComplexPortalReferenceCreator" id="ComplexPortalRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -449,7 +437,7 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="HGNCReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.HGNCReferenceCreator" id="HGNCReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -487,7 +475,7 @@
 				<property name="sourceIdentifyingAttribute" value="geneName"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="IntEnzRefCreator">
 			<bean class="org.reactome.addlinks.referencecreators.IntEnzReferenceCreator" id="IntEnzRefCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -500,7 +488,7 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="TargetPathogenReactionsReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator" id="TargetPathogenReactionsReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -513,7 +501,7 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
-		
+
 		<entry key="TargetPathogenProteinsReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator" id="TargetPathogenProteinsReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>

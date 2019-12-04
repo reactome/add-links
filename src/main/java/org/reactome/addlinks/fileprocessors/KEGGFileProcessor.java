@@ -22,15 +22,15 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 		KEGG_DEFINITION,
 		EC_NUMBERS
 	}
-	
+
 	private static final Pattern ecPattern = Pattern.compile("(.*)\\[EC:([0-9\\-\\. ]*)\\]");
-	
+
 	public KEGGFileProcessor(String processorName)
 	{
 		super(processorName);
 		this.pattern = Pattern.compile("kegg_entries.[0-9]+\\.[0-9]+\\.txt");
 	}
-	
+
 	public KEGGFileProcessor()
 	{
 		super();
@@ -39,8 +39,8 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 
 	/**
 	 * Returns UniProt-to-KEGG mappings.
-	 * @param file 
-	 * 
+	 * @param file
+	 *
 	 */
 	@Override
 	protected void processFile(Path path, Map<String, List<Map<KEGGFileProcessor.KEGGKeys, String>>> mapping)
@@ -56,7 +56,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 					BufferedReader br = new BufferedReader(fr);)
 			{
 				String line;
-				
+
 				String keggGeneID = null;
 				String keggSpeciesCode = null;
 				String keggDefinition = null;
@@ -82,10 +82,10 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 					// Another example: http://rest.kegg.jp/get/xla:380246
 					// In this case, there is an ORTHOLOGY line and a NAME line. The value from ORTHOLOGY "K02087" doesn't seem to be a valid KEGG Identifier beacuse
 					// the URL http://rest.kegg.jp/get/xla:K02087 does not return anythign, but http://rest.kegg.jp/get/xla:cdk1.S yiels the same data as
-					// http://rest.kegg.jp/get/xla:380246 which suggests that "cdk1.S" is a "better" KEGG Identifier than "K02087" 
+					// http://rest.kegg.jp/get/xla:380246 which suggests that "cdk1.S" is a "better" KEGG Identifier than "K02087"
 
-					// Also, it looks like we will need to extract EC numbers from ORTHOLOGY (if it's there) to create the EC abd BRENDA and IntEnz identifiers.
-					
+					// Also, it looks like we will need to extract EC numbers from ORTHOLOGY (if it's there) to create the EC and IntEnz identifiers.
+
 					if (!line.equals("///"))
 					{
 						String[] parts = line.split("\\s+");
@@ -113,7 +113,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 										break;
 									case "ORTHOLOGY":
 										// This could actually be several EC numbers separated by a space character.
-										Matcher matcher = ecPattern.matcher(line); 
+										Matcher matcher = ecPattern.matcher(line);
 										if (matcher.matches() && matcher.groupCount() > 0)
 										{
 											ecNumber = matcher.group(2);
@@ -165,7 +165,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 							keggValues.put(KEGGKeys.KEGG_SPECIES, keggSpeciesCode);
 							keggValues.put(KEGGKeys.KEGG_DEFINITION, keggDefinition);
 							keggValues.put(KEGGKeys.EC_NUMBERS, ecNumber);
-							
+
 							if ( (keggValues.get(KEGGKeys.KEGG_IDENTIFIER) == null || keggValues.get(KEGGKeys.KEGG_IDENTIFIER).trim().equals(""))
 									&& (keggValues.get(KEGGKeys.KEGG_GENE_ID) == null || keggValues.get(KEGGKeys.KEGG_GENE_ID).trim().equals("")))
 							{
@@ -192,7 +192,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 											String otherIdentifier = preExistingKeggValueRecord.get(KEGGKeys.KEGG_IDENTIFIER);
 											String geneID = keggValues.get(KEGGKeys.KEGG_GENE_ID);
 											String otherGeneId = preExistingKeggValueRecord.get(KEGGKeys.KEGG_GENE_ID);
-											
+
 											// currentCompareValue and preexistingCompareValue should never actually be "" because
 											// that situation should be handled up above. The logic prevents such keggValue maps from
 											// ever being inserted into the main map structure.
@@ -200,7 +200,7 @@ public class KEGGFileProcessor extends GlobbedFileProcessor<List<Map<KEGGFilePro
 																			? identifier
 																			: (geneID != null && !geneID.trim().equals("")
 																				? geneID
-																				: "");  
+																				: "");
 
 											String preexistingCompareValue = otherIdentifier != null && !otherIdentifier.trim().equals("")
 																			? otherIdentifier

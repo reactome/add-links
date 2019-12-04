@@ -26,11 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.reactome.addlinks.brenda.BRENDAReferenceDatabaseGenerator;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
-import org.reactome.addlinks.dataretrieval.brenda.BRENDAFileRetriever;
-import org.reactome.addlinks.dataretrieval.brenda.BRENDASoapClient;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.executor.KeggFileRetrieverExecutor;
@@ -64,9 +61,7 @@ public class AddLinks
 {
 	private static final String PROTEIN = "PROTEIN";
 	private static final String CTD_PROCESSOR = "CTDProcessor";
-	private static final String BRENDA_UC = "BRENDA";
 	private static final String KEGG = "KEGG";
-	private static final String BRENDA = "Brenda";
 	private static final String ENSEMBL = "ENSEMBL";
 	private static final String REACTOME = "Reactome";
 	private static final String HUMAN_SPECIES_ID = "48887";
@@ -76,32 +71,32 @@ public class AddLinks
 	private static final String DATE_PATTERN_FOR_FILENAMES = "yyyy-MM-dd_HHmmss";
 
 	private static final Logger logger = LogManager.getLogger();
-	
+
 	private ReferenceObjectCache objectCache;
-	
+
 	private List<String> fileProcessorFilter;
 	private List<String> fileRetrieverFilter;
 	private List<String> referenceCreatorFilter;
-	
+
 	private Map<String, UniprotFileRetriever> uniprotFileRetrievers;
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
-	
+
 	private Map<String, FileProcessor<?>> fileProcessors;
 	private Map<String,FileRetriever> fileRetrievers;
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
 	private Map<String, Object> processorCreatorLink;
-	
+
 	private Map<String, UPMappedIdentifiersReferenceCreator> uniprotReferenceCreators;
 	private Map<String, BatchReferenceCreator<?>> referenceCreators;
-	
+
 	private List<String> referenceDatabasesToLinkCheck;
-	
+
 	private float proportionToLinkCheck = 0.1f;
 	private int maxNumberLinksToCheck = 100;
-	
+
 	private EnsemblBatchLookup ensemblBatchLookup;
-	
+
 	private MySQLAdaptor dbAdapter;
 
 	@SuppressWarnings("unchecked")
@@ -114,25 +109,25 @@ public class AddLinks
 		Files.createDirectories(Paths.get(LINK_CHECK_REPORTS_PATH));
 
 		// This list will be used at the very end when we are checking links but we need to
-		// seed it in the LinksToCheckCache now, because species-specific reference databases will only 
+		// seed it in the LinksToCheckCache now, because species-specific reference databases will only
 		// be created at run-time and we can't anticipate them now. They will be added to
 		// LinksToCheckCache's list of reference DBs as they are created.
 		LinksToCheckCache.setRefDBsToCheck(this.referenceDatabasesToLinkCheck);
-		
+
 		// The objectCache gets initialized the first time it is referenced, that will happen when Spring tries to instantiate it from the spring config file.
 		if (this.objectCache == null)
 		{
 			throw new Error("ObjectCache cannot be null.");
 		}
-		
+
 		Properties applicationProps = new Properties();
 		String propertiesLocation = System.getProperty("config.location");
-		
+
 		try(FileInputStream fis = new FileInputStream(propertiesLocation))
 		{
 			applicationProps.load(fis);
 		}
-		
+
 		long personID = Long.valueOf(applicationProps.getProperty("executeAsPersonID"));
 		int numUniprotDownloadThreads = Integer.valueOf(applicationProps.getProperty("numberOfUniprotDownloadThreads"));
 
@@ -150,23 +145,21 @@ public class AddLinks
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
 		Map<String, Map<String, Integer>> preAddLinksReport = this.reportsBeforeAddLinks(xrefReporter, duplicateIdentifierReporter);
-		
+
 		ExecutorService execSrvc = Executors.newFixedThreadPool(5);
 		List<Callable<Boolean>> retrieverJobs = createRetrieverJobs(numUniprotDownloadThreads);
 		// Execute the file retrievers.
 		execSrvc.invokeAll(retrieverJobs);
-		
+
 		retrieverJobs = new ArrayList<>();
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
-		// Run the Brenda file retriever - it is slow and KEGG is slow, so let's run them together!
-//		retrieverJobs.add(new BrendaFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter, this.objectCache)); // Disabled BRENDA retriever because we're not linking out to BRENDA anymore.
 		execSrvc.invokeAll(retrieverJobs);
-		
+
 		logger.info("Finished downloading files.");
 		execSrvc.shutdown();
 		logger.info("Now processing the files...");
-		
+
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute. Maybe?
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
@@ -177,10 +170,10 @@ public class AddLinks
 			EnsemblFileProcessorExecutor ensemblFileProcessorExecutor = new EnsemblFileProcessorExecutor(this.dbAdapter, this.objectCache);
 			ensemblFileProcessorExecutor.processENSEMBLFiles(dbMappings);
 		}
-		
+
 		// Print stats on results of file processing.
 		logger.info("{} keys in mapping object.", dbMappings.keySet().size());
-		
+
 		for (String k : dbMappings.keySet().stream().sorted().collect(Collectors.toList()))
 		{
 			logger.info("DB Key: {} has {} submaps.", k, dbMappings.get(k).keySet().size());
@@ -190,36 +183,28 @@ public class AddLinks
 				{
 					logger.info("    subkey: {} has {} subkeys", subk, ((Map<String, ?>)dbMappings.get(k).get(subk)).keySet().size() );
 				}
-				
+
 			}
 		}
 		//Before each set of IDs is updated in the database, maybe take a database backup?
-		
+
 		//Now we create references.
 		this.createReferences(personID, dbMappings);
 		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
-		
+
 		logger.info("Now checking links.");
-		
+
 		String linksReport = this.checkLinks();
 		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
 		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
-		
-		// Now... we need to clean up some of the species-specific Reference Database names. Specifically, BRENDA was causing problems for some external team
-		// that was using a file which contained strings of the form "BRENDA (Species Name)". So we will change name[0] for BRENDA ReferenceDatabase objects
-		// to "BRENDA" but leave the _displayName as "BRENDA (Species Name)".
-		// This *CANNOT* be done earlier in the process as the species name in the ReferenceDatabase name is used to do lookups to get the correct species-specific
-		// ReferenceDatabase object. Another option would be to modify the data model by adding a new "species" attribute to the ReferenceDatabase type, but
-		// I'm not sure anyone else will go along with that...
-		fixBrendaRefDBNames();
-		
+
 		logger.info("Process complete.");
 	}
 
 	/**
-	 * Checks the links to external resources. Returns a 
+	 * Checks the links to external resources. Returns a
 	 * @return
 	 */
 	private String checkLinks()
@@ -238,7 +223,6 @@ public class AddLinks
 			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
 			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
 					|| (refDBInst.getDisplayName().toUpperCase().contains(ENSEMBL) && LinksToCheckCache.getRefDBsToCheck().contains(ENSEMBL))
-					|| (refDBInst.getDisplayName().toUpperCase().contains(BRENDA_UC) && LinksToCheckCache.getRefDBsToCheck().contains(BRENDA))
 					|| (refDBInst.getDisplayName().toUpperCase().contains(KEGG) && LinksToCheckCache.getRefDBsToCheck().contains(KEGG))
 				)
 			{
@@ -280,7 +264,7 @@ public class AddLinks
 								// Sometimes the keyword is in the response body, but the response code is 404, such as "Sorry, identifier 12345 is not in the database".
 								// So we have to make sure that we increment numLinkNotOK in this case.
 								logger.warn("Link-checking error: Identifier {} was found in the respone, but a non-200 response code was returned with it: {}", identifier, statusCode);
-								numLinkNotOK++;	
+								numLinkNotOK++;
 							}
 						}
 					}
@@ -316,7 +300,7 @@ public class AddLinks
 		//reporter.printReport();
 		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
 		logger.info("\n"+xrefReporter.printReport(postAddLinksReport));
-		
+
 		logger.info("Differences");
 		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
 		// Save the diff report to a file for future reference.uinm
@@ -325,7 +309,7 @@ public class AddLinks
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
 		logger.info("\n"+diffReport);
 		logger.info("(Differences report can also be found in the file: " + diffReportName);
-		
+
 		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
 		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder postAddLinksduplicateSB = duplicateIdentifierReporter.generatePrintableReport(postAddLinksdataRows);
@@ -338,7 +322,7 @@ public class AddLinks
 	 * Reports on counts and duplicates before running the main AddLinks process.
 	 * @param xrefReporter - a cross-reference reporter.
 	 * @param duplicateIdentifierReporter - a duplicate reporter.
-	 * @return A mapping of databases and counts. This gets used AFTER AddLinks to determine how much changed during the process. It is 
+	 * @return A mapping of databases and counts. This gets used AFTER AddLinks to determine how much changed during the process. It is
 	 * used to create the "diff" report.
 	 * @throws SQLException
 	 * @throws Exception
@@ -365,12 +349,12 @@ public class AddLinks
 	private List<Callable<Boolean>> createRetrieverJobs(int numUniprotDownloadThreads)
 	{
 		// We can execute SimpleFileRetrievers at the same time as the UniProt retrievers, and also the ENSEMBL retrievers.
-		
+
 		List<Callable<Boolean>> retrieverJobs = new ArrayList<>();
 		retrieverJobs.add(new SimpleFileRetrieverExecutor(this.fileRetrievers, this.fileRetrieverFilter));
 		// Execute the UniProt file retrievers separately.
 		retrieverJobs.add(new UniprotFileRetrieverExecutor(this.uniprotFileRetrievers, this.fileRetrieverFilter, numUniprotDownloadThreads, this.objectCache));
-		
+
 		// Check to see if we should do any Ensembl work
 		if (this.fileRetrieverFilter.contains("EnsemblToALL"))
 		{
@@ -378,30 +362,9 @@ public class AddLinks
 		}
 		return retrieverJobs;
 	}
-	
-	/**
-	 * Renames all of the BRENDA databases to simply be "BRENDA".
-	 * The names of the BRENDA ReferenceDatabases were getting into a downstream file,
-	 * and the primary consumer of that file had problems processing multiple species-specific databases,
-	 * so now they are all simply renamed to "BRENDA".
-	 * @throws Exception
-	 */
-	private void fixBrendaRefDBNames() throws Exception
-	{
-		logger.info("Fixing BRENDA reference database names.");
-		@SuppressWarnings("unchecked")
-		Set<GKInstance> brendaRefDBs = (Set<GKInstance>) this.dbAdapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "LIKE", "%BRENDA%");
-		for (GKInstance brendaRefDB : brendaRefDBs)
-		{
-			@SuppressWarnings("unchecked")
-			List<String> names = (List<String>) brendaRefDB.getAttributeValuesList(ReactomeJavaConstants.name);
-			names.set(0, BRENDA_UC);
-			brendaRefDB.setAttributeValue(ReactomeJavaConstants.name, names);
-			this.dbAdapter.updateInstanceAttribute(brendaRefDB, ReactomeJavaConstants.name);
-			logger.info("BRENDA RefDB {} now has names: {}", brendaRefDB.toString(), brendaRefDB.getAttributeValue(ReactomeJavaConstants.name));
-		}
-	}
-	
+
+
+
 	/**
 	 * Finds all ReferenceDatabase objects that have no referrers, and purges them from the database.
 	 */
@@ -420,7 +383,7 @@ public class AddLinks
 				//@SuppressWarnings("unchecked")
 				Collection<GKInstance> refMap = new ArrayList<> ();
 				refMap = (Collection<GKInstance>) refDB.getReferers(ReactomeJavaConstants.referenceDatabase);
-				
+
 				int refCount = 0;
 				if (refMap != null)
 				{
@@ -439,7 +402,7 @@ public class AddLinks
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		
+
 	}
 
 
@@ -465,25 +428,25 @@ public class AddLinks
 				}
 				else if (this.processorCreatorLink.get(k) instanceof List)
 				{
-					List<String> sublist = ((List<String>)this.processorCreatorLink.get(k)); 
+					List<String> sublist = ((List<String>)this.processorCreatorLink.get(k));
 					return sublist.stream().filter( element -> element.equals(refCreatorName) ).findFirst().isPresent();
 				}
 				else // if not a list and not a string, something is wrong.
 				{
 					return false;
 				}
-					
+
 			} ).map( m -> m ).findFirst();
 			if (this.referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")
 				BatchReferenceCreator refCreator = this.referenceCreators.get(refCreatorName);
-				
+
 				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
 				{
 					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get(CTD_PROCESSOR) );
 				}
-				
+
 				if (refCreator instanceof ENSMappedIdentifiersReferenceCreator)
 				{
 					createEnsemblReferences(personID, dbMappings, refCreator);
@@ -510,10 +473,10 @@ public class AddLinks
 						// The list of source references is a list of reactions. TargetPathogenReferenceCreator does
 						// not need special handling if it's *not* creating references for reactions.
 						// Creating ReferenceGeneProducts from UniProt identfiers works like other ReferenceCreators...
-						// 
-						// The reason this code is here is because the database does not contain Reactome as a 
+						//
+						// The reason this code is here is because the database does not contain Reactome as a
 						// ReferenceDatabase so looking for Reactions in the cache whose source is Reactome will fail.
-						// And even if Reactome *was* a ReferenceDatabase, somewhere there would need to be code to check 
+						// And even if Reactome *was* a ReferenceDatabase, somewhere there would need to be code to check
 						// the stableIdentifier attribute (via DatabaseObject) instead of the regular identifier attribute
 						// attached to the Reaction.
 						sourceReferences = this.objectCache.getReactionsByID().values().stream().collect(Collectors.toList());
@@ -551,7 +514,7 @@ public class AddLinks
 						}
 					}
 				}
-				
+
 			}
 			// There is a separate list of reference creators to create UniProt references.
 			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
@@ -600,16 +563,16 @@ public class AddLinks
 	}
 
 	/**
-	 * This function will get a list of ENSEMBL identifiers. Each GKInstance will be a ReferenceGeneProduct from an ENSEMBL_*_PROTEIN database. 
-	 * 
+	 * This function will get a list of ENSEMBL identifiers. Each GKInstance will be a ReferenceGeneProduct from an ENSEMBL_*_PROTEIN database.
+	 *
 	 * @return A list of instances.
 	 */
 	private List<GKInstance> getENSEMBLIdentifiersList()
 	{
 		List<GKInstance> identifiers = new ArrayList<>();
-		
+
 		List<String> ensemblDBNames = this.objectCache.getRefDbNamesToIds().keySet().stream().filter(k -> k.toUpperCase().startsWith(ENSEMBL) && k.toUpperCase().contains(PROTEIN)).collect(Collectors.toList());
-		
+
 		for (String dbName : ensemblDBNames)
 		{
 			for (String dbid : this.objectCache.getRefDbNamesToIds().get(dbName))
@@ -617,13 +580,13 @@ public class AddLinks
 				identifiers.addAll(this.objectCache.getByRefDb(dbid, ReactomeJavaConstants.ReferenceGeneProduct));
 			}
 		}
-		
+
 		return identifiers;
 	}
-	
+
 	/**
 	 * Gets a list of identifiers for a given reference database and type. All relevant instances will be returned, regardless of species.
-	 * @param refDb - the reference database. 
+	 * @param refDb - the reference database.
 	 * @param className - the type, such as ReferenceGeneProduct.
 	 * @return
 	 */
@@ -631,7 +594,7 @@ public class AddLinks
 	{
 		return this.getIdentifiersList(refDb, null, className);
 	}
-	
+
 	/**
 	 * Gets a list of identifiers for a given reference database, species, and type.
 	 * @param refDb
@@ -659,18 +622,18 @@ public class AddLinks
 			identifiers = this.objectCache.getByRefDb(refDBID, className);
 			logger.debug(refDb + " " + refDBID + " ; " );
 		}
-		
+
 		return identifiers;
 	}
-	
+
 	/**
-	 * Create ReferenceDatabase objects, in case they done yet exist in this database. 
+	 * Create ReferenceDatabase objects, in case they done yet exist in this database.
 	 */
 	@SuppressWarnings("unchecked")
 	private void executeCreateReferenceDatabases(long personID)
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
-		
+
 		for (String key : this.referenceDatabasesToCreate.keySet())
 		{
 			boolean speciesSpecificAccessURL = false;
@@ -705,7 +668,7 @@ public class AddLinks
 					case "AccessURL":
 						accessUrl = (String) refDB.get(attributeKey) ;
 						break;
-						
+
 					case "URL":
 						url = (String) refDB.get(attributeKey) ;
 						break;
@@ -749,14 +712,10 @@ public class AddLinks
 		EnsemblReferenceDatabaseGenerator.setDbCreator(creator);
 		KEGGReferenceDatabaseGenerator.setDBCreator(creator);
 		KEGGReferenceDatabaseGenerator.setDBAdaptor(this.dbAdapter);
-		BRENDAReferenceDatabaseGenerator.setDBCreator(creator);
 		try
 		{
 			EnsemblReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(this.objectCache);
 			KEGGReferenceDatabaseGenerator.generateSpeciesSpecificReferenceDatabases(this.objectCache);
-			BRENDAFileRetriever brendaRetriever = (BRENDAFileRetriever) this.fileRetrievers.get("BrendaRetriever");
-			BRENDASoapClient client = new BRENDASoapClient(brendaRetriever.getUserName(), brendaRetriever.getPassword());
-			BRENDAReferenceDatabaseGenerator.createReferenceDatabases(client, brendaRetriever.getDataURL().toString(), this.objectCache, this.dbAdapter, personID);
 		}
 		catch (Exception e)
 		{
@@ -781,7 +740,7 @@ public class AddLinks
 		// Call identifiers.org web service to get the most up-to-date accessUrl, and compare with the one in the file.
 		// The WS URL is: https://identifiers.org/rest/resources/${resourceIdentifier}
 		// The response will be in JSON-format, look for the key "accessURL"
-		
+
 		String urlFromIdentifiersDotOrg = IdentifiersDotOrgUtil.getAccessUrlForResource(resourceIdentifier);
 		// If we got a URL back from identifiers.org...
 		if (urlFromIdentifiersDotOrg != null && !urlFromIdentifiersDotOrg.trim().equals(""))
@@ -812,7 +771,7 @@ public class AddLinks
 	{
 		Map<String,Map<String,?>> dbMappings = new HashMap<>();
 		logger.info("{} file processors to execute.", this.fileProcessorFilter.size());
-		this.fileProcessors.keySet().stream().filter(k -> this.fileProcessorFilter.contains(k)).forEach( k -> 
+		this.fileProcessors.keySet().stream().filter(k -> this.fileProcessorFilter.contains(k)).forEach( k ->
 			{
 				logger.info("Executing file processor: {}", k);
 				dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
@@ -845,7 +804,7 @@ public class AddLinks
 	{
 		this.ensemblFileRetrievers = ensemblFileRetrievers;
 	}
-	
+
 	public void setEnsemblFileRetrieversNonCore(Map<String, EnsemblFileRetriever> ensemblFileRetrievers)
 	{
 		this.ensemblFileRetrieversNonCore = ensemblFileRetrievers;
@@ -895,7 +854,7 @@ public class AddLinks
 	{
 		this.referenceCreatorFilter = referenceCreatorFilter;
 	}
-	
+
 	public void setReferenceDatabasesToLinkCheck(List<String> referenceDatabasesToLinkCheck)
 	{
 		this.referenceDatabasesToLinkCheck = referenceDatabasesToLinkCheck;
