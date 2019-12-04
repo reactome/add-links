@@ -195,7 +195,7 @@
 		<entry key="OpenTargets">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OpenTargets">
 				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/19.09/output/19.09_target_list.csv.gz" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/54.236.90.212" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/open_target_list.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
 			</bean>
