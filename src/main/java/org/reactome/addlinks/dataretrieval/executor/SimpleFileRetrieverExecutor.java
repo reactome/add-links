@@ -11,13 +11,13 @@ public class SimpleFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 	{
 		super(retrievers, retrieverFilter);
 	}
-	
+
 	@Override
 	public Boolean call() throws Exception
 	{
 		fileRetrievers.keySet().stream()
 			.parallel()
-			.filter(k -> !k.equals("KEGGRetriever") && !k.equals("BrendaRetriever"))
+			.filter(k -> !k.equals("KEGGRetriever"))
 			.forEach(k ->
 			{
 				// KEGGRetreiver is special: it depends on the result of the uniprotToKegg retriever as an input, so we can't execute it here.
@@ -32,8 +32,8 @@ public class SimpleFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 					}
 					catch (Exception e)
 					{
-				
-						//TODO: The decision to continue after a failure should be a configurable option. 
+
+						//TODO: The decision to continue after a failure should be a configurable option.
 						logger.warn("Exception caught while processing {}, message is: \"{}\". Will continue with next file retriever.",k,e.getMessage());
 						e.printStackTrace();
 					}
