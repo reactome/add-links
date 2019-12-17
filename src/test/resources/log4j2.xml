@@ -3,14 +3,16 @@
 	<Properties>
 		<Property name="baseDir">${bundle:logging:baseDir}</Property>
 		<Property name="defaultLogName">addlinks</Property>
+		<Property name="log4j.logger.org.apache">WARN</Property>
+		<Property name="log4j.logger.httpclient">WARN</Property>
+		<Property name="log4j.logger.org.springframework">INFO</Property>
 	</Properties>
 	<Appenders>
 		<!-- STDOUT appender. -->
 		<Console name="Console" target="SYSTEM_OUT">
-			<PatternLayout
-				pattern="%d{HH:mm:ss.SSS} [%t] %-5level %class#%M - %msg%n" />
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %class#%M - %msg%n" />
 		</Console>
-		<!-- Write to logs/addinks.log -->
+		<!-- Write to log file -->
 		<RollingRandomAccessFile name="RollingRandomAccessFile" fileName="${baseDir}/${defaultLogName}.log" filePattern="${baseDir}/%d{yyyy-MM}/${defaultLogName}-%d{yyyy-MM-dd}.%i.log.gz">
 			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %class#%M - %msg%n" />
 			<Policies>
@@ -23,11 +25,12 @@
 	</Appenders>
 	<Loggers>
 		<Logger level="debug" name="org.reactome.addlinks.ensembl.EnsemblReferenceDatabaseGenerator" />
-		<!--
-		<Logger level="debug" name="org.springframework" >
+		<Logger level="WARN" name="org.springframework" >
 			<AppenderRef ref="RollingRandomeAccessFile"/>
 		</Logger>
-		-->
+		<Logger level="WARN" name="org.apache.http" >
+			<AppenderRef ref="RollingRandomeAccessFile"/>
+		</Logger>
 		<Root level="debug">
 			<!-- only write INFO level to the file. -->
 			<AppenderRef ref="RollingRandomAccessFile" level="debug"/>
