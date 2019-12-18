@@ -20,7 +20,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
-	
+
 	public KEGGReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
@@ -37,7 +37,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 		for (GKInstance sourceReference : sourceReferences)
 		{
 			String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(ReactomeJavaConstants.identifier);
-			
+
 			// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
 			// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
 			// if we want new identifiers to have the same species of the thing which they refer to.
@@ -57,9 +57,9 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 			if (mappings.containsKey(sourceReferenceIdentifier))
 			{
 				boolean xrefAlreadyExists = false;
-				
+
 				List<Map<KEGGKeys, String>> keggMaps = mappings.get(sourceReferenceIdentifier);
-				
+
 				for (Map<KEGGKeys, String> keggData : keggMaps)
 				{
 					// Use KEGG Gene ID (from ENTRY line). If not available, use KEGG Identifier (from NAME line).
@@ -71,7 +71,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					{
 						throw new Exception("KEGG Identifier cannot be NULL or empty!");
 					}
-					
+
 					// NOTE: If the identifier to use begins with a species prefix, it should be removed since we will
 					// include a species prefix in the accessUrl of each KEGG species-specific ReferenceDatabase.
 					// If we *don't* remove species codes from identifiers, we'll end up with URLs with doubled species codes
@@ -79,9 +79,9 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					//
 					// But... there's also a possibility that we will need to create a new KEGG Reference Database on-the-fly. This could happen
 					// if the species names in KEGG don't quite match the names in Reactome. So if the names don't match, why create a Reference Database?
-					// Because we got this KEGG identifier as a result of a successful mapping operation, so it MUST be a valid KEGG identifier that we can map to, 
+					// Because we got this KEGG identifier as a result of a successful mapping operation, so it MUST be a valid KEGG identifier that we can map to,
 					// and the problem is in the species names. Since we can't modify the Species data in Reactome to match the KEGG species, we'll just create a new Reference Database.
-					
+
 					// Use the KEGG Species for the prefix.
 					String keggPrefix = keggData.get(KEGGKeys.KEGG_SPECIES);
 					if (keggPrefix == null && (keggIdentifier != null && keggIdentifier.trim().equals("")))
@@ -95,48 +95,51 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					{
 						keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(keggGeneIdentifier);
 					}
-
+					//TODO: Go to next mapping if the KEGG prefix is mtv (or in a list of "forbidden" prefixes).
 //					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
-					if (keggIdentifier == null || keggIdentifier.trim().equals("") )
+					if (!"mtv".equals(keggPrefix))
 					{
-						keggIdentifier = keggGeneIdentifier;
-					}
-
-					logger.trace("Working on source object: {}", sourceReference.toString());
-					String targetDB = null;
-					KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, this.logger);
-					String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggGeneIdentifier, keggPrefix);
-					targetDB = parts[0];
-					// now, the identifier should have been cleaned up by determineKeggReferenceDatabase
-					keggGeneIdentifier = parts[1];
-					xrefAlreadyExists = this.checkXRefExists(sourceReference, keggGeneIdentifier, targetDB);
-					if (!xrefAlreadyExists)
-					{
-						String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
-						sourceIdentifiersWithNewIdentifier++;
-						// Also need to add the keggDefinition and keggGeneID as "name" attributes.
-						List<String> names = new ArrayList<String>(3);
-						names.add(keggDefinition);
-						names.add(keggGeneIdentifier);
-						keggIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggIdentifier);
-						if (! keggIdentifier.equals(keggGeneIdentifier))
+						if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 						{
-							names.add(keggIdentifier);
+							keggIdentifier = keggGeneIdentifier;
 						}
-						Map<String,List<String>> extraAttributes = new HashMap<String,List<String>>(1);
-						extraAttributes.put(ReactomeJavaConstants.name, names);
-						logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
-						if (!this.testMode)
+
+						logger.trace("Working on source object: {}", sourceReference.toString());
+						String targetDB = null;
+						KEGGReferenceCreatorHelper referenceCreatorHelper = new KEGGReferenceCreatorHelper(objectCache, logger);
+						String[] parts = referenceCreatorHelper.determineKeggReferenceDatabase(keggGeneIdentifier, keggPrefix);
+						targetDB = parts[0];
+						// now, the identifier should have been cleaned up by determineKeggReferenceDatabase
+						keggGeneIdentifier = parts[1];
+						xrefAlreadyExists = this.checkXRefExists(sourceReference, keggGeneIdentifier, targetDB);
+						if (!xrefAlreadyExists)
 						{
-							if (!this.testMode && targetDB != null)
+							String keggDefinition = keggData.get(KEGGKeys.KEGG_DEFINITION);
+							sourceIdentifiersWithNewIdentifier++;
+							// Also need to add the keggDefinition and keggGeneID as "name" attributes.
+							List<String> names = new ArrayList<>(3);
+							names.add(keggDefinition);
+							names.add(keggGeneIdentifier);
+							keggIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggIdentifier);
+							if (! keggIdentifier.equals(keggGeneIdentifier))
 							{
-								this.refCreator.createIdentifier(keggGeneIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+								names.add(keggIdentifier);
+							}
+							Map<String,List<String>> extraAttributes = new HashMap<>(1);
+							extraAttributes.put(ReactomeJavaConstants.name, names);
+							logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
+							if (!this.testMode)
+							{
+								if (!this.testMode && targetDB != null)
+								{
+									this.refCreator.createIdentifier(keggGeneIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
+								}
 							}
 						}
-					}
-					else
-					{
-						sourceIdentifiersWithExistingIdentifier++;
+						else
+						{
+							sourceIdentifiersWithExistingIdentifier++;
+						}
 					}
 				}
 			}
