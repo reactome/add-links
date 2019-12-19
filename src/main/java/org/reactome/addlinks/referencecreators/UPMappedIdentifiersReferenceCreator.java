@@ -122,7 +122,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 								//TODO find a way to skip to next mapping if KEGG prefix is "forbidden" (such as mtv).
 								targetIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(targetIdentifier);
 							}
-							boolean forbiddenKEGGPrefix = "mtv".equals(keggPrefix);
+							boolean forbiddenKEGGPrefix = KEGGReferenceCreatorHelper.isKEGGPrefixForbidden(keggPrefix);
 							// Now we need to get the DBID of the pre-existing identifier.
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
 							if (sourceInstances != null && sourceInstances.size() > 0)

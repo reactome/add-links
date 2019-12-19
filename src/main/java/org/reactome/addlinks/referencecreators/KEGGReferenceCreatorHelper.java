@@ -1,5 +1,8 @@
 package org.reactome.addlinks.referencecreators;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
@@ -18,6 +21,8 @@ class KEGGReferenceCreatorHelper
 {
 	private ReferenceObjectCache refObjectCache;
 	private Logger logger;
+
+	private static Set<String> forbiddenPrefixes = new HashSet<>();
 
 	public KEGGReferenceCreatorHelper(ReferenceObjectCache cache, Logger logger)
 	{
@@ -95,5 +100,15 @@ class KEGGReferenceCreatorHelper
 			}
 		}
 		return new String[] { targetDB, identifier };
+	}
+
+	public static boolean isKEGGPrefixForbidden(String prefix)
+	{
+		return KEGGReferenceCreatorHelper.forbiddenPrefixes.contains(prefix);
+	}
+
+	public static void setForbiddenPrefixes(Set<String> prefixes)
+	{
+		KEGGReferenceCreatorHelper.forbiddenPrefixes = prefixes;
 	}
 }

@@ -97,7 +97,7 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 					}
 					//TODO: Go to next mapping if the KEGG prefix is mtv (or in a list of "forbidden" prefixes).
 //					// If the original KEGG_IDENTIFIER key didn't have a value, use the KEGG GENE ID.
-					if (!"mtv".equals(keggPrefix))
+					if (!KEGGReferenceCreatorHelper.isKEGGPrefixForbidden(keggPrefix))
 					{
 						if (keggIdentifier == null || keggIdentifier.trim().equals("") )
 						{
