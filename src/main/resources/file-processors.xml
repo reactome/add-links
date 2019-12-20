@@ -321,5 +321,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="HPAFileProcessor">
+			<bean id="HPAFileProcessor" class="org.reactome.addlinks.fileprocessors.HPAFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/HPAFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/proteinatlas.tsv.zip"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
