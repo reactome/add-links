@@ -435,5 +435,18 @@
 				<!-- NOTE: No identifiers.org entry for TargetPathogen -->
 			</map>
 		</entry>
+
+		<entry key="HPA">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="HPA" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>The Human Protein Atlas</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://www.proteinatlas.org/" />
+				<entry key="AccessURL" value="https://www.proteinatlas.org/###ID###" />
+			</map>
+		</entry>
 	</util:map>
 </beans>
