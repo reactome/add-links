@@ -137,7 +137,7 @@
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
-		<value>HPARefCreator</value>
+		<value>HPAReferenceCreator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">

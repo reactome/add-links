@@ -68,6 +68,7 @@
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
+		<value>HPA</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
