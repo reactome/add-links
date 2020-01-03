@@ -120,6 +120,7 @@ public class KEGGReferenceDatabaseGenerator
 		try
 		{
 			createReferenceDatabase(newDBName, "Viruses", speciesURL, objectCache);
+			LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 			speciesURL = KEGG_URL.replace("###SP3###", "ag:");
 			newDBName = KEGG_GENE + " (Addendum)";
 			createReferenceDatabase(newDBName, "Addendum", speciesURL, objectCache);
