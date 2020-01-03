@@ -157,19 +157,21 @@
 		<dependency>
 			<!--
 			***NOTE:***
-			For this dependency, you must MANUALLY install jnlp-1.2 from here:
+			For this dependency, you MUST *manually* install jnlp-1.2 from here:
 			https://github.com/reactome/CuratorTool/raw/master/lib/jnlp-1.2.jar
 			If you don't do this, you won't be able to build.
 			-->
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
 			<version>1.2.0</version>
-			<exclusions>
+			<!-- I tried to exclude jnlp but it doesn't work because jnlp is
+			a dependency of reactome-base, not release-common-lib. -->
+<!-- 			<exclusions>
 				<exclusion>
 					<artifactId>jnlp-api</artifactId>
 					<groupId>javax.jnlp</groupId>
 				</exclusion>
-			</exclusions>
+			</exclusions> -->
 		</dependency>
 
 
