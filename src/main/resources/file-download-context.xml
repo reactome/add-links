@@ -69,6 +69,7 @@
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
 		<value>HPA</value>
+		<value>VGNC</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">

@@ -60,6 +60,7 @@
 		<entry key="IntEnzFileProcessor" value="IntEnzRefCreator"/>
 		<entry key="TargetPathogenFileProcessor" value-ref="targetPathogenCreators" />
 		<entry key="HPAFileProcessor" value="HPAReferenceCreator" />
+		<entry key="VGNCFileProcessor" value="VGNCReferenceCreator" />
 	</util:map>
 
 </beans>

@@ -228,5 +228,14 @@
 				<constructor-arg name="retrieverName" value="retrievers/HPA"/>
 			</bean>
 		</entry>
+
+		<entry key="VGNC">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HPA">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/vgnc/tsv/vgnc_gene_set_All.txt.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/vgnc_gene_set_All.txt.gz" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/HPA"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

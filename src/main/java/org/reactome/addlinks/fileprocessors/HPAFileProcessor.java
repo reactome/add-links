@@ -26,9 +26,7 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
             String dirToHPAFiles = this.unzipFile(this.pathToFile);
             String inputFilepath = dirToHPAFiles + "/" + this.pathToFile.getFileName().toString().replace(".zip", "");
 
-            int count = 0;
             for (String line : Files.readAllLines(Paths.get(inputFilepath)).stream().skip(1).collect((Collectors.toList()))) {
-                count++;
                 List<String> tabSplit = Arrays.asList(line.split("\t"));
 
                 String geneName = tabSplit.get(0);

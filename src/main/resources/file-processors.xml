@@ -332,5 +332,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="VGNCFileProcessor">
+			<bean id="VGNCFileProcessor" class="org.reactome.addlinks.fileprocessors.VGNCFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/VGNCFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/vgnc_gene_set_All.txt.gz"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

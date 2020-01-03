@@ -66,6 +66,7 @@
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
 		<value>HPA</value>
+		<value>VGNC</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -98,6 +99,7 @@
 		<value>OMIMProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>HPAFileProcessor</value>
+		<value>VGNCFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -138,6 +140,7 @@
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>HPAReferenceCreator</value>
+		<value>VGNCReferenceCreator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -175,6 +178,10 @@
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
 		<value>HPA</value>
+		<!--
+		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
+		This prevents an identifier search in the page from becoming possible, since it is just searching the template.
+		<value>VGNC</value> -->
 		<!--
 		OpenTargets use ENSEMBL identifiers, but
 		the identifiers do not appear in the body of the web page.

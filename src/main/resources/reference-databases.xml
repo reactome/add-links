@@ -448,5 +448,18 @@
 				<entry key="AccessURL" value="https://www.proteinatlas.org/###ID###" />
 			</map>
 		</entry>
+
+		<entry key="VGNC">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="VGNC" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Vertebrate Gene Nomenclature Committee</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://vertebrate.genenames.org/" />
+				<entry key="AccessURL" value="https://vertebrate.genenames.org/data/gene-symbol-report/#!/vgnc_id/VGNC:###ID###" />
+			</map>
+		</entry>
 	</util:map>
 </beans>
