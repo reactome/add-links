@@ -71,6 +71,7 @@
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
+		<value>HPAFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -144,6 +145,7 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<value>HPA</value>
 		<!--
 		OpenTargets use ENSEMBL identifiers, but
 		the identifiers do not appear in the body of the web page.
