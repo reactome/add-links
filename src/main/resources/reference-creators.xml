@@ -9,7 +9,14 @@
 						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<import resource="reactome-java-constants4spring.xml"/>
-
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="org.reactome.addlinks.referencecreators.KEGGReferenceCreatorHelper.setForbiddenPrefixes"/>
+		<property name="arguments">
+			<set>
+				<value>mtv</value>
+			</set>
+		</property>
+	</bean>
 	<util:list id="entrezGeneBasedReferenceCreators">
 		<bean class="org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator" id="BioGPSRefCreator">
 			<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
