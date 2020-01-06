@@ -237,5 +237,14 @@
 				<constructor-arg name="retrieverName" value="retrievers/HPA"/>
 			</bean>
 		</entry>
+
+		<entry key="MGI">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="MGI">
+				<property name="dataURL" value="http://www.informatics.jax.org/downloads/reports/MRK_SwissProt_TrEMBL.rpt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/MGI_MRK_SwissProt_TrEMBL.rpt" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/MGI"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

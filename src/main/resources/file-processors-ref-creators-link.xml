@@ -61,6 +61,7 @@
 		<entry key="TargetPathogenFileProcessor" value-ref="targetPathogenCreators" />
 		<entry key="HPAFileProcessor" value="HPAReferenceCreator" />
 		<entry key="VGNCFileProcessor" value="VGNCReferenceCreator" />
+		<entry key="MGIFileProcessor" value="MGIReferenceCreator" />
 	</util:map>
 
 </beans>

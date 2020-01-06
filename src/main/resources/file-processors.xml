@@ -343,5 +343,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="MGIFileProcessor">
+			<bean id="MGIFileProcessor" class="org.reactome.addlinks.fileprocessors.MGIFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/MGIFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/MGI_MRK_SwissProt_TrEMBL.rpt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

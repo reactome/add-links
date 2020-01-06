@@ -461,5 +461,18 @@
 				<entry key="AccessURL" value="https://vertebrate.genenames.org/data/gene-symbol-report/#!/vgnc_id/VGNC:###ID###" />
 			</map>
 		</entry>
+
+		<entry key="MGI">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="MGI" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Mouse Genome Informatics</value>
+					</list>
+				</entry>
+				<entry key="URL" value="http://www.informatics.jax.org/" />
+				<entry key="AccessURL" value="http://www.informatics.jax.org/marker/MGI:###ID###" />
+			</map>
+		</entry>
 	</util:map>
 </beans>

@@ -70,6 +70,7 @@
 		<value>ComplexPortal</value>
 		<value>HPA</value>
 		<value>VGNC</value>
+		<value>MGI</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
