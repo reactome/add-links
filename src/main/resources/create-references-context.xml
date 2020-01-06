@@ -74,6 +74,7 @@
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
+		<value>RGDFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -114,6 +115,7 @@
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
+		<value>RGDReferenceCreator</value>
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -151,6 +153,7 @@
 		<value>COSMIC</value>
 		<value>HPA</value>
 		<value>MGI</value>
+		<value>RGD</value>
 		<!--
 		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
 		This prevents an identifier search in the page from becoming possible, since it is just searching the template.

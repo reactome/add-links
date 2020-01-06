@@ -354,5 +354,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="RGDFileProcessor">
+			<bean id="RGDFileProcessor" class="org.reactome.addlinks.fileprocessors.RGDFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/RGDFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/GENES_RAT.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

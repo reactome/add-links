@@ -62,6 +62,7 @@
 		<entry key="HPAFileProcessor" value="HPAReferenceCreator" />
 		<entry key="VGNCFileProcessor" value="VGNCReferenceCreator" />
 		<entry key="MGIFileProcessor" value="MGIReferenceCreator" />
+		<entry key="RGDFileProcessor" value="RGDReferenceCreator" />
 	</util:map>
 
 </beans>

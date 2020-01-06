@@ -7,14 +7,14 @@ import org.gk.persistence.MySQLAdaptor;
 import java.util.List;
 import java.util.Map;
 
-public class MGIReferenceCreator extends SimpleReferenceCreator<List<String>> {
+public class RGDReferenceCreator extends SimpleReferenceCreator<List<String>> {
 
-    public MGIReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
+    public RGDReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
     {
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
     }
 
-    public MGIReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
+    public RGDReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
     {
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
@@ -33,14 +33,14 @@ public class MGIReferenceCreator extends SimpleReferenceCreator<List<String>> {
 
             if (mapping.containsKey(sourceIdentifier))
             {
-                for (String mgiID : mapping.get(sourceIdentifier))
+                for (String rgdID : mapping.get(sourceIdentifier))
                 {
-                    if (!this.checkXRefExists(sourceInst, mgiID))
+                    if (!this.checkXRefExists(sourceInst, rgdID))
                     {
                         sourceIdentifiersWithNewIdentifier ++;
                         if (!this.testMode)
                         {
-                            this.refCreator.createIdentifier(mgiID, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), species);
+                            this.refCreator.createIdentifier(rgdID, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), species);
                         }
                     }
                     else
@@ -69,5 +69,4 @@ public class MGIReferenceCreator extends SimpleReferenceCreator<List<String>> {
                 this.sourceRefDB, mapping.keySet().size(),
                 this.sourceRefDB, sourceReferences.size());
     }
-
 }

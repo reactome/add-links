@@ -71,6 +71,7 @@
 		<value>HPA</value>
 		<value>VGNC</value>
 		<value>MGI</value>
+		<value>RGD</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
