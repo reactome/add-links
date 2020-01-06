@@ -69,6 +69,7 @@
 		<value>VGNC</value>
 		<value>MGI</value>
 		<value>RGD</value>
+		<value>Xenbase</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -104,6 +105,7 @@
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
 		<value>RGDFileProcessor</value>
+		<value>XenbaseFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -147,6 +149,7 @@
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
 		<value>RGDReferenceCreator</value>
+		<value>XenbaseReferenceCreator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -186,6 +189,7 @@
 		<value>HPA</value>
 		<value>MGI</value>
 		<value>RGD</value>
+		<value>Xenbase</value>
 		<!--
 		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
 		This prevents an identifier search in the page from becoming possible, since it is just searching the template.

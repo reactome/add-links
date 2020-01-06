@@ -566,5 +566,18 @@
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
+
+		<entry key="XenbaseReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.XenbaseReferenceCreator" id="XenbaseReferenceCreator">
+				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
+				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
+				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
+				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
+				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
+				<constructor-arg index="5" name="targetDB" value="Xenbase"/>
+				<constructor-arg index="6" name="refCreatorName" value="refCreators/XenbaseReferenceCreator"/>
+				<property name="testMode" value="false"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

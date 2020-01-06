@@ -365,5 +365,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="XenbaseFileProcessor">
+			<bean id="XenbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.XenbaseFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/XenbaseFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/XenbaseGeneUniprotMapping.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

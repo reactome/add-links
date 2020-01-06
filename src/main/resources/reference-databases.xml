@@ -487,5 +487,14 @@
 				<entry key="AccessURL" value="https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=###ID###" />
 			</map>
 		</entry>
+
+		<entry key="Xenbase">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Xenbase" />
+				<entry key="URL" value="http://www.xenbase.org/" />
+				<entry key="AccessURL" value="http://www.xenbase.org/gene/showgene.do?method=display&amp;geneId=###ID###" />
+				<!-- NOTE: No identifiers.org entry for OpenTargets or TargetValidation -->
+			</map>
+		</entry>
 	</util:map>
 </beans>

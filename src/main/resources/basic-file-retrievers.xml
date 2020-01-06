@@ -255,5 +255,14 @@
 				<constructor-arg name="retrieverName" value="retrievers/RGD"/>
 			</bean>
 		</entry>
+
+		<entry key="Xenbase">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="Xenbase">
+				<property name="dataURL" value="ftp://ftp.xenbase.org/pub/DataExchange/Uniprot/XenbaseGeneUniprotMapping.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/XenbaseGeneUniprotMapping.txt" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/Xenbase"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

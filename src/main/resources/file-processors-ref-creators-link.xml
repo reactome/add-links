@@ -63,6 +63,7 @@
 		<entry key="VGNCFileProcessor" value="VGNCReferenceCreator" />
 		<entry key="MGIFileProcessor" value="MGIReferenceCreator" />
 		<entry key="RGDFileProcessor" value="RGDReferenceCreator" />
+		<entry key="XenbaseFileProcessor" value="XenbaseReferenceCreator" />
 	</util:map>
 
 </beans>
