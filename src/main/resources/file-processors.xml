@@ -376,5 +376,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="ZFINFileProcessor">
+			<bean id="ZFINFileProcessor" class="org.reactome.addlinks.fileprocessors.ZFINFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/ZFINFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-zfinpub.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

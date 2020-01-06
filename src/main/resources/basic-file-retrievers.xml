@@ -264,5 +264,14 @@
 				<constructor-arg name="retrieverName" value="retrievers/Xenbase"/>
 			</bean>
 		</entry>
+
+		<entry key="ZFIN">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ZFIN">
+				<property name="dataURL" value="https://zfin.org/downloads/uniprot-zfinpub.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-zfinpub.txt" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/ZFIN"/>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

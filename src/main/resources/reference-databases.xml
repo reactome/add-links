@@ -496,5 +496,18 @@
 				<!-- NOTE: No identifiers.org entry for OpenTargets or TargetValidation -->
 			</map>
 		</entry>
+
+		<entry key="ZFIN">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="ZFIN" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>The Zebrafish Information Network</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://zfin.org/" />
+				<entry key="AccessURL" value="https://zfin.org/###ID###" />
+			</map>
+		</entry>
 	</util:map>
 </beans>

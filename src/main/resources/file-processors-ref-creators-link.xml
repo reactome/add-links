@@ -64,6 +64,7 @@
 		<entry key="MGIFileProcessor" value="MGIReferenceCreator" />
 		<entry key="RGDFileProcessor" value="RGDReferenceCreator" />
 		<entry key="XenbaseFileProcessor" value="XenbaseReferenceCreator" />
+		<entry key="ZFINFileProcessor" value="ZFINReferenceCreator" />
 	</util:map>
 
 </beans>

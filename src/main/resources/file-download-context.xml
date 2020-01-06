@@ -73,6 +73,7 @@
 		<value>MGI</value>
 		<value>RGD</value>
 		<value>Xenbase</value>
+		<value>ZFIN</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
