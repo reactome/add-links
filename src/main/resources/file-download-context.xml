@@ -74,6 +74,7 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
+		<value>BiomartMicroarray</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
