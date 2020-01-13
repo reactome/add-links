@@ -387,5 +387,16 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="EnsemblBiomartMicroarrayFileProcessor">
+			<bean id="ZFINFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartMicroarrayFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/BiomartMicroarrayFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/microarray/"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

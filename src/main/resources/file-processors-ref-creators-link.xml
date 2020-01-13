@@ -65,6 +65,7 @@
 		<entry key="RGDFileProcessor" value="RGDReferenceCreator" />
 		<entry key="XenbaseFileProcessor" value="XenbaseReferenceCreator" />
 		<entry key="ZFINFileProcessor" value="ZFINReferenceCreator" />
+		<entry key="EnsemblBiomartMicroarrayFileProcessor" value="EnsemblBiomartMicroarrayPopulator" />
 	</util:map>
 
 </beans>

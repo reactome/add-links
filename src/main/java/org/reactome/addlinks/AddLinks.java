@@ -139,6 +139,7 @@ public class AddLinks
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases(personID);
+
 		// Now that we've *created* new ref dbs, rebuild any caches that might have depended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
@@ -153,7 +154,6 @@ public class AddLinks
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		execSrvc.invokeAll(retrieverJobs);
-
 		logger.info("Finished downloading files.");
 		execSrvc.shutdown();
 		logger.info("Now processing the files...");
@@ -773,7 +773,11 @@ public class AddLinks
 		this.fileProcessors.keySet().stream().filter(k -> this.fileProcessorFilter.contains(k)).forEach( k ->
 			{
 				logger.info("Executing file processor: {}", k);
-				dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
+				try {
+					dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		);
 		return dbMappings;

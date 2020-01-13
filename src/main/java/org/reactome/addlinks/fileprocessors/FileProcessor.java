@@ -1,9 +1,6 @@
 package org.reactome.addlinks.fileprocessors;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,7 +55,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	 * This assumes that the file contains a mapping, and in this context, it probably does.
 	 * @return
 	 */
-	public abstract Map<String, T> getIdMappingsFromFile();
+	public abstract Map<String, T> getIdMappingsFromFile() throws IOException;
 	
 	/**
 	 * Unzips a file.
