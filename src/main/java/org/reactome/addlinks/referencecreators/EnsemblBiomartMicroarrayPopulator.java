@@ -30,7 +30,6 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
     {
 
         for (String speciesName : getSpeciesNames()) {
-            System.out.println(speciesName);
             String speciesBiomartName = speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
 
             String proteinToTranscriptsKey = speciesBiomartName + "_proteinToTranscript";
@@ -42,8 +41,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
             String uniprotToENSPKey = speciesBiomartName + "_uniprotToENSP";
             Map<String, List<String>> uniprotToENSP = mappings.get(uniprotToENSPKey);
 
-            if (proteinToTranscripts != null && transcriptToProbes != null) {
-
+            if (proteinToTranscripts != null && transcriptToProbes != null && uniprotToENSP != null) {
                 GKInstance speciesInst = (GKInstance) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.Species, ReactomeJavaConstants.name, "=", speciesName).iterator().next();
                 Collection<GKInstance> rgpInstances = adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceGeneProduct, ReactomeJavaConstants.species, "", speciesInst);
 
@@ -66,13 +64,15 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
                         for (String protein : proteins) {
                             if (proteinToTranscripts.get(protein) != null) {
                                 for (String transcript : proteinToTranscripts.get(protein)) {
-                                    for (String probe : transcriptToProbes.get(transcript)) {
-                                        Collection<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
-                                        if (!otherIdentifiers.contains(transcript)) {
-                                            rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, transcript);
-                                        }
-                                        if (!otherIdentifiers.contains(probe)) {
-                                            rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, probe);
+                                    if (transcriptToProbes.get(transcript) != null) {
+                                        for (String probe : transcriptToProbes.get(transcript)) {
+                                            Collection<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
+                                            if (!otherIdentifiers.contains(transcript)) {
+                                                rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, transcript);
+                                            }
+                                            if (!otherIdentifiers.contains(probe)) {
+                                                rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, probe);
+                                            }
                                         }
                                     }
                                 }
@@ -90,8 +90,6 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
                 }
             }
         }
-
-        System.exit(0);
     }
 
     private Map<String, ArrayList<GKInstance>> getRGPIdentifiers(Collection<GKInstance> rgpInstances) throws Exception {
