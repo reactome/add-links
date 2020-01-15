@@ -25,6 +25,11 @@
 		<value>TargetPathogenProteinsReferenceCreator</value>
 	</util:list>
 
+	<util:list id="EnsemblReferenceCreators" value-type="java.lang.String" list-class="java.util.ArrayList">
+		<value>EnsemblReferenceCreator</value>
+		<value>EnsemblBiomartMicroarrayPopulator</value>
+	</util:list>
+
 	<util:map id="processorCreatorLink" key-type="java.lang.String" value-type="java.lang.Object">
 		<entry key="zincOrthologFileProcessor" value-ref="zincCreators" />
 		<entry key="DockblasterFileProcessor" value="dockBlasterRefCreator"/>
@@ -65,7 +70,7 @@
 		<entry key="RGDFileProcessor" value="RGDReferenceCreator" />
 		<entry key="XenbaseFileProcessor" value="XenbaseReferenceCreator" />
 		<entry key="ZFINFileProcessor" value="ZFINReferenceCreator" />
-		<entry key="EnsemblBiomartMicroarrayFileProcessor" value="EnsemblBiomartMicroarrayPopulator" />
+		<entry key="EnsemblBiomartFileProcessor" value-ref="EnsemblReferenceCreators" />
 	</util:map>
 
 </beans>

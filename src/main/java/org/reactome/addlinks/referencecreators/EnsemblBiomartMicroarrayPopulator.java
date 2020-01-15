@@ -67,9 +67,6 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
                                     if (transcriptToProbes.get(transcript) != null) {
                                         for (String probe : transcriptToProbes.get(transcript)) {
                                             Collection<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
-                                            if (!otherIdentifiers.contains(transcript)) {
-                                                rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, transcript);
-                                            }
                                             if (!otherIdentifiers.contains(probe)) {
                                                 rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, probe);
                                             }

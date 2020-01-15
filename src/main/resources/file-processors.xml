@@ -388,12 +388,12 @@
 			</bean>
 		</entry>
 
-		<entry key="EnsemblBiomartMicroarrayFileProcessor">
-			<bean id="ZFINFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartMicroarrayFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/BiomartMicroarrayFileProcessor"/>
+		<entry key="EnsemblBiomartFileProcessor">
+			<bean id="EnsemblBiomartFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/BiomartFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/microarray/"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/biomart/"/>
 					</bean>
 				</property>
 			</bean>

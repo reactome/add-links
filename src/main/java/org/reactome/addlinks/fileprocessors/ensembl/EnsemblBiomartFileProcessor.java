@@ -5,14 +5,14 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 import java.io.*;
 import java.util.*;
 
-public class EnsemblBiomartMicroarrayFileProcessor extends FileProcessor<Map<String, List<String>>> {
+public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<String>>> {
 
-    public EnsemblBiomartMicroarrayFileProcessor()
+    public EnsemblBiomartFileProcessor()
     {
         super(null);
     }
 
-    public EnsemblBiomartMicroarrayFileProcessor(String processorName)
+    public EnsemblBiomartFileProcessor(String processorName)
     {
         super(processorName);
     }
@@ -64,19 +64,6 @@ public class EnsemblBiomartMicroarrayFileProcessor extends FileProcessor<Map<Str
                         } else {
                             ArrayList<String> singleProbeArray = new ArrayList<>(Arrays.asList(probe));
                             transcriptToProbes.put(transcript, singleProbeArray);
-                        }
-
-                    } else if (tabSplit.size() == 3) {
-                        String gene = tabSplit.get(0);
-                        String transcript = tabSplit.get(1);
-                        String protein = tabSplit.get(2);
-
-                        if (transcriptToProbes.get(transcript) != null) {
-                            transcriptToProbes.get(transcript).add(gene);
-                            transcriptToProbes.get(transcript).add(protein);
-                        } else {
-                            ArrayList<String> geneProteinArray = new ArrayList<>(Arrays.asList(gene, protein));
-                            transcriptToProbes.put(transcript, geneProteinArray);
                         }
                     }
                 }

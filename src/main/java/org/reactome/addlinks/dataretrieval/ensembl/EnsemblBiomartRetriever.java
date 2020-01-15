@@ -14,11 +14,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 
-public class EnsemblBiomartMicroarrayRetriever extends FileRetriever {
+public class EnsemblBiomartRetriever extends FileRetriever {
 
-    public EnsemblBiomartMicroarrayRetriever() { }
+    public EnsemblBiomartRetriever() { }
 
-    public EnsemblBiomartMicroarrayRetriever(String retrieverName)
+    public EnsemblBiomartRetriever(String retrieverName)
     {
         super(retrieverName);
     }
@@ -27,8 +27,10 @@ public class EnsemblBiomartMicroarrayRetriever extends FileRetriever {
 
     protected void downloadData() throws Exception {
 
+        //TODO: Modulate Biomart Query frequency
+
         for (String biomartSpeciesName : getBiomartSpeciesNames()) {
-            System.out.println("Retrieving microarray files for " + biomartSpeciesName);
+            System.out.println("Retrieving Biomart files for " + biomartSpeciesName);
             File addlinksDirectories = new File(this.destination);
             addlinksDirectories.mkdirs();
             URL microarrayUrlWithSpecies = new URL(this.getDataURL().toString().replace("BIOMART_SPECIES_NAME", biomartSpeciesName));
@@ -137,6 +139,4 @@ public class EnsemblBiomartMicroarrayRetriever extends FileRetriever {
         }
         return biomartNames;
     }
-
-
 }
