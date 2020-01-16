@@ -235,6 +235,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/vgnc_gene_set_All.txt.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/HPA"/>
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
@@ -253,6 +254,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/GENES_RAT.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/RGD"/>
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
@@ -262,6 +264,7 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/XenbaseGeneUniprotMapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/Xenbase"/>
+				<property name="passiveFTP" value="true" />
 			</bean>
 		</entry>
 
