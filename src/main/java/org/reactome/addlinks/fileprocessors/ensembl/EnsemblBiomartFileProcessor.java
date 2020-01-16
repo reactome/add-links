@@ -28,6 +28,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
             BufferedReader br = new BufferedReader(new FileReader(microarrayFile));
             String microarrayLine;
             Map<String, List<String>> proteinToTranscripts = new HashMap<>();
+            Map<String, List<String>> proteinToGenes = new HashMap<>();
             Map<String, List<String>> transcriptToProbes = new HashMap<>();
             Map<String, List<String>> uniprotToENSP = new HashMap<>();
             while ((microarrayLine = br.readLine()) !=null) {
@@ -41,6 +42,17 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                         } else {
                             ArrayList<String> singleProteinArray = new ArrayList<>(Arrays.asList(protein));
                             uniprotToENSP.put(uniprot, singleProteinArray);
+                        }
+                    }
+
+                    if (!tabSplit.get(0).isEmpty() && !tabSplit.get(2).isEmpty()) {
+                        String gene = tabSplit.get(0);
+                        String protein = tabSplit.get(2);
+                        if (proteinToGenes.get(protein) != null) {
+                            proteinToGenes.get(protein).add(gene);
+                        } else {
+                            ArrayList<String> singleGeneArray = new ArrayList<>(Arrays.asList(gene));
+                            proteinToGenes.put(protein, singleGeneArray);
                         }
                     }
 
@@ -70,6 +82,9 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
             }
             if (!proteinToTranscripts.isEmpty()) {
                 mappings.put(microarrayFileSpecies + "_proteinToTranscript", proteinToTranscripts);
+            }
+            if (!proteinToGenes.isEmpty()) {
+                mappings.put(microarrayFileSpecies + "_proteinToGenes", proteinToGenes);
             }
             if (!transcriptToProbes.isEmpty()) {
                 mappings.put(microarrayFileSpecies + "_transcriptToProbes", transcriptToProbes);
