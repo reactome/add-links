@@ -68,20 +68,6 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
                 }
             }
         }
-
-//        for (String mappingsKey : mappings.keySet()) {
-//            if (mappingsKey.contains("uniprotToENSP")) {
-//
-//                //TODO: Transcript, Gene
-//                for (String uniprotId : mappings.get(mappingsKey).keySet()) {
-//                    for (String enspId : mappings.get(mappingsKey).get(uniprotId)) {
-////                        System.out.println(enspId);
-//                    }
-//                }
-//            }
-//        }
-
-        System.exit(0);
     }
 
     private String getBiomartSpeciesName(String speciesName) {
