@@ -18,9 +18,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
     }
 
     //TODO: Add logging
-    //TODO: Add commenting
     //TODO: Add unit tests
-    //TODO: Rewrite variable names
     //TODO: Global variables for file names
     //TODO: Function-level commenting
 
@@ -30,10 +28,9 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
         Map<String, Map<String, List<String>>> mappings = new HashMap<>();
         // Iterate through each biomart file in the addlinks directory
         File biomartDir = new File(this.pathToFile.toString());
-        File[] microarrayFiles = biomartDir.listFiles();
-        for (File biomartFile : microarrayFiles) {
+        for (File biomartFile : biomartDir.listFiles()) {
             // Get species name from filename
-            String microarrayFileSpecies = biomartFile.getName().split("_")[0];
+            String biomartFileSpecies = biomartFile.getName().split("_")[0];
             // Mappings that will be generated from each file for the species.
             Map<String, List<String>> proteinToTranscripts = new HashMap<>();
             Map<String, List<String>> proteinToGenes = new HashMap<>();
@@ -41,13 +38,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
             Map<String, List<String>> uniprotToProteins = new HashMap<>();
             // Read file and iterate through each line.
             BufferedReader br = new BufferedReader(new FileReader(biomartFile));
-            String microarrayLine;
-            while ((microarrayLine = br.readLine()) !=null) {
+            String biomartLine;
+            while ((biomartLine = br.readLine()) !=null) {
                 // Split each tab-separated line. Each line has four values. The first three are always
                 // Ensembl Gene (ENSG), Transcript (ENST) and Protein (ENSP), in that order.
                 // The 4th can be a UniProt or microarray identifier, depending on the file being read.
                 // All 4 values may not be in each line.
-                List<String> tabSplit = Arrays.asList(microarrayLine.split("\t"));
+                List<String> tabSplit = Arrays.asList(biomartLine.split("\t"));
                 // Processing of UniProt mapping files.
                 // UniProt identifier mapping files are used to fully populate
                 // the 'uniprotToProteins' and 'proteinToGenes' mappings.
@@ -56,13 +53,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                     if (tabSplit.size() > 3 && necessaryColumnsContainData(tabSplit, 2,3)) {
                         uniprotToProteins = mapUniprotToProteins(uniprotToProteins, tabSplit.get(2), tabSplit.get(3));
                         // Add each mapping generated to the 'super' mapping
-                        mappings.put(microarrayFileSpecies + "_uniprotToProteins", uniprotToProteins);
+                        mappings.put(biomartFileSpecies + "_uniprotToProteins", uniprotToProteins);
                     }
                     // 'proteinToGenes' mappings require the 1st (gene) and 3rd (protein) values in the line.
                     if (necessaryColumnsContainData(tabSplit, 0, 2)) {
                         proteinToGenes = mapProteinToGenes(proteinToGenes, tabSplit.get(0), tabSplit.get(2));
                         // Add each mapping generated to the 'super' mapping
-                        mappings.put(microarrayFileSpecies + "_proteinToGenes", proteinToGenes);
+                        mappings.put(biomartFileSpecies + "_proteinToGenes", proteinToGenes);
                     }
 
                 // Processing of Microarray mapping files.
@@ -74,13 +71,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                     if (tabSplit.size() > 2 && necessaryColumnsContainData(tabSplit, 1, 2)) {
                         proteinToTranscripts = mapProteinToTranscripts(proteinToTranscripts, tabSplit.get(1), tabSplit.get(2));
                         // Add each mapping generated to the 'super' mapping
-                        mappings.put(microarrayFileSpecies + "_proteinToTranscripts", proteinToTranscripts);
+                        mappings.put(biomartFileSpecies + "_proteinToTranscripts", proteinToTranscripts);
                     }
                     // 'transcriptToMicroarrays' mapping requires the 2nd (transcript) and 4th (microarray) values in the line.
                     if (tabSplit.size() > 3 && necessaryColumnsContainData(tabSplit, 1, 3)) {
                         transcriptToMicroarrays = mapTranscriptToMicroarrays(transcriptToMicroarrays, tabSplit.get(1), tabSplit.get(3));
                         // Add each mapping generated to the 'super' mapping
-                        mappings.put(microarrayFileSpecies + "_transcriptToMicroarrays", transcriptToMicroarrays);
+                        mappings.put(biomartFileSpecies + "_transcriptToMicroarrays", transcriptToMicroarrays);
                     }
                 }
             }
@@ -128,7 +125,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
         return uniprotToProteins;
     }
 
-    private boolean necessaryColumnsContainData(List<String> tabSplit, int columnIndex1, int columnIndex2) {
-         return !tabSplit.get(columnIndex1).isEmpty() && !tabSplit.get(columnIndex2).isEmpty();
+    private boolean necessaryColumnsContainData(List<String> tabSplit, int necessaryColumnIndex1, int necessaryColumnIndex2) {
+         return !tabSplit.get(necessaryColumnIndex1).isEmpty() && !tabSplit.get(necessaryColumnIndex2).isEmpty();
     }
 }

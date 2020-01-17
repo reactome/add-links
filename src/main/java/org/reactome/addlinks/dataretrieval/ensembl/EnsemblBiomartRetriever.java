@@ -30,9 +30,7 @@ public class EnsemblBiomartRetriever extends FileRetriever {
 
         //TODO: Modulate Biomart Query frequency
         //TODO: Add logging
-        //TODO: Add commenting
         //TODO: Add unit tests
-        //TODO: Rewrite variable names
         //TODO: Global variables for file names and numerical values
         //TODO: Function-level commenting
 
@@ -45,7 +43,7 @@ public class EnsemblBiomartRetriever extends FileRetriever {
             // Query Biomart for existing microarray 'types' (not ids) that exist for this species.
             BufferedReader br = queryBiomart(this.getDataURL().toString().replace("BIOMART_SPECIES_NAME", biomartSpeciesName));
             // Parse response from Biomart
-            Set<String> microarrayTypes = getBiomartResponse(br);
+            Set<String> microarrayTypes = getBiomartMicroarrayTypesResponse(br);
             // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
             // All mappings are stored in a single file, (eg: hsapiens_microarray);
             for (String microarrayType : microarrayTypes) {
@@ -123,7 +121,7 @@ public class EnsemblBiomartRetriever extends FileRetriever {
         }
     }
 
-    private Set<String> getBiomartResponse(BufferedReader br) throws IOException {
+    private Set<String> getBiomartMicroarrayTypesResponse(BufferedReader br) throws IOException {
 
         String microarrayTypesLine;
         Set<String> microarrayTypes = new HashSet<>();
@@ -142,10 +140,10 @@ public class EnsemblBiomartRetriever extends FileRetriever {
 
     private BufferedReader queryBiomart(String queryString) throws Exception {
         // Create connection to Biomart URL for each species, retrieving a list of microarray probe types, if available.
-        URL microarrayUrlWithSpecies = new URL(queryString);
-        HttpURLConnection biomartMicroarrayConnection = (HttpURLConnection) microarrayUrlWithSpecies.openConnection();
-        if (biomartMicroarrayConnection.getResponseCode() == 200) {
-            return new BufferedReader(new InputStreamReader(biomartMicroarrayConnection.getInputStream()));
+        URL biomartUrlWithSpecies = new URL(queryString);
+        HttpURLConnection biomartConnection = (HttpURLConnection) biomartUrlWithSpecies.openConnection();
+        if (biomartConnection.getResponseCode() == 200) {
+            return new BufferedReader(new InputStreamReader(biomartConnection.getInputStream()));
         } else {
             //TODO: Retry
             throw new Exception("Unable to connect to " + queryString);
