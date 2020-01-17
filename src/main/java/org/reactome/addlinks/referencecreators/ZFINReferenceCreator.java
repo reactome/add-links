@@ -18,6 +18,8 @@ public class ZFINReferenceCreator extends SimpleReferenceCreator<List<String>>{
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
 
+    //TODO: Looks like getting it to use BasicReferenceCreator for all except Biomart is possible.
+
     @Override
     public void createIdentifiers(long personID, Map<String, List<String>> mapping, List<GKInstance> sourceReferences) throws Exception
     {

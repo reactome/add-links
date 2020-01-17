@@ -19,6 +19,8 @@ public class ZFINFileProcessor extends FileProcessor{
         super(null);
     }
 
+    //TODO: Looks like getting it to use BasicFileProcessor for all except Biomart is possible.
+
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
