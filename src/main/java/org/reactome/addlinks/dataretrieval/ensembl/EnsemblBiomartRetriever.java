@@ -63,7 +63,7 @@ public class EnsemblBiomartRetriever extends FileRetriever {
      * @param biomartSpeciesName
      * @throws Exception
      */
-    private void retrieveAndStoreUniprotData(String biomartSpeciesName, String biomartXMLPath) {
+    private void retrieveAndStoreUniprotData(String biomartSpeciesName, String biomartXMLPath) throws IOException {
         Set<String> uniprotIdLines = new HashSet<>();
         try {
             for (String uniprotQueryId : Arrays.asList("uniprotswissprot", "uniprotsptrembl")) {
@@ -76,16 +76,15 @@ public class EnsemblBiomartRetriever extends FileRetriever {
                     }
                 }
             }
-
-            // Write data to file.
-            if (!uniprotIdLines.isEmpty()) {
-                File speciesUniprotFile = createNewFile(this.destination + biomartSpeciesName + "_uniprot");
-                for (String uniprotIdLine : uniprotIdLines) {
-                    Files.write(Paths.get(speciesUniprotFile.toString()), uniprotIdLine.getBytes(), StandardOpenOption.APPEND);
-                }
-            }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        // Write data to file.
+        if (!uniprotIdLines.isEmpty()) {
+            File speciesUniprotFile = createNewFile(this.destination + biomartSpeciesName + "_uniprot");
+            for (String uniprotIdLine : uniprotIdLines) {
+                Files.write(Paths.get(speciesUniprotFile.toString()), uniprotIdLine.getBytes(), StandardOpenOption.APPEND);
+            }
         }
     }
 
