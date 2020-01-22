@@ -4,7 +4,6 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
-import javax.persistence.Id;
 import java.util.*;
 
 public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, List<String>>>{
@@ -19,16 +18,21 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
 
-    //TODO: Add logging
     //TODO: Add unit tests
-    //TODO: Global variables for file names
-    //TODO: Function-level commenting
-    //TODO: Verify which instance types are being handled.
 
+    /**
+     * Find all Ensembl identifiers connected to an RGP instance in the Reactome DB and create a DatabaseIdentifier cross-reference instance for them.
+     * @param personID - Newly created Identifiers will be associated with an InstanceEdit. That InstanceEdit will be associated with the Person entity whose ID == personID
+     * @param mappings - Large mapping structure generated in FileProcessor step.
+     * @param sourceReferences - A list of GKInstance objects that were in the database. References will be created if they are in the keys of mapping and also in sourceReferences.
+     * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome.
+     * @throws Exception
+     */
     @Override
     public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws Exception {
 
         // Iterate through each ReferenceGeneProduct (RGP) instance in the DB.
+        logger.info("Creating Ensembl cross-references");
         for (GKInstance sourceInst : sourceReferences) {
             String sourceIdentifier = (String) sourceInst.getAttributeValue(ReactomeJavaConstants.identifier);
             // Determine which species the instance pertains too. Retrieve corresponding mapping structures.
@@ -50,6 +54,13 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
         }
     }
 
+    /**
+     * Retrieve all Ensembl Gene, Transcript and Protein identifiers associated with the source instance identifier.
+     * @param mappings Large mapping structure generated in FileProcessor step.
+     * @param sourceIdentifier Identifier taken from RGP instance.
+     * @param biomartSpeciesName Species name in biomart format (eg: hsapiens).
+     * @return Filtered Set of Ensembl identifiers (Gene, Transcript and Protein) associated with RGP identifier.
+     */
     private Set<String> collectEnsemblIdentifiers(Map<String, Map<String, List<String>>> mappings, String sourceIdentifier, String biomartSpeciesName) {
         String proteinToTranscriptsKey = biomartSpeciesName + "_proteinToTranscripts";
         String proteinToGenesKey = biomartSpeciesName + "_proteinToGenes";
@@ -66,12 +77,12 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
                     ensemblIds.add(enspId);
                 }
                 // Retrieve any Ensembl transcript identifiers that map to the Ensembl protein identifier and store in 'ensIds'.
-                if (mappings.get(proteinToTranscriptsKey) != null && mappings.get(proteinToTranscriptsKey).get(enspId) != null) {
-                    ensemblIds.addAll(collectEnsemblTranscriptIdentifiers(mappings.get(proteinToTranscriptsKey).get(enspId)));
+                if (identifierHasMapping(mappings, proteinToTranscriptsKey, enspId)) {
+                    ensemblIds.addAll(collectEnsemblIdentifiers(mappings.get(proteinToTranscriptsKey).get(enspId)));
                 }
                 // Retrieve any Ensembl gene identifiers that map to the Ensembl protein identifier and store in 'ensIds'.
-                if (mappings.get(proteinToGenesKey) != null && mappings.get(proteinToGenesKey).get(enspId) != null) {
-                    ensemblIds.addAll(collectEnsemblGeneIdentifiers(mappings.get(proteinToGenesKey).get(enspId)));
+                if (identifierHasMapping(mappings, proteinToGenesKey, enspId)) {
+                    ensemblIds.addAll(collectEnsemblIdentifiers(mappings.get(proteinToGenesKey).get(enspId)));
                 }
 
             }
@@ -79,30 +90,22 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
         return ensemblIds;
     }
 
-    private boolean identifierHasMapping(Map<String, Map<String, List<String>>> mappings, String uniprotToENSPKey, String sourceIdentifier) {
-        return mappings.get(uniprotToENSPKey) != null && mappings.get(uniprotToENSPKey).get(sourceIdentifier) != null;
-    }
-
-    private Collection<? extends String> collectEnsemblGeneIdentifiers(List<String> ensgIds) {
-        Set<String> ensemblIds = new HashSet<>();
-        for (String ensgId : ensgIds) {
-            // Only store 'Ensembl' gene identifiers.
-            if (ensgId.startsWith("ENS")) {
-                ensemblIds.add(ensgId);
+    // Filter non-Ensembl identifiers from supplied List.
+    private Collection<String> collectEnsemblIdentifiers(List<String> ensIds) {
+        Set<String> filteredEnsemblIds = new HashSet<>();
+        for (String ensId : ensIds) {
+            // Only store 'Ensembl' identifiers.
+            if (ensId.startsWith("ENS")) {
+                filteredEnsemblIds.add(ensId);
             }
         }
-        return ensemblIds;
+        return filteredEnsemblIds;
     }
 
-    private Collection<? extends String> collectEnsemblTranscriptIdentifiers(List<String> enstIds) {
-        Set<String> ensemblIds = new HashSet<>();
-        for (String enstId : enstIds) {
-            // Only store 'Ensembl' transcript identifiers.
-            if (enstId.startsWith("ENS")) {
-                ensemblIds.add(enstId);
-            }
-        }
-        return ensemblIds;
+
+    // Check that the supplied identifier has a mapping in the 'mappings' structure.
+    private boolean identifierHasMapping(Map<String, Map<String, List<String>>> mappings, String outerKey, String identifier) {
+        return mappings.containsKey(outerKey) && mappings.get(outerKey).containsKey(identifier);
     }
 
     // Update species name attribute to Ensembl Biomart format (eg: Homo sapiens --> hsapiens).
