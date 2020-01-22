@@ -9,6 +9,7 @@ import org.reactome.addlinks.dataretrieval.FileRetriever;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -25,148 +26,158 @@ public class EnsemblBiomartRetriever extends FileRetriever {
 
     private static final int UNIPROT_QUERY_TOTAL = 2;
     private static int successCount;
+    private static final String  microarrayTypesBaseQuery = "type=listAttributes&mart=ENSEMBL_MART_ENSEMBL&virtualSchema=default&dataset=BIOMART_SPECIES_NAME_gene_ensembl&interface=default&attributePage=feature_page&attributeGroup=external&attributeCollection=microarray";
 
+    /**
+     * Downloads Ensembl-Microarray and Ensembl-Uniprot identifier mapping files for all species, if they exist.
+     * @throws Exception
+     */
     protected void downloadData() throws Exception {
 
-        //TODO: Modulate Biomart Query frequency
-        //TODO: Add logging
-        //TODO: Add unit tests
-        //TODO: Global variables for file names and numerical values
-        //TODO: Function-level commenting
-
+        // TODO: Add unit tests
         // Get names of all organisms we add links and/or microarray data for.
         // Species names are in biomart format (eg: hsapiens).
         for (String biomartSpeciesName : getBiomartSpeciesNames()) {
-            System.out.println("Retrieving Biomart files for " + biomartSpeciesName);
+            logger.info("Retrieving Biomart files for " + biomartSpeciesName);
             // Create directory where Biomart files will be stored.
-            createBiomartDirectory();
+            new File(this.destination).mkdirs();
+
+            logger.info("Retrieving microarray data");
             // Query Biomart for existing microarray 'types' (not ids) that exist for this species.
-            BufferedReader br = queryBiomart(this.getDataURL().toString().replace("BIOMART_SPECIES_NAME", biomartSpeciesName));
-            // Parse response from Biomart
-            Set<String> microarrayTypes = getBiomartMicroarrayTypesResponse(br);
+            Set<String> microarrayTypes = queryBiomart(getMicroarrayTypesQuery(biomartSpeciesName), 0);
             // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
             // All mappings are stored in a single file, (eg: hsapiens_microarray);
-            for (String microarrayType : microarrayTypes) {
-                System.out.println("\tRetrieving data associated with microarray type " + microarrayType);
-                retrieveAndStoreMicroarrayData(biomartSpeciesName, microarrayType);
-            }
+            retrieveAndStoreMicroarrayData(biomartSpeciesName, getBiomartXMLPath(), microarrayTypes);
 
             // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from Biomart
             // and write it to a file (eg: hsapiens_uniprot).
-            successCount = 0;
-            File speciesUniprotFile = createNewFile(this.destination + biomartSpeciesName + "_uniprot");
-            Set<String> uniprotIdLines = retrieveAndStoreUniprotData(biomartSpeciesName);
-            // TODO: Better way to ensure both queries were success
+            logger.info("Retrieving UniProt data");
+            retrieveAndStoreUniprotData(biomartSpeciesName, getBiomartXMLPath());
 
-            // If both queries succeeded, write data to file.
-            if (successCount == UNIPROT_QUERY_TOTAL) {
+            logger.info("Completed Biomart data retrieval for " + biomartSpeciesName);
+        }
+    }
+
+    /**
+     * Query Biomart for both Uniprot mapping types (curated -- SwissProt, generated -- TrEMBL).
+     * @param biomartSpeciesName
+     * @throws Exception
+     */
+    private void retrieveAndStoreUniprotData(String biomartSpeciesName, String biomartXMLPath) {
+        Set<String> uniprotIdLines = new HashSet<>();
+        try {
+            for (String uniprotQueryId : Arrays.asList("uniprotswissprot", "uniprotsptrembl")) {
+                // If proper response, write data to file.
+                Set<String> uniprotResponseLines = queryBiomart(getBiomartIdentifierQuery(biomartXMLPath, biomartSpeciesName, uniprotQueryId), 0);
+                for (String uniprotResponseLine : uniprotResponseLines) {
+                    List<String> tabSplit = Arrays.asList(uniprotResponseLine.split("\t"));
+                    if (tabSplit.size() == 4) {
+                        uniprotIdLines.add(uniprotResponseLine + "\n");
+                    }
+                }
+            }
+
+            // Write data to file.
+            if (!uniprotIdLines.isEmpty()) {
+                File speciesUniprotFile = createNewFile(this.destination + biomartSpeciesName + "_uniprot");
                 for (String uniprotIdLine : uniprotIdLines) {
                     Files.write(Paths.get(speciesUniprotFile.toString()), uniprotIdLine.getBytes(), StandardOpenOption.APPEND);
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    // Query Biomart for both Uniprot mapping types (curated -- SwissProt, generated -- TrEMBL).
-    private Set<String> retrieveAndStoreUniprotData(String biomartSpeciesName) throws Exception {
-        File speciesMicroarrayFile = createNewFile(this.destination + biomartSpeciesName + "_uniprot");
-        Set<String> uniprotIdLines = new HashSet<>();
-        for (String uniprotQueryId : Arrays.asList("uniprotswissprot", "uniprotsptrembl")) {
-            // If proper response, write data to file.
-            BufferedReader bru = queryBiomart(getBiomartIdentifierQuery(biomartSpeciesName, uniprotQueryId));
-            String uniprotLine;
-            while ((uniprotLine = bru.readLine()) != null) {
-                List<String> tabSplit = Arrays.asList(uniprotLine.split("\t"));
-                if (tabSplit.size() == 4) {
-                    uniprotIdLines.add(uniprotLine + "\n");
-                }
-                // With '[success]' string at end of query, increment the successCount integer.
-                // We need both queries to succeed (regardless of if there is data or not) in order to continue.
-                // TODO: Retry queries that fail
-                if (uniprotLine.contains("success")) {
-                    successCount++;
-//                } else {
-//                    //TODO: Retry
-//                    throw new Exception("Incomplete UniProt data retrieval from Biomart");
-                }
-            }
-        }
-        return uniprotIdLines;
+    private String getMicroarrayTypesQuery(String biomartSpeciesName) {
+        return this.getDataURL() + microarrayTypesBaseQuery.replace("BIOMART_SPECIES_NAME", biomartSpeciesName);
     }
 
-    private void retrieveAndStoreMicroarrayData(String biomartSpeciesName, String microarrayType) throws Exception {
-        File speciesMicroarrayFile = createNewFile(this.destination + biomartSpeciesName + "_microarray");
+    /**
+     * Query Biomart for Microarray 'identifiers' associated with the microarray type
+     * @param biomartSpeciesName -- String of species name in Biomart format (eg: hsapiens)
+     * @param microarrayTypes -- String, type of microarray identifiers being queried for.
+     * @throws Exception
+     */
+    private void retrieveAndStoreMicroarrayData(String biomartSpeciesName, String biomartXMLPath, Set<String> microarrayTypes) {
 
-        BufferedReader brp = queryBiomart(getBiomartIdentifierQuery(biomartSpeciesName, microarrayType));
+        // Query Biomart for microarray identifiers associated with microarray type.
+        for (String microarrayType : microarrayTypes) {
+            try {
+                logger.info("Retrieving data associated with microarray type " + microarrayType);
+                Set<String> microarrayResponseLines = queryBiomart(getBiomartIdentifierQuery(biomartXMLPath, biomartSpeciesName, microarrayType), 0);
+                Set<String> microarrayIdentifierLines = new HashSet<>();
+                for (String microarrayResponseLine : microarrayResponseLines) {
+                    List<String> tabSplit = Arrays.asList(microarrayResponseLine.split("\t"));
+                    // Microarray ID is 4th column, and sometimes it isn't in a line.
+                    // Since we need the ID, we require the List to have 4 elements.
+                    if (tabSplit.size() == 4) {
+                        microarrayIdentifierLines.add(microarrayResponseLine + "\n");
+                    }
+                }
 
-        // Iterate through lines of response, writing data to file.
-        String microarrayIdLine;
-        Set<String> microarrayIdLines = new HashSet<>();
-        while ((microarrayIdLine = brp.readLine()) != null) {
-            List<String> tabSplit = Arrays.asList(microarrayIdLine.split("\t"));
-            if (tabSplit.size() == 4) {
-                microarrayIdLines.add(microarrayIdLine + "\n");
-            }
-            // End of response should contain the string '[success]'. This indicates all data was received that we asked for.
-            if (microarrayIdLine.contains("success")) {
-                if (!microarrayIdLines.isEmpty()) {
-                    for (String probeIdLine : microarrayIdLines) {
+                // Write data to file.
+                if (!microarrayIdentifierLines.isEmpty()) {
+                    File speciesMicroarrayFile = createNewFile(this.destination + biomartSpeciesName + "_microarray");
+                    for (String probeIdLine : microarrayIdentifierLines) {
                         Files.write(Paths.get(speciesMicroarrayFile.toString()), probeIdLine.getBytes(), StandardOpenOption.APPEND);
                     }
                 }
-//            } else {
-//                //TODO: Retry
-//                throw new Exception("Incomplete Microarray data retrieval from Biomart");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
-    private Set<String> getBiomartMicroarrayTypesResponse(BufferedReader br) throws IOException {
-
-        String microarrayTypesLine;
-        Set<String> microarrayTypes = new HashSet<>();
-        while ((microarrayTypesLine = br.readLine()) != null) {
-            microarrayTypes.add(microarrayTypesLine);
-        }
-        br.close();
-        return microarrayTypes;
-    }
-
-    private File createNewFile(String filepath) throws IOException {
-        File file = new File(filepath);
-        file.createNewFile();
-        return file;
-    }
-
-    private BufferedReader queryBiomart(String queryString) throws Exception {
+    /**
+     * Attempts to create a connection to Biomart with the supplied query
+     * @param queryString String of Biomart query
+     * @return Set<String> Biomart response data.
+     * @throws Exception Can be caused by the query URL not being valid, or the data not existing for the species.
+     */
+    private Set<String> queryBiomart(String queryString, int retryCount) throws Exception {
         // Create connection to Biomart URL for each species, retrieving a list of microarray probe types, if available.
         URL biomartUrlWithSpecies = new URL(queryString);
         HttpURLConnection biomartConnection = (HttpURLConnection) biomartUrlWithSpecies.openConnection();
         if (biomartConnection.getResponseCode() == 200) {
-            return new BufferedReader(new InputStreamReader(biomartConnection.getInputStream()));
+            Set<String> biomartResponseLines = new HashSet<>();
+            BufferedReader br = new BufferedReader(new InputStreamReader(biomartConnection.getInputStream()));
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Biomart still responds with a 200, even if no data exists. For now, we handle it by
+                // checking the returned content for the string 'ERROR'. It will retry up to 5 times, with a 10 second delay.
+                if (line.contains("ERROR") ) {
+                    retryCount++;
+                    if (retryCount < 5) {
+                        Thread.sleep(10000);
+                        logger.warn("Biomart query failed. Trying again...");
+                        return queryBiomart(queryString, retryCount);
+                    }
+                    throw new Exception("Biomart query failed with message: " + line);
+                } else {
+                    biomartResponseLines.add(line);
+                }
+            }
+            return biomartResponseLines;
+
         } else {
-            //TODO: Retry
-            throw new Exception("Unable to connect to " + queryString);
+            retryCount++;
+            if (retryCount < 5) {
+                Thread.sleep(10000);
+                logger.warn("Unable to connect to Biomart. Trying again...");
+                return queryBiomart(queryString, retryCount);
+            }
+            throw new Exception("Unable to connect to Biomart with URL: " + queryString);
         }
     }
 
-    private void createBiomartDirectory() {
-        File addlinksDirectories = new File(this.destination);
-        addlinksDirectories.mkdirs();
-    }
-
-    //TODO: Ensembl secondary URL needs to go somewhere else. Add additional property to config?
-
-    // Modifies default secondary URL with species name and the query type (for example microarray probe type, or uniprotsptrembl).
-    private String getBiomartIdentifierQuery(String biomartSpeciesName, String queryId) throws IOException {
-        String defaultBiomartQuery = "http://www.ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%3C!DOCTYPE%20Query%3E%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%220%22%20count%20=%20%22%22%20completionStamp%20=%20%221%22%3E%3CDataset%20name%20=%20%22BIOMART_SPECIES_NAME_gene_ensembl%22%20interface%20=%20%22default%22%20%3E%3CAttribute%20name%20=%20%22ensembl_gene_id%22%20/%3E%3CAttribute%20name%20=%20%22ensembl_transcript_id%22%20/%3E%3CAttribute%20name%20=%20%22ensembl_peptide_id%22%20/%3E%3CAttribute%20name%20=%20%22BIOMART_QUERY_ID%22%20/%3E%3C/Dataset%3E%3C/Query%3E";
-        String updatedBiomartQuery = defaultBiomartQuery.replace("BIOMART_SPECIES_NAME", biomartSpeciesName).replace("BIOMART_QUERY_ID", queryId);
-
-        return updatedBiomartQuery;
-    }
-
-    // Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
-    // match Biomart formatting (first letter from primary species name + secondary name, all lowercase -- eg: hsapiens).
+    /**
+     * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
+     * match Biomart formatting (first letter from primary species name + secondary name, all lowercase -- eg: hsapiens).
+     * @return List<String> of species names in Biomart format (eg: hsapiens).
+     * @throws IOException
+     * @throws ParseException
+     */
     private List<String> getBiomartSpeciesNames() throws IOException, ParseException {
         // Read properties file.
         Properties applicationProps = new Properties();
@@ -191,5 +202,32 @@ public class EnsemblBiomartRetriever extends FileRetriever {
             biomartNames.add(biomartName);
         }
         return biomartNames;
+    }
+
+    // Gets the filepath to biomart XML file, used to build biomart query.
+    private String getBiomartXMLPath() throws IOException {
+        // Read properties file.
+        Properties applicationProps = new Properties();
+        String propertiesLocation = System.getProperty("config.location");
+        try(FileInputStream fis = new FileInputStream(propertiesLocation))
+        {
+            applicationProps.load(fis);
+        }
+        // Get species JSON config file location, import as JSON object.
+        return applicationProps.getProperty("pathToBiomartXML");
+    }
+
+    // Modifies default secondary URL with species name and the query type (for example microarray probe type, or uniprotsptrembl).
+    private String getBiomartIdentifierQuery(String pathToXMLQuery, String biomartSpeciesName, String queryId) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(pathToXMLQuery));
+        String biomartQuery = "http://www.ensembl.org/biomart/martservice?query=" + URLEncoder.encode(br.readLine(), "UTF-8");
+        return biomartQuery.replace("BIOMART_SPECIES_NAME", biomartSpeciesName).replace("BIOMART_QUERY_ID", queryId);
+    }
+
+    // Creates file from filepath
+    private File createNewFile(String filepath) throws IOException {
+        File file = new File(filepath);
+        file.createNewFile();
+        return file;
     }
 }

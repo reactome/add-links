@@ -279,7 +279,7 @@
 
 		<entry key="EnsemblBiomart">
 			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBiomartRetriever" id="EnsemblBiomart">
-				<property name="dataURL" value="http://www.ensembl.org/biomart/martservice?type=listAttributes&amp;mart=ENSEMBL_MART_ENSEMBL&amp;virtualSchema=default&amp;dataset=BIOMART_SPECIES_NAME_gene_ensembl&amp;interface=default&amp;attributePage=feature_page&amp;attributeGroup=external&amp;attributeCollection=microarray" />
+				<property name="dataURL" value="http://www.ensembl.org/biomart/martservice?" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/biomart/" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/EnsemblBiomart"/>
