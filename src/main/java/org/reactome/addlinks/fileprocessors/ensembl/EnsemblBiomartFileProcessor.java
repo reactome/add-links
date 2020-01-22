@@ -17,11 +17,17 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
         super(processorName);
     }
 
-    //TODO: Add logging
-    //TODO: Add unit tests
-    //TODO: Global variables for file names
-    //TODO: Function-level commenting
-
+    // TODO: Add unit tests
+    /**
+     * This class builds a large, rather unwieldy two-layer mapping structure of identifiers corresponding to a specific species.
+     * The first level has 4 types of keys for each species. These keys are 'uniprotToProteins', 'proteinToGenes',
+     * 'proteinToTranscripts', and 'transcriptToMicroarrays'. These describe the type of mapping that this
+     * key is to. For example, the key 'hsapiens_uniprotToProteins' would access a Map of Human UniProt protein identifiers
+     * to a List of Ensembl protein identifiers. Transcript denotes Ensembl transcript identifiers, Gene is Ensembl gene identifiers
+     * and Microarray denotes microarray probe identifiers.
+     * @return Map<String, Map<String, List<String>>>> mappings, the two-layer mapping structure of species-(identifier-[identifiers]).
+     * @throws IOException Can be thrown if file does not exist.
+     */
     @Override
     public Map<String, Map<String, List<String>>> getIdMappingsFromFile() throws IOException {
 
@@ -51,13 +57,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                 if (biomartFile.getName().contains("uniprot")) {
                     // 'uniprotToProteins' mapping requires the 3rd (protein) and 4th (uniprot)values in the line.
                     if (tabSplit.size() > 3 && necessaryColumnsContainData(tabSplit, 2,3)) {
-                        uniprotToProteins = mapUniprotToProteins(uniprotToProteins, tabSplit.get(2), tabSplit.get(3));
+                        uniprotToProteins = mapIdentifiers(uniprotToProteins, tabSplit.get(3), tabSplit.get(2));
                         // Add each mapping generated to the 'super' mapping
                         mappings.put(biomartFileSpecies + "_uniprotToProteins", uniprotToProteins);
                     }
                     // 'proteinToGenes' mappings require the 1st (gene) and 3rd (protein) values in the line.
                     if (necessaryColumnsContainData(tabSplit, 0, 2)) {
-                        proteinToGenes = mapProteinToGenes(proteinToGenes, tabSplit.get(0), tabSplit.get(2));
+                        proteinToGenes = mapIdentifiers(proteinToGenes, tabSplit.get(2), tabSplit.get(0));
                         // Add each mapping generated to the 'super' mapping
                         mappings.put(biomartFileSpecies + "_proteinToGenes", proteinToGenes);
                     }
@@ -69,13 +75,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                 } else if (biomartFile.getName().contains("microarray")) {
                     // 'proteinToTranscripts' mapping requires the 2nd (transcript) and 3rd (protein) values in the line.
                     if (tabSplit.size() > 2 && necessaryColumnsContainData(tabSplit, 1, 2)) {
-                        proteinToTranscripts = mapProteinToTranscripts(proteinToTranscripts, tabSplit.get(1), tabSplit.get(2));
+                        proteinToTranscripts = mapIdentifiers(proteinToTranscripts, tabSplit.get(2), tabSplit.get(1));
                         // Add each mapping generated to the 'super' mapping
                         mappings.put(biomartFileSpecies + "_proteinToTranscripts", proteinToTranscripts);
                     }
                     // 'transcriptToMicroarrays' mapping requires the 2nd (transcript) and 4th (microarray) values in the line.
                     if (tabSplit.size() > 3 && necessaryColumnsContainData(tabSplit, 1, 3)) {
-                        transcriptToMicroarrays = mapTranscriptToMicroarrays(transcriptToMicroarrays, tabSplit.get(1), tabSplit.get(3));
+                        transcriptToMicroarrays = mapIdentifiers(transcriptToMicroarrays, tabSplit.get(1), tabSplit.get(3));
                         // Add each mapping generated to the 'super' mapping
                         mappings.put(biomartFileSpecies + "_transcriptToMicroarrays", transcriptToMicroarrays);
                     }
@@ -85,46 +91,24 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
         return mappings;
     }
 
-    private Map<String, List<String>> mapTranscriptToMicroarrays(Map<String, List<String>> transcriptToMicroarrays, String transcript, String microarray) {
-        if (transcriptToMicroarrays.get(transcript) != null) {
-            transcriptToMicroarrays.get(transcript).add(microarray);
+    /**
+     * Maps one type of identifier to a List of another type of identifier
+     * @param identifierToIdentifierMapping Map<String, List<String>> mapping structure that holds all identifier mappings
+     * @param identifier1 String -- Identifier that will be the key to the List of the other type of identifiers
+     * @param identifier2 String -- Identifier that will be added to the List keyed to the other identifier
+     * @return identifierToIdentifierMapping that has been updated with new values.
+     */
+    private Map<String, List<String>> mapIdentifiers(Map<String, List<String>> identifierToIdentifierMapping, String identifier1, String identifier2) {
+        if (identifierToIdentifierMapping.containsKey(identifier1)) {
+            identifierToIdentifierMapping.get(identifier1).add(identifier2);
         } else {
-            ArrayList<String> singleProbeArray = new ArrayList<>(Arrays.asList(microarray));
-            transcriptToMicroarrays.put(transcript, singleProbeArray);
+            ArrayList<String> singleIdentifierArray = new ArrayList<>(Arrays.asList(identifier2));
+            identifierToIdentifierMapping.put(identifier1, singleIdentifierArray);
         }
-        return transcriptToMicroarrays;
+        return identifierToIdentifierMapping;
     }
 
-    private Map<String, List<String>> mapProteinToTranscripts(Map<String, List<String>> proteinToTranscripts, String transcript, String protein) {
-        if (proteinToTranscripts.get(protein) != null) {
-            proteinToTranscripts.get(protein).add(transcript);
-        } else {
-            ArrayList<String> singleTranscriptArray = new ArrayList<>(Arrays.asList(transcript));
-            proteinToTranscripts.put(protein, singleTranscriptArray);
-        }
-        return proteinToTranscripts;
-    }
-
-    private Map<String, List<String>> mapProteinToGenes(Map<String, List<String>> proteinToGenes, String gene, String protein) {
-        if (proteinToGenes.get(protein) != null) {
-            proteinToGenes.get(protein).add(gene);
-        } else {
-            ArrayList<String> singleGeneArray = new ArrayList<>(Arrays.asList(gene));
-            proteinToGenes.put(protein, singleGeneArray);
-        }
-        return proteinToGenes;
-    }
-
-    private Map<String, List<String>> mapUniprotToProteins(Map<String, List<String>> uniprotToProteins, String protein, String uniprot) {
-        if (uniprotToProteins.get(uniprot) != null) {
-            uniprotToProteins.get(uniprot).add(protein);
-        } else {
-            ArrayList<String> singleProteinArray = new ArrayList<>(Arrays.asList(protein));
-            uniprotToProteins.put(uniprot, singleProteinArray);
-        }
-        return uniprotToProteins;
-    }
-
+    // Checks that data exists at the supplied column indices.
     private boolean necessaryColumnsContainData(List<String> tabSplit, int necessaryColumnIndex1, int necessaryColumnIndex2) {
          return !tabSplit.get(necessaryColumnIndex1).isEmpty() && !tabSplit.get(necessaryColumnIndex2).isEmpty();
     }
