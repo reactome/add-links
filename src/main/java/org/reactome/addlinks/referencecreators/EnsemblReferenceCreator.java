@@ -91,7 +91,7 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
     }
 
     // Filter non-Ensembl identifiers from supplied List.
-    private Collection<String> collectEnsemblIdentifiers(List<String> ensIds) {
+    public Collection<String> collectEnsemblIdentifiers(List<String> ensIds) {
         Set<String> filteredEnsemblIds = new HashSet<>();
         for (String ensId : ensIds) {
             // Only store 'Ensembl' identifiers.
