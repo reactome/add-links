@@ -45,7 +45,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
             // Read file and iterate through each line.
             BufferedReader br = new BufferedReader(new FileReader(biomartFile));
             String biomartLine;
-            while ((biomartLine = br.readLine()) !=null) {
+            while ((biomartLine = br.readLine()) != null) {
                 // Split each tab-separated line. Each line has four values. The first three are always
                 // Ensembl Gene (ENSG), Transcript (ENST) and Protein (ENSP), in that order.
                 // The 4th can be a UniProt or microarray identifier, depending on the file being read.
@@ -54,7 +54,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                 // Processing of UniProt mapping files.
                 // UniProt identifier mapping files are used to fully populate
                 // the 'uniprotToProteins' and 'proteinToGenes' mappings.
-                if (biomartFile.getName().contains("uniprot")) {
+                if (biomartFile.getName().endsWith("uniprot")) {
                     // 'uniprotToProteins' mapping requires the 3rd (protein) and 4th (uniprot)values in the line.
                     if (tabSplit.size() > 3 && necessaryColumnsContainData(tabSplit, 2,3)) {
                         uniprotToProteins = mapIdentifiers(uniprotToProteins, tabSplit.get(3), tabSplit.get(2));
@@ -72,7 +72,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                 // Microarray identifier mapping files are used to fully populate the
                 // 'proteinToTranscripts' and 'transcriptToMicroarray' mappings.
                 // Add each mapping generated to the 'super' mapping data structure that is returned.
-                } else if (biomartFile.getName().contains("microarray")) {
+                } else if (biomartFile.getName().endsWith("microarray")) {
                     // 'proteinToTranscripts' mapping requires the 2nd (transcript) and 3rd (protein) values in the line.
                     if (tabSplit.size() > 2 && necessaryColumnsContainData(tabSplit, 1, 2)) {
                         proteinToTranscripts = mapIdentifiers(proteinToTranscripts, tabSplit.get(2), tabSplit.get(1));

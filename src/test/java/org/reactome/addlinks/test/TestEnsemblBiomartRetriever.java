@@ -27,7 +27,7 @@ import java.nio.file.Paths;
 
 public class TestEnsemblBiomartRetriever {
 
-    private static final String fetchDestination = "/tmp/test_ensembl_biomart_mapping_service/";
+    private static final String testDirectory = "/tmp/test_ensembl_biomart_mapping_service/";
     private static final String expectedErrorMessage = "java.lang.Exception: Biomart query failed with message: Query ERROR";
 
     @Test
@@ -36,13 +36,13 @@ public class TestEnsemblBiomartRetriever {
         EnsemblBiomartRetriever retriever = new EnsemblBiomartRetriever();
         System.setProperty("config.location", "src/test/resources/addlinksTest-btau.properties");
         retriever.setDataURL(new URI("http://www.ensembl.org/biomart/martservice?"));
-        retriever.setFetchDestination(fetchDestination);
+        retriever.setFetchDestination(testDirectory);
         retriever.downloadData();
 
-        Path fetchDestinationMicroarray = Paths.get(fetchDestination + "btaurus_microarray");
+        Path fetchDestinationMicroarray = Paths.get(testDirectory + "btaurus_microarray");
         boolean microarrayFileExists = Files.exists(fetchDestinationMicroarray);
         Files.delete(fetchDestinationMicroarray);
-        Path fetchDestinationUniprot = Paths.get(fetchDestination + "btaurus_uniprot");
+        Path fetchDestinationUniprot = Paths.get(testDirectory + "btaurus_uniprot");
         boolean uniprotFileExists = Files.exists(fetchDestinationUniprot);
         Files.delete(fetchDestinationUniprot);
 
@@ -65,15 +65,15 @@ public class TestEnsemblBiomartRetriever {
         final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errStream));
         retriever.setDataURL(new URI("http://www.ensembl.org/biomart/martservice?"));
-        retriever.setFetchDestination(fetchDestination);
+        retriever.setFetchDestination(testDirectory);
         retriever.downloadData();
 
         boolean exceptionHappened = errStream.toString().contains(expectedErrorMessage);
 
-        Path fetchDestinationMicroarray = Paths.get(fetchDestination + "scerevisiae_microarray");
+        Path fetchDestinationMicroarray = Paths.get(testDirectory + "scerevisiae_microarray");
         boolean microarrayFileExists = Files.exists(fetchDestinationMicroarray);
         Files.delete(fetchDestinationMicroarray);
-        Path fetchDestinationUniprot = Paths.get(fetchDestination + "scerevisiae_uniprot");
+        Path fetchDestinationUniprot = Paths.get(testDirectory + "scerevisiae_uniprot");
         boolean uniprotFileExists = Files.exists(fetchDestinationUniprot);
         Files.delete(fetchDestinationUniprot);
 
@@ -89,14 +89,14 @@ public class TestEnsemblBiomartRetriever {
         final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errStream));
         retriever.setDataURL(new URI("http://www.ensembl.org/biomart/martservice?"));
-        retriever.setFetchDestination(fetchDestination);
+        retriever.setFetchDestination(testDirectory);
         retriever.downloadData();
 
         boolean exceptionHappened = errStream.toString().contains(expectedErrorMessage);
 
-        Path fetchDestinationMicroarray = Paths.get(fetchDestination + "btaurus_microarray");
+        Path fetchDestinationMicroarray = Paths.get(testDirectory + "btaurus_microarray");
         boolean microarrayFileExists = Files.exists(fetchDestinationMicroarray);
-        Path fetchDestinationUniprot = Paths.get(fetchDestination + "btaurus_uniprot");
+        Path fetchDestinationUniprot = Paths.get(testDirectory + "btaurus_uniprot");
         boolean uniprotFileExists = Files.exists(fetchDestinationUniprot);
 
         assertThat(exceptionHappened, is(equalTo(true)));

@@ -32,9 +32,8 @@ public class EnsemblBiomartRetriever extends FileRetriever {
      * Downloads Ensembl-Microarray and Ensembl-Uniprot identifier mapping files for all species, if they exist.
      * @throws Exception
      */
-    protected void downloadData() throws Exception {
+    public void downloadData() throws Exception {
 
-        // TODO: Add unit tests
         // Get names of all organisms we add links and/or microarray data for.
         // Species names are in biomart format (eg: hsapiens).
         for (String biomartSpeciesName : getBiomartSpeciesNames()) {
