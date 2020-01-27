@@ -51,6 +51,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
             String speciesBiomartName = speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
 
             // Retrieve identifier mappings that are used from the 'super' mapping.
+            // TODO: Helper class for getting species data
             String proteinToTranscriptsKey = speciesBiomartName + "_proteinToTranscripts";
             proteinToTranscripts = mappings.get(proteinToTranscriptsKey);
 
@@ -67,9 +68,8 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
                 // Retrieve Reactome Species instance and all RGPs associated with it.
                 GKInstance speciesInst = (GKInstance) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.Species, ReactomeJavaConstants.name, "=", speciesName).iterator().next();
                 Collection<GKInstance> rgpInstances = adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceGeneProduct, ReactomeJavaConstants.species, "=", speciesInst);
-
                 // Get all RGP identifiers in database, mapping them to associated instances.
-                Map<String, ArrayList<GKInstance>> rgpIdentifiersToRGPs = mapRGPIdentifiersToRGPInstances(rgpInstances);
+                Map<String, List<GKInstance>> rgpIdentifiersToRGPs = mapRGPIdentifiersToRGPInstances(rgpInstances);
                 // Iterate through each identifier, and then through each RGP instance.
                 for (String rgpIdentifier : rgpIdentifiersToRGPs.keySet()) {
                     for (GKInstance rgpInst : rgpIdentifiersToRGPs.get(rgpIdentifier)) {
@@ -100,7 +100,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
                     if (transcriptToProbes.containsKey(transcript)) {
                         for (String microarrayId : transcriptToProbes.get(transcript)) {
                             Collection<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
-                            if (!otherIdentifiers.contains(microarrayId)) {
+                            if (!otherIdentifiers.contains(microarrayId) && !this.testMode) {
                                 rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, microarrayId);
                             }
                         }
@@ -142,14 +142,14 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
      * @return Map of RGP identifiers to associated RGP instances
      * @throws Exception can be caused when retrieving data from GKInstance
      */
-    private Map<String, ArrayList<GKInstance>> mapRGPIdentifiersToRGPInstances(Collection<GKInstance> rgpInstances) throws Exception {
-        Map<String, ArrayList<GKInstance>> rgpIdentifiersToRGPs = new HashMap<>();
+    public Map<String, List<GKInstance>> mapRGPIdentifiersToRGPInstances(Collection<GKInstance> rgpInstances) throws Exception {
+        Map<String, List<GKInstance>> rgpIdentifiersToRGPs = new HashMap<>();
         for (GKInstance rgpInst : rgpInstances) {
             String identifier = rgpInst.getAttributeValue(ReactomeJavaConstants.identifier).toString();
             if (rgpIdentifiersToRGPs.get(identifier) != null) {
                 rgpIdentifiersToRGPs.get(identifier).add(rgpInst);
             } else {
-                ArrayList<GKInstance> singleRGPIdentifierArray = new ArrayList<>(Arrays.asList(rgpInst));
+                List<GKInstance> singleRGPIdentifierArray = Arrays.asList(rgpInst);
                 rgpIdentifiersToRGPs.put(identifier, singleRGPIdentifierArray);
             }
         }
@@ -164,7 +164,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
     }
 
     // Checks that none of the provided mapping structures are null.
-    private boolean allDataStructuresPopulated(Map<String, List<String>> proteinToTranscripts, Map<String, List<String>> transcriptToProbes, Map<String, List<String>> uniprotToProtein) {
+    public boolean allDataStructuresPopulated(Map<String, List<String>> proteinToTranscripts, Map<String, List<String>> transcriptToProbes, Map<String, List<String>> uniprotToProtein) {
         return proteinToTranscripts != null && transcriptToProbes != null && uniprotToProtein != null;
     }
 

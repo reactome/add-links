@@ -10,7 +10,6 @@ import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartFileProcessor;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
