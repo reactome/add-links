@@ -4,8 +4,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
@@ -157,5 +159,17 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	public String unzipFile(Path pathToZipfile) throws Exception 
 	{
 		return this.unzipFile(pathToZipfile, false);
+	}
+
+	public static List<String>  getLinesFromFile(Path inputFilePath, boolean skipHeader) throws IOException {
+		if (skipHeader) {
+			return Files.readAllLines(inputFilePath).stream().skip(1).collect((Collectors.toList()));
+		} else {
+			return Files.readAllLines(inputFilePath);
+		}
+	}
+
+	public static boolean necessaryColumnPresent(List<String> arrayOfFileColumns, int requiredColumnIndex) {
+		return arrayOfFileColumns.size() > requiredColumnIndex;
 	}
 }

@@ -16,38 +16,42 @@ public class RGDFileProcessor extends FileProcessor{
 
     public RGDFileProcessor()
     {
-        super(null);
+        super();
     }
+
+    private static final int rgdIdentifierIndex = 0;
+    private static final int uniprotIdentifiersIndex = 21;
 
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
-        try
-        {
-            for (String line : Files.readAllLines(inputFile).stream().collect(Collectors.toList())) {
-                if (Character.isDigit(line.charAt(0))) {
-                    List<String> tabSplit = Arrays.asList(line.split("\t"));
-                    String rgdId = tabSplit.get(0);
-                    List<String> uniprotIds = Arrays.asList(tabSplit.get(21).split(";"));
-                    if (!uniprotIds.isEmpty()) {
-                        for (String uniprotId : uniprotIds) {
-                            if (mappings.get(uniprotId) != null) {
-                                mappings.get(uniprotId).add(rgdId);
-                            } else {
-                                mappings.put(uniprotId, new ArrayList<>(Arrays.asList(rgdId)));
-                            }
-                        }
+        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
+
+        List<String> lines = new ArrayList<>();
+        try {
+            lines =  getLinesFromFile(inputFilePath, true);
+        } catch (IOException e) {
+            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
+            e.printStackTrace();
+        }
+
+        for (String line : lines) {
+            if (fileBodyLine(line)) {
+                List<String> tabSplit = Arrays.asList(line.split("\t"));
+                String rgdId = tabSplit.get(rgdIdentifierIndex);
+                List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).split(";"));
+                if (!uniprotIds.isEmpty()) {
+                    for (String uniprotId : uniprotIds) {
+                        mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(rgdId);
                     }
                 }
             }
         }
-        catch (IOException e) // potentially thrown by Files.readAllLines
-        {
-            logger.error("Error reading file ({}): {}", inputFile.toString(), e.getMessage());
-            e.printStackTrace();
-        }
         return mappings;
+    }
+
+    private boolean fileBodyLine(String line) {
+        return Character.isDigit(line.charAt(0));
     }
 }

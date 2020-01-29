@@ -16,32 +16,33 @@ public class XenbaseFileProcessor extends FileProcessor{
 
     public XenbaseFileProcessor()
     {
-        super(null);
+        super();
     }
+
+    private static final int uniprotIdentifierIndex = 0;
+    private static final int xenbaseIdentifierIndex = 3;
 
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
-        try
-        {
-            for (String line : Files.readAllLines(inputFile).stream().collect(Collectors.toList())) {
-                List<String> tabSplit = Arrays.asList(line.split("\t"));
-                String xenbaseId = tabSplit.get(3);
-                String uniprotId = tabSplit.get(0);
-                if (mappings.get(uniprotId) != null) {
-                    mappings.get(uniprotId).add(xenbaseId);
-                } else {
-                    mappings.put(uniprotId, new ArrayList<>(Arrays.asList(xenbaseId)));
-                }
-            }
-        }
-        catch (IOException e) // potentially thrown by Files.readAllLines
-        {
-            logger.error("Error reading file ({}): {}", inputFile.toString(), e.getMessage());
+        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
+
+        List<String> lines = new ArrayList<>();
+        try {
+            lines =  getLinesFromFile(inputFilePath, false);
+        } catch (IOException e) {
+            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
             e.printStackTrace();
         }
+
+        for (String line : lines) {
+            List<String> tabSplit = Arrays.asList(line.split("\t"));
+            String xenbaseId = tabSplit.get(xenbaseIdentifierIndex);
+            String uniprotId = tabSplit.get(uniprotIdentifierIndex);
+            mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(xenbaseId);
+        }
+
         return mappings;
     }
 }

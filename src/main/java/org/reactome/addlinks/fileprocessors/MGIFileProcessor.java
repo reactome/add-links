@@ -16,36 +16,35 @@ public class MGIFileProcessor extends FileProcessor{
 
     public MGIFileProcessor()
     {
-        super(null);
+        super();
     }
+
+    private static final int mgiIdentifierIndex = 0;
+    private static final int uniprotIdentifiersIndex = 6;
 
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFile = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
-        try
-        {
-            for (String line : Files.readAllLines(inputFile).stream().collect(Collectors.toList())) {
-                List<String> tabSplit = Arrays.asList(line.split("\t"));
-                if (tabSplit.size() > 6) {
-                  String mgiId = tabSplit.get(0).split(":")[1];
-                  List<String> uniprotIds = Arrays.asList(tabSplit.get(6).split(" "));
-                  for (String uniprotId : uniprotIds) {
-                    if (mappings.get(uniprotId) != null) {
-                        mappings.get(uniprotId).add(mgiId);
-                    } else {
-                        mappings.put(uniprotId, new ArrayList<>(Arrays.asList(mgiId)));
-                    }
-                  }
+        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
+        List<String> lines = new ArrayList<>();
+        try {
+            lines = getLinesFromFile(inputFilePath, false);
+        } catch (IOException e) {
+            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
+            e.printStackTrace();
+        }
 
+        for (String line : lines) {
+            List<String> tabSplit = Arrays.asList(line.split("\t"));
+            if (necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
+
+                String mgiId = tabSplit.get(mgiIdentifierIndex).split(":")[1];
+                String[] uniprotIds = tabSplit.get(uniprotIdentifiersIndex).split(" ");
+                for (String uniprotId : uniprotIds) {
+                  mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(mgiId);
                 }
             }
-        }
-        catch (IOException e) // potentially thrown by Files.readAllLines
-        {
-            logger.error("Error reading file ({}): {}", inputFile.toString(), e.getMessage());
-            e.printStackTrace();
         }
         return mappings;
     }
