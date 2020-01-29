@@ -516,7 +516,7 @@
 		</entry>
 
 		<entry key="HPAReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.HPAReferenceCreator" id="HPAReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="HPAReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -529,7 +529,7 @@
 		</entry>
 
 		<entry key="VGNCReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.VGNCReferenceCreator" id="VGNCReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="VGNCReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -542,7 +542,7 @@
 		</entry>
 
 		<entry key="MGIReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.MGIReferenceCreator" id="MGIReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="MGIReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -555,7 +555,7 @@
 		</entry>
 
 		<entry key="RGDReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.RGDReferenceCreator" id="RGDReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="RGDReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -568,7 +568,7 @@
 		</entry>
 
 		<entry key="XenbaseReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.XenbaseReferenceCreator" id="XenbaseReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="XenbaseReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
@@ -581,7 +581,7 @@
 		</entry>
 
 		<entry key="ZFINReferenceCreator">
-			<bean class="org.reactome.addlinks.referencecreators.ZFINReferenceCreator" id="ZFINReferenceCreator">
+			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="ZFINReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 				<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
