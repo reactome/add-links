@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-//TODO: Try removing any of the PowerMockIgnores
 @PowerMockIgnore({"javax.management.*","javax.net.ssl.*", "javax.security.*"})
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ java.net.URI.class,
@@ -30,6 +29,7 @@ public class TestEnsemblBiomartRetriever {
     private static final String testDirectory = "/tmp/test_ensembl_biomart_mapping_service/";
     private static final String expectedErrorMessage = "java.lang.Exception: Biomart query failed with message: Query ERROR";
 
+    //TODO Move these to their own IT?
     @Test
     public void testEnsemblBiomartRetrieverDownloadsAndStoresData() throws Exception {
 

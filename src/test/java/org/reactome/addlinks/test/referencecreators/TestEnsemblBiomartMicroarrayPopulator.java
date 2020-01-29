@@ -38,8 +38,8 @@ public class TestEnsemblBiomartMicroarrayPopulator {
     @Mock
     Map<String, List<String>> mockMap;
 
-//    @Mock
-//    GKInstance mockRefDBInst;
+    @Mock
+    GKInstance mockRefDBInst;
 
     Map<String, Map<String, List<String>>> mappings = new HashMap<>();
 
@@ -72,14 +72,13 @@ public class TestEnsemblBiomartMicroarrayPopulator {
         }
     }
 
-    // TODO: Test after refactoring
-//    @Test
-//    public void testFindRGPProteinsReturnsSet() throws Exception {
-//
-//        Mockito.when(mockRGPInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDBInst);
-//        Mockito.when(mockRefDBInst.getDisplayName()).thenReturn("UniProt");
-//        microarrayPopulator.findRGPProteins("12345", mockRGPInst);
-//    }
+    @Test
+    public void testFindRGPProteinsReturnsSet() throws Exception {
+
+        Mockito.when(mockRGPInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDBInst);
+        Mockito.when(mockRefDBInst.getDisplayName()).thenReturn("UniProt");
+        microarrayPopulator.findRGPProteins("12345", mockRGPInst, "species", mappings);
+    }
 
     @Test
     public void testMapRGPIdentifiersToRGPInstances() throws Exception {
