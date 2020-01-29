@@ -3,6 +3,7 @@ package org.reactome.addlinks.referencecreators;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.addlinks.EnsemblBiomartUtil;
 
 import java.util.*;
 
@@ -17,8 +18,6 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
     {
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
-
-    //TODO: Add unit tests
 
     /**
      * Find all Ensembl identifiers connected to an RGP instance in the Reactome DB and create a DatabaseIdentifier cross-reference instance for them.
@@ -37,18 +36,15 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
             String sourceIdentifier = (String) sourceInst.getAttributeValue(ReactomeJavaConstants.identifier);
             // Determine which species the instance pertains too. Retrieve corresponding mapping structures.
             GKInstance speciesInst = (GKInstance) sourceInst.getAttributeValue(ReactomeJavaConstants.species);
-            String biomartSpeciesName = getBiomartSpeciesName(speciesInst.getDisplayName());
+            String biomartSpeciesName = EnsemblBiomartUtil.getBiomartSpeciesName(speciesInst.getDisplayName());
             // Iterate through each Ensembl Protein identifier. Retrieve any corresponding Transcript and Gene
             // identifiers and add each to a set. These will be used to create cross references to Ensembl from Reactome.
             Set<String> ensemblIds = collectEnsemblIdentifiers(mappings, sourceIdentifier, biomartSpeciesName);
             // Iterate through each Ensembl identifier and create a ? instance.
             for (String ensemblId : ensemblIds) {
-                if (!this.checkXRefExists(sourceInst, ensemblId))
+                if (!this.checkXRefExists(sourceInst, ensemblId) && !this.testMode)
                 {
-                    if (!this.testMode)
-                    {
-                        this.refCreator.createIdentifier(ensemblId, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesInst.getDBID());
-                    }
+                    this.refCreator.createIdentifier(ensemblId, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesInst.getDBID());
                 }
             }
         }
@@ -102,14 +98,8 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
         return filteredEnsemblIds;
     }
 
-
     // Check that the supplied identifier has a mapping in the 'mappings' structure.
     private boolean identifierHasMapping(Map<String, Map<String, List<String>>> mappings, String outerKey, String identifier) {
         return mappings.containsKey(outerKey) && mappings.get(outerKey).containsKey(identifier);
-    }
-
-    // Update species name attribute to Ensembl Biomart format (eg: Homo sapiens --> hsapiens).
-    private String getBiomartSpeciesName(String speciesName) {
-        return speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
     }
 }

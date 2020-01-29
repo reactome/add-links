@@ -3,14 +3,8 @@ package org.reactome.addlinks.referencecreators;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.reactome.addlinks.EnsemblBiomartUtil;
 
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <Map<String, List<String>>>{
@@ -25,11 +19,6 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
 
-    //TODO: Add unit tests
-
-    private static Map<String, List<String>> proteinToTranscripts = new HashMap<>();
-    private static Map<String, List<String>> transcriptToProbes = new HashMap<>();
-    private static Map<String, List<String>> uniprotToProtein = new HashMap<>();
 
     /**
      * Adds microarray data to the 'otherIdentifier' attribute of ReferenceGeneProduct (RGP) instances. This class doesn't create
@@ -46,20 +35,17 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
     {
 
         // Iterate through each species that we add microarray data to.
-        for (String speciesName : getSpeciesNames()) {
+        for (String speciesName : EnsemblBiomartUtil.getSpeciesNames()) {
             logger.info("Populating microarray data for " + speciesName);
-            String speciesBiomartName = speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
+            String speciesBiomartName = EnsemblBiomartUtil.getBiomartSpeciesName(speciesName);
 
             // Retrieve identifier mappings that are used from the 'super' mapping.
             // TODO: Helper class for getting species data
-            String proteinToTranscriptsKey = speciesBiomartName + "_proteinToTranscripts";
-            proteinToTranscripts = mappings.get(proteinToTranscriptsKey);
+            Map<String, List<String>> proteinToTranscripts = EnsemblBiomartUtil.getProteinToTranscriptsMappings(speciesBiomartName, mappings);
 
-            String transcriptToProbesKey = speciesBiomartName + "_transcriptToMicroarrays";
-            transcriptToProbes = mappings.get(transcriptToProbesKey);
+            Map<String, List<String>> transcriptToProbes = EnsemblBiomartUtil.getTranscriptToMicroarraysMappings(speciesBiomartName, mappings);
 
-            String uniprotToENSPKey = speciesBiomartName + "_uniprotToProteins";
-            uniprotToProtein = mappings.get(uniprotToENSPKey);
+            Map<String, List<String>> uniprotToProtein = EnsemblBiomartUtil.getUniprotToProteinsMappings(speciesBiomartName, mappings);
 
             // We need Uniprot identifiers to retrieve corresponding ReferenceGeneProduct instances (RGP) from the DB,
             // Ensembl Protein identifiers to retrieve Ensembl Transcript identifiers, and Transcript identifiers
@@ -73,7 +59,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
                 // Iterate through each identifier, and then through each RGP instance.
                 for (String rgpIdentifier : rgpIdentifiersToRGPs.keySet()) {
                     for (GKInstance rgpInst : rgpIdentifiersToRGPs.get(rgpIdentifier)) {
-                        addMicroarrayDataToReferenceGeneProduct(rgpIdentifier, rgpInst);
+                        addMicroarrayDataToReferenceGeneProduct(rgpIdentifier, rgpInst, speciesBiomartName, mappings);
                     }
                 }
             }
@@ -87,18 +73,20 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
      * the instance is updated with the new data in the DB.
      * @param rgpIdentifier String identifier associated with RGP instance.
      * @param rgpInst GKInstance
+     * @param speciesBiomartName
+     * @param mappings
      * @throws Exception Can be caused when retrieving data from or updating GKInstance
      */
-    private void addMicroarrayDataToReferenceGeneProduct(String rgpIdentifier, GKInstance rgpInst) throws Exception {
+    private void addMicroarrayDataToReferenceGeneProduct(String rgpIdentifier, GKInstance rgpInst, String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) throws Exception {
         // Retrieve protein identifier associated with reference DB.
-        Set<String> rgpProteins = findRGPProteins(rgpIdentifier, rgpInst);
+        Set<String> rgpProteins = findRGPProteins(rgpIdentifier, rgpInst, speciesBiomartName, mappings);
         // For each protein identifier retrieved, find microarray identifiers associated and
         // add them to the 'otherIdentifier' attribute of the RGP instance.
         for (String protein : rgpProteins) {
-            if (proteinToTranscripts.containsKey(protein)) {
-                for (String transcript : proteinToTranscripts.get(protein)) {
-                    if (transcriptToProbes.containsKey(transcript)) {
-                        for (String microarrayId : transcriptToProbes.get(transcript)) {
+            if (EnsemblBiomartUtil.getProteinToTranscriptsMappings(speciesBiomartName, mappings).containsKey(protein)) {
+                for (String transcript : EnsemblBiomartUtil.getProteinToTranscriptsMappings(speciesBiomartName, mappings).get(protein)) {
+                    if (EnsemblBiomartUtil.getTranscriptToMicroarraysMappings(speciesBiomartName, mappings).containsKey(transcript)) {
+                        for (String microarrayId : EnsemblBiomartUtil.getTranscriptToMicroarraysMappings(speciesBiomartName, mappings).get(transcript)) {
                             Collection<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
                             if (!otherIdentifiers.contains(microarrayId) && !this.testMode) {
                                 rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, microarrayId);
@@ -115,22 +103,24 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
      * Find proteins associated with ReferenceGeneProduct instance.
      * @param rgpIdentifier String identifier associated with RGP instance.
      * @param rgpInst GKInstance
+     * @param speciesBiomartName
+     * @param mappings
      * @return Set of proteins associated with RGP instance.
      * @throws Exception Can be caused when retrieving data from GKInstance.
      */
-    private Set<String> findRGPProteins(String rgpIdentifier, GKInstance rgpInst) throws Exception {
+    private Set<String> findRGPProteins(String rgpIdentifier, GKInstance rgpInst, String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) throws Exception {
         Set<String> rgpProteins = new HashSet<>();
         GKInstance refDbInst = (GKInstance) rgpInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
         // If reference DB is Ensembl, add the identifier associated with RGP instance.
         if (refDbInst.getDisplayName().toLowerCase().contains("ensembl")) {
-            if (proteinToTranscripts.get(rgpIdentifier) != null) {
+            if (EnsemblBiomartUtil.getProteinToTranscriptsMappings(speciesBiomartName, mappings).containsKey(rgpIdentifier)) {
                 rgpProteins.add(rgpIdentifier);
             }
         // If reference DB is Uniprot, get Ensembl protein identifier associated with
         // instance's identifier attribute, which should be a Uniprot identifier.
         } else if (refDbInst.getDisplayName().toLowerCase().contains("uniprot")) {
-            if (uniprotToProtein != null && uniprotToProtein.get(rgpIdentifier) != null) {
-                rgpProteins.addAll(uniprotToProtein.get(rgpIdentifier));
+            if (EnsemblBiomartUtil.getUniprotToProteinsMappings(speciesBiomartName, mappings) != null && EnsemblBiomartUtil.getUniprotToProteinsMappings(speciesBiomartName, mappings).containsKey(rgpIdentifier)) {
+                rgpProteins.addAll(EnsemblBiomartUtil.getUniprotToProteinsMappings(speciesBiomartName, mappings).get(rgpIdentifier));
             }
         }
         return rgpProteins;
@@ -146,12 +136,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
         Map<String, List<GKInstance>> rgpIdentifiersToRGPs = new HashMap<>();
         for (GKInstance rgpInst : rgpInstances) {
             String identifier = rgpInst.getAttributeValue(ReactomeJavaConstants.identifier).toString();
-            if (rgpIdentifiersToRGPs.get(identifier) != null) {
-                rgpIdentifiersToRGPs.get(identifier).add(rgpInst);
-            } else {
-                List<GKInstance> singleRGPIdentifierArray = Arrays.asList(rgpInst);
-                rgpIdentifiersToRGPs.put(identifier, singleRGPIdentifierArray);
-            }
+            rgpIdentifiersToRGPs.computeIfAbsent(identifier, k -> new ArrayList<>()).add(rgpInst);
         }
         return rgpIdentifiersToRGPs;
     }
@@ -166,27 +151,5 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
     // Checks that none of the provided mapping structures are null.
     public boolean allDataStructuresPopulated(Map<String, List<String>> proteinToTranscripts, Map<String, List<String>> transcriptToProbes, Map<String, List<String>> uniprotToProtein) {
         return proteinToTranscripts != null && transcriptToProbes != null && uniprotToProtein != null;
-    }
-
-    // Get species name from json config file.
-    private Set<String> getSpeciesNames() throws IOException, ParseException {
-        Properties applicationProps = new Properties();
-        String propertiesLocation = System.getProperty("config.location");
-        try(FileInputStream fis = new FileInputStream(propertiesLocation))
-        {
-            applicationProps.load(fis);
-        }
-        String pathToSpeciesConfig = applicationProps.getProperty("pathToSpeciesConfig");
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse(new FileReader(pathToSpeciesConfig));
-        JSONObject jsonObject = (JSONObject) obj;
-        Set<String> fullSpeciesNames = new HashSet<>();
-        for (Object speciesKey : jsonObject.keySet()) {
-            JSONObject speciesJson = (JSONObject) jsonObject.get(speciesKey);
-            JSONArray speciesNames = (JSONArray) speciesJson.get("name");
-            String speciesName = (String) speciesNames.get(0);
-            fullSpeciesNames.add(speciesName);
-        }
-        return fullSpeciesNames;
     }
 }

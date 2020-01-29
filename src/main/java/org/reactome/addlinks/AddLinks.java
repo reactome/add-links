@@ -773,11 +773,7 @@ public class AddLinks
 		this.fileProcessors.keySet().stream().filter(k -> this.fileProcessorFilter.contains(k)).forEach( k ->
 			{
 				logger.info("Executing file processor: {}", k);
-				try {
-					dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				dbMappings.put(k, this.fileProcessors.get(k).getIdMappingsFromFile() );
 			}
 		);
 		return dbMappings;
