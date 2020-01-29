@@ -8,10 +8,13 @@ import org.json.simple.parser.ParseException;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class EnsemblBiomartUtil {
 
@@ -79,5 +82,17 @@ public class EnsemblBiomartUtil {
     public static Map<String, List<String>> getProteinToTranscriptsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String proteinToTranscriptsKey = speciesBiomartName + proteinToTranscriptsSuffix;
         return mappings.get(proteinToTranscriptsKey);
+    }
+
+    public static List<String>  getLinesFromFile(Path inputFilePath, boolean skipHeader) throws IOException {
+        if (skipHeader) {
+            return Files.readAllLines(inputFilePath).stream().skip(1).collect((Collectors.toList()));
+        } else {
+            return Files.readAllLines(inputFilePath);
+        }
+    }
+
+    public static boolean necessaryColumnPresent(List<String> arrayOfFileColumns, int requiredColumnIndex) {
+        return arrayOfFileColumns.size() > requiredColumnIndex;
     }
 }

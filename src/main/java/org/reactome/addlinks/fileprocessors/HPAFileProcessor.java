@@ -1,5 +1,7 @@
 package org.reactome.addlinks.fileprocessors;
 
+import org.reactome.addlinks.EnsemblBiomartUtil;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +41,7 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
 
             List<String> lines = new ArrayList<>();
             try {
-                lines = getLinesFromFile(inputFilePath, true);
+                lines = EnsemblBiomartUtil.getLinesFromFile(inputFilePath, true);
             } catch (IOException e) {
                 logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
                 e.printStackTrace();

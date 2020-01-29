@@ -1,5 +1,7 @@
 package org.reactome.addlinks.fileprocessors;
 
+import org.reactome.addlinks.EnsemblBiomartUtil;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +37,7 @@ public class VGNCFileProcessor extends FileProcessor{
 
         List<String> lines = new ArrayList<>();
         try {
-            lines =  getLinesFromFile(inputFilePath, true);
+            lines = EnsemblBiomartUtil.getLinesFromFile(inputFilePath, true);
         } catch (IOException e) {
             logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
             e.printStackTrace();
@@ -43,7 +45,7 @@ public class VGNCFileProcessor extends FileProcessor{
 
         for (String line : lines) {
             List<String> tabSplit = Arrays.asList(line.split("\t"));
-            if (necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
+            if (EnsemblBiomartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
 
                 String vgncId = tabSplit.get(vgncIdentifierIndex).split(":")[1];
                 List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).split("\\|"));

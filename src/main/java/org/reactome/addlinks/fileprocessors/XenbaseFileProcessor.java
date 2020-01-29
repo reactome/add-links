@@ -1,5 +1,7 @@
 package org.reactome.addlinks.fileprocessors;
 
+import org.reactome.addlinks.EnsemblBiomartUtil;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +32,7 @@ public class XenbaseFileProcessor extends FileProcessor{
 
         List<String> lines = new ArrayList<>();
         try {
-            lines =  getLinesFromFile(inputFilePath, false);
+            lines = EnsemblBiomartUtil.getLinesFromFile(inputFilePath, false);
         } catch (IOException e) {
             logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
             e.printStackTrace();

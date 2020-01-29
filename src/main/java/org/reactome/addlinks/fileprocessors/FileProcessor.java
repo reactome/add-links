@@ -160,16 +160,4 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	{
 		return this.unzipFile(pathToZipfile, false);
 	}
-
-	public static List<String>  getLinesFromFile(Path inputFilePath, boolean skipHeader) throws IOException {
-		if (skipHeader) {
-			return Files.readAllLines(inputFilePath).stream().skip(1).collect((Collectors.toList()));
-		} else {
-			return Files.readAllLines(inputFilePath);
-		}
-	}
-
-	public static boolean necessaryColumnPresent(List<String> arrayOfFileColumns, int requiredColumnIndex) {
-		return arrayOfFileColumns.size() > requiredColumnIndex;
-	}
 }
