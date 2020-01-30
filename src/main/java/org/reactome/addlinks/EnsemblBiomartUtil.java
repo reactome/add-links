@@ -28,8 +28,8 @@ public class EnsemblBiomartUtil {
      * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
      * match Biomart formatting (first letter from primary species name + secondary name, all lowercase -- eg: hsapiens).
      * @return List<String> of species names in Biomart format (eg: hsapiens).
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException - Thrown when unable to read file.
+     * @throws ParseException - Thrown when unable to parse JSON data.
      */
     public static List<String> getSpeciesNames() throws IOException, ParseException {
         // Read properties file.
@@ -39,6 +39,13 @@ public class EnsemblBiomartUtil {
         return speciesNames;
     }
 
+    /**
+     * Reads the Species.json file and parses out the species 'name' attribute.
+     * @param pathToSpeciesConfig - String, Filepath to Species.json file
+     * @return List<String> of species names
+     * @throws IOException - Thrown when unable to read file.
+     * @throws ParseException - Thrown when unable to parse JSON data.
+     */
     private static List<String> getSpeciesNamesFromJSON(String pathToSpeciesConfig) throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(new FileReader(pathToSpeciesConfig));
@@ -54,10 +61,20 @@ public class EnsemblBiomartUtil {
         return speciesNames;
     }
 
+    /**
+     * Formats species scientific name to BioMart format (eg: hsapiens).
+     * @param speciesName - String, scientific species name (eg: Homo sapiens).
+     * @return String, BioMart-formatted string.
+     */
     public static String getBiomartSpeciesName(String speciesName) {
         return speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
     }
 
+    /**
+     * Read properties file set to 'config.location' in the system.
+     * @return Loaded properties file
+     * @throws IOException - Thrown if file does not exist.
+     */
     public static Properties getProperties() throws IOException {
         // Read properties file.
         Properties applicationProps = new Properties();
@@ -69,21 +86,48 @@ public class EnsemblBiomartUtil {
         return applicationProps;
     }
 
+    // Returns data corresponding to 'species__uniprotToProteins' in mappings.
+
+    /**
+     * Returns data corresponding to 'species_uniprotToProteins' in mappings.
+     * @param speciesBiomartName - String, Biomart-formatted species name
+     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBiomartFileProcessor.
+     * @return Map<String, List<String>>, corresponding mappings for species.
+     */
     public static Map<String, List<String>> getUniprotToProteinsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String uniprotToProteinsKey = speciesBiomartName + uniprotToProteinsSuffix;
         return mappings.get(uniprotToProteinsKey);
     }
 
+    /**
+     * Returns data corresponding to 'species_transcriptToMicroarrays' in mappings.
+     * @param speciesBiomartName - String, Biomart-formatted species name
+     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBiomartFileProcessor.
+     * @return Map<String, List<String>>, corresponding mappings for species.
+     */
     public static Map<String, List<String>> getTranscriptToMicroarraysMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String transcriptToMicroarraysKey = speciesBiomartName + transcriptToMicroarraysSuffix;
         return mappings.get(transcriptToMicroarraysKey);
     }
 
+    /**
+     * Returns data corresponding to 'species__proteinToTranscripts' in mappings.
+     * @param speciesBiomartName - String, Biomart-formatted species name
+     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBiomartFileProcessor.
+     * @return Map<String, List<String>>, corresponding mappings for species.
+     */
     public static Map<String, List<String>> getProteinToTranscriptsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String proteinToTranscriptsKey = speciesBiomartName + proteinToTranscriptsSuffix;
         return mappings.get(proteinToTranscriptsKey);
     }
 
+    /**
+     * Returns all lines in the file. If the file contains a single-line header, it is filtered out.
+     * @param inputFilePath - Path, location of file to be read.
+     * @param skipHeader - boolean, determines if first line of file should be filtered out.
+     * @return List<String>, contents of file in a List.
+     * @throws IOException - Thrown if file does not exist.
+     */
     public static List<String>  getLinesFromFile(Path inputFilePath, boolean skipHeader) throws IOException {
         if (skipHeader) {
             return Files.readAllLines(inputFilePath).stream().skip(1).collect((Collectors.toList()));
@@ -92,6 +136,12 @@ public class EnsemblBiomartUtil {
         }
     }
 
+    /**
+     * Checks if necessary columns exist in file. Not all columns are guaranteed to contain the data needed, so this method checks that.
+     * @param arrayOfFileColumns - List<String>, All columns of a line separated into a list.
+     * @param requiredColumnIndex - int, Index of column required to proceed.
+     * @return boolean that confirms if the necessary data exists or not.
+     */
     public static boolean necessaryColumnPresent(List<String> arrayOfFileColumns, int requiredColumnIndex) {
         return arrayOfFileColumns.size() > requiredColumnIndex;
     }

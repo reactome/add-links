@@ -24,6 +24,10 @@ public class MGIFileProcessor extends FileProcessor{
     private static final int mgiIdentifierIndex = 0;
     private static final int uniprotIdentifiersIndex = 6;
 
+    /**
+     * Build map of UniProt identifiers to Mouse Genome Informatics (MGI) identifiers that is used to create MGI cross-references in database.
+     * @return - Map<String, List<String>
+     */
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {

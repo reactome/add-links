@@ -24,6 +24,10 @@ public class XenbaseFileProcessor extends FileProcessor{
     private static final int uniprotIdentifierIndex = 0;
     private static final int xenbaseIdentifierIndex = 3;
 
+    /**
+     * Build map of UniProt identifiers to Xenbase identifiers that is used to create Xenbase cross-references in database.
+     * @return - Map<String, List<String>
+     */
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {

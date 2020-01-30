@@ -26,6 +26,10 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
     private static final int ensemblIdentifierIndex = 2;
     private static final int uniprotIdentifierIndex = 4;
 
+    /**
+     * Build map of UniProt identifiers to Human Protein Atlas (HPA) identifiers that is used to create HPA cross-references in database.
+     * @return - Map<String, List<String>
+     */
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
@@ -66,6 +70,7 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
         return mappings;
     }
 
+    // Checks that all values read from line exist.
     private boolean necessaryIdentifiersPresent(String geneName, String ensemblId, String uniprotId) {
         return !geneName.isEmpty() && !ensemblId.isEmpty() && !uniprotId.isEmpty();
     }

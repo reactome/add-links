@@ -24,6 +24,10 @@ public class RGDFileProcessor extends FileProcessor{
     private static final int rgdIdentifierIndex = 0;
     private static final int uniprotIdentifiersIndex = 21;
 
+    /**
+     * Build map of UniProt identifiers to Rat Genome Database (RGD) identifiers that is used to create RGD cross-references in database.
+     * @return - Map<String, List<String>
+     */
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
@@ -39,7 +43,7 @@ public class RGDFileProcessor extends FileProcessor{
         }
 
         for (String line : lines) {
-            if (fileBodyLine(line)) {
+            if (isFileBodyLine(line)) {
                 List<String> tabSplit = Arrays.asList(line.split("\t"));
                 String rgdId = tabSplit.get(rgdIdentifierIndex);
                 List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).split(";"));
@@ -53,7 +57,8 @@ public class RGDFileProcessor extends FileProcessor{
         return mappings;
     }
 
-    private boolean fileBodyLine(String line) {
+    // Checks that first value in the line is a digit. This distinguishes between file header and the body.
+    private boolean isFileBodyLine(String line) {
         return Character.isDigit(line.charAt(0));
     }
 }

@@ -24,6 +24,10 @@ public class VGNCFileProcessor extends FileProcessor{
     private static final int vgncIdentifierIndex = 1;
     private static final int uniprotIdentifiersIndex = 21;
 
+    /**
+     * Build map of UniProt identifiers to Vertebrate Gene Nomenclature Committee (VGNC) identifiers that is used to create VGNC cross-references in database.
+     * @return - Map<String, List<String>
+     */
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
