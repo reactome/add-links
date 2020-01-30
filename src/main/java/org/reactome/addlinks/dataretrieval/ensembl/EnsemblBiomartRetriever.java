@@ -15,13 +15,13 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.*;
 
-public class EnsemblBioMartRetriever extends FileRetriever {
+public class EnsemblBiomartRetriever extends FileRetriever {
 
     private Properties properties;
 
-    public EnsemblBioMartRetriever() { }
+    public EnsemblBiomartRetriever() { }
 
-    public EnsemblBioMartRetriever(String retrieverName)
+    public EnsemblBiomartRetriever(String retrieverName)
     {
         super(retrieverName);
     }
@@ -35,34 +35,33 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      */
     public void downloadData() throws Exception {
 
-        // Create directory where BioMart files will be stored.
+        // Create directory where Biomart files will be stored.
         Files.createDirectories(Paths.get(this.destination));
         setProperties(EnsemblBiomartUtil.getProperties());
 
         // Get names of all organisms we add links and/or microarray data for.
-        // Species names are in BioMart format (eg: hsapiens).
+        // Species names are in biomart format (eg: hsapiens).
         for (String speciesName : EnsemblBiomartUtil.getSpeciesNames()) {
-            System.out.println(speciesName);
-            String speciesBioMartName = EnsemblBiomartUtil.getBiomartSpeciesName(speciesName);
-            logger.info("Retrieving BioMart files for " + speciesBioMartName);
+            String speciesBiomartName = EnsemblBiomartUtil.getBiomartSpeciesName(speciesName);
+            logger.info("Retrieving Biomart files for " + speciesBiomartName);
 
             logger.info("Retrieving microarray data");
-            // Query BioMart for existing microarray 'types' (not ids) that exist for this species.
-            Set<String> microarrayTypes = queryBiomart(getMicroarrayTypesQuery(speciesBioMartName), 0);
+            // Query Biomart for existing microarray 'types' (not ids) that exist for this species.
+            Set<String> microarrayTypes = queryBiomart(getMicroarrayTypesQuery(speciesBiomartName), 0);
             // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
             // All mappings are stored in a single file, (eg: hsapiens_microarray);
             for (String microarrayType : microarrayTypes) {
-                queryBiomartAndStoreData(speciesBioMartName, getBiomartXMLFilePath(), microarrayType, "_microarray");
+                queryBiomartAndStoreData(speciesBiomartName, getBiomartXMLFilePath(), microarrayType, "_microarray");
             }
 
             // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from Biomart
             // and write it to a file (eg: hsapiens_uniprot).
             logger.info("Retrieving UniProt data");
             for (String uniprotQueryId : Arrays.asList("uniprotswissprot", "uniprotsptrembl")) {
-                queryBiomartAndStoreData(speciesBioMartName, getBiomartXMLFilePath(), uniprotQueryId, "_uniprot");
+                queryBiomartAndStoreData(speciesBiomartName, getBiomartXMLFilePath(), uniprotQueryId, "_uniprot");
             }
 
-            logger.info("Completed BioMart data retrieval for " + speciesBioMartName);
+            logger.info("Completed Biomart data retrieval for " + speciesBiomartName);
         }
     }
 
@@ -147,9 +146,9 @@ public class EnsemblBioMartRetriever extends FileRetriever {
                     // Yeast (S. cerevisiae) has Uniprot-SwissProt data but not UniProt-TrEMBL data; Yeast (S. pombe), P. falciparum
                     // and D. discoideum don't have UniProt or Microarray data, all at time of writing (January 2020).
 //                    throw new Exception("Biomart query failed with message: " + line + "\nThis can happen without issue for certain species (X. tropicalis, S. pombe, S. cerevisiae, P. falciparum) because the data doesn't exist in BioMart");
-                throw new BioMartQueryException(line +
-                        "\nThis can happen without issue for certain species (X. tropicalis, S. pombe, S. cerevisiae, P. falciparum) " +
-                        "because the data doesn't exist in BioMart");
+                    throw new BioMartQueryException(line +
+                            "\nThis can happen without issue for certain species (X. tropicalis, S. pombe, S. cerevisiae, P. falciparum) " +
+                            "because the data doesn't exist in BioMart");
                 } else {
                     biomartResponseLines.add(line);
                 }

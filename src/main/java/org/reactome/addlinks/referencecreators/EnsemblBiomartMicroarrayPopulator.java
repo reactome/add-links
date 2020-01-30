@@ -108,7 +108,7 @@ public class EnsemblBiomartMicroarrayPopulator extends SimpleReferenceCreator <M
      * @return Set of proteins associated with RGP instance.
      * @throws Exception Can be caused when retrieving data from GKInstance.
      */
-    private Set<String> findRGPProteins(String rgpIdentifier, GKInstance rgpInst, String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) throws Exception {
+    public Set<String> findRGPProteins(String rgpIdentifier, GKInstance rgpInst, String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) throws Exception {
         Set<String> rgpProteins = new HashSet<>();
         GKInstance refDbInst = (GKInstance) rgpInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
         // If reference DB is Ensembl, add the identifier associated with RGP instance.

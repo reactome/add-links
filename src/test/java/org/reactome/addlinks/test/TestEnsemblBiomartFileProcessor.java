@@ -1,10 +1,6 @@
 package org.reactome.addlinks.test;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartFileProcessor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,13 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-@PowerMockIgnore({"javax.management.*","javax.net.ssl.*", "javax.security.*"})
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ java.net.URI.class,
-        org.apache.commons.net.ftp.FTPClient.class,
-        org.reactome.addlinks.dataretrieval.FileRetriever.class,
-        org.apache.http.impl.client.HttpClients.class })
 
 public class TestEnsemblBiomartFileProcessor {
 

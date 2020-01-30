@@ -1,10 +1,6 @@
 package org.reactome.addlinks.test;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBiomartRetriever;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,19 +13,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@PowerMockIgnore({"javax.management.*","javax.net.ssl.*", "javax.security.*"})
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ java.net.URI.class,
-        org.apache.commons.net.ftp.FTPClient.class,
-        org.reactome.addlinks.dataretrieval.FileRetriever.class,
-        org.apache.http.impl.client.HttpClients.class })
-
 public class TestEnsemblBiomartRetriever {
 
     private static final String testDirectory = "/tmp/test_ensembl_biomart_mapping_service/";
     private static final String expectedErrorMessage = "java.lang.Exception: Biomart query failed with message: Query ERROR";
 
-    //TODO Move these to their own IT?
+    //TODO Move these to IT?
     @Test
     public void testEnsemblBiomartRetrieverDownloadsAndStoresData() throws Exception {
 
@@ -96,8 +85,10 @@ public class TestEnsemblBiomartRetriever {
 
         Path fetchDestinationMicroarray = Paths.get(testDirectory + "btaurus_microarray");
         boolean microarrayFileExists = Files.exists(fetchDestinationMicroarray);
+        Files.delete(fetchDestinationMicroarray);
         Path fetchDestinationUniprot = Paths.get(testDirectory + "btaurus_uniprot");
         boolean uniprotFileExists = Files.exists(fetchDestinationUniprot);
+        Files.delete(fetchDestinationUniprot);
 
         assertThat(exceptionHappened, is(equalTo(true)));
         assertThat(microarrayFileExists, is(equalTo(false)));

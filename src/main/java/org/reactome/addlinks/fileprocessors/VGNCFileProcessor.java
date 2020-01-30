@@ -48,7 +48,7 @@ public class VGNCFileProcessor extends FileProcessor{
             if (EnsemblBiomartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
 
                 String vgncId = tabSplit.get(vgncIdentifierIndex).split(":")[1];
-                List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).split("\\|"));
+                List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).replaceAll("\"", "").split("\\|"));
                 for (String uniprotId : uniprotIds) {
                     mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(vgncId);
                 }

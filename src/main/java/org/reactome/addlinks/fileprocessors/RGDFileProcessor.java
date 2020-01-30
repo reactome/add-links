@@ -28,7 +28,7 @@ public class RGDFileProcessor extends FileProcessor{
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
+        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString());
 
         List<String> lines = new ArrayList<>();
         try {
