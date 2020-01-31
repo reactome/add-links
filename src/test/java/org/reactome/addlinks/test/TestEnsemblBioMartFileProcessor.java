@@ -1,7 +1,7 @@
 package org.reactome.addlinks.test;
 
 import org.junit.Test;
-import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartFileProcessor;
+import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBioMartFileProcessor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class TestEnsemblBiomartFileProcessor {
+public class TestEnsemblBioMartFileProcessor {
 
     private static final String uniprotToProteinsKey = "hsapiens_uniprotToProteins";
     private static final String transcriptToMicroarraysKey = "hsapiens_transcriptToMicroarrays";
@@ -29,8 +29,8 @@ public class TestEnsemblBiomartFileProcessor {
 
 
     @Test
-    public void testEnsemblBiomartFileProcessor() throws IOException {
-        EnsemblBiomartFileProcessor processor = new EnsemblBiomartFileProcessor();
+    public void testEnsemblBioMartFileProcessor() throws IOException {
+        EnsemblBioMartFileProcessor processor = new EnsemblBioMartFileProcessor();
         processor.setPath(Paths.get("src/test/resources/"));
         Map<String, Map<String, List<String>>> testMapping = processor.getIdMappingsFromFile();
 
@@ -45,15 +45,15 @@ public class TestEnsemblBiomartFileProcessor {
     }
 
     /**
-     * This tests that an improperly formatted file will result in the returned Map being empty. Since EnsemblBiomartFileProcessor
+     * This tests that an improperly formatted file will result in the returned Map being empty. Since EnsemblBioMartFileProcessor
      * evaluates the entire directory for files ending with 'uniprot' and 'microarray', the test directory can't hold both a
      * valid and invalid file type. To get around this the improperly formatted file is just generated within the test.
      * @throws IOException
      */
     @Test
-    public void testEnsemblBiomartFileProcessorReturnsEmptyMapWithImproperlyFormattedFile() throws IOException {
+    public void testEnsemblBioMartFileProcessorReturnsEmptyMapWithImproperlyFormattedFile() throws IOException {
 
-        EnsemblBiomartFileProcessor processor = new EnsemblBiomartFileProcessor();
+        EnsemblBioMartFileProcessor processor = new EnsemblBioMartFileProcessor();
         processor.setPath(Paths.get(testDirectory));
         Files.createDirectories(Paths.get(testDirectory));
         Files.createFile(improperlyFormattedFilepath);

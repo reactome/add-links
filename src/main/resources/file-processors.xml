@@ -388,9 +388,9 @@
 			</bean>
 		</entry>
 
-		<entry key="EnsemblBiomartFileProcessor">
-			<bean id="EnsemblBiomartFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblBiomartFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/BiomartFileProcessor"/>
+		<entry key="EnsemblBioMartFileProcessor">
+			<bean id="EnsemblBioMartFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblBioMartFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/BioMartFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/biomart/"/>

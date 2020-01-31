@@ -1,13 +1,11 @@
 package org.reactome.addlinks.fileprocessors;
 
-import org.reactome.addlinks.EnsemblBiomartUtil;
+import org.reactome.addlinks.EnsemblBioMartUtil;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MGIFileProcessor extends FileProcessor{
 
@@ -35,7 +33,7 @@ public class MGIFileProcessor extends FileProcessor{
         Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
         List<String> lines = new ArrayList<>();
         try {
-            lines = EnsemblBiomartUtil.getLinesFromFile(inputFilePath, false);
+            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, false);
         } catch (IOException e) {
             logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
             e.printStackTrace();
@@ -43,7 +41,7 @@ public class MGIFileProcessor extends FileProcessor{
 
         for (String line : lines) {
             List<String> tabSplit = Arrays.asList(line.split("\t"));
-            if (EnsemblBiomartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
+            if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
 
                 String mgiId = tabSplit.get(mgiIdentifierIndex).split(":")[1];
                 String[] uniprotIds = tabSplit.get(uniprotIdentifiersIndex).split(" ");

@@ -16,17 +16,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class EnsemblBiomartUtil {
+public class EnsemblBioMartUtil {
 
 
-    public static final String proteinToGenesSuffix = "_proteinToGenes";
-    public static final String proteinToTranscriptsSuffix = "_proteinToTranscripts";
-    public static final String transcriptToMicroarraysSuffix = "_transcriptToMicroarrays";
-    public static final String uniprotToProteinsSuffix = "_uniprotToProteins";
+    public static final String PROTEIN_TO_GENES_SUFFIX = "_proteinToGenes";
+    public static final String PROTEIN_TO_TRANSCRIPTS_SUFFIX = "_proteinToTranscripts";
+    public static final String TRANSCRIPT_TO_MICROARRAYS_SUFFIX = "_transcriptToMicroarrays";
+    public static final String UNIPROT_TO_PROTEINS_SUFFIX = "_uniprotToProteins";
 
     /**
      * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
-     * match Biomart formatting (first letter from primary species name + secondary name, all lowercase -- eg: hsapiens).
+     * match Biomart formatting (first letter from genus + full species name, all lowercase -- eg: hsapiens).
      * @return List<String> of species names in Biomart format (eg: hsapiens).
      * @throws IOException - Thrown when unable to read file.
      * @throws ParseException - Thrown when unable to parse JSON data.
@@ -66,7 +66,7 @@ public class EnsemblBiomartUtil {
      * @param speciesName - String, scientific species name (eg: Homo sapiens).
      * @return String, BioMart-formatted string.
      */
-    public static String getBiomartSpeciesName(String speciesName) {
+    public static String getBioMartSpeciesName(String speciesName) {
         return speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
     }
 
@@ -86,38 +86,36 @@ public class EnsemblBiomartUtil {
         return applicationProps;
     }
 
-    // Returns data corresponding to 'species__uniprotToProteins' in mappings.
-
     /**
      * Returns data corresponding to 'species_uniprotToProteins' in mappings.
-     * @param speciesBiomartName - String, Biomart-formatted species name
-     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBiomartFileProcessor.
+     * @param speciesBiomartName - String, BioMart-formatted species name
+     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
     public static Map<String, List<String>> getUniprotToProteinsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String uniprotToProteinsKey = speciesBiomartName + uniprotToProteinsSuffix;
+        String uniprotToProteinsKey = speciesBiomartName + UNIPROT_TO_PROTEINS_SUFFIX;
         return mappings.get(uniprotToProteinsKey);
     }
 
     /**
      * Returns data corresponding to 'species_transcriptToMicroarrays' in mappings.
-     * @param speciesBiomartName - String, Biomart-formatted species name
-     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBiomartFileProcessor.
+     * @param speciesBiomartName - String, BioMart-formatted species name
+     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
     public static Map<String, List<String>> getTranscriptToMicroarraysMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String transcriptToMicroarraysKey = speciesBiomartName + transcriptToMicroarraysSuffix;
+        String transcriptToMicroarraysKey = speciesBiomartName + TRANSCRIPT_TO_MICROARRAYS_SUFFIX;
         return mappings.get(transcriptToMicroarraysKey);
     }
 
     /**
      * Returns data corresponding to 'species__proteinToTranscripts' in mappings.
-     * @param speciesBiomartName - String, Biomart-formatted species name
-     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBiomartFileProcessor.
+     * @param speciesBiomartName - String, BioMart-formatted species name
+     * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
     public static Map<String, List<String>> getProteinToTranscriptsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String proteinToTranscriptsKey = speciesBiomartName + proteinToTranscriptsSuffix;
+        String proteinToTranscriptsKey = speciesBiomartName + PROTEIN_TO_TRANSCRIPTS_SUFFIX;
         return mappings.get(proteinToTranscriptsKey);
     }
 

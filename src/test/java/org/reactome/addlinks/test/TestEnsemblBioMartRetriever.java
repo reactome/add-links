@@ -1,7 +1,7 @@
 package org.reactome.addlinks.test;
 
 import org.junit.Test;
-import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBiomartRetriever;
+import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBioMartRetriever;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -13,16 +13,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class TestEnsemblBiomartRetriever {
+public class TestEnsemblBioMartRetriever {
 
     private static final String testDirectory = "/tmp/test_ensembl_biomart_mapping_service/";
-    private static final String expectedErrorMessage = "java.lang.Exception: Biomart query failed with message: Query ERROR";
+    private static final String expectedErrorMessage = "java.lang.Exception: BioMart query failed with message: Query ERROR";
 
     //TODO Move these to IT?
     @Test
-    public void testEnsemblBiomartRetrieverDownloadsAndStoresData() throws Exception {
+    public void testEnsemblBioMartRetrieverDownloadsAndStoresData() throws Exception {
 
-        EnsemblBiomartRetriever retriever = new EnsemblBiomartRetriever();
+        EnsemblBioMartRetriever retriever = new EnsemblBioMartRetriever();
         System.setProperty("config.location", "src/test/resources/addlinksTest-btau.properties");
         retriever.setDataURL(new URI("http://www.ensembl.org/biomart/martservice?"));
         retriever.setFetchDestination(testDirectory);
@@ -48,8 +48,8 @@ public class TestEnsemblBiomartRetriever {
      * @throws Exception
      */
     @Test
-    public void testEnsemblBiomartRetrieverDownloadsPartiallyAvailableData() throws Exception {
-        EnsemblBiomartRetriever retriever = new EnsemblBiomartRetriever();
+    public void testEnsemblBioMartRetrieverDownloadsPartiallyAvailableData() throws Exception {
+        EnsemblBioMartRetriever retriever = new EnsemblBioMartRetriever();
         System.setProperty("config.location", "src/test/resources/addlinksTest-scer.properties");
         final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errStream));
@@ -72,8 +72,8 @@ public class TestEnsemblBiomartRetriever {
     }
 
     @Test
-    public void testEnsemblBiomartRetrieverBadQueryDoesNotDownloadDataAndThrowsException() throws Exception {
-        EnsemblBiomartRetriever retriever = new EnsemblBiomartRetriever();
+    public void testEnsemblBioMartRetrieverBadQueryDoesNotDownloadDataAndThrowsException() throws Exception {
+        EnsemblBioMartRetriever retriever = new EnsemblBioMartRetriever();
         System.setProperty("config.location", "src/test/resources/addlinksTest-badQuery.properties");
         final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errStream));
