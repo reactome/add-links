@@ -19,7 +19,6 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
 
-    private int count = 0;
     /**
      *  Find all Ensembl identifiers connected to an RGP instance in the Reactome DB and create a DatabaseIdentifier cross-reference instance for them.
      * @param personID - Newly created Identifiers will be associated with an InstanceEdit. That InstanceEdit will be associated with the Person entity whose ID == personID
@@ -42,15 +41,13 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
             Set<String> ensemblIds = collectEnsemblIdentifiers(mappings, sourceIdentifier, biomartSpeciesName);
             // Iterate through each Ensembl identifier and create a ? instance.
             for (String ensemblId : ensemblIds) {
-                count++;
                 if (!this.checkXRefExists(sourceInst, ensemblId) && !this.testMode)
                 {
 
-//                    this.refCreator.createIdentifier(ensemblId, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesInst.getDBID());
+                    this.refCreator.createIdentifier(ensemblId, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesInst.getDBID());
                 }
             }
         }
-        System.out.println("The final refcreator count: " + count);
     }
 
     /**

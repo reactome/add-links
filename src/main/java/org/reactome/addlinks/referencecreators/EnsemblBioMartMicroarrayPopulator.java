@@ -19,8 +19,6 @@ public class EnsemblBioMartMicroarrayPopulator extends SimpleReferenceCreator <M
         super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
     }
 
-    private int count = 0;
-
     /**
      * Adds microarray data to the 'otherIdentifier' attribute of ReferenceGeneProduct (RGP) instances. This class doesn't create
      * any cross-references for the microarray data, since URLs do not exist for them. Reactome's analysis tool still requires the
@@ -64,7 +62,6 @@ public class EnsemblBioMartMicroarrayPopulator extends SimpleReferenceCreator <M
                 }
             }
         }
-        System.out.println("The final microarray count: " + count);
     }
 
     /**
@@ -90,15 +87,14 @@ public class EnsemblBioMartMicroarrayPopulator extends SimpleReferenceCreator <M
                         for (String microarrayId : EnsemblBioMartUtil.getTranscriptToMicroarraysMappings(speciesBiomartName, mappings).get(transcript)) {
                             Collection<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
                             if (!otherIdentifiers.contains(microarrayId) && !this.testMode) {
-                                count++;
-//                                rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, microarrayId);
+                                rgpInst.addAttributeValue(ReactomeJavaConstants.otherIdentifier, microarrayId);
                             }
                         }
                     }
                 }
             }
         }
-//        sortOtherIdentifiersAndUpdateInstance(rgpInst);
+        sortOtherIdentifiersAndUpdateInstance(rgpInst);
     }
 
     /**
