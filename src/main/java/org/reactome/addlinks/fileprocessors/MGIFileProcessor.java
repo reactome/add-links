@@ -1,6 +1,8 @@
 package org.reactome.addlinks.fileprocessors;
 
+import org.gk.model.ReactomeJavaConstants;
 import org.reactome.addlinks.EnsemblBioMartUtil;
+import org.reactome.core.model.Reaction;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,12 +32,12 @@ public class MGIFileProcessor extends FileProcessor{
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
+
         List<String> lines = new ArrayList<>();
         try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, false);
+            lines = EnsemblBioMartUtil.getLinesFromFile(this.pathToFile.toAbsolutePath(), false);
         } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
+            logger.error("Error reading file ({}): {}", this.pathToFile.toAbsolutePath(), e.getMessage());
             e.printStackTrace();
         }
 
@@ -43,7 +45,7 @@ public class MGIFileProcessor extends FileProcessor{
             List<String> tabSplit = Arrays.asList(line.split("\t"));
             if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
 
-                String mgiId = tabSplit.get(mgiIdentifierIndex).split(":")[1];
+                String mgiId = EnsemblBioMartUtil.getIdentifierWithoutPrefix(tabSplit.get(mgiIdentifierIndex));
                 String[] uniprotIds = tabSplit.get(uniprotIdentifiersIndex).split(" ");
                 for (String uniprotId : uniprotIds) {
                   mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(mgiId);

@@ -29,6 +29,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
     private static final String BIOMART_SPECIES_NAME_PLACEHOLDER = "BIOMART_SPECIES_NAME";
     private static final String BIOMART_QUERY_ID_PLACEHOLDER = "BIOMART_QUERY_ID";
+    private static final String baseBiomartUrl = "http://www.ensembl.org/biomart/martservice?query=";
     private static final String microarrayTypesBaseQuery = String.join("&",
             "type=listAttributes",
             "mart=ENSEMBL_MART_ENSEMBL",
@@ -150,14 +151,14 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     /**
      * This method queries BioMart using either a URL (see variable 'microarrayTypesBaseQuery) or an XML (see biomart-query.xml in resources) query.
      * It will retry up to 5 times if errors are returned from BioMart instead of data.
-     * There are multiple cases (Frog, Both Yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
-     * If/When this exception is thrown for this species, it can be ignored. Check the logs from previous runs to confirm.
+     * There are multiple cases (Frog, both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
      * @param queryString - String, URL/XML string that will be used to query BioMart.
      * @param retryCount - int, Denotes how many times this query has been tried with BioMart.
      * @return - Set<String>, All lines of successful BioMart response.
      * @throws IOException - Thrown by HttpURLConnection, BufferedReader, URL classes.
      * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
      * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
+     * If/When this exception is thrown for this species, it can be ignored. Check the logs from previous runs to confirm.
      * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
      */
     private Set<String> queryBioMart(String queryString, int retryCount) throws IOException, InterruptedException, BioMartQueryException, HttpException {
@@ -174,7 +175,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
                 // checking the returned content for the string 'ERROR'. It will retry up to 5 times, with a 10 second delay.
                 if (line.contains("ERROR") ) {
                     retryCount++;
-                    if (retryCount < MAX_QUERY_RETRIES) {
+                    if (MAX_QUERY_RETRIES > retryCount) {
                         return retryQuery(queryString, retryCount);
                     }
                     // The data does not exist in BioMart for a few species. Frog (X. tropicalis) has UniProt data but not Microarray data;
@@ -191,7 +192,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
         } else {
             retryCount++;
-            if (retryCount < MAX_QUERY_RETRIES) {
+            if (MAX_QUERY_RETRIES > retryCount) {
                 return retryQuery(queryString, retryCount);
             }
             throw new HttpException(
@@ -219,7 +220,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
     // Modifies default secondary URL with species name and the query type (for example microarray probe type, or uniprotsptrembl).
     private String getBioMartIdentifierQuery(String pathToQueryFile, String biomartSpeciesName, String queryId) throws IOException {
-        String biomartQuery = "http://www.ensembl.org/biomart/martservice?query=" + URLEncoder.encode(joinQueryFileLines(pathToQueryFile),"UTF-8");
+        String biomartQuery = baseBiomartUrl + URLEncoder.encode(joinQueryFileLines(pathToQueryFile),"UTF-8");
         return biomartQuery.replace(BIOMART_SPECIES_NAME_PLACEHOLDER, biomartSpeciesName).replace(BIOMART_QUERY_ID_PLACEHOLDER, queryId);
     }
 

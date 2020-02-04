@@ -31,37 +31,40 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
-        Map<String, List<String>> mappings = new HashMap<>();
-        String dirToHPAFiles = null;
 
+        String dirToHPAFiles = "";
         try {
             dirToHPAFiles = this.unzipFile(this.pathToFile);
         } catch (Exception e) {
             logger.error("Error unzipping file ({}): {}", this.pathToFile, e.getMessage());
             e.printStackTrace();
         }
-        if (dirToHPAFiles != null) {
-            Path inputFilePath = Paths.get(dirToHPAFiles, this.pathToFile.getFileName().toString().replace(".zip", ""));
 
-            List<String> lines = new ArrayList<>();
-            try {
-                lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, true);
-            } catch (IOException e) {
-                logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
-                e.printStackTrace();
-            }
+        if (dirToHPAFiles.isEmpty()) {
+            return new HashMap<>();
+        }
 
-            for (String line : lines) {
+        Path inputFilePath = Paths.get(dirToHPAFiles, this.pathToFile.getFileName().toString().replace(".zip", ""));
 
-                List<String> tabSplit = Arrays.asList(line.split("\t"));
-                String geneName = tabSplit.get(geneNameIndex);
-                String ensemblId = tabSplit.get(ensemblIdentifierIndex);
-                String uniprotId = tabSplit.get(uniprotIdentifierIndex);
-                String hpaUrlId = String.join("-", ensemblId, geneName);
+        List<String> lines = new ArrayList<>();
+        try {
+            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, true);
+        } catch (IOException e) {
+            logger.error("Error reading file ({}): {}", inputFilePath.toAbsolutePath(), e.getMessage());
+            e.printStackTrace();
+        }
 
-                if (necessaryIdentifiersPresent(geneName, ensemblId, uniprotId)) {
-                    mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(hpaUrlId);
-                }
+        Map<String, List<String>> mappings = new HashMap<>();
+        for (String line : lines) {
+
+            List<String> tabSplit = Arrays.asList(line.split("\t"));
+            String geneName = tabSplit.get(geneNameIndex);
+            String ensemblId = tabSplit.get(ensemblIdentifierIndex);
+            String uniprotId = tabSplit.get(uniprotIdentifierIndex);
+            String hpaUrlId = String.join("-", ensemblId, geneName);
+
+            if (necessaryIdentifiersPresent(geneName, ensemblId, uniprotId)) {
+                mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(hpaUrlId);
             }
         }
 
