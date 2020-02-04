@@ -21,7 +21,7 @@ public class VGNCFileProcessor extends FileProcessor{
 
     private static final int vgncIdentifierIndex = 1;
     private static final int uniprotIdentifiersIndex = 21;
-
+    private static final boolean flattenZipOutput = true;
     /**
      * Build map of UniProt identifiers to Vertebrate Gene Nomenclature Committee (VGNC) identifiers that is used to create VGNC cross-references in database.
      * @return - Map<String, List<String>
@@ -31,17 +31,18 @@ public class VGNCFileProcessor extends FileProcessor{
     {
         Map<String, List<String>> mappings = new HashMap<>();
         try {
-            this.unzipFile(this.pathToFile, true);
+            this.unzipFile(this.pathToFile, flattenZipOutput);
         } catch (Exception e) {
+            logger.error("Error unzipping file ({}): {}", this.pathToFile, e.getMessage());
             e.printStackTrace();
         }
-        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
+        Path inputFilePathUnzipped = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
 
         List<String> lines = new ArrayList<>();
         try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, true);
+            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePathUnzipped, true);
         } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
+            logger.error("Error reading file ({}): {}", inputFilePathUnzipped.toAbsolutePath(), e.getMessage());
             e.printStackTrace();
         }
 
@@ -49,7 +50,7 @@ public class VGNCFileProcessor extends FileProcessor{
             List<String> tabSplit = Arrays.asList(line.split("\t"));
             if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
 
-                String vgncId = tabSplit.get(vgncIdentifierIndex).split(":")[1];
+                String vgncId = EnsemblBioMartUtil.getIdentifierWithoutPrefix(tabSplit.get(vgncIdentifierIndex).split(":")[1]);
                 List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).replaceAll("\"", "").split("\\|"));
                 for (String uniprotId : uniprotIds) {
                     mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(vgncId);

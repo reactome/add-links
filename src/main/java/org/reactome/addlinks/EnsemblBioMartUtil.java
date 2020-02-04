@@ -143,4 +143,8 @@ public class EnsemblBioMartUtil {
     public static boolean necessaryColumnPresent(List<String> arrayOfFileColumns, int requiredColumnIndex) {
         return arrayOfFileColumns.size() > requiredColumnIndex;
     }
+
+    public static String getIdentifierWithoutPrefix(String identifierWithPrefix) {
+        return identifierWithPrefix.split(":")[1];
+    }
 }

@@ -30,13 +30,12 @@ public class RGDFileProcessor extends FileProcessor{
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString());
 
         List<String> lines = new ArrayList<>();
         try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, true);
+            lines = EnsemblBioMartUtil.getLinesFromFile(this.pathToFile.toAbsolutePath(), true);
         } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
+            logger.error("Error reading file ({}): {}", this.pathToFile.toAbsolutePath(), e.getMessage());
             e.printStackTrace();
         }
 
@@ -45,10 +44,8 @@ public class RGDFileProcessor extends FileProcessor{
                 List<String> tabSplit = Arrays.asList(line.split("\t"));
                 String rgdId = tabSplit.get(rgdIdentifierIndex);
                 List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).split(";"));
-                if (!uniprotIds.isEmpty()) {
-                    for (String uniprotId : uniprotIds) {
-                        mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(rgdId);
-                    }
+                for (String uniprotId : uniprotIds) {
+                    mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(rgdId);
                 }
             }
         }

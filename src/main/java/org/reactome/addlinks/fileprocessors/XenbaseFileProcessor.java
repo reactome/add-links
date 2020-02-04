@@ -30,13 +30,12 @@ public class XenbaseFileProcessor extends FileProcessor{
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
-        Path inputFilePath = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));
 
         List<String> lines = new ArrayList<>();
         try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, false);
+            lines = EnsemblBioMartUtil.getLinesFromFile(this.pathToFile.toAbsolutePath(), false);
         } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", inputFilePath.toString(), e.getMessage());
+            logger.error("Error reading file ({}): {}", this.pathToFile.toAbsolutePath(), e.getMessage());
             e.printStackTrace();
         }
 

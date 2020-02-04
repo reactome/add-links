@@ -16,7 +16,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 
 /**
  * Creates references from one database to another.
- * @param <T></T> - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
+ * @param <T> - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
  * but subclasses may have more complex mappings, such as List&lt;String&gt; - this will also require those subclasses
  * to override the createIdentifiers method.
  * @author sshorser

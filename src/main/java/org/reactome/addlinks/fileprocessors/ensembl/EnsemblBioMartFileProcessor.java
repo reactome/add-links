@@ -13,7 +13,7 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
 
     public EnsemblBioMartFileProcessor()
     {
-        super(null);
+        super();
     }
 
     public EnsemblBioMartFileProcessor(String processorName)
