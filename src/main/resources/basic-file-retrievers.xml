@@ -277,12 +277,12 @@
 			</bean>
 		</entry>
 
-		<entry key="EnsemblBiomart">
-			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBiomartRetriever" id="EnsemblBiomart">
+		<entry key="EnsemblBioMart">
+			<bean class="org.reactome.addlinks.dataretrieval.ensembl.EnsemblBioMartRetriever" id="EnsemblBioMart">
 				<property name="dataURL" value="http://www.ensembl.org/biomart/martservice?" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/biomart/" />
 				<property name="maxAge" ref="maxFileAge" />
-				<constructor-arg name="retrieverName" value="retrievers/EnsemblBiomart"/>
+				<constructor-arg name="retrieverName" value="retrievers/EnsemblBioMart"/>
 			</bean>
 		</entry>
 	</util:map>

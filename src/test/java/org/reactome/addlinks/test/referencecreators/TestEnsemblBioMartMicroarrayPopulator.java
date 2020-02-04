@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.reactome.addlinks.referencecreators.EnsemblBiomartMicroarrayPopulator;
+import org.reactome.addlinks.referencecreators.EnsemblBioMartMicroarrayPopulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -24,10 +24,10 @@ import java.util.Map;
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
 
-public class TestEnsemblBiomartMicroarrayPopulator {
+public class TestEnsemblBioMartMicroarrayPopulator {
 
     @Autowired
-    EnsemblBiomartMicroarrayPopulator microarrayPopulator;
+    EnsemblBioMartMicroarrayPopulator microarrayPopulator;
 
     @Mock
     GKInstance mockRGPInst;

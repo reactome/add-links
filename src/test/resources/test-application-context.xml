@@ -664,14 +664,14 @@
 		<property name="testMode" value="false"/>
 	</bean>
 
-	<bean class="org.reactome.addlinks.referencecreators.EnsemblBiomartMicroarrayPopulator" id="EnsemblBiomartMicroarrayPopulator">
+	<bean class="org.reactome.addlinks.referencecreators.EnsemblBioMartMicroarrayPopulator" id="EnsemblBioMartMicroarrayPopulator">
 		<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" name="classToCreate" ref="DatabaseIdentifierBean"/>
 		<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 		<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 		<constructor-arg index="4" name="sourceDB" value="Ensembl"/>
 		<constructor-arg index="5" name="targetDB" value="Ensembl"/>
-		<constructor-arg index="6" name="refCreatorName" value="refCreators/EnsemblBiomartMicroarrayPopulator"/>
+		<constructor-arg index="6" name="refCreatorName" value="refCreators/EnsemblBioMartMicroarrayPopulator"/>
 		<property name="testMode" value="false"/>
 	</bean>
 

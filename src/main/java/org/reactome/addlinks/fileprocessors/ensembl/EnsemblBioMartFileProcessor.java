@@ -1,6 +1,6 @@
 package org.reactome.addlinks.fileprocessors.ensembl;
 
-import org.reactome.addlinks.EnsemblBiomartUtil;
+import org.reactome.addlinks.EnsemblBioMartUtil;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 import java.io.*;
@@ -9,14 +9,14 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<String>>> {
+public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<String>>> {
 
-    public EnsemblBiomartFileProcessor()
+    public EnsemblBioMartFileProcessor()
     {
         super(null);
     }
 
-    public EnsemblBiomartFileProcessor(String processorName)
+    public EnsemblBioMartFileProcessor(String processorName)
     {
         super(processorName);
     }
@@ -82,7 +82,7 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
          */
 
         Map<String, Map<String, List<String>>> mappings = new HashMap<>();
-        // Read each file in Biomart directory and iterate through each line.
+        // Read each file in BioMart directory and iterate through each line.
         try (Stream<Path> paths = Files.walk(this.pathToFile)) {
             paths
                 .filter(Files::isRegularFile)
@@ -109,13 +109,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                                 if (properArraySizeAndNecessaryColumnsContainData(tabSplit, 3,proteinIdentifierIndex,identifierIndex)) {
                                     uniprotToProteins = mapIdentifiers(uniprotToProteins, tabSplit.get(identifierIndex), tabSplit.get(proteinIdentifierIndex));
                                     // Add each mapping generated to the 'super' mapping
-                                    mappings.put(biomartFileSpecies + EnsemblBiomartUtil.uniprotToProteinsSuffix, uniprotToProteins);
+                                    mappings.put(biomartFileSpecies + EnsemblBioMartUtil.UNIPROT_TO_PROTEINS_SUFFIX, uniprotToProteins);
                                 }
                                 // 'proteinToGenes' mappings require the 1st (gene) and 3rd (protein) values in the line.
                                 if (properArraySizeAndNecessaryColumnsContainData(tabSplit, 0,geneIdentifierIndex, proteinIdentifierIndex)) {
                                     proteinToGenes = mapIdentifiers(proteinToGenes, tabSplit.get(proteinIdentifierIndex), tabSplit.get(geneIdentifierIndex));
                                     // Add each mapping generated to the 'super' mapping
-                                    mappings.put(biomartFileSpecies + EnsemblBiomartUtil.proteinToGenesSuffix, proteinToGenes);
+                                    mappings.put(biomartFileSpecies + EnsemblBioMartUtil.PROTEIN_TO_GENES_SUFFIX, proteinToGenes);
                                 }
 
                             // Processing of Microarray mapping files.
@@ -127,13 +127,13 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
                                 if (properArraySizeAndNecessaryColumnsContainData(tabSplit, 2,transcriptIdentifierIndex, proteinIdentifierIndex)) {
                                     proteinToTranscripts = mapIdentifiers(proteinToTranscripts, tabSplit.get(proteinIdentifierIndex), tabSplit.get(transcriptIdentifierIndex));
                                     // Add each mapping generated to the 'super' mapping
-                                    mappings.put(biomartFileSpecies + EnsemblBiomartUtil.proteinToTranscriptsSuffix, proteinToTranscripts);
+                                    mappings.put(biomartFileSpecies + EnsemblBioMartUtil.PROTEIN_TO_TRANSCRIPTS_SUFFIX, proteinToTranscripts);
                                 }
                                 // 'transcriptToMicroarrays' mapping requires the 2nd (transcript) and 4th (microarray) values in the line.
                                 if (properArraySizeAndNecessaryColumnsContainData(tabSplit, 3,transcriptIdentifierIndex, identifierIndex)) {
                                     transcriptToMicroarrays = mapIdentifiers(transcriptToMicroarrays, tabSplit.get(transcriptIdentifierIndex), tabSplit.get(identifierIndex));
                                     // Add each mapping generated to the 'super' mapping
-                                    mappings.put(biomartFileSpecies + EnsemblBiomartUtil.transcriptToMicroarraysSuffix, transcriptToMicroarrays);
+                                    mappings.put(biomartFileSpecies + EnsemblBioMartUtil.TRANSCRIPT_TO_MICROARRAYS_SUFFIX, transcriptToMicroarrays);
                                 }
                             }
                         }

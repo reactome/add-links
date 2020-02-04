@@ -71,7 +71,7 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>EnsemblBiomart</value>
+		<value>EnsemblBioMart</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -109,7 +109,7 @@
 		<value>RGDFileProcessor</value>
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<value>EnsemblBiomartFileProcessor</value>
+		<value>EnsemblBioMartFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -156,7 +156,7 @@
 		<value>XenbaseReferenceCreator</value>
 		<value>ZFINReferenceCreator</value>
 		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBiomartMicroarrayPopulator</value>
+		<value>EnsemblBioMartMicroarrayPopulator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
