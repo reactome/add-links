@@ -21,21 +21,20 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
         super(processorName);
     }
 
+    private static final int geneIdentifierIndex = 0;
+    private static final int transcriptIdentifierIndex = 1;
+    private static final int proteinIdentifierIndex = 2;
+    private static final int identifierIndex = 3;
+
     /**
      * This class builds a large, rather unwieldy two-layer mapping structure of identifiers corresponding to a specific species.
-     * The first level has 4 types of keys for each species. These keys are 'uniprotToProteins', 'proteinToGenes',
+     * The first level has 4 types of keys for each species (see structure below). These keys are 'uniprotToProteins', 'proteinToGenes',
      * 'proteinToTranscripts', and 'transcriptToMicroarrays'. These describe the type of mapping that this
      * key is to. For example, the key 'hsapiens_uniprotToProteins' would access a Map of Human UniProt protein identifiers
      * to a List of Ensembl protein identifiers. Transcript denotes Ensembl transcript identifiers, Gene is Ensembl gene identifiers
      * and Microarray denotes microarray probe identifiers.
      * @return Map<String, Map<String, List<String>>>> mappings, the two-layer mapping structure of species-(identifier-[identifiers]).
-     * @throws IOException Can be thrown if file does not exist.
      */
-
-    private static final int geneIdentifierIndex = 0;
-    private static final int transcriptIdentifierIndex = 1;
-    private static final int proteinIdentifierIndex = 2;
-    private static final int identifierIndex = 3;
     @Override
     public Map<String, Map<String, List<String>>> getIdMappingsFromFile() {
 
@@ -159,8 +158,8 @@ public class EnsemblBiomartFileProcessor extends FileProcessor<Map<String, List<
         identifierToIdentifierMapping.computeIfAbsent(identifier1, k -> new ArrayList<>()).add(identifier2);
         return identifierToIdentifierMapping;
     }
-    //            rgpIdentifiersToRGPs.computeIfAbsent(identifier, k -> new ArrayList<>()).add(rgpInst);
-    // Checks that data exists at the supplied column indices.
+
+    // Checks that the data columns exist and that data exists at the necessary column indices.
     private boolean properArraySizeAndNecessaryColumnsContainData(List<String> tabSplit, int necessaryArrayLength, int necessaryColumnIndex1, int necessaryColumnIndex2) {
          return tabSplit.size() > necessaryArrayLength && !tabSplit.get(necessaryColumnIndex1).isEmpty() && !tabSplit.get(necessaryColumnIndex2).isEmpty();
     }
