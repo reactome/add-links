@@ -1,12 +1,7 @@
 package org.reactome.addlinks.fileprocessors;
 
-import org.gk.model.ReactomeJavaConstants;
 import org.reactome.addlinks.EnsemblBioMartUtil;
-import org.reactome.core.model.Reaction;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class MGIFileProcessor extends FileProcessor{
@@ -21,8 +16,8 @@ public class MGIFileProcessor extends FileProcessor{
         super();
     }
 
-    private static final int mgiIdentifierIndex = 0;
-    private static final int uniprotIdentifiersIndex = 6;
+    private static final int MGI_IDENTIFIER_INDEX = 0;
+    private static final int UNIPROT_IDENTIFIERS_INDEX = 6;
 
     /**
      * Build map of UniProt identifiers to Mouse Genome Informatics (MGI) identifiers that is used to create MGI cross-references in database.
@@ -33,25 +28,18 @@ public class MGIFileProcessor extends FileProcessor{
     {
         Map<String, List<String>> mappings = new HashMap<>();
 
-        List<String> lines = new ArrayList<>();
-        try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(this.pathToFile.toAbsolutePath(), false);
-        } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", this.pathToFile.toAbsolutePath(), e.getMessage());
-            e.printStackTrace();
-        }
-
-        for (String line : lines) {
+        for (String line : EnsemblBioMartUtil.getLinesFromFile(this.pathToFile, false)) {
             List<String> tabSplit = Arrays.asList(line.split("\t"));
-            if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, uniprotIdentifiersIndex)) {
+            if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, UNIPROT_IDENTIFIERS_INDEX)) {
 
-                String mgiId = EnsemblBioMartUtil.getIdentifierWithoutPrefix(tabSplit.get(mgiIdentifierIndex));
-                String[] uniprotIds = tabSplit.get(uniprotIdentifiersIndex).split(" ");
+                String mgiId = EnsemblBioMartUtil.getIdentifierWithoutPrefix(tabSplit.get(MGI_IDENTIFIER_INDEX));
+                String[] uniprotIds = tabSplit.get(UNIPROT_IDENTIFIERS_INDEX).split(" ");
                 for (String uniprotId : uniprotIds) {
                   mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(mgiId);
                 }
             }
         }
+
         return mappings;
     }
 }

@@ -1,10 +1,6 @@
 package org.reactome.addlinks.fileprocessors;
 
 import org.reactome.addlinks.EnsemblBioMartUtil;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class XenbaseFileProcessor extends FileProcessor{
@@ -19,30 +15,22 @@ public class XenbaseFileProcessor extends FileProcessor{
         super();
     }
 
-    private static final int uniprotIdentifierIndex = 0;
-    private static final int xenbaseIdentifierIndex = 3;
+    private static final int UNIPROT_IDENTIFIER_INDEX = 0;
+    private static final int XENBASE_IDENTIFIER_INDEX = 3;
 
     /**
      * Build map of UniProt identifiers to Xenbase identifiers that is used to create Xenbase cross-references in database.
-     * @return - Map<String, List<String>
+     * @return - Map<String, List<String>>
      */
     @Override
     public Map<String, List<String>> getIdMappingsFromFile()
     {
         Map<String, List<String>> mappings = new HashMap<>();
 
-        List<String> lines = new ArrayList<>();
-        try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(this.pathToFile.toAbsolutePath(), false);
-        } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", this.pathToFile.toAbsolutePath(), e.getMessage());
-            e.printStackTrace();
-        }
-
-        for (String line : lines) {
+        for (String line : EnsemblBioMartUtil.getLinesFromFile(this.pathToFile, false)) {
             List<String> tabSplit = Arrays.asList(line.split("\t"));
-            String xenbaseId = tabSplit.get(xenbaseIdentifierIndex);
-            String uniprotId = tabSplit.get(uniprotIdentifierIndex);
+            String xenbaseId = tabSplit.get(XENBASE_IDENTIFIER_INDEX);
+            String uniprotId = tabSplit.get(UNIPROT_IDENTIFIER_INDEX);
             mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(xenbaseId);
         }
 

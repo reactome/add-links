@@ -2,7 +2,6 @@ package org.reactome.addlinks.dataretrieval.ensembl;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
-import org.json.simple.parser.ParseException;
 import org.reactome.addlinks.EnsemblBioMartUtil;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 
@@ -40,19 +39,17 @@ public class EnsemblBioMartRetriever extends FileRetriever {
             "attributeGroup=external",
             "attributeCollection=microarray"
     );
-    private static final String UNIPROT_SUFFIX = "_uniprot";
-    private static final String MICROARRAY_SUFFIX = "_microarray";
     private static final String UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM = "uniprotswissprot";
     private static final String UNIPROT_TREMBL_BIOMART_SEARCH_TERM = "uniprotsptrembl";
+    private static final String MICROARRAY_TYPES = "microarray types";
     /**
      * Downloads Ensembl-Microarray and Ensembl-Uniprot identifier mapping files for all species, if they exist.
-     * @throws IOException - Thrown when file can't be found when during writing and by HTTPConnection class.
-     * @throws ParseException - Thrown by JSONParser when reading Species config file.
+     * @throws IOException - Thrown when file can't be found during writing or by HTTPConnection class.
      * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
      * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
      * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
      */
-    public void downloadData() throws IOException, ParseException, InterruptedException, BioMartQueryException, HttpException {
+    public void downloadData() throws IOException, InterruptedException, BioMartQueryException, HttpException {
 
         // Create directory where BioMart files will be stored.
         Files.createDirectories(Paths.get(this.destination));
@@ -66,19 +63,18 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
             logger.info("Retrieving microarray data");
             // Query BioMart for existing microarray 'types' (not ids) that exist for this species.
-            int initialRetryCount = 0;
-            Set<String> microarrayTypes = queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), initialRetryCount);
+            Set<String> microarrayTypes = queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES);
             // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
             // All mappings are stored in a single file, (eg: hsapiens_microarray);
             for (String microarrayType : microarrayTypes) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, MICROARRAY_SUFFIX);
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, EnsemblBioMartUtil.MICROARRAY_SUFFIX);
             }
 
             // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from BioMart
             // and write it to a file (eg: hsapiens_uniprot).
             logger.info("Retrieving UniProt data");
             for (String uniprotQueryId : Arrays.asList(UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM, UNIPROT_TREMBL_BIOMART_SEARCH_TERM)) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), uniprotQueryId, UNIPROT_SUFFIX);
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), uniprotQueryId, EnsemblBioMartUtil.UNIPROT_SUFFIX);
             }
 
             logger.info("Completed BioMart data retrieval for " + speciesBioMartName);
@@ -101,17 +97,16 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     private void queryBioMartAndStoreData(String biomartSpeciesName, String biomartQueryFilePath, String biomartDataType, String fileSuffix) throws IOException {
 
         Set<String> biomartResponseLines = new HashSet<>();
+        logger.info("Retrieving data associated with query ID: " + biomartDataType);
         try {
-            logger.info("Retrieving data associated with microarray type " + biomartDataType);
-            biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), 0);
+            biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), biomartDataType);
         } catch (Exception e) {
-            logger.error("Unable to retrieve data associated with microarray type " + biomartDataType, e);
+            logger.error("Unable to retrieve data associated with query ID: " + biomartDataType, e);
             e.printStackTrace();
         }
 
         String biomartFilename = this.destination + biomartSpeciesName + fileSuffix;
         storeBioMartData(biomartFilename, biomartResponseLines);
-
     }
 
     /**
@@ -137,7 +132,6 @@ public class EnsemblBioMartRetriever extends FileRetriever {
                     biomartIdentifierLine.getBytes(),
                     StandardOpenOption.APPEND, StandardOpenOption.CREATE
             );
-
         }
     }
 
@@ -150,7 +144,25 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
     /**
      * This method queries BioMart using either a URL (see variable 'microarrayTypesBaseQuery) or an XML (see biomart-query.xml in resources) query.
-     * It will retry up to 5 times if errors are returned from BioMart instead of data.
+     * It will retry up to 5 times if errors are returned from BioMart instead of data. This initial method sets the initial retry count.
+     * There are multiple cases (Frog, both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
+     * @param queryString - String, URL/XML string that will be used to query BioMart.
+     * @return - Set<String>, All lines of successful BioMart response.
+     * @throws IOException - Thrown by HttpURLConnection, BufferedReader, URL classes.
+     * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
+     * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
+     * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
+     */
+    private Set<String> queryBioMart(String queryString, String biomartDataType)
+            throws InterruptedException, HttpException, BioMartQueryException, IOException {
+
+        int initialRetryCount = 0;
+        return queryBioMart(queryString, initialRetryCount, biomartDataType);
+    }
+
+    /**
+     * This method queries BioMart using either a URL (see variable 'microarrayTypesBaseQuery) or an XML (see biomart-query.xml in resources) query.
+     * It will retry up to 5 times if errors are returned from BioMart instead of data. This overloaded method actually performs the query.
      * There are multiple cases (Frog, both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
      * @param queryString - String, URL/XML string that will be used to query BioMart.
      * @param retryCount - int, Denotes how many times this query has been tried with BioMart.
@@ -161,8 +173,9 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * If/When this exception is thrown for this species, it can be ignored. Check the logs from previous runs to confirm.
      * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
      */
-    private Set<String> queryBioMart(String queryString, int retryCount) throws IOException, InterruptedException, BioMartQueryException, HttpException {
+    private Set<String> queryBioMart(String queryString, int retryCount, String biomartDataType) throws IOException, InterruptedException, BioMartQueryException, HttpException {
         final int MAX_QUERY_RETRIES = 5;
+        int numLinesProcessed = 0;
         // Create connection to BioMart URL for each species, retrieving a list of microarray probe types, if available.
         URL biomartUrlWithSpecies = new URL(queryString);
         HttpURLConnection biomartConnection = (HttpURLConnection) biomartUrlWithSpecies.openConnection();
@@ -171,45 +184,50 @@ public class EnsemblBioMartRetriever extends FileRetriever {
             BufferedReader br = new BufferedReader(new InputStreamReader(biomartConnection.getInputStream()));
             String line;
             while ((line = br.readLine()) != null) {
+                numLinesProcessed++;
                 // BioMart still responds with a 200, even if no data exists. For now, we handle it by
                 // checking the returned content for the string 'ERROR'. It will retry up to 5 times, with a 10 second delay.
                 if (line.contains("ERROR") ) {
-                    retryCount++;
-                    if (MAX_QUERY_RETRIES > retryCount) {
-                        return retryQuery(queryString, retryCount);
+                    if (retryCount > MAX_QUERY_RETRIES) {
+                        // The data does not exist in BioMart for a few species. Frog (X. tropicalis) has UniProt data but not Microarray data;
+                        // Yeast (S. cerevisiae) has Uniprot-SwissProt data but not UniProt-TrEMBL data; Yeast (S. pombe), P. falciparum
+                        // and D. discoideum don't have UniProt or Microarray data, all at time of writing (January 2020).
+                        throw new BioMartQueryException(line +
+                                "\nThis can happen without issue for certain species (X. tropicalis, S. pombe, S. cerevisiae, P. falciparum) " +
+                                "because the data doesn't exist in BioMart");
                     }
-                    // The data does not exist in BioMart for a few species. Frog (X. tropicalis) has UniProt data but not Microarray data;
-                    // Yeast (S. cerevisiae) has Uniprot-SwissProt data but not UniProt-TrEMBL data; Yeast (S. pombe), P. falciparum
-                    // and D. discoideum don't have UniProt or Microarray data, all at time of writing (January 2020).
-                    throw new BioMartQueryException(line +
-                            "\nThis can happen without issue for certain species (X. tropicalis, S. pombe, S. cerevisiae, P. falciparum) " +
-                            "because the data doesn't exist in BioMart");
+
+                    return retryQuery(queryString, retryCount+1, biomartDataType);
+
                 } else {
                     biomartResponseLines.add(line);
+                }
+
+                if (numLinesProcessed % 10000 == 0) {
+                    logger.info("Processed " + numLinesProcessed + " for " + biomartDataType);
                 }
             }
             return biomartResponseLines;
 
         } else {
-            retryCount++;
-            if (MAX_QUERY_RETRIES > retryCount) {
-                return retryQuery(queryString, retryCount);
+            if (retryCount > MAX_QUERY_RETRIES) {
+                throw new HttpException(
+                        "Unable to connect to BioMart (" +
+                                biomartConnection.getResponseCode() + ": " + biomartConnection.getResponseMessage() +
+                                ") with URL: " + queryString
+                );
             }
-            throw new HttpException(
-                    "Unable to connect to BioMart (" +
-                            biomartConnection.getResponseCode() + ": " + biomartConnection.getResponseMessage() +
-                            ") with URL: " + queryString
-            );
+            return retryQuery(queryString, retryCount+1, biomartDataType);
         }
     }
 
     // Recursive method that retries the BioMart query.
-    private Set<String> retryQuery(String queryString, int retryCount) throws InterruptedException, IOException, HttpException, BioMartQueryException {
+    private Set<String> retryQuery(String queryString, int retryCount, String biomartDataType) throws InterruptedException, IOException, HttpException, BioMartQueryException {
         final long QUERY_SLEEP_DURATION = Duration.ofSeconds(5).toMillis();
 
         Thread.sleep(QUERY_SLEEP_DURATION);
         logger.warn("BioMart query failed. Trying again...");
-        return queryBioMart(queryString, retryCount);
+        return queryBioMart(queryString, retryCount, biomartDataType);
     }
 
     // Gets the filepath to BioMart XML file, used to build BioMart query.

@@ -16,10 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
@@ -34,6 +31,9 @@ public class TestEnsemblBioMartMicroarrayPopulator {
 
     @Mock
     GKInstance mockRGPInst2;
+
+    @Mock
+    GKInstance mockIdentifierString;
 
     @Mock
     Map<String, List<String>> mockMap;
@@ -70,14 +70,6 @@ public class TestEnsemblBioMartMicroarrayPopulator {
             e.printStackTrace();
             fail();
         }
-    }
-
-    @Test
-    public void testFindRGPProteinsReturnsSet() throws Exception {
-
-        Mockito.when(mockRGPInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDBInst);
-        Mockito.when(mockRefDBInst.getDisplayName()).thenReturn("UniProt");
-        microarrayPopulator.findRGPProteins("12345", mockRGPInst, "species", mappings);
     }
 
     @Test

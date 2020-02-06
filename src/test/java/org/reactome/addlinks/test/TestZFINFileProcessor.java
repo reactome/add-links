@@ -16,16 +16,16 @@ import java.util.Map;
 
 public class TestZFINFileProcessor {
 
-    private static final String testFilepath = "src/test/resources/zfin-test.tsv";
-    private static final int expectedZFINTestMappingSize = 9;
+    private static final String TEST_FILEPATH = "src/test/resources/zfin-test.tsv";
+    private static final int EXPECTED_ZFIN_TEST_MAPPING_SIZE = 10;
 
     @Test
     public void testZFINFileProcessor() {
         ZFINFileProcessor processor = new ZFINFileProcessor();
-        processor.setPath(Paths.get(testFilepath));
+        processor.setPath(Paths.get(TEST_FILEPATH));
         Map<String, List<String>> testMapping = processor.getIdMappingsFromFile();
 
-        assertThat(testMapping.size(), is(equalTo(expectedZFINTestMappingSize)));
+        assertThat(testMapping.size(), is(equalTo(EXPECTED_ZFIN_TEST_MAPPING_SIZE)));
         assertThat(testMapping.get("F1Q650").get(0), is(equalTo("ZDB-GENE-060528-1")));
     }
 
@@ -38,7 +38,7 @@ public class TestZFINFileProcessor {
             fail();
         } catch (Exception e) {
             e.printStackTrace();
-            assertThat(e.toString().contains("NullPointerException"), is(equalTo(true)));
+            assertThat(e, is(instanceOf(NullPointerException.class)));
         }
     }
 }

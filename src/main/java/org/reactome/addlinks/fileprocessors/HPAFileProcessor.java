@@ -2,7 +2,6 @@ package org.reactome.addlinks.fileprocessors;
 
 import org.reactome.addlinks.EnsemblBioMartUtil;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -20,9 +19,9 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
         super();
     }
 
-    private static final int geneNameIndex = 0;
-    private static final int ensemblIdentifierIndex = 2;
-    private static final int uniprotIdentifierIndex = 4;
+    private static final int GENE_NAME_INDEX = 0;
+    private static final int ENSEMBL_IDENTIFIER_INDEX = 2;
+    private static final int UNIPROT_IDENTIFIER_INDEX = 4;
 
     /**
      * Build map of UniProt identifiers to Human Protein Atlas (HPA) identifiers that is used to create HPA cross-references in database.
@@ -46,21 +45,13 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
 
         Path inputFilePath = Paths.get(dirToHPAFiles, this.pathToFile.getFileName().toString().replace(".zip", ""));
 
-        List<String> lines = new ArrayList<>();
-        try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(inputFilePath, true);
-        } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", inputFilePath.toAbsolutePath(), e.getMessage());
-            e.printStackTrace();
-        }
-
         Map<String, List<String>> mappings = new HashMap<>();
-        for (String line : lines) {
+        for (String line : EnsemblBioMartUtil.getLinesFromFile(inputFilePath, true)) {
 
             List<String> tabSplit = Arrays.asList(line.split("\t"));
-            String geneName = tabSplit.get(geneNameIndex);
-            String ensemblId = tabSplit.get(ensemblIdentifierIndex);
-            String uniprotId = tabSplit.get(uniprotIdentifierIndex);
+            String geneName = tabSplit.get(GENE_NAME_INDEX);
+            String ensemblId = tabSplit.get(ENSEMBL_IDENTIFIER_INDEX);
+            String uniprotId = tabSplit.get(UNIPROT_IDENTIFIER_INDEX);
             String hpaUrlId = String.join("-", ensemblId, geneName);
 
             if (necessaryIdentifiersPresent(geneName, ensemblId, uniprotId)) {

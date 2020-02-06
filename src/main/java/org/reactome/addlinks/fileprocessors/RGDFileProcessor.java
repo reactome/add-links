@@ -2,9 +2,6 @@ package org.reactome.addlinks.fileprocessors;
 
 import org.reactome.addlinks.EnsemblBioMartUtil;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class RGDFileProcessor extends FileProcessor{
@@ -19,8 +16,8 @@ public class RGDFileProcessor extends FileProcessor{
         super();
     }
 
-    private static final int rgdIdentifierIndex = 0;
-    private static final int uniprotIdentifiersIndex = 21;
+    private static final int RGD_IDENTIFIER_INDEX = 0;
+    private static final int UNIPROT_IDENTIFIERS_INDEX = 21;
 
     /**
      * Build map of UniProt identifiers to Rat Genome Database (RGD) identifiers that is used to create RGD cross-references in database.
@@ -31,24 +28,17 @@ public class RGDFileProcessor extends FileProcessor{
     {
         Map<String, List<String>> mappings = new HashMap<>();
 
-        List<String> lines = new ArrayList<>();
-        try {
-            lines = EnsemblBioMartUtil.getLinesFromFile(this.pathToFile.toAbsolutePath(), true);
-        } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", this.pathToFile.toAbsolutePath(), e.getMessage());
-            e.printStackTrace();
-        }
-
-        for (String line : lines) {
+        for (String line : EnsemblBioMartUtil.getLinesFromFile(this.pathToFile, true)) {
             if (isFileBodyLine(line)) {
                 List<String> tabSplit = Arrays.asList(line.split("\t"));
-                String rgdId = tabSplit.get(rgdIdentifierIndex);
-                List<String> uniprotIds = Arrays.asList(tabSplit.get(uniprotIdentifiersIndex).split(";"));
+                String rgdId = tabSplit.get(RGD_IDENTIFIER_INDEX);
+                List<String> uniprotIds = Arrays.asList(tabSplit.get(UNIPROT_IDENTIFIERS_INDEX).split(";"));
                 for (String uniprotId : uniprotIds) {
                     mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(rgdId);
                 }
             }
         }
+
         return mappings;
     }
 

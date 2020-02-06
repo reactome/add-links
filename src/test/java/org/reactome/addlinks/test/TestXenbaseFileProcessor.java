@@ -16,17 +16,17 @@ import java.util.Map;
 
 public class TestXenbaseFileProcessor {
 
-    private static final String testFilepath = "src/test/resources/xenbase-test.tsv";
-    private static final int expectedTestXenbaseMappingSize = 10;
+    private static final String TEST_FILEPATH = "src/test/resources/xenbase-test.tsv";
+    private static final int EXPECTED_TEST_XENBASE_MAPPING_SIZE = 10;
 
     @Test
     public void testXenbaseFileProcessor() {
 
         XenbaseFileProcessor processor = new XenbaseFileProcessor();
-        processor.setPath(Paths.get(testFilepath));
+        processor.setPath(Paths.get(TEST_FILEPATH));
         Map<String, List<String>> testMapping = processor.getIdMappingsFromFile();
 
-        assertThat(testMapping.size(), is(equalTo(expectedTestXenbaseMappingSize)));
+        assertThat(testMapping.size(), is(equalTo(EXPECTED_TEST_XENBASE_MAPPING_SIZE)));
         assertThat(testMapping.get("F6QJR9").get(0), is(equalTo("XB-GENE-478064")));
     }
 
@@ -39,7 +39,7 @@ public class TestXenbaseFileProcessor {
             fail();
         } catch (Exception e) {
             e.printStackTrace();
-            assertThat(e.toString().contains("NullPointerException"), is(equalTo(true)));
+            assertThat(e, is(instanceOf(NullPointerException.class)));
         }
     }
 }

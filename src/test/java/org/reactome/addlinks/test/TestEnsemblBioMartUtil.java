@@ -1,6 +1,5 @@
 package org.reactome.addlinks.test;
 
-import org.json.simple.parser.ParseException;
 import org.junit.Test;
 import org.reactome.addlinks.EnsemblBioMartUtil;
 
@@ -15,10 +14,10 @@ import java.util.List;
 
 public class TestEnsemblBioMartUtil {
 
-    private static final int expectedLinesFromFileCount = 10;
+    private static final int EXPECTED_LINES_FROM_FILE_COUNT = 10;
 
     @Test
-    public void testGetSpeciesName() throws IOException, ParseException {
+    public void testGetSpeciesName() throws IOException {
         System.setProperty("config.location", "src/test/resources/addlinksTest-btau.properties");
         List<String> speciesNames = EnsemblBioMartUtil.getSpeciesNames();
 
@@ -26,17 +25,17 @@ public class TestEnsemblBioMartUtil {
     }
 
     @Test
-    public void testGetBiomMrtSpeciesName() {
+    public void testGetBioMartSpeciesName() {
         String biomartSpeciesName = EnsemblBioMartUtil.getBioMartSpeciesName("Homo sapiens");
 
         assertThat(biomartSpeciesName, is(equalTo("hsapiens")));
     }
 
     @Test
-    public void testGetLinesFromFile() throws IOException {
+    public void testGetLinesFromFile() {
         List<String> linesFromFile = EnsemblBioMartUtil.getLinesFromFile(Paths.get("src/test/resources/mgi-test.tsv"), false);
 
-        assertThat(linesFromFile.size(), is(equalTo(expectedLinesFromFileCount)));
+        assertThat(linesFromFile, hasSize(EXPECTED_LINES_FROM_FILE_COUNT));
     }
 
     @Test
@@ -45,5 +44,13 @@ public class TestEnsemblBioMartUtil {
         boolean testColumnPresent = EnsemblBioMartUtil.necessaryColumnPresent(testArrayOfFileColumns, 2);
 
         assertThat(testColumnPresent, is(equalTo(true)));
+    }
+
+    @Test
+    public void testGetIdentifierWithoutPrefix() {
+        String testIdentifierWithPrefix = "Before:After";
+        String testIdentifierWithoutPrefix = EnsemblBioMartUtil.getIdentifierWithoutPrefix(testIdentifierWithPrefix);
+
+        assertThat(testIdentifierWithoutPrefix, is(equalTo("After")));
     }
 }

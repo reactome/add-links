@@ -23,6 +23,8 @@ import java.util.*;
 
 public class TestEnsemblReferenceCreator {
 
+    private static final int EXPECTED_RESULTS_LENGTH = 3;
+
     @Autowired
     EnsemblReferenceCreator ensemblRefCreator;
 
@@ -71,7 +73,7 @@ public class TestEnsemblReferenceCreator {
     public void testCollectEnsemblIdentifiers() {
         List<String> testIdentifiersList = Arrays.asList("ENSG12345", "ENST12345", "ENSP12345", "123456789");
         Collection<String> testEnsemblIdentifiersList = ensemblRefCreator.collectEnsemblIdentifiers(testIdentifiersList);
-        assertThat(testEnsemblIdentifiersList.size(), is(equalTo(3)));
+        assertThat(testEnsemblIdentifiersList.size(), is(equalTo(EXPECTED_RESULTS_LENGTH)));
     }
 
 }

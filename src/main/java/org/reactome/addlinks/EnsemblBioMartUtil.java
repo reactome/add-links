@@ -1,37 +1,38 @@
 package org.reactome.addlinks;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.*;
+import org.apache.logging.log4j.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 public class EnsemblBioMartUtil {
 
+    // Private no-argument constructor to prevent instantiation of whole utilities class.
+    private EnsemblBioMartUtil() {}
 
+    protected static Logger logger;
+    public static final String UNIPROT_SUFFIX = "_uniprot";
+    public static final String MICROARRAY_SUFFIX = "_microarray";
     public static final String PROTEIN_TO_GENES_SUFFIX = "_proteinToGenes";
     public static final String PROTEIN_TO_TRANSCRIPTS_SUFFIX = "_proteinToTranscripts";
     public static final String TRANSCRIPT_TO_MICROARRAYS_SUFFIX = "_transcriptToMicroarrays";
     public static final String UNIPROT_TO_PROTEINS_SUFFIX = "_uniprotToProteins";
-
     /**
      * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
      * match Biomart formatting (first letter from genus + full species name, all lowercase -- eg: hsapiens).
      * @return List<String> of species names in Biomart format (eg: hsapiens).
      * @throws IOException - Thrown when unable to read file.
-     * @throws ParseException - Thrown when unable to parse JSON data.
      */
-    public static List<String> getSpeciesNames() throws IOException, ParseException {
+    public static List<String> getSpeciesNames() throws IOException {
         // Read properties file.
         Properties applicationProps = getProperties();
         // Get species JSON config file location, import as JSON object.
@@ -44,18 +45,15 @@ public class EnsemblBioMartUtil {
      * @param pathToSpeciesConfig - String, Filepath to Species.json file
      * @return List<String> of species names
      * @throws IOException - Thrown when unable to read file.
-     * @throws ParseException - Thrown when unable to parse JSON data.
      */
-    private static List<String> getSpeciesNamesFromJSON(String pathToSpeciesConfig) throws IOException, ParseException {
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse(new FileReader(pathToSpeciesConfig));
-        JSONObject jsonObject = (JSONObject) obj;
+    private static List<String> getSpeciesNamesFromJSON(String pathToSpeciesConfig) throws IOException {
+        JsonReader reader = Json.createReader(new FileReader(pathToSpeciesConfig));
+        JsonObject jsonObject = reader.readObject();
         // For each species in config file, retrieve name, modify it and then add to list.
         List<String> speciesNames = new ArrayList<>();
         for (Object speciesKey : jsonObject.keySet()) {
-            JSONObject speciesJson = (JSONObject) jsonObject.get(speciesKey);
-            JSONArray speciesNamesJSON = (JSONArray) speciesJson.get("name");
-            String speciesName = (String) speciesNamesJSON.get(0);
+            JsonValue speciesJson = jsonObject.get(speciesKey);
+            String speciesName = speciesJson.asJsonObject().getJsonArray("name").getString(0);
             speciesNames.add(speciesName);
         }
         return speciesNames;
@@ -94,7 +92,7 @@ public class EnsemblBioMartUtil {
      */
     public static Map<String, List<String>> getUniprotToProteinsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String uniprotToProteinsKey = speciesBiomartName + UNIPROT_TO_PROTEINS_SUFFIX;
-        return mappings.get(uniprotToProteinsKey);
+        return mappings.computeIfAbsent(uniprotToProteinsKey, k -> new HashMap<>());
     }
 
     /**
@@ -105,7 +103,7 @@ public class EnsemblBioMartUtil {
      */
     public static Map<String, List<String>> getTranscriptToMicroarraysMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String transcriptToMicroarraysKey = speciesBiomartName + TRANSCRIPT_TO_MICROARRAYS_SUFFIX;
-        return mappings.get(transcriptToMicroarraysKey);
+        return mappings.computeIfAbsent(transcriptToMicroarraysKey, k -> new HashMap<>());
     }
 
     /**
@@ -116,7 +114,7 @@ public class EnsemblBioMartUtil {
      */
     public static Map<String, List<String>> getProteinToTranscriptsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
         String proteinToTranscriptsKey = speciesBiomartName + PROTEIN_TO_TRANSCRIPTS_SUFFIX;
-        return mappings.get(proteinToTranscriptsKey);
+        return mappings.computeIfAbsent(proteinToTranscriptsKey, k -> new HashMap<>());
     }
 
     /**
@@ -126,11 +124,18 @@ public class EnsemblBioMartUtil {
      * @return List<String>, contents of file in a List.
      * @throws IOException - Thrown if file does not exist.
      */
-    public static List<String>  getLinesFromFile(Path inputFilePath, boolean skipHeader) throws IOException {
-        if (skipHeader) {
-            return Files.readAllLines(inputFilePath).stream().skip(1).collect((Collectors.toList()));
-        } else {
-            return Files.readAllLines(inputFilePath);
+    public static List<String>  getLinesFromFile(Path inputFilePath, boolean skipHeader) {
+        try {
+            List<String> fileLines = Files.readAllLines(inputFilePath, StandardCharsets.ISO_8859_1);
+            if (skipHeader) {
+                fileLines.remove(0);
+            }
+            return fileLines;
+
+        } catch (IOException e) {
+            logger.error("Error reading file ({}): {}", inputFilePath, e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
@@ -144,6 +149,11 @@ public class EnsemblBioMartUtil {
         return arrayOfFileColumns.size() > requiredColumnIndex;
     }
 
+    /**
+     * This splits identifiers that contain a prefix. Currently this pertains to MGI and VGNC.
+     * @param identifierWithPrefix String - Example: VGNC:12345
+     * @return String - IdentifierWithoutPrefix (ie. 12345)
+     */
     public static String getIdentifierWithoutPrefix(String identifierWithPrefix) {
         return identifierWithPrefix.split(":")[1];
     }

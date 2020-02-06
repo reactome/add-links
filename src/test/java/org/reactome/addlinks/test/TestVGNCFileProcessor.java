@@ -18,19 +18,19 @@ import java.util.Map;
 
 public class TestVGNCFileProcessor {
 
-    private static final String testFilepath = "src/test/resources/vgnc-test.tsv.gz";
-    private static final int expectedTestVGNCMappingSize = 12;
+    private static final String TEST_FILEPATH = "src/test/resources/vgnc-test.tsv.gz";
+    private static final int EXPECTED_TEST_VGNC_MAPPING_SIZE = 12;
 
     @Test
     public void testVGNCFileProcessor() throws IOException {
         VGNCFileProcessor processor = new VGNCFileProcessor("test");
-        processor.setPath(Paths.get(testFilepath));
+        processor.setPath(Paths.get(TEST_FILEPATH));
         Map<String, List<String>> testMapping = processor.getIdMappingsFromFile();
 
-        assertThat(testMapping.size(), is(equalTo(expectedTestVGNCMappingSize)));
+        assertThat(testMapping.size(), is(equalTo(EXPECTED_TEST_VGNC_MAPPING_SIZE)));
         assertThat(testMapping.get("A0A1U7SHT6").get(0), is(equalTo("82903")));
 
-        Files.delete(Paths.get(testFilepath.replace(".gz", "")));
+        Files.delete(Paths.get(TEST_FILEPATH.replace(".gz", "")));
     }
 
     @Test
@@ -42,7 +42,7 @@ public class TestVGNCFileProcessor {
             fail();
         } catch (Exception e) {
             e.printStackTrace();
-            assertThat(e.toString().contains("NullPointerException"), is(equalTo(true)));
+            assertThat(e, is(instanceOf(NullPointerException.class)));
 
         }
     }

@@ -16,16 +16,16 @@ import java.util.Map;
 
 public class TestMGIFileProcessor {
 
-    private static final String testFilepath = "src/test/resources/mgi-test.tsv";
-    private static final int expectedTestMGIMappingSize = 28;
+    private static final String TEST_FILEPATH = "src/test/resources/mgi-test.tsv";
+    private static final int EXPECTED_TEST_MGI_MAPPING_SIZE = 28;
 
     @Test
     public void testMGIFileProcessor() {
         MGIFileProcessor processor = new MGIFileProcessor();
-        processor.setPath(Paths.get(testFilepath));
+        processor.setPath(Paths.get(TEST_FILEPATH));
         Map<String, List<String>> testMapping =  processor.getIdMappingsFromFile();
 
-        assertThat(testMapping.size(), is(equalTo(expectedTestMGIMappingSize)));
+        assertThat(testMapping.size(), is(equalTo(EXPECTED_TEST_MGI_MAPPING_SIZE)));
         assertThat(testMapping.get("Q9CW84").get(0), is(equalTo("1913301")));
     }
 
@@ -38,8 +38,7 @@ public class TestMGIFileProcessor {
             fail();
         } catch (Exception e) {
             e.printStackTrace();
-            assertThat(e.toString().contains("NullPointerException"), is(equalTo(true)));
-
+            assertThat(e, is(instanceOf(NullPointerException.class)));
         }
     }
 }

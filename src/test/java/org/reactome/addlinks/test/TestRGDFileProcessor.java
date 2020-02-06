@@ -16,16 +16,16 @@ import java.util.Map;
 
 public class TestRGDFileProcessor {
 
-    private static final String testFilepath = "src/test/resources/rgd-test.tsv";
-    private static final int expectedTestRGDMappingSize = 13;
+    private static final String TEST_FILEPATH = "src/test/resources/rgd-test.tsv";
+    private static final int EXPECTED_TEST_RGD_MAPPING_SIZE = 13;
 
     @Test
     public void testRGDFileProcessor() {
         RGDFileProcessor processor = new RGDFileProcessor();
-        processor.setPath(Paths.get(testFilepath));
+        processor.setPath(Paths.get(TEST_FILEPATH));
         Map<String, List<String>> testMapping = processor.getIdMappingsFromFile();
 
-        assertThat(testMapping.size(), is(equalTo(expectedTestRGDMappingSize)));
+        assertThat(testMapping.size(), is(equalTo(EXPECTED_TEST_RGD_MAPPING_SIZE)));
         assertThat(testMapping.get("P06238").get(0), is(equalTo("2004")));
     }
 
@@ -38,7 +38,7 @@ public class TestRGDFileProcessor {
             fail();
         } catch (Exception e) {
             e.printStackTrace();
-            assertThat(e.toString().contains("NullPointerException"), is(equalTo(true)));
+            assertThat(e, is(instanceOf(NullPointerException.class)));
 
         }
     }

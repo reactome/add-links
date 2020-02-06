@@ -41,7 +41,7 @@ public class EnsemblReferenceCreator extends SimpleReferenceCreator<Map<String, 
             Set<String> ensemblIds = collectEnsemblIdentifiers(mappings, sourceIdentifier, biomartSpeciesName);
             // Iterate through each Ensembl identifier and create a ? instance.
             for (String ensemblId : ensemblIds) {
-                if (!this.checkXRefExists(sourceInst, ensemblId) && !this.testMode)
+                if (!this.testMode && !this.checkXRefExists(sourceInst, ensemblId))
                 {
 
                     this.refCreator.createIdentifier(ensemblId, String.valueOf(sourceInst.getDBID()), targetRefDB, personID, this.getClass().getName(), speciesInst.getDBID());
