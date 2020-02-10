@@ -35,7 +35,7 @@ public class HPAFileProcessor extends FileProcessor<List<String>>
         try {
             dirToHPAFiles = this.unzipFile(this.pathToFile);
         } catch (Exception e) {
-            logger.error("Error unzipping file ({}): {}", this.pathToFile, e.getMessage());
+            logger.error("Error unzipping file ({}): {}", this.pathToFile, e);
             e.printStackTrace();
         }
 

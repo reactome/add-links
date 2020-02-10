@@ -32,7 +32,7 @@ public class VGNCFileProcessor extends FileProcessor{
         try {
             this.unzipFile(this.pathToFile, FLATTEN_ZIP_OUTPUT);
         } catch (Exception e) {
-            logger.error("Error unzipping file ({}): {}", this.pathToFile, e.getMessage());
+            logger.error("Error unzipping file ({}): {}", this.pathToFile, e);
             e.printStackTrace();
         }
         Path inputFilePathUnzipped = Paths.get(this.pathToFile.toAbsolutePath().toString().replace(".gz", ""));

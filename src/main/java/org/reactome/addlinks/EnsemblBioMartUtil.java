@@ -133,7 +133,7 @@ public class EnsemblBioMartUtil {
             return fileLines;
 
         } catch (IOException e) {
-            logger.error("Error reading file ({}): {}", inputFilePath, e.getMessage());
+            logger.error("Error reading file ({}): {}", inputFilePath, e);
             e.printStackTrace();
             return new ArrayList<>();
         }

@@ -124,6 +124,7 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
                 });
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error("Error reading file ({}): {}", this.pathToFile, e);
         }
         return mappings;
     }
