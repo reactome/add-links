@@ -32,7 +32,7 @@ public class RGDFileProcessor extends FileProcessor{
             if (isFileBodyLine(line)) {
                 List<String> tabSplit = Arrays.asList(line.split("\t"));
                 String rgdId = tabSplit.get(RGD_IDENTIFIER_INDEX);
-                if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, RGD_IDENTIFIER_INDEX)) {
+                if (EnsemblBioMartUtil.necessaryColumnPresent(tabSplit, UNIPROT_IDENTIFIERS_INDEX)) {
                     List<String> uniprotIds = Arrays.asList(tabSplit.get(UNIPROT_IDENTIFIERS_INDEX).split(";"));
                     for (String uniprotId : uniprotIds) {
                         mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(rgdId);
