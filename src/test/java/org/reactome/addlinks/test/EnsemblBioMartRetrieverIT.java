@@ -17,7 +17,7 @@ public class EnsemblBioMartRetrieverIT {
 
     private static final String TEST_DIRECTORY = "/tmp/test_ensembl_biomart_mapping_service/";
     private static final String EXPECTED_ERROR_MESSAGE = "BioMartQueryException: BioMart query failed with message: Query ERROR";
-    private static final String BIOMART_URL = "http://www.ensembl.org/biomart/martservice?";
+    private static final String BIOMART_URL = "https://www.ensembl.org/biomart/martservice?";
 
     @Test
     public void testEnsemblBioMartRetrieverDownloadsAndStoresData() throws Exception {

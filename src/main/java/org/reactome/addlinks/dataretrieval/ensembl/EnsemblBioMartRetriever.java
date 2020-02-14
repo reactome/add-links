@@ -28,7 +28,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
     private static final String BIOMART_SPECIES_NAME_PLACEHOLDER = "BIOMART_SPECIES_NAME";
     private static final String BIOMART_QUERY_ID_PLACEHOLDER = "BIOMART_QUERY_ID";
-    private static final String baseBiomartUrl = "http://www.ensembl.org/biomart/martservice?query=";
+    private static final String baseBiomartUrl = "https://www.ensembl.org/biomart/martservice?query=";
     private static final String microarrayTypesBaseQuery = String.join("&",
             "type=listAttributes",
             "mart=ENSEMBL_MART_ENSEMBL",
