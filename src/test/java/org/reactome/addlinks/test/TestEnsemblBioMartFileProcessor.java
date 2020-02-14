@@ -20,12 +20,12 @@ import java.util.Map;
 public class TestEnsemblBioMartFileProcessor {
 
     private static final String UNIPROT_TO_PROTEINS_KEY = "hsapiens_uniprotToProteins";
-    private static final String TRANSCRIPT_TO_MICROARRAYS_KEY = "hsapiens_transcriptToMicroarrays";
+    private static final String TRANSCRIPT_TO_OTHER_IDENTIFIERS_KEY = "hsapiens_transcriptToOtherIdentifiers";
     private static final String PROTEIN_TO_GENES_KEY = "hsapiens_proteinToGenes";
     private static final String PROTEIN_TO_TRANSCRIPTS_KEY = "hsapiens_proteinToTranscripts";
     private static final int EXPECTED_RESULTS_LENGTH = 50;
     private static final String TEST_DIRECTORY = "/tmp/test_ensembl_biomart_mapping_service/";
-    private static final Path IMPROPERLY_FORMATTED_FILEPATH = Paths.get(TEST_DIRECTORY + "hsapiens_improperly_formatted_microarray");
+    private static final Path IMPROPERLY_FORMATTED_FILEPATH = Paths.get(TEST_DIRECTORY + "hsapiens_improperly_formatted_other_identifiers");
     private static final List<String> IMPROPERLY_FORMATTED_LINES = new ArrayList<>(Arrays.asList("ENSG00000174953ENST00000308361ENSP00000309296ILMN_1738272\n", "ENSG00000230791ENST00000414519ENSP00000400138ILMN_1717127\n"));
 
     private EnsemblBioMartFileProcessor ensemblBioMartFileProcessor;
@@ -45,12 +45,12 @@ public class TestEnsemblBioMartFileProcessor {
     }
 
     @Test
-    public void testEnsemblBioMartFileProcessorHasTranscriptToMicroarraysKey() {
+    public void testEnsemblBioMartFileProcessorHasTranscriptToOtherIdentifiersKey() {
         ensemblBioMartFileProcessor.setPath(Paths.get("src/test/resources/"));
         Map<String, Map<String, List<String>>> testMapping = ensemblBioMartFileProcessor.getIdMappingsFromFile();
 
-        assertThat(testMapping, hasKey(TRANSCRIPT_TO_MICROARRAYS_KEY));
-        assertThat(testMapping.get(TRANSCRIPT_TO_MICROARRAYS_KEY), is(aMapWithSize(EXPECTED_RESULTS_LENGTH)));
+        assertThat(testMapping, hasKey(TRANSCRIPT_TO_OTHER_IDENTIFIERS_KEY));
+        assertThat(testMapping.get(TRANSCRIPT_TO_OTHER_IDENTIFIERS_KEY), is(aMapWithSize(EXPECTED_RESULTS_LENGTH)));
     }
 
     @Test
@@ -73,7 +73,7 @@ public class TestEnsemblBioMartFileProcessor {
 
     /**
      * This tests that an improperly formatted file will result in the returned Map being empty. Since EnsemblBioMartFileProcessor
-     * evaluates the entire directory for files ending with 'uniprot' and 'microarray', the test directory can't hold both a
+     * evaluates the entire directory for files ending with 'uniprot' and 'microarray_ids_and_go_terms', the test directory can't hold both a
      * valid and invalid file type. To get around this the improperly formatted file is just generated within the test.
      * @throws IOException
      */

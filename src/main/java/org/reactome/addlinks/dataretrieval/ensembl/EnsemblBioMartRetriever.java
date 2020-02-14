@@ -39,11 +39,13 @@ public class EnsemblBioMartRetriever extends FileRetriever {
             "attributeGroup=external",
             "attributeCollection=microarray"
     );
+    private static final String MICROARRAY_TYPES = "microarray types";
+    private static final String GO_ID_BIOMART_SEARCH_TERM = "go_id";
+    private static final String GO_SLIM_BIOMART_SEARCH_TERM = "goslim_goa_accession";
     private static final String UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM = "uniprotswissprot";
     private static final String UNIPROT_TREMBL_BIOMART_SEARCH_TERM = "uniprotsptrembl";
-    private static final String MICROARRAY_TYPES = "microarray types";
     /**
-     * Downloads Ensembl-Microarray and Ensembl-Uniprot identifier mapping files for all species, if they exist.
+     * Downloads Ensembl-Microarray, Ensembl-GO, and Ensembl-Uniprot identifier mapping files for all species, if they exist.
      * @throws IOException - Thrown when file can't be found during writing or by HTTPConnection class.
      * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
      * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
@@ -65,13 +67,18 @@ public class EnsemblBioMartRetriever extends FileRetriever {
             // Query BioMart for existing microarray 'types' (not ids) that exist for this species.
             Set<String> microarrayTypes = queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES);
             // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
-            // All mappings are stored in a single file, (eg: hsapiens_microarray);
+            // All mappings are stored in a single file, (eg: hsapiens_microarray_ids_and_go_terms);
             for (String microarrayType : microarrayTypes) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, EnsemblBioMartUtil.MICROARRAY_SUFFIX);
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, EnsemblBioMartUtil.MICROARRAY_IDS_AND_GO_TERMS_SUFFIX);
             }
 
-            // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from BioMart
-            // and write it to a file (eg: hsapiens_uniprot).
+            // Query GO and GO_SLIM identifier mapping data from BioMart and write it to a file (eg: hsapiens_microarray_ids_and_go_terms)
+            logger.info("Retrieving GO data");
+            for (String goQueryId : Arrays.asList(GO_ID_BIOMART_SEARCH_TERM, GO_SLIM_BIOMART_SEARCH_TERM)) {
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), goQueryId, EnsemblBioMartUtil.MICROARRAY_IDS_AND_GO_TERMS_SUFFIX);
+            }
+
+            // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from BioMart and write it to a file (eg: hsapiens_uniprot).
             logger.info("Retrieving UniProt data");
             for (String uniprotQueryId : Arrays.asList(UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM, UNIPROT_TREMBL_BIOMART_SEARCH_TERM)) {
                 queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), uniprotQueryId, EnsemblBioMartUtil.UNIPROT_SUFFIX);
@@ -110,7 +117,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     }
 
     /**
-     * Write response from BioMart to file in the format 'BioMartSpeciesName_microarray' or 'BioMartSpeciesName_uniprot'.
+     * Write response from BioMart to file in the format 'BioMartSpeciesName_microarray_ids_and_go_terms' or 'BioMartSpeciesName_uniprot'.
      * @param biomartFilename - String, Data from BioMart is saved to this filename.
      * @param biomartResponseLines - Set<String>, All lines of response from BioMart.
      * @throws IOException - Thrown when unable to write data to file.
@@ -135,7 +142,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
         }
     }
 
-    // Checks that the 4th column contains identifiers (either Microarray or UniProt ).
+    // Checks that the 4th column contains identifiers (of type Microarray, GO, or UniProt).
     private boolean lineContainsIdentifier(List<String> tabSplit) {
         final int IDENTIFIER_COLUMN = 3;
         return tabSplit.size() > IDENTIFIER_COLUMN && !tabSplit.get(IDENTIFIER_COLUMN).trim().isEmpty();
@@ -176,7 +183,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     private Set<String> queryBioMart(String queryString, int retryCount, String biomartDataType) throws IOException, InterruptedException, BioMartQueryException, HttpException {
         final int MAX_QUERY_RETRIES = 5;
         int numLinesProcessed = 0;
-        // Create connection to BioMart URL for each species, retrieving a list of microarray probe types, if available.
+        // Create connection to BioMart URL for each species, retrieving mappings of Ensembl identifiers to microarray, GO, or UniProt identifiers.
         URL biomartUrlWithSpecies = new URL(queryString);
         HttpURLConnection biomartConnection = (HttpURLConnection) biomartUrlWithSpecies.openConnection();
         if (biomartConnection.getResponseCode() == HttpStatus.SC_OK) {

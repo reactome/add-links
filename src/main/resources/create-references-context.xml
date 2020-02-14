@@ -122,7 +122,7 @@
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
 		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartMicroarrayPopulator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">

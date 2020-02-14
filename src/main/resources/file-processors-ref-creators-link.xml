@@ -27,7 +27,7 @@
 
 	<util:list id="EnsemblReferenceCreators" value-type="java.lang.String" list-class="java.util.ArrayList">
 		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartMicroarrayPopulator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 	</util:list>
 
 	<util:map id="processorCreatorLink" key-type="java.lang.String" value-type="java.lang.Object">

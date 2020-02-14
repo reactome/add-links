@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.reactome.addlinks.referencecreators.EnsemblBioMartMicroarrayPopulator;
+import org.reactome.addlinks.referencecreators.EnsemblBioMartOtherIdentifierPopulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -21,10 +21,10 @@ import java.util.*;
 @ContextConfiguration("/test-application-context.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
 
-public class TestEnsemblBioMartMicroarrayPopulator {
+public class TestEnsemblBioMartOtherIdentifiersPopulator {
 
     @Autowired
-    EnsemblBioMartMicroarrayPopulator microarrayPopulator;
+    EnsemblBioMartOtherIdentifierPopulator otherIdentifiersPopulator;
 
     @Mock
     GKInstance mockRGPInst;
@@ -49,23 +49,23 @@ public class TestEnsemblBioMartMicroarrayPopulator {
 
         Map<String, List<String>> mockProteinToTranscripts = new HashMap<>();
         mockProteinToTranscripts.put("ENSP12345", Arrays.asList("ENST12345"));
-        Map<String, List<String>> mockTranscriptToMicroarrays = new HashMap<>();
-        mockTranscriptToMicroarrays.put("ENST12345", Arrays.asList("M12345"));
+        Map<String, List<String>> mockTranscriptToOtherIdentifiers = new HashMap<>();
+        mockTranscriptToOtherIdentifiers.put("ENST12345", Arrays.asList("M12345"));
         Map<String, List<String>> mockUniprotToProteins = new HashMap<>();
         mockUniprotToProteins.put("A7MBE8", Arrays.asList("ENSP12345"));
         mappings.put("btaurus_proteinToTranscripts", mockProteinToTranscripts);
-        mappings.put("btaurus_transcriptToMicroarrays", mockTranscriptToMicroarrays);
+        mappings.put("btaurus_transcriptToOtherIdentifiers", mockTranscriptToOtherIdentifiers);
         mappings.put("btaurus_uniprotToProteins", mockUniprotToProteins);
     }
 
     @Test
-    public void testEnsemblBiomartMicroarrayPopulator() {
+    public void testEnsemblBiomartOtherIdentifiersPopulator() {
 
         List<GKInstance> mockSourceReferences = Arrays.asList(mockRGPInst);
         System.setProperty("config.location", "src/test/resources/addlinksTest-btau.properties");
         try {
-            microarrayPopulator.setTestMode(true);
-            microarrayPopulator.createIdentifiers(12345L, mappings, mockSourceReferences);
+            otherIdentifiersPopulator.setTestMode(true);
+            otherIdentifiersPopulator.createIdentifiers(12345L, mappings, mockSourceReferences);
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -79,7 +79,7 @@ public class TestEnsemblBioMartMicroarrayPopulator {
         Mockito.when(mockRGPInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("12345");
         Mockito.when(mockRGPInst2.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("09876");
 
-        Map<String, List<GKInstance>> testRGPIdentifierMap = microarrayPopulator.mapRGPIdentifiersToRGPInstances(mockRGPInstances);
+        Map<String, List<GKInstance>> testRGPIdentifierMap = otherIdentifiersPopulator.mapRGPIdentifiersToRGPInstances(mockRGPInstances);
 
         assertThat(testRGPIdentifierMap.get("12345").contains(mockRGPInst), is(equalTo(true)));
         assertThat(testRGPIdentifierMap.get("09876").contains(mockRGPInst2), is(equalTo(true)));
@@ -87,9 +87,9 @@ public class TestEnsemblBioMartMicroarrayPopulator {
 
     @Test
     public void testAllDataStructuresPopulated() {
-        boolean allDataStructuresPopulated = microarrayPopulator.allDataStructuresPopulated(mockMap, mockMap, mockMap);
+        boolean allDataStructuresPopulated = otherIdentifiersPopulator.allDataStructuresPopulated(mockMap, mockMap, mockMap);
         assertThat(allDataStructuresPopulated, is(equalTo(true)));
-        boolean notAllDataStructuresPopulated = microarrayPopulator.allDataStructuresPopulated(mockMap, null, mockMap);
+        boolean notAllDataStructuresPopulated = otherIdentifiersPopulator.allDataStructuresPopulated(mockMap, null, mockMap);
         assertThat(notAllDataStructuresPopulated, is(equalTo(false)));
     }
 }

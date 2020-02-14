@@ -21,11 +21,12 @@ public class EnsemblBioMartUtil {
 
     protected static Logger logger;
     public static final String UNIPROT_SUFFIX = "_uniprot";
-    public static final String MICROARRAY_SUFFIX = "_microarray";
+    public static final String MICROARRAY_IDS_AND_GO_TERMS_SUFFIX = "_microarray_ids_and_go_terms";
+    public static final String TRANSCRIPT_TO_OTHER_IDENTIFIERS_SUFFIX = "_transcriptToOtherIdentifiers";
     public static final String PROTEIN_TO_GENES_SUFFIX = "_proteinToGenes";
     public static final String PROTEIN_TO_TRANSCRIPTS_SUFFIX = "_proteinToTranscripts";
-    public static final String TRANSCRIPT_TO_MICROARRAYS_SUFFIX = "_transcriptToMicroarrays";
     public static final String UNIPROT_TO_PROTEINS_SUFFIX = "_uniprotToProteins";
+    public static final String TRANSCRIPT_TO_GO_TERMS_SUFFIX = "_transcriptToGOTerms";
     /**
      * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
      * match Biomart formatting (first letter from genus + full species name, all lowercase -- eg: hsapiens).
@@ -96,14 +97,14 @@ public class EnsemblBioMartUtil {
     }
 
     /**
-     * Returns data corresponding to 'species_transcriptToMicroarrays' in mappings.
+     * Returns data corresponding to 'species_transcriptToOtherIdentifiers' in mappings.
      * @param speciesBiomartName - String, BioMart-formatted species name
      * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
-    public static Map<String, List<String>> getTranscriptToMicroarraysMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String transcriptToMicroarraysKey = speciesBiomartName + TRANSCRIPT_TO_MICROARRAYS_SUFFIX;
-        return mappings.computeIfAbsent(transcriptToMicroarraysKey, k -> new HashMap<>());
+    public static Map<String, List<String>> getTranscriptToOtherIdentifiersMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
+        String transcriptToOtherIdentifiersKey = speciesBiomartName + TRANSCRIPT_TO_OTHER_IDENTIFIERS_SUFFIX;
+        return mappings.computeIfAbsent(transcriptToOtherIdentifiersKey, k -> new HashMap<>());
     }
 
     /**
