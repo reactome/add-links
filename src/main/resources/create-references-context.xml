@@ -44,7 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>IntEnzFileProcessor</value>
+<!--		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
 		<value>UniprotToEnsemblFileProcessor</value>
@@ -66,7 +66,7 @@
 		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
 		<value>RheaFileProcessor</value>
-<!--		<value>HmdbProteinsFileProcessor</value>
+		<value>HmdbProteinsFileProcessor</value>
 		<value>HmdbMetabolitesFileProcessor</value>
 -->		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
@@ -81,7 +81,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>IntEnzRefCreator</value>		
+<!--		<value>IntEnzRefCreator</value>		
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>ENSEMBLToWormbaseRefCreator</value>
@@ -113,7 +113,7 @@
 		<value>RheaReferenceCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
-<!--		<value>HmdbMoleculeReferenceCreator</value>
+		<value>HmdbMoleculeReferenceCreator</value>
 -->		<value>ComplexPortalRefCreator</value>
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
@@ -126,7 +126,7 @@
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
-		<value>IntEnz</value>
+<!--		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>
 		<value>CTD Gene</value>
@@ -155,7 +155,7 @@
 		<value>ZINC - Biogenic</value>
 		<value>ZINC - Investigational</value>
 		<value>ZINC - Predictions - Purchasable</value>
-<!--		<value>HMDB Protein</value>
+		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 -->		<value>COSMIC</value>
 		<value>HPA</value>
