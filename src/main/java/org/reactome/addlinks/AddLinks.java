@@ -141,11 +141,11 @@ public class AddLinks
 		this.executeCreateReferenceDatabases(personID);
 
 		// Now that we've *created* new ref dbs, rebuild any caches that might have depended on them.
-/*		ReferenceObjectCache.clearAndRebuildAllCaches();
+		ReferenceObjectCache.clearAndRebuildAllCaches();
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
 		Map<String, Map<String, Integer>> preAddLinksReport = this.reportsBeforeAddLinks(xrefReporter, duplicateIdentifierReporter);
-*/
+
 		ExecutorService execSrvc = Executors.newFixedThreadPool(5);
 		List<Callable<Boolean>> retrieverJobs = createRetrieverJobs(numUniprotDownloadThreads);
 		// Execute the file retrievers.
@@ -188,7 +188,7 @@ public class AddLinks
 
 		//Now we create references.
 		this.createReferences(personID, dbMappings);
-//		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
+		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 
