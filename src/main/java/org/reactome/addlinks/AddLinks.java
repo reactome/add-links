@@ -217,8 +217,8 @@ public class AddLinks
 		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
 		{
 			StringBuilder reportLine = new StringBuilder();
-			int numLinkOK = 0;
-			int numLinkNotOK = 0;
+//			int numLinkOK = 0;
+//			int numLinkNotOK = 0;
 			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
 			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
 			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
@@ -228,49 +228,8 @@ public class AddLinks
 			{
 				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
 				{
-					logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
-					reportLine.append(refDBInst.getDisplayName()).append("\t");
-					Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
-					// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
-					for (String k : results.keySet())
-					{
-						int statusCode = results.get(k).getStatusCode();
-						String identifier = results.get(k).getIdentifier();
-						// If the keyword is NOT found...
-						if (!results.get(k).isKeywordFound())
-						{
-							if (statusCode == HttpStatus.SC_OK)
-							{
-								logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", identifier, results.get(k).getURI());
-							}
-							else
-							{
-								logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", identifier, statusCode);
-							}
-							numLinkNotOK++;
-						}
-						// This block handles where the keyword (AKA: the Identifier!!) IS found in the response body.
-						else
-						{
-							// Only increment numLinkOK if the keyword is found AND the response code
-							// is 200 or 3xx (some resources will redirect to the correct page, so
-							// 3xx is still "OK enough").
-							if (statusCode == HttpStatus.SC_OK || (statusCode >= 300 && statusCode < 400 ))
-							{
-								numLinkOK++;
-							}
-							else
-							{
-								// Sometimes the keyword is in the response body, but the response code is 404, such as "Sorry, identifier 12345 is not in the database".
-								// So we have to make sure that we increment numLinkNotOK in this case.
-								logger.warn("Link-checking error: Identifier {} was found in the respone, but a non-200 response code was returned with it: {}", identifier, statusCode);
-								numLinkNotOK++;
-							}
-						}
-					}
-					reportLine.append(numLinkOK).append("\t").append(numLinkNotOK);
-					linkCheckReportLines.append(reportLine.toString()).append("\n");
-					logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
+					String line = checkLinksForRefDB(linkCheckManager, refDBInst);
+					linkCheckReportLines.append(line);
 				}
 				else
 				{
@@ -283,6 +242,64 @@ public class AddLinks
 			}
 		}
 		return linkCheckReportLines.toString();
+	}
+
+	/**
+	 * @param linkCheckReportLines
+	 * @param linkCheckManager
+	 * @param refDBInst
+	 * @param reportLine
+	 * @param numLinkOK
+	 * @param numLinkNotOK
+	 */
+	private String checkLinksForRefDB(LinkCheckManager linkCheckManager, GKInstance refDBInst)
+	{
+		 int numLinkOK = 0;
+		 int numLinkNotOK = 0;
+		logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
+		StringBuilder reportLine = new StringBuilder();
+		reportLine.append(refDBInst.getDisplayName()).append("\t");
+		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+		// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
+		for (String k : results.keySet())
+		{
+			int statusCode = results.get(k).getStatusCode();
+			String identifier = results.get(k).getIdentifier();
+			// If the keyword is NOT found...
+			if (!results.get(k).isKeywordFound())
+			{
+				if (statusCode == HttpStatus.SC_OK)
+				{
+					logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", identifier, results.get(k).getURI());
+				}
+				else
+				{
+					logger.warn("Link-checking error: Identifier {} returned a non-200 status code: {}", identifier, statusCode);
+				}
+				numLinkNotOK++;
+			}
+			// This block handles where the keyword (AKA: the Identifier!!) IS found in the response body.
+			else
+			{
+				// Only increment numLinkOK if the keyword is found AND the response code
+				// is 200 or 3xx (some resources will redirect to the correct page, so
+				// 3xx is still "OK enough").
+				if (statusCode == HttpStatus.SC_OK || (statusCode >= 300 && statusCode < 400 ))
+				{
+					numLinkOK++;
+				}
+				else
+				{
+					// Sometimes the keyword is in the response body, but the response code is 404, such as "Sorry, identifier 12345 is not in the database".
+					// So we have to make sure that we increment numLinkNotOK in this case.
+					logger.warn("Link-checking error: Identifier {} was found in the respone, but a non-200 response code was returned with it: {}", identifier, statusCode);
+					numLinkNotOK++;
+				}
+			}
+		}
+		reportLine.append(numLinkOK).append("\t").append(numLinkNotOK).append("\n");
+		logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
+		return reportLine.toString();
 	}
 
 	/**
@@ -513,6 +530,10 @@ public class AddLinks
 							logger.warn("Reference Creator name \"{}\" could not be found it mapping between file processors and reference creators, so it will not be executed and references will not be created.", refCreatorName);
 						}
 					}
+					// Now check the links for the reference creator.
+					String targetRefDB = refCreator.getTargetRefDB();
+					GKInstance refDBInst = LinksToCheckCache.getCache().keySet().stream().filter( inst -> inst.getDisplayName().equals(targetRefDB)).findFirst().get();
+					checkLinksForRefDB(new LinkCheckManager(), refDBInst);
 				}
 
 			}
