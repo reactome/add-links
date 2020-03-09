@@ -196,9 +196,9 @@ public class AddLinks
 
 		logger.info("Now checking links.");
 
-		String linksReport = this.checkLinks();
-		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
-		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
+//		String linksReport = this.checkLinks();
+//		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
+//		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
 
 		logger.info("Process complete.");
 	}
@@ -433,6 +433,8 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	private void createReferences(long personID, Map<String, Map<String, ?>> dbMappings) throws IOException, Exception
 	{
+		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
+		Files.write(Paths.get(diffReportName), "RefDBName\tNumOK\tNumNotOK\n".getBytes());
 		for (String refCreatorName : this.referenceCreatorFilter)
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
@@ -530,12 +532,12 @@ public class AddLinks
 							logger.warn("Reference Creator name \"{}\" could not be found it mapping between file processors and reference creators, so it will not be executed and references will not be created.", refCreatorName);
 						}
 					}
-					// Now check the links for the reference creator.
-					String targetRefDB = refCreator.getTargetRefDB();
-					GKInstance refDBInst = LinksToCheckCache.getCache().keySet().stream().filter( inst -> inst.getDisplayName().equals(targetRefDB)).findFirst().get();
-					checkLinksForRefDB(new LinkCheckManager(), refDBInst);
 				}
-
+				// Now check the links for the reference creator.
+				String targetRefDB = refCreator.getTargetRefDB();
+				GKInstance refDBInst = LinksToCheckCache.getCache().keySet().stream().filter( inst -> inst.getDisplayName().equals(targetRefDB)).findFirst().get();
+				String line = checkLinksForRefDB(new LinkCheckManager(), refDBInst);
+				Files.write(Paths.get(diffReportName), line.getBytes());
 			}
 			// There is a separate list of reference creators to create UniProt references.
 			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
