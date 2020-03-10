@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -212,16 +213,17 @@ public class AddLinks
 		reportLine.append(refDBInst.getDisplayName()).append("\t");
 		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 		// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
-		for (String k : results.keySet())
+		for (Entry<String, LinkCheckInfo> entry : results.entrySet())
 		{
-			int statusCode = results.get(k).getStatusCode();
-			String identifier = results.get(k).getIdentifier();
+			LinkCheckInfo result = entry.getValue();
+			int statusCode = result.getStatusCode();
+			String identifier = result.getIdentifier();
 			// If the keyword is NOT found...
-			if (!results.get(k).isKeywordFound())
+			if (!result.isKeywordFound())
 			{
 				if (statusCode == HttpStatus.SC_OK)
 				{
-					logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", identifier, results.get(k).getURI());
+					logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", identifier, result.getURI());
 				}
 				else
 				{
@@ -626,53 +628,53 @@ public class AddLinks
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
 
-		for (String key : this.referenceDatabasesToCreate.keySet())
+		for (Entry<String, Map<String, ?>> entry : this.referenceDatabasesToCreate.entrySet())
 		{
 			boolean speciesSpecificAccessURL = false;
-			Map<String, ?> refDB = this.referenceDatabasesToCreate.get(key);
+			Map<String, ?> refDB = entry.getValue();
 			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;
 			List<String> aliases = new ArrayList<>();
 			String primaryName = null;
-			for(String attributeKey : refDB.keySet())
+			for(Entry<String, ?> attributeEntry : refDB.entrySet())
 			{
-				switch (attributeKey)
+				switch (attributeEntry.getKey())
 				{
 					case "PrimaryName":
-						if (refDB.get(attributeKey) instanceof String )
+						if (attributeEntry.getValue() instanceof String )
 						{
-							primaryName = (String) refDB.get(attributeKey);
+							primaryName = (String) attributeEntry.getValue();
 						}
 						else
 						{
-							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
+							logger.error("Found a \"Name\" of an invalid type: {}", attributeEntry.getValue().getClass().getName() );
 						}
 						break;
 					case "Aliases":
-						if (refDB.get(attributeKey) instanceof List )
+						if (attributeEntry.getValue() instanceof List )
 						{
-							aliases.addAll((Collection<? extends String>) refDB.get(attributeKey));
+							aliases.addAll((Collection<? extends String>) attributeEntry.getValue());
 						}
 						else
 						{
-							logger.error("Found a \"Name\" of an invalid type: {}", refDB.get(attributeKey).getClass().getName() );
+							logger.error("Found a \"Name\" of an invalid type: {}", attributeEntry.getValue().getClass().getName() );
 						}
 						break;
 					case "AccessURL":
-						accessUrl = (String) refDB.get(attributeKey) ;
+						accessUrl = (String) attributeEntry.getValue() ;
 						break;
 
 					case "URL":
-						url = (String) refDB.get(attributeKey) ;
+						url = (String) attributeEntry.getValue() ;
 						break;
 					case "resourceIdentifier":
-						resourceIdentifier = (String) refDB.get(attributeKey);
+						resourceIdentifier = (String) attributeEntry.getValue();
 						break;
 					case "speciesSpecificURLs":
 						// speciesSpecificAccessURL will only get set to TRUE if it is present AND "true" in the XML config file.
-						speciesSpecificAccessURL = Boolean.valueOf((String) refDB.get(attributeKey));
+						speciesSpecificAccessURL = Boolean.valueOf((String) attributeEntry.getValue());
 						break;
 					default:
-						logger.warn("Unrecognized key: {}", attributeKey);
+						logger.warn("Unrecognized key: {}", attributeEntry.getKey());
 						break;
 				}
 			}
