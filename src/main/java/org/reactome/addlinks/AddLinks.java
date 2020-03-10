@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -193,55 +192,7 @@ public class AddLinks
 		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
-
-		logger.info("Now checking links.");
-
-//		String linksReport = this.checkLinks();
-//		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
-//		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
-
 		logger.info("Process complete.");
-	}
-
-	/**
-	 * Checks the links to external resources. Returns a
-	 * @return
-	 */
-	private String checkLinks()
-	{
-		StringBuilder linkCheckReportLines = new StringBuilder("RefDBName\tNumOK\tNumNotOK\n");
-		// Now, check the links that were created to ensure that they are all valid.
-		LinkCheckManager linkCheckManager = new LinkCheckManager();
-		linkCheckManager.setDbAdaptor(this.dbAdapter);
-		// Filter by references database name.
-		for (GKInstance refDBInst : LinksToCheckCache.getCache().keySet() )
-		{
-			StringBuilder reportLine = new StringBuilder();
-//			int numLinkOK = 0;
-//			int numLinkNotOK = 0;
-			// LinksToCheckCache.getRefDBsToCheck() should return a list that contains everything
-			// from the Spring file AND all of the ENSEMBL and KEGG species-specific reference database names.
-			if (LinksToCheckCache.getRefDBsToCheck().contains(refDBInst.getDisplayName())
-					|| (refDBInst.getDisplayName().toUpperCase().contains(ENSEMBL) && LinksToCheckCache.getRefDBsToCheck().contains(ENSEMBL))
-					|| (refDBInst.getDisplayName().toUpperCase().contains(KEGG) && LinksToCheckCache.getRefDBsToCheck().contains(KEGG))
-				)
-			{
-				if (LinksToCheckCache.getCache().get(refDBInst).size() > 0)
-				{
-					String line = checkLinksForRefDB(linkCheckManager, refDBInst);
-					linkCheckReportLines.append(line);
-				}
-				else
-				{
-					logger.info("Could not check links for {} because there no *new* links for this reference database.", refDBInst.getDisplayName());
-				}
-			}
-			else
-			{
-				logger.info("ReferenceDatabase with name \"{}\" will *not* be link-checked because it was not in the list.", refDBInst.getDisplayName());
-			}
-		}
-		return linkCheckReportLines.toString();
 	}
 
 	/**
@@ -314,9 +265,9 @@ public class AddLinks
 	private void reportsAfterAddLinks(CrossReferenceReporter xrefReporter, DuplicateIdentifierReporter duplicateIdentifierReporter, Map<String, Map<String, Integer>> preAddLinksReport) throws SQLException, IOException, Exception
 	{
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		//reporter.printReport();
 		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
-		logger.info("\n"+xrefReporter.printReport(postAddLinksReport));
+		String report = xrefReporter.printReport(postAddLinksReport);
+		logger.info("\n{}", report);
 
 		logger.info("Differences");
 		String diffReport = xrefReporter.printReportWithDiffs(preAddLinksReport, postAddLinksReport);
@@ -324,8 +275,8 @@ public class AddLinks
 		String currentDateTimeString = DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now());
 		String diffReportName = DIFF_REPORTS_PATH + "/diffReport" + currentDateTimeString + ".txt";
 		Files.write(Paths.get(diffReportName), diffReport.getBytes() );
-		logger.info("\n"+diffReport);
-		logger.info("(Differences report can also be found in the file: " + diffReportName);
+		logger.info("\n{}",diffReport);
+		logger.info("(Differences report can also be found in the file: {}", diffReportName);
 
 		logger.info("Querying for duplicated identifiers in the database, AFTER running AddLinks...");
 		List<Map<REPORT_KEYS, String>> postAddLinksdataRows = duplicateIdentifierReporter.createReport();
@@ -349,7 +300,8 @@ public class AddLinks
 	{
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		Map<String, Map<String,Integer>> preAddLinksReport = xrefReporter.createReportMap();
-		logger.info("\n"+(xrefReporter.printReport(preAddLinksReport)));
+		String report = xrefReporter.printReport(preAddLinksReport);
+		logger.info("\n{}", report);
 		logger.info("Querying for Duplicated identifiers in the database, BEFORE running AddLinks...");
 		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
 		StringBuilder duplicateSB = duplicateIdentifierReporter.generatePrintableReport(dataRows);
@@ -379,7 +331,6 @@ public class AddLinks
 		}
 		return retrieverJobs;
 	}
-
 
 
 	/**
@@ -433,8 +384,8 @@ public class AddLinks
 	@SuppressWarnings("unchecked")
 	private void createReferences(long personID, Map<String, Map<String, ?>> dbMappings) throws IOException, Exception
 	{
-		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
-		Files.write(Paths.get(diffReportName), "RefDBName\tNumOK\tNumNotOK\n".getBytes());
+		String linkCheckReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
+		Files.write(Paths.get(linkCheckReportName), "RefDBName\tNumOK\tNumNotOK\n".getBytes());
 		for (String refCreatorName : this.referenceCreatorFilter)
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
@@ -448,7 +399,7 @@ public class AddLinks
 				else if (this.processorCreatorLink.get(k) instanceof List)
 				{
 					List<String> sublist = ((List<String>)this.processorCreatorLink.get(k));
-					return sublist.stream().filter( element -> element.equals(refCreatorName) ).findFirst().isPresent();
+					return sublist.stream().anyMatch( element -> element.equals(refCreatorName) );
 				}
 				else // if not a list and not a string, something is wrong.
 				{
@@ -534,10 +485,8 @@ public class AddLinks
 					}
 				}
 				// Now check the links for the reference creator.
-				String targetRefDB = refCreator.getTargetRefDB();
-				GKInstance refDBInst = LinksToCheckCache.getCache().keySet().stream().filter( inst -> inst.getDisplayName().equals(targetRefDB)).findFirst().get();
-				String line = checkLinksForRefDB(new LinkCheckManager(), refDBInst);
-				Files.write(Paths.get(diffReportName), line.getBytes());
+				String line = checkLinksForRefCreator(refCreator);
+				Files.write(Paths.get(linkCheckReportName), line.getBytes());
 			}
 			// There is a separate list of reference creators to create UniProt references.
 			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
@@ -549,8 +498,28 @@ public class AddLinks
 				}
 				sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName.get()), sourceReferences);
+				// Now check the links for the reference creator.
+				String line = checkLinksForRefCreator(refCreator);
+				Files.write(Paths.get(linkCheckReportName), line.getBytes());
 			}
 		}
+	}
+
+	/**
+	 * @param refCreator
+	 * @return
+	 */
+	private String checkLinksForRefCreator(BatchReferenceCreator<?> refCreator)
+	{
+		String targetRefDB = refCreator.getTargetRefDB();
+
+		GKInstance refDBInst = LinksToCheckCache.getCache().keySet().stream()
+															.filter( inst -> inst.getDisplayName().equals(targetRefDB)
+																			|| (inst.getDisplayName().contains(KEGG) && targetRefDB.contains(KEGG))
+																			|| (inst.getDisplayName().contains(ENSEMBL) && targetRefDB.contains(ENSEMBL)))
+															.findFirst().get();
+
+		return checkLinksForRefDB(new LinkCheckManager(), refDBInst);
 	}
 
 	/**
@@ -638,12 +607,12 @@ public class AddLinks
 		{
 			String speciesDBID = this.objectCache.getSpeciesNamesToIds().get(species).get(0);
 			identifiers = this.objectCache.getByRefDbAndSpecies(refDBID, speciesDBID, className);
-			logger.debug(refDb + " " + refDBID + " ; " + species + " " + speciesDBID);
+			logger.debug("{} {} ; {} {} ", refDb, refDBID, species, speciesDBID);
 		}
 		else
 		{
 			identifiers = this.objectCache.getByRefDb(refDBID, className);
-			logger.debug(refDb + " " + refDBID + " ; " );
+			logger.debug("{} {} ; ", refDb, refDBID );
 		}
 
 		return identifiers;
@@ -768,13 +737,15 @@ public class AddLinks
 		// If we got a URL back from identifiers.org...
 		if (urlFromIdentifiersDotOrg != null && !urlFromIdentifiersDotOrg.trim().equals(""))
 		{
-			if (!urlFromIdentifiersDotOrg.replace("{$id}", "").equals(accessURL.replace("###ID###", "")))
+			final String identifiersDotOrgIDToken = "{$id}";
+			final String reactomeIDToken = "###ID###";
+			if (!urlFromIdentifiersDotOrg.replace(identifiersDotOrgIDToken, "").equals(accessURL.replace(reactomeIDToken, "")))
 			{
 				// If replacing the Identifier tokens cause the two strings to mis-match, we should
 				// use the new accessURL from identifiers.org, and log a message so someone will
 				// know to update reference-databases.xml
-				updatedAccessURL = urlFromIdentifiersDotOrg.replace("{$id}", "###ID###");
-				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org", accessURL, urlFromIdentifiersDotOrg.replace("{$id}", "###ID###"));
+				updatedAccessURL = urlFromIdentifiersDotOrg.replace(identifiersDotOrgIDToken, reactomeIDToken);
+				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org", accessURL, updatedAccessURL);
 
 			}
 			// else, the URL in reference-databases.xml matches the URL from identifiers.org so just return the input URL.
