@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -387,7 +388,7 @@ public class AddLinks
 	private void createReferences(long personID, Map<String, Map<String, ?>> dbMappings) throws IOException, Exception
 	{
 		String linkCheckReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
-		Files.write(Paths.get(linkCheckReportName), "RefDBName\tNumOK\tNumNotOK\n".getBytes());
+		Files.write(Paths.get(linkCheckReportName), "RefDBName\tNumOK\tNumNotOK\n".getBytes(), StandardOpenOption.CREATE);
 		for (String refCreatorName : this.referenceCreatorFilter)
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
@@ -488,7 +489,7 @@ public class AddLinks
 				}
 				// Now check the links for the reference creator.
 				String line = checkLinksForRefCreator(refCreator);
-				Files.write(Paths.get(linkCheckReportName), line.getBytes());
+				Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
 			}
 			// There is a separate list of reference creators to create UniProt references.
 			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
@@ -502,7 +503,7 @@ public class AddLinks
 				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName.get()), sourceReferences);
 				// Now check the links for the reference creator.
 				String line = checkLinksForRefCreator(refCreator);
-				Files.write(Paths.get(linkCheckReportName), line.getBytes());
+				Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
 			}
 		}
 	}
@@ -515,13 +516,21 @@ public class AddLinks
 	{
 		String targetRefDB = refCreator.getTargetRefDB();
 
-		GKInstance refDBInst = LinksToCheckCache.getCache().keySet().stream()
-															.filter( inst -> inst.getDisplayName().equals(targetRefDB)
-																			|| (inst.getDisplayName().contains(KEGG) && targetRefDB.contains(KEGG))
-																			|| (inst.getDisplayName().contains(ENSEMBL) && targetRefDB.contains(ENSEMBL)))
-															.findFirst().get();
-
-		return checkLinksForRefDB(new LinkCheckManager(), refDBInst);
+		Optional<GKInstance> refDBInst = LinksToCheckCache.getCache().keySet().stream()
+															.filter( inst -> ((inst.getDisplayName().equals(targetRefDB) && this.referenceDatabasesToLinkCheck.contains(targetRefDB))
+																				|| (inst.getDisplayName().contains(KEGG) && targetRefDB.contains(KEGG) && this.referenceDatabasesToLinkCheck.contains(KEGG))
+																				|| (inst.getDisplayName().contains(ENSEMBL) && targetRefDB.contains(ENSEMBL) && this.referenceDatabasesToLinkCheck.contains(ENSEMBL))))
+															.findFirst();
+		String line;
+		if (refDBInst.isPresent())
+		{
+			line = checkLinksForRefDB(new LinkCheckManager(), refDBInst.get());
+		}
+		else
+		{
+			line = targetRefDB + "\tN/A\tN/a\n";
+		}
+		return line;
 	}
 
 	/**
