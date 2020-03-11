@@ -114,7 +114,7 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			logger.info("Response: {}",response.getStatusLine());
 			if (response.getStatusLine().getStatusCode() > 400 )
 			{
-				throw new Error("Error getting list of species from ENSEMBL! " + response.getStatusLine().getStatusCode() + " ; Reason: " + response.getStatusLine().getReasonPhrase());
+				throw new Error("Error getting list of species from ENSEMBL! HTTP response code: " + response.getStatusLine().getStatusCode() + " ; Message: " + response.getStatusLine().getReasonPhrase());
 			}
 			String s = EntityUtils.toString(response.getEntity());
 			InputStream inStream = new ByteArrayInputStream(s.getBytes());

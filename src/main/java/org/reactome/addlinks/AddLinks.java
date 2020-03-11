@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -212,7 +213,7 @@ public class AddLinks
 		logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
 		StringBuilder reportLine = new StringBuilder();
 		reportLine.append(refDBInst.getDisplayName()).append("\t");
-		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.getCache().get(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.removeRefDBFromCache(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 		// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
 		for (Entry<String, LinkCheckInfo> entry : results.entrySet())
 		{
@@ -515,20 +516,41 @@ public class AddLinks
 	private String checkLinksForRefCreator(BatchReferenceCreator<?> refCreator)
 	{
 		String targetRefDB = refCreator.getTargetRefDB();
-
-		Optional<GKInstance> refDBInst = LinksToCheckCache.getCache().keySet().stream()
-															.filter( inst -> ((inst.getDisplayName().equals(targetRefDB) && this.referenceDatabasesToLinkCheck.contains(targetRefDB))
-																				|| (inst.getDisplayName().contains(KEGG) && targetRefDB.contains(KEGG) && this.referenceDatabasesToLinkCheck.contains(KEGG))
-																				|| (inst.getDisplayName().contains(ENSEMBL) && targetRefDB.contains(ENSEMBL) && this.referenceDatabasesToLinkCheck.contains(ENSEMBL))))
-															.findFirst();
-		String line;
-		if (refDBInst.isPresent())
+		String line = "";
+		if (!targetRefDB.toUpperCase().contains(KEGG) && !targetRefDB.toUpperCase().contains(ENSEMBL))
 		{
-			line = checkLinksForRefDB(new LinkCheckManager(), refDBInst.get());
+			Optional<GKInstance> refDBInst = LinksToCheckCache.getCache().keySet().stream()
+																.filter( inst -> ((inst.getDisplayName().equals(targetRefDB) && LinksToCheckCache.getRefDBsToCheck().contains(targetRefDB))))
+																.findFirst();
+			if (refDBInst.isPresent())
+			{
+				line = checkLinksForRefDB(new LinkCheckManager(), refDBInst.get());
+			}
+			else
+			{
+				line = targetRefDB + "\tN/A\tN/A\n";
+			}
+			return line;
 		}
-		else
+		else if (targetRefDB.toUpperCase().contains(KEGG))
 		{
-			line = targetRefDB + "\tN/A\tN/a\n";
+			StringBuilder sb = new StringBuilder();
+			Set<GKInstance> refDBInsts = LinksToCheckCache.getCache().keySet().stream().filter(inst -> inst.getDisplayName().toUpperCase().contains(KEGG)).collect(Collectors.toSet());
+			for (GKInstance refDB : refDBInsts)
+			{
+				sb.append(checkLinksForRefDB(new LinkCheckManager(), refDB));
+			}
+			line = sb.toString();
+		}
+		else if (targetRefDB.toUpperCase().contains(ENSEMBL))
+		{
+			StringBuilder sb = new StringBuilder();
+			Set<GKInstance> refDBInsts = LinksToCheckCache.getCache().keySet().stream().filter(inst -> inst.getDisplayName().toUpperCase().contains(ENSEMBL)).collect(Collectors.toSet());
+			for (GKInstance refDB : refDBInsts)
+			{
+				sb.append(checkLinksForRefDB(new LinkCheckManager(), refDB));
+			}
+			line = sb.toString();
 		}
 		return line;
 	}
