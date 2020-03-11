@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.reactome.addlinks.referencecreators;
 
@@ -10,8 +10,8 @@ import org.gk.model.GKInstance;
 import org.reactome.addlinks.CustomLoggable;
 
 /**
- * Basic interface for classes for objects that will create many references in a batch. 
- * 
+ * Basic interface for classes for objects that will create many references in a batch.
+ *
  * @author sshorser
  *
  */
@@ -21,6 +21,8 @@ public interface BatchReferenceCreator<T> extends CustomLoggable
 
 	public String getSourceRefDB();
 
+	public String getTargetRefDB();
+
 	public String getClassReferringToRefName();
-	
+
 }
