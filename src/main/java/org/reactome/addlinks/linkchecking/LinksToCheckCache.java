@@ -18,11 +18,11 @@ import org.gk.model.GKInstance;
 public class LinksToCheckCache
 {
 	private static List<String> refDBsToCheck = new ArrayList<String>();
-	
-	
+
+
 	// cache will be a map: Key is reference DB, value is a list of GKInstances which are Identifiers.
 	private static Map<GKInstance, Set<GKInstance>> linksCache = Collections.synchronizedMap(new HashMap<GKInstance, Set<GKInstance>>());
-	
+
 	public synchronized static void addLinkToCache(GKInstance refDB, GKInstance identifier)
 	{
 		if (LinksToCheckCache.linksCache.containsKey(refDB))
@@ -38,7 +38,12 @@ public class LinksToCheckCache
 			LinksToCheckCache.linksCache.get(refDB).add(identifier);
 		}
 	}
-	
+
+	public synchronized static Set<GKInstance> removeRefDBFromCache(GKInstance refDB)
+	{
+		return linksCache.remove(refDB);
+	}
+
 	public static Map<GKInstance, Set<GKInstance>> getCache()
 	{
 		return Collections.unmodifiableMap(LinksToCheckCache.linksCache);
