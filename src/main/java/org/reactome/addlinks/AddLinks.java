@@ -1,7 +1,10 @@
 package org.reactome.addlinks;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -53,6 +56,7 @@ import org.reactome.addlinks.referencecreators.BatchReferenceCreator;
 import org.reactome.addlinks.referencecreators.COSMICReferenceCreator;
 import org.reactome.addlinks.referencecreators.ComplexPortalReferenceCreator;
 import org.reactome.addlinks.referencecreators.ENSMappedIdentifiersReferenceCreator;
+import org.reactome.addlinks.referencecreators.EntrezGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.NCBIGeneBasedReferenceCreator;
 import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
@@ -509,6 +513,14 @@ public class AddLinks
 						}
 					}
 				}
+				if (refCreator instanceof NCBIGeneBasedReferenceCreator || refCreator instanceof ENSMappedIdentifiersReferenceCreator)
+				{
+					for (EntrezGeneBasedReferenceCreator subCreator : ((NCBIGeneBasedReferenceCreator)refCreator).getSubCreators())
+					{
+						String line = checkLinksForRefCreator(subCreator);
+						Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
+					}
+				}
 				// Now check the links for the reference creator.
 				String line = checkLinksForRefCreator(refCreator);
 				Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
@@ -517,13 +529,16 @@ public class AddLinks
 			else if (this.uniprotReferenceCreators.containsKey(refCreatorName))
 			{
 				UPMappedIdentifiersReferenceCreator refCreator = this.uniprotReferenceCreators.get(refCreatorName);
-				if (refCreator instanceof NCBIGeneBasedReferenceCreator)
-				{
-					((NCBIGeneBasedReferenceCreator) refCreator).setCTDGenes( (Map<String, String>) dbMappings.get(CTD_PROCESSOR) );
-				}
+				refCreator.setCTDGenes( (Map<String, String>) dbMappings.get(CTD_PROCESSOR) );
+
 				sourceReferences = this.getIdentifiersList(refCreator.getSourceRefDB(), refCreator.getClassReferringToRefName());
 				refCreator.createIdentifiers(personID, (Map<String, Map<String, List<String>>>) dbMappings.get(fileProcessorName.get()), sourceReferences);
-				// Now check the links for the reference creator.
+				// Now check the links for the reference creator (and sub-creators).
+				for (EntrezGeneBasedReferenceCreator subCreator : refCreator.getSubCreators())
+				{
+					String line = checkLinksForRefCreator(subCreator);
+					Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
+				}
 				String line = checkLinksForRefCreator(refCreator);
 				Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
 			}

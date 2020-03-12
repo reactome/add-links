@@ -23,14 +23,14 @@ import org.reactome.addlinks.CustomLoggable;
 public class LinkChecker implements CustomLoggable
 {
 
-	private static Logger logger; 
-	
+	private static Logger logger;
+
 	private String keyword;
 	private URI uri;
 	private static final int MAX_NUM_RETRIES = 5;
 	private int numRetries = 0;
 	private Duration timeout = Duration.ofSeconds(30);
-	
+
 	public LinkChecker(URI uri, String keyword)
 	{
 		this.uri = uri;
@@ -40,12 +40,12 @@ public class LinkChecker implements CustomLoggable
 			LinkChecker.logger = this.createLogger("LinkChecker", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
 		}
 	}
-	
+
 	public LinkChecker(CheckableLink link)
 	{
 		this(link.getURI(), link.getSearchKeyword());
 	}
-	
+
 	/**
 	 * Tries to GET a URL and then checks that the result contains a keyword.
 	 * @param keyword
@@ -69,9 +69,9 @@ public class LinkChecker implements CustomLoggable
 											.setRelativeRedirectsAllowed(true)
 											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
 		get.setConfig(config);
-		
+
 		boolean done = this.numRetries + 1 <= 0;
-		
+
 		LinkCheckInfo linkCheckInfo = new LinkCheckInfo();
 		linkCheckInfo.setLinkData(this.uri, this.keyword);
 		logger.trace("Checking link: {}", this.uri);
@@ -84,7 +84,7 @@ public class LinkChecker implements CustomLoggable
 			{
 				long endtime = System.currentTimeMillis();
 				responseTime = Duration.ofMillis(endtime - startTime);
-				
+
 				linkCheckInfo.setResponseTime(responseTime);
 				linkCheckInfo.setStatusCode(response.getStatusLine().getStatusCode());
 				responseBody = EntityUtils.toString(response.getEntity());
@@ -97,13 +97,14 @@ public class LinkChecker implements CustomLoggable
 				// we will *not* handle socket timeouts (inactivity that occurs after the connection has been established).
 				// we will *not* handle connection manager timeouts (time waiting for connection manager or connection pool).
 				long endtime = System.currentTimeMillis();
-				e.printStackTrace();
+//				e.printStackTrace();
 				this.numRetries++;
 				this.timeout = this.timeout.plus(Duration.ofSeconds(30));
 				logger.info("Failed to check {} after {} due to cause \"{}\", but will retry {} more time(s) with a longer timeout of {}.", this.uri, Duration.ofMillis(endtime - startTime), e.getMessage(), MAX_NUM_RETRIES - this.numRetries, this.timeout);
 				done = this.numRetries > MAX_NUM_RETRIES;
 				if (done)
 				{
+					e.printStackTrace();
 					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
 				}
 			}
@@ -130,7 +131,7 @@ public class LinkChecker implements CustomLoggable
 					{
 						if (responseBody.contains(this.keyword))
 						{
-							// SPECIAL CASE FOR KEGG: Kegg will return "OK 200" AND the keyword, even if the keyword is not found. 
+							// SPECIAL CASE FOR KEGG: Kegg will return "OK 200" AND the keyword, even if the keyword is not found.
 							// The exact text to check for it: "No such data was found."
 							//if (referenceDatabaseName.toLowerCase().contains("kegg"))
 							// KEGG URLs have a domain name of genome.jp
