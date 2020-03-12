@@ -1,5 +1,7 @@
 package org.reactome.addlinks.referencecreators;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +11,14 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 public abstract class NCBIGeneBasedReferenceCreator extends SimpleReferenceCreator< Map<String,List<String>> >
 {
 	protected List<EntrezGeneBasedReferenceCreator> entrezGeneReferenceCreators;
-	
+
+	public List<EntrezGeneBasedReferenceCreator> getSubCreators()
+	{
+		return this.entrezGeneReferenceCreators != null
+				? Collections.unmodifiableList(this.entrezGeneReferenceCreators)
+				: Collections.unmodifiableList(new ArrayList<EntrezGeneBasedReferenceCreator>());
+	}
+
 	public NCBIGeneBasedReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
@@ -45,13 +54,13 @@ public abstract class NCBIGeneBasedReferenceCreator extends SimpleReferenceCreat
 			{
 				((DbSNPReferenceCreator) entrezGeneCreator).setObjectCache(objectCache);
 			}
-			
+
 			// CTD Reference Creator needs a list of NCBI genes that are in CTD.
 			if (entrezGeneCreator instanceof CTDReferenceCreator )
 			{
 				((CTDReferenceCreator) entrezGeneCreator).setNcbiGenesInCTD(this.ctdGenes);
 			}
-			
+
 			entrezGeneCreator.createEntrezGeneReference(identifier, referencedObject, speciesID, personID);
 		}
 	}
