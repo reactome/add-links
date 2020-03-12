@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.schema.InvalidAttributeException;
 import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
@@ -212,7 +213,27 @@ public class AddLinks
 		 int numLinkNotOK = 0;
 		logger.info("Link-checking for database: {}", refDBInst.getDisplayName());
 		StringBuilder reportLine = new StringBuilder();
-		reportLine.append(refDBInst.getDisplayName()).append("\t");
+		if (!refDBInst.getDisplayName().toUpperCase().contains(ENSEMBL))
+		{
+			reportLine.append(refDBInst.getDisplayName()).append("\t");
+		}
+		else
+		{
+			try
+			{
+				Optional<String> longerName = ((List<String>)refDBInst.getAttributeValuesList(ReactomeJavaConstants.name)).stream().filter(name -> name.length() > ENSEMBL.length()).sorted().findFirst();
+				reportLine.append(longerName.orElse(ENSEMBL)).append("\t");
+			}
+			catch (InvalidAttributeException e)
+			{
+				e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+
+		}
 		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.removeRefDBFromCache(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 		// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
 		for (Entry<String, LinkCheckInfo> entry : results.entrySet())
