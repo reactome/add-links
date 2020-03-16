@@ -227,10 +227,12 @@ public class AddLinks
 			}
 			catch (InvalidAttributeException e)
 			{
+				logger.error("Failed to get attribute \"{}\" for object: {} - are you sure that was the correct attribute for that object?", ReactomeJavaConstants._1stAuthorSurname, refDBInst.toString());
 				e.printStackTrace();
 			}
 			catch (Exception e)
 			{
+				logger.error("Error!", e);
 				e.printStackTrace();
 			}
 
