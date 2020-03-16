@@ -97,7 +97,6 @@ public class LinkChecker implements CustomLoggable
 				// we will *not* handle socket timeouts (inactivity that occurs after the connection has been established).
 				// we will *not* handle connection manager timeouts (time waiting for connection manager or connection pool).
 				long endtime = System.currentTimeMillis();
-//				e.printStackTrace();
 				this.numRetries++;
 				this.timeout = this.timeout.plus(Duration.ofSeconds(30));
 				logger.info("Failed to check {} after {} due to cause \"{}\", but will retry {} more time(s) with a longer timeout of {}.", this.uri, Duration.ofMillis(endtime - startTime), e.getMessage(), MAX_NUM_RETRIES - this.numRetries, this.timeout);
