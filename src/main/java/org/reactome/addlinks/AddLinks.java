@@ -811,7 +811,7 @@ public class AddLinks
 				// use the new accessURL from identifiers.org, and log a message so someone will
 				// know to update reference-databases.xml
 				updatedAccessURL = urlFromIdentifiersDotOrg.replace(identifiersDotOrgIDToken, reactomeIDToken);
-				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org", accessURL, updatedAccessURL);
+				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org - you may want to updated reference-databases.xml with the new accessURL.", accessURL, updatedAccessURL);
 
 			}
 			// else, the URL in reference-databases.xml matches the URL from identifiers.org so just return the input URL.
