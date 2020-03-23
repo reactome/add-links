@@ -201,12 +201,9 @@ public class AddLinks
 	}
 
 	/**
-	 * @param linkCheckReportLines
-	 * @param linkCheckManager
-	 * @param refDBInst
-	 * @param reportLine
-	 * @param numLinkOK
-	 * @param numLinkNotOK
+	 * Checks links for a specific ReferenceDatabase.
+	 * @param linkCheckManager A LinkCheckManager that will be used to check links
+	 * @param refDBInst The ReferenceDatabase to check links for.
 	 */
 	private String checkLinksForRefDB(LinkCheckManager linkCheckManager, GKInstance refDBInst)
 	{
@@ -216,12 +213,15 @@ public class AddLinks
 		StringBuilder reportLine = new StringBuilder();
 		if (!refDBInst.getDisplayName().toUpperCase().contains(ENSEMBL))
 		{
+			// Non-ensembl ReferenceDatabases are easy.
 			reportLine.append(refDBInst.getDisplayName()).append("\t");
 		}
 		else
 		{
 			try
 			{
+				// Ensembl ReferenceDatabases will all have "ENSEMBL" as their first name.
+				// To get a more _useful_ name, we just need to find one that's longer than "ENSEMBL"
 				Optional<String> longerName = ((List<String>)refDBInst.getAttributeValuesList(ReactomeJavaConstants.name)).stream().filter(name -> name.length() > ENSEMBL.length()).sorted().findFirst();
 				reportLine.append(longerName.orElse(ENSEMBL)).append("\t");
 			}
@@ -239,9 +239,8 @@ public class AddLinks
 		}
 		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.removeRefDBFromCache(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 		// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
-		for (Entry<String, LinkCheckInfo> entry : results.entrySet())
+		for (LinkCheckInfo result : results.values())
 		{
-			LinkCheckInfo result = entry.getValue();
 			int statusCode = result.getStatusCode();
 			String identifier = result.getIdentifier();
 			// If the keyword is NOT found...
@@ -294,7 +293,7 @@ public class AddLinks
 	{
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
-		String report = xrefReporter.printReport(postAddLinksReport);
+		String report = xrefReporter.getReportContent(postAddLinksReport);
 		logger.info("\n{}", report);
 
 		logger.info("Differences");
@@ -328,7 +327,7 @@ public class AddLinks
 	{
 		logger.info("Counts of references to external databases currently in the database ({}), BEFORE running AddLinks", this.dbAdapter.getConnection().getCatalog());
 		Map<String, Map<String,Integer>> preAddLinksReport = xrefReporter.createReportMap();
-		String report = xrefReporter.printReport(preAddLinksReport);
+		String report = xrefReporter.getReportContent(preAddLinksReport);
 		logger.info("\n{}", report);
 		logger.info("Querying for Duplicated identifiers in the database, BEFORE running AddLinks...");
 		List<Map<REPORT_KEYS, String>> dataRows = duplicateIdentifierReporter.createReport();
@@ -569,24 +568,30 @@ public class AddLinks
 		}
 		else if (targetRefDB.toUpperCase().contains(KEGG))
 		{
-			StringBuilder sb = new StringBuilder();
-			Set<GKInstance> refDBInsts = LinksToCheckCache.getCache().keySet().stream().filter(inst -> inst.getDisplayName().toUpperCase().contains(KEGG)).collect(Collectors.toSet());
-			for (GKInstance refDB : refDBInsts)
-			{
-				sb.append(checkLinksForRefDB(new LinkCheckManager(), refDB));
-			}
-			line = sb.toString();
+			line = checkLinksForRefDBWithNameMatching(KEGG);
 		}
 		else if (targetRefDB.toUpperCase().contains(ENSEMBL))
 		{
-			StringBuilder sb = new StringBuilder();
-			Set<GKInstance> refDBInsts = LinksToCheckCache.getCache().keySet().stream().filter(inst -> inst.getDisplayName().toUpperCase().contains(ENSEMBL)).collect(Collectors.toSet());
-			for (GKInstance refDB : refDBInsts)
-			{
-				sb.append(checkLinksForRefDB(new LinkCheckManager(), refDB));
-			}
-			line = sb.toString();
+			line = checkLinksForRefDBWithNameMatching(ENSEMBL);
 		}
+		return line;
+	}
+
+	/**
+	 * Check links for ReferenceDatabase(s) whose name contains a substring
+	 * @param substringInName The substring to match ReferenceDatabase names against.
+	 * @return
+	 */
+	private String checkLinksForRefDBWithNameMatching(String substringInName)
+	{
+		String line;
+		StringBuilder sb = new StringBuilder();
+		Set<GKInstance> refDBInsts = LinksToCheckCache.getCache().keySet().stream().filter(inst -> inst.getDisplayName().toUpperCase().contains(substringInName)).collect(Collectors.toSet());
+		for (GKInstance refDB : refDBInsts)
+		{
+			sb.append(checkLinksForRefDB(new LinkCheckManager(), refDB));
+		}
+		line = sb.toString();
 		return line;
 	}
 
@@ -694,14 +699,13 @@ public class AddLinks
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
 
-		for (Entry<String, Map<String, ?>> entry : this.referenceDatabasesToCreate.entrySet())
+		for (Map<String, ?> refDBMapping : this.referenceDatabasesToCreate.values())
 		{
 			boolean speciesSpecificAccessURL = false;
-			Map<String, ?> refDB = entry.getValue();
 			String url = null, accessUrl = null, resourceIdentifier = null, newAccessUrl = null;
 			List<String> aliases = new ArrayList<>();
 			String primaryName = null;
-			for(Entry<String, ?> attributeEntry : refDB.entrySet())
+			for(Entry<String, ?> attributeEntry : refDBMapping.entrySet())
 			{
 				switch (attributeEntry.getKey())
 				{
@@ -759,7 +763,7 @@ public class AddLinks
 			{
 				if (primaryName == null || "".equals(primaryName.trim()))
 				{
-					throw new RuntimeException("You attempted to create a ReferenceDatabase with a NULL primary name! This is not allowed. The other attributes for this reference database are: " + refDB.toString());
+					throw new RuntimeException("You attempted to create a ReferenceDatabase with a NULL primary name! This is not allowed. The other attributes for this reference database are: " + refDBMapping.toString());
 				}
 				creator.createReferenceDatabaseWithAliases(url, accessUrl, primaryName, aliases.toArray(new String[aliases.size()]) );
 			}
@@ -813,7 +817,7 @@ public class AddLinks
 				// use the new accessURL from identifiers.org, and log a message so someone will
 				// know to update reference-databases.xml
 				updatedAccessURL = urlFromIdentifiersDotOrg.replace(identifiersDotOrgIDToken, reactomeIDToken);
-				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org - you may want to updated reference-databases.xml with the new accessURL.", accessURL, updatedAccessURL);
+				logger.info("accessURL changed from: '{}' to: '{}', as per the data at identifiers.org - you may want to update reference-databases.xml with the new accessURL.", accessURL, updatedAccessURL);
 
 			}
 			// else, the URL in reference-databases.xml matches the URL from identifiers.org so just return the input URL.

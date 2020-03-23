@@ -103,7 +103,7 @@ public class LinkChecker implements CustomLoggable
 				done = this.numRetries > MAX_NUM_RETRIES;
 				if (done)
 				{
-					e.printStackTrace();
+					logger.error("Connection Error!", e);
 					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
 				}
 			}

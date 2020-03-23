@@ -1,6 +1,5 @@
 package org.reactome.addlinks.referencecreators;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,7 @@ public abstract class NCBIGeneBasedReferenceCreator extends SimpleReferenceCreat
 	{
 		return this.entrezGeneReferenceCreators != null
 				? Collections.unmodifiableList(this.entrezGeneReferenceCreators)
-				: Collections.unmodifiableList(new ArrayList<EntrezGeneBasedReferenceCreator>());
+				: Collections.emptyList();
 	}
 
 	public NCBIGeneBasedReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)

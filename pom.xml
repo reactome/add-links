@@ -52,7 +52,7 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.13.0</version>
+			<version>2.13.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -210,6 +210,9 @@
 						<manifest>
 							<mainClass>org.reactome.addlinks.Main</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+						</manifestEntries>
 						<addMavenDescriptor>true</addMavenDescriptor>
 						<compress>true</compress>
 						<index>true</index>
@@ -260,8 +263,16 @@
 								</transformer>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>org.reactome.addlinks.Main</mainClass>
+									<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 								</transformer>
 							</transformers>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+								</excludes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
