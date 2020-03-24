@@ -237,9 +237,9 @@ public class AddLinks
 			}
 
 		}
-		Map<String, LinkCheckInfo> results = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.removeRefDBFromCache(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
+		Map<String, LinkCheckInfo> checkedLinks = linkCheckManager.checkLinks(refDBInst, new ArrayList<>(LinksToCheckCache.removeRefDBFromCache(refDBInst)), this.proportionToLinkCheck, this.maxNumberLinksToCheck);
 		// "results" is a map of DB IDs mapped to link-checking results, for each identifier.
-		for (LinkCheckInfo result : results.values())
+		for (LinkCheckInfo result : checkedLinks.values())
 		{
 			int statusCode = result.getStatusCode();
 			String identifier = result.getIdentifier();
