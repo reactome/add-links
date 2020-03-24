@@ -144,7 +144,7 @@ public class AddLinks
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases(personID);
-		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
+		// Now that we've *created* new ref dbs, rebuild any caches that might have depended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);

@@ -143,6 +143,18 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 				// In the Reactome database, the closest species name we have to that is "Cricetulus", so it *can* be mapped to.
 				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
 			}
+			// Now we need to create ReferenceDatabases for all of the species names in Reactome... because the Uniprot-mapped ENSEMBL 
+			// reference creator might try to create a reference for something that's not in the ENSEMBL species list.
+			// For example, the Uniprot-mapped-to-ENSEMBL reference creation process may want to create references for ENSEMBL
+			// for the hepatitis virus (hep. C, subtype 1a). That species is in Reactome's species list and it seems in UniProt's list as well,
+			// but it is not in the list of species that actually comes from ENSEMBL, even though ENSEMBL does have entries for hepatitis.
+			// So... now we add all Reactome species names as ENSEMBL Reference Database names. Anything that has 0 references will 
+			// be removed at the end of AddLinks.
+			for (String speciesName : objectCache.getSetOfSpeciesNames())
+			{
+				speciesName = speciesName.trim().toLowerCase().replace("_", " ");
+				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
+			}
 		}
 	}
 
