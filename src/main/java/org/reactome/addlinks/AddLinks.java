@@ -698,7 +698,9 @@ public class AddLinks
 	private void executeCreateReferenceDatabases(long personID)
 	{
 		ReferenceDatabaseCreator creator = new ReferenceDatabaseCreator(this.dbAdapter, personID);
-
+		// See reference-databases.xml, the bean with ID="referenceDatabases"
+		// That bean (referenceDatabases) is a map whose values are also maps.
+		// The values of that map could be strings or lists, which is why refDBMapping's type is Map<String, ?>
 		for (Map<String, ?> refDBMapping : this.referenceDatabasesToCreate.values())
 		{
 			boolean speciesSpecificAccessURL = false;
