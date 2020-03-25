@@ -222,7 +222,11 @@ public class AddLinks
 			{
 				// Ensembl ReferenceDatabases will all have "ENSEMBL" as their first name.
 				// To get a more _useful_ name, we just need to find one that's longer than "ENSEMBL"
-				Optional<String> longerName = ((List<String>)refDBInst.getAttributeValuesList(ReactomeJavaConstants.name)).stream().filter(name -> name.length() > ENSEMBL.length()).sorted().findFirst();
+				@SuppressWarnings("unchecked")
+				Optional<String> longerName = ((List<String>)refDBInst.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
+																		.filter(name -> name.length() > ENSEMBL.length())
+																		.sorted().findFirst();
+				
 				reportLine.append(longerName.orElse(ENSEMBL)).append("\t");
 			}
 			catch (InvalidAttributeException e)
