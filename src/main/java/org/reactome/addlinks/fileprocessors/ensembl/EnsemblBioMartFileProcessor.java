@@ -89,7 +89,6 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
                     // Get species name from filename
                     String biomartFileSpecies = bioMartFile.getFileName().toString().split("_")[0];
                     logger.info("Processing {}", bioMartFile.getFileName());
-//                    List<String> biomartFileLines = EnsemblBioMartUtil.getLinesFromFile(bioMartFile, false);
 
                     // Processing of UniProt mapping files.
                     // UniProt identifier mapping files are used to fully populate
@@ -137,31 +136,11 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
      * adds one of the four values (Gene, Transcript, Protein, UniProt/Microarray/GO terms) as a key to a List of
      * one of the other four values. For example, if it was building 'TranscriptToOtherIdentifiers', the key is the
      * transcript identifier of the line while the value is a List of Microarray/GO term identifiers.
-     * @param biomartFileLines List<String> - All tab-separated lines from the current BioMart file being processed.
+     * @param bioMartFile Path - A Path to a biomart file.
      * @param keyIndex int - The column indice that will be used as a key.
      * @param valueIndex int - The column indice that will be used as a value.
      * @return Map<String, List<String>> - The completed mapping from the BioMart file being processed.
      */
-    private Map<String, List<String>> getIdentifierMapping(List<String> biomartFileLines, int keyIndex, int valueIndex) {
-
-        Map<String, List<String>> identifierMapping = new HashMap<>();
-        for (String biomartFileLine : biomartFileLines) {
-            // Split each tab-separated line. Each line has four values. The first three are always
-            // Ensembl Gene (ENSG), Transcript (ENST) and Protein (ENSP), in that order.
-            // The 4th can be a UniProt/Microarray/GO term identifier, depending on the file being read.
-            // None of the values are guaranteed to in the line except perhaps the first (Gene).
-            List<String> tabSplit = Arrays.asList(biomartFileLine.split("\t"));
-            if (properArraySizeAndNecessaryColumnsContainData(tabSplit, keyIndex, valueIndex)) {
-                String mapKey = tabSplit.get(keyIndex);
-                String mapValue = tabSplit.get(valueIndex);
-
-                identifierMapping.computeIfAbsent(mapKey, k -> new ArrayList<>()).add(mapValue);
-            }
-        }
-
-        return identifierMapping;
-    }
-    
     private Map<String, List<String>> getIdentifierMapping(Path bioMartFile, int keyIndex, int valueIndex)
     {
         Map<String, List<String>> identifierMapping = new HashMap<>();

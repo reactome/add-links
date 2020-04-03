@@ -79,12 +79,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 				String inputFilename = dirToHmdbFiles + "/" + this.pathToFile.getFileName().toString().replaceAll(".zip", ".xml");
 				
 				//Transform the HMDB XML into a more usable CSV file.
-				Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("hmdb_metabolites_transform.xsl"));
-//				Transformer transformer = factory.newTransformer(source);
-//				Source xmlSource = new StreamSource(inputFilename);
 				String outfileName = inputFilename + ".transformed.tsv";
-//				Result outputTarget =  new StreamResult(new File(outfileName));
-//				transformer.transform(xmlSource, outputTarget);
 				this.transformXmlToTsv(inputFilename, outfileName);
 				
 				//Now we need to read the file.
@@ -108,16 +103,6 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 					hmdb2ChebiAndUniprot.put(parts[0], hmdbVals);
 				});
 			}
-//			catch (TransformerConfigurationException e)
-//			{
-//				e.printStackTrace();
-//				throw new Error(e);
-//			}
-//			catch (TransformerException e)
-//			{
-//				e.printStackTrace();
-//				throw new Error(e);
-//			}
 			catch (IOException e)
 			{
 				e.printStackTrace();
