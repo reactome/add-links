@@ -73,21 +73,19 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
         Set<String> rgpProteins = findRGPProteins(rgpInst, speciesBiomartName, mappings);
         // For each protein identifier retrieved, find OtherIdentifiers associated with it and
         // add them to the 'otherIdentifier' attribute of the RGP instance.
+        Set<String> otherIdentifiers = new TreeSet<>(rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
         for (String protein : rgpProteins) {
             // This check is required since the identifier taken from the RGP may not have a key in the proteinToTranscript mapping.
             Map<String, List<String>> proteinToTranscripts = EnsemblBioMartUtil.getProteinToTranscriptsMappings(speciesBiomartName, mappings);
             for (String transcript : proteinToTranscripts.computeIfAbsent(protein, k -> new ArrayList<>())) {
-
-                Set<String> otherIdentifiers = new HashSet<>(rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
                 Map<String, List<String>> transcriptToOtherIdentifiers = EnsemblBioMartUtil.getTranscriptToOtherIdentifiersMappings(speciesBiomartName, mappings);
                 for (String newOtherIdentifier : transcriptToOtherIdentifiers.computeIfAbsent(transcript, k -> new ArrayList<>())) {
                     otherIdentifiers.add(newOtherIdentifier);
                 }
-
-                if (!EnsemblBioMartOtherIdentifierPopulator.this.testMode) {
-                        rgpInst.setAttributeValue(ReactomeJavaConstants.otherIdentifier, new ArrayList<>(otherIdentifiers));
-                }
             }
+        }
+        if (!EnsemblBioMartOtherIdentifierPopulator.this.testMode) {
+            rgpInst.setAttributeValue(ReactomeJavaConstants.otherIdentifier, new ArrayList<>(otherIdentifiers));
         }
         sortOtherIdentifiersAndUpdateInstance(rgpInst);
     }
@@ -133,8 +131,8 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
 
     // Sorts all microarray/GO term values added to otherIdentifier slot and updates instance with new data.
     private void sortOtherIdentifiersAndUpdateInstance(GKInstance rgpInst) throws Exception {
-        List<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
-        Collections.sort(otherIdentifiers);
+//        List<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
+//        Collections.sort(otherIdentifiers);
         updateInstance(rgpInst);
 
     }
