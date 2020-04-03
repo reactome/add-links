@@ -85,12 +85,11 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
                 }
             }
         }
-        // Now that the set has been fully populated, set the attribute and update instance.
+        // Now that the set has been populated, set the attribute and update instance.
         if (!EnsemblBioMartOtherIdentifierPopulator.this.testMode) {
             rgpInst.setAttributeValue(ReactomeJavaConstants.otherIdentifier, new ArrayList<>(otherIdentifiers));
             adapter.updateInstanceAttribute(rgpInst, ReactomeJavaConstants.otherIdentifier);
         }
-//        sortOtherIdentifiersAndUpdateInstance(rgpInst);
     }
 
     /**
@@ -131,19 +130,6 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
         }
         return rgpIdentifiersToRGPs;
     }
-
-    // Sorts all microarray/GO term values added to otherIdentifier slot and updates instance with new data.
-//    private void sortOtherIdentifiersAndUpdateInstance(GKInstance rgpInst) throws Exception {
-////        List<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
-////        Collections.sort(otherIdentifiers);
-//        updateInstance(rgpInst);
-//
-//    }
-
-    // Updates the OtherIdentifier attribute of the ReferenceGeneProduct with Microarray/GO term data in the database.
-//    private void updateInstance(GKInstance rgpInst) throws Exception {
-//        adapter.updateInstanceAttribute(rgpInst, ReactomeJavaConstants.otherIdentifier);
-//    }
 
     // Checks that none of the provided mapping structures are null.
     public boolean allDataStructuresPopulated(Map<String, List<String>> proteinToTranscripts, Map<String, List<String>> transcriptToOtherIdentifiers, Map<String, List<String>> uniprotToProtein) {
