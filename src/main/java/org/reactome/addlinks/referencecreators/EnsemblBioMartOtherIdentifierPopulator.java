@@ -73,6 +73,7 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
         Set<String> rgpProteins = findRGPProteins(rgpInst, speciesBiomartName, mappings);
         // For each protein identifier retrieved, find OtherIdentifiers associated with it and
         // add them to the 'otherIdentifier' attribute of the RGP instance.
+        // TreeSet ensures the the identifiers will stay sorted.
         Set<String> otherIdentifiers = new TreeSet<>(rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
         for (String protein : rgpProteins) {
             // This check is required since the identifier taken from the RGP may not have a key in the proteinToTranscript mapping.
@@ -84,10 +85,12 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
                 }
             }
         }
+        // Now that the set has been fully populated, set the attribute and update instance.
         if (!EnsemblBioMartOtherIdentifierPopulator.this.testMode) {
             rgpInst.setAttributeValue(ReactomeJavaConstants.otherIdentifier, new ArrayList<>(otherIdentifiers));
+            adapter.updateInstanceAttribute(rgpInst, ReactomeJavaConstants.otherIdentifier);
         }
-        sortOtherIdentifiersAndUpdateInstance(rgpInst);
+//        sortOtherIdentifiersAndUpdateInstance(rgpInst);
     }
 
     /**
@@ -130,17 +133,17 @@ public class EnsemblBioMartOtherIdentifierPopulator extends SimpleReferenceCreat
     }
 
     // Sorts all microarray/GO term values added to otherIdentifier slot and updates instance with new data.
-    private void sortOtherIdentifiersAndUpdateInstance(GKInstance rgpInst) throws Exception {
-//        List<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
-//        Collections.sort(otherIdentifiers);
-        updateInstance(rgpInst);
-
-    }
+//    private void sortOtherIdentifiersAndUpdateInstance(GKInstance rgpInst) throws Exception {
+////        List<String> otherIdentifiers = rgpInst.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier);
+////        Collections.sort(otherIdentifiers);
+//        updateInstance(rgpInst);
+//
+//    }
 
     // Updates the OtherIdentifier attribute of the ReferenceGeneProduct with Microarray/GO term data in the database.
-    private void updateInstance(GKInstance rgpInst) throws Exception {
-        adapter.updateInstanceAttribute(rgpInst, ReactomeJavaConstants.otherIdentifier);
-    }
+//    private void updateInstance(GKInstance rgpInst) throws Exception {
+//        adapter.updateInstanceAttribute(rgpInst, ReactomeJavaConstants.otherIdentifier);
+//    }
 
     // Checks that none of the provided mapping structures are null.
     public boolean allDataStructuresPopulated(Map<String, List<String>> proteinToTranscripts, Map<String, List<String>> transcriptToOtherIdentifiers, Map<String, List<String>> uniprotToProtein) {
