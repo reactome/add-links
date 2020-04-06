@@ -103,6 +103,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      */
     private void queryBioMartAndStoreData(String biomartSpeciesName, String biomartQueryFilePath, String biomartDataType, String fileSuffix) throws IOException {
         String biomartFilename = this.destination + biomartSpeciesName + fileSuffix;
+        logger.info("Querying Biomart for species: {}; data type: {}", biomartSpeciesName, biomartDataType);
         if (!Files.exists(Paths.get(biomartFilename))) {
             Set<String> biomartResponseLines = new HashSet<>();
             logger.info("Retrieving data associated with query ID: {}", biomartDataType);
