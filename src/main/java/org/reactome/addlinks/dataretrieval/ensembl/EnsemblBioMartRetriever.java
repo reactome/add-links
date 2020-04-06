@@ -102,18 +102,21 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * @throws IOException - Thrown when unable to write data to file.
      */
     private void queryBioMartAndStoreData(String biomartSpeciesName, String biomartQueryFilePath, String biomartDataType, String fileSuffix) throws IOException {
-
-        Set<String> biomartResponseLines = new HashSet<>();
-        logger.info("Retrieving data associated with query ID: " + biomartDataType);
-        try {
-            biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), biomartDataType);
-        } catch (Exception e) {
-            logger.error("Unable to retrieve data associated with query ID: " + biomartDataType, e);
-            e.printStackTrace();
-        }
-
         String biomartFilename = this.destination + biomartSpeciesName + fileSuffix;
-        storeBioMartData(biomartFilename, biomartResponseLines);
+        if (!Files.exists(Paths.get(biomartFilename))) {
+            Set<String> biomartResponseLines = new HashSet<>();
+            logger.info("Retrieving data associated with query ID: {}", biomartDataType);
+            try {
+                biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), biomartDataType);
+            } catch (Exception e) {
+                logger.error("Unable to retrieve data associated with query ID: " + biomartDataType, e);
+                e.printStackTrace();
+            }
+            storeBioMartData(biomartFilename, biomartResponseLines);
+        }
+        else {
+        	logger.info("{} already exists. It is *assumed* to be complete, and will not be downloaded.", biomartFilename);
+        }
     }
 
     /**
