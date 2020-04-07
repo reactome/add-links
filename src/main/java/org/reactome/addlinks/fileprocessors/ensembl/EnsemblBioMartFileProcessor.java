@@ -1,9 +1,12 @@
 package org.reactome.addlinks.fileprocessors.ensembl;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.reactome.addlinks.EnsemblBioMartUtil;
 import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -81,25 +84,24 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
         Map<String, Map<String, List<String>>> mappings = new HashMap<>();
         // Read each file in BioMart directory and iterate through each line.
         try (Stream<Path> paths = Files.walk(this.pathToFile)) {
-            paths
-                .filter(Files::isRegularFile)
-                .forEach(bioMartFile -> {
+            paths.filter(Files::isRegularFile)
+                 .forEach(bioMartFile -> {
                     // Get species name from filename
                     String biomartFileSpecies = bioMartFile.getFileName().toString().split("_")[0];
-                    List<String> biomartFileLines = EnsemblBioMartUtil.getLinesFromFile(bioMartFile, false);
+                    logger.info("Processing {}", bioMartFile.getFileName());
 
                     // Processing of UniProt mapping files.
                     // UniProt identifier mapping files are used to fully populate
                     // the 'uniprotToProteins' and 'proteinToGenes' mappings.
                     if (bioMartFile.toString().endsWith(EnsemblBioMartUtil.UNIPROT_SUFFIX)) {
                         // 'uniprotToProteins' mapping requires the 3rd (protein) and 4th (uniprot) values in the line.
-                        Map<String, List<String>> uniprotToProteins = getIdentifierMapping(biomartFileLines, IDENTIFIER_INDEX, PROTEIN_IDENTIFIER_INDEX);
+                        Map<String, List<String>> uniprotToProteins = getIdentifierMapping(bioMartFile, IDENTIFIER_INDEX, PROTEIN_IDENTIFIER_INDEX);
                         if (!uniprotToProteins.isEmpty()) {
                             // Add each mapping generated to the 'super' mapping
                             mappings.put(biomartFileSpecies + EnsemblBioMartUtil.UNIPROT_TO_PROTEINS_SUFFIX, uniprotToProteins);
                         }
                         // 'proteinToGenes' mappings require the 1st (gene) and 3rd (protein) values in the line.
-                        Map<String, List<String>> proteinToGenes = getIdentifierMapping(biomartFileLines, PROTEIN_IDENTIFIER_INDEX, GENE_IDENTIFIER_INDEX);
+                        Map<String, List<String>> proteinToGenes = getIdentifierMapping(bioMartFile, PROTEIN_IDENTIFIER_INDEX, GENE_IDENTIFIER_INDEX);
                         if (!proteinToGenes.isEmpty()) {
                             // Add each mapping generated to the 'super' mapping
                             mappings.put(biomartFileSpecies + EnsemblBioMartUtil.PROTEIN_TO_GENES_SUFFIX, proteinToGenes);
@@ -109,13 +111,13 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
                     // 'proteinToTranscripts' and 'transcriptToOtherIdentifiers' mappings.
                     } else if (bioMartFile.toString().endsWith(EnsemblBioMartUtil.MICROARRAY_IDS_AND_GO_TERMS_SUFFIX)) {
                         // 'proteinToTranscripts' mapping requires the 2nd (transcript) and 3rd (protein) values in the line.
-                        Map<String, List<String>> proteinToTranscripts = getIdentifierMapping(biomartFileLines, PROTEIN_IDENTIFIER_INDEX, TRANSCRIPT_IDENTIFIER_INDEX);
+                        Map<String, List<String>> proteinToTranscripts = getIdentifierMapping(bioMartFile, PROTEIN_IDENTIFIER_INDEX, TRANSCRIPT_IDENTIFIER_INDEX);
                         if (!proteinToTranscripts.isEmpty()) {
                             // Add each mapping generated to the 'super' mapping
                             mappings.put(biomartFileSpecies + EnsemblBioMartUtil.PROTEIN_TO_TRANSCRIPTS_SUFFIX, proteinToTranscripts);
                         }
                         // 'transcriptToOtherIdentifiers' mapping requires the 2nd (transcript) and 4th (microarray/GO term) values in the line.
-                        Map<String, List<String>> transcriptToOtherIdentifiers = getIdentifierMapping(biomartFileLines, TRANSCRIPT_IDENTIFIER_INDEX, IDENTIFIER_INDEX);
+                        Map<String, List<String>> transcriptToOtherIdentifiers = getIdentifierMapping(bioMartFile, TRANSCRIPT_IDENTIFIER_INDEX, IDENTIFIER_INDEX);
                         if (!transcriptToOtherIdentifiers.isEmpty()) {
                             // Add each mapping generated to the 'super' mapping
                             mappings.put(biomartFileSpecies + EnsemblBioMartUtil.TRANSCRIPT_TO_OTHER_IDENTIFIERS_SUFFIX, transcriptToOtherIdentifiers);
@@ -134,28 +136,36 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
      * adds one of the four values (Gene, Transcript, Protein, UniProt/Microarray/GO terms) as a key to a List of
      * one of the other four values. For example, if it was building 'TranscriptToOtherIdentifiers', the key is the
      * transcript identifier of the line while the value is a List of Microarray/GO term identifiers.
-     * @param biomartFileLines List<String> - All tab-separated lines from the current BioMart file being processed.
+     * @param bioMartFile Path - A Path to a biomart file.
      * @param keyIndex int - The column indice that will be used as a key.
      * @param valueIndex int - The column indice that will be used as a value.
      * @return Map<String, List<String>> - The completed mapping from the BioMart file being processed.
      */
-    private Map<String, List<String>> getIdentifierMapping(List<String> biomartFileLines, int keyIndex, int valueIndex) {
-
+    private Map<String, List<String>> getIdentifierMapping(Path bioMartFile, int keyIndex, int valueIndex)
+    {
         Map<String, List<String>> identifierMapping = new HashMap<>();
-        for (String biomartFileLine : biomartFileLines) {
-            // Split each tab-separated line. Each line has four values. The first three are always
-            // Ensembl Gene (ENSG), Transcript (ENST) and Protein (ENSP), in that order.
-            // The 4th can be a UniProt/Microarray/GO term identifier, depending on the file being read.
-            // None of the values are guaranteed to in the line except perhaps the first (Gene).
-            List<String> tabSplit = Arrays.asList(biomartFileLine.split("\t"));
-            if (properArraySizeAndNecessaryColumnsContainData(tabSplit, keyIndex, valueIndex)) {
-                String mapKey = tabSplit.get(keyIndex);
-                String mapValue = tabSplit.get(valueIndex);
-
-                identifierMapping.computeIfAbsent(mapKey, k -> new ArrayList<>()).add(mapValue);
+        try
+        {
+            LineIterator iterator = FileUtils.lineIterator(bioMartFile.toFile(), StandardCharsets.ISO_8859_1.toString());
+            
+            while (iterator.hasNext())
+            {
+                String line = iterator.nextLine();
+                List<String> tabSplit = Arrays.asList(line.split("\t"));
+                if (properArraySizeAndNecessaryColumnsContainData(tabSplit, keyIndex, valueIndex))
+                {
+                    String mapKey = tabSplit.get(keyIndex);
+                    String mapValue = tabSplit.get(valueIndex);
+                    identifierMapping.computeIfAbsent(mapKey, k -> new ArrayList<>()).add(mapValue);
+                }
             }
         }
-
+        catch (IOException e)
+        {
+            logger.error("I/O Error with file: " + bioMartFile.toString(), e);
+            e.printStackTrace();
+        }
+        
         return identifierMapping;
     }
 
