@@ -160,27 +160,22 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 		catch (FileNotFoundException e ) 
 		{
 			logger.error("Input XML file was not found!", e);
-			e.printStackTrace();
 		}
 		catch (XMLStreamException e)
 		{
 			logger.error("Error streaming XML file!", e);
-			e.printStackTrace();	
 		}
 		catch (TransformerConfigurationException e)
 		{
 			logger.error("Error with XSL file!", e);
-			e.printStackTrace();
 		}
 		catch (TransformerException e)
 		{
 			logger.error("Data transformation error!", e);
-			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
 			logger.error("I/O Error", e);
-			e.printStackTrace();
 		}
 	}
 }
