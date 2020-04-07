@@ -141,13 +141,17 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 			Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("hmdb_metabolites_transform.xsl"));
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer = factory.newTransformer(source);
-			
+			// While there are start elements...
 			while (xsr.nextTag() == XMLStreamConstants.START_ELEMENT)
 			{
+				// Check if the current start element is "metabolite" - that's the root element that we will transform.
 				if (xsr.getName().getLocalPart().equals(METABOLITE_ELEMENT_NAME))
 				{
+					// Get everything rooted under the "metabolite" element.
 					StAXSource src = new StAXSource(xsr);
+					// get a Result that points to the output file 
 					Result result = new StreamResult(outStream);
+					// execute the XSL transform - the transformed output will go to the output file via `result`.
 					transformer.transform(src, result);
 				}
 			}
