@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -140,7 +139,8 @@ public class AddLinks
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases(personID);
-		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
+
+		// Now that we've *created* new ref dbs, rebuild any caches that might have depended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
@@ -150,12 +150,10 @@ public class AddLinks
 		List<Callable<Boolean>> retrieverJobs = createRetrieverJobs(numUniprotDownloadThreads);
 		// Execute the file retrievers.
 		execSrvc.invokeAll(retrieverJobs);
-
 		retrieverJobs = new ArrayList<>();
 		// Now that uniprot file retrievers have run, we can run the KEGG file retriever.
 		retrieverJobs.add(new KeggFileRetrieverExecutor(this.fileRetrievers, this.uniprotFileRetrievers, this.fileRetrieverFilter, this.objectCache));
 		execSrvc.invokeAll(retrieverJobs);
-
 		logger.info("Finished downloading files.");
 		execSrvc.shutdown();
 		logger.info("Now processing the files...");
@@ -163,7 +161,6 @@ public class AddLinks
 		// TODO: Link the file processors to the file retrievers so that if
 		// any are filtered, only the appropriate processors will execute. Maybe?
 		Map<String, Map<String, ?>> dbMappings = executeFileProcessors();
-
 		// Special extra work for ENSEMBL...
 		if (this.fileProcessorFilter.contains("ENSEMBLFileProcessor") || this.fileProcessorFilter.contains("ENSEMBLNonCoreFileProcessor"))
 		{
@@ -186,6 +183,7 @@ public class AddLinks
 
 			}
 		}
+
 		//Before each set of IDs is updated in the database, maybe take a database backup?
 
 		//Now we create references.
@@ -344,7 +342,6 @@ public class AddLinks
 
 	/**
 	 * @param numUniprotDownloadThreads
-	 * @param retrieverJobs
 	 */
 	private List<Callable<Boolean>> createRetrieverJobs(int numUniprotDownloadThreads)
 	{
@@ -419,6 +416,7 @@ public class AddLinks
 		for (String refCreatorName : this.referenceCreatorFilter)
 		{
 			logger.info("Executing reference creator: {}", refCreatorName);
+
 			List<GKInstance> sourceReferences = new ArrayList<>();
 			// Try to get the processor name, except for E
 			Optional<?> fileProcessorName = this.processorCreatorLink.keySet().stream().filter(k -> {
@@ -437,6 +435,7 @@ public class AddLinks
 				}
 
 			} ).map( m -> m ).findFirst();
+
 			if (this.referenceCreators.containsKey(refCreatorName))
 			{
 				@SuppressWarnings("rawtypes")

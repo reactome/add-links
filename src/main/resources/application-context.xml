@@ -65,6 +65,13 @@
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
+		<value>HPA</value>
+		<value>VGNC</value>
+		<value>MGI</value>
+		<value>RGD</value>
+		<value>Xenbase</value>
+		<value>ZFIN</value>
+		<value>EnsemblBioMart</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -96,6 +103,13 @@
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
+		<value>HPAFileProcessor</value>
+		<value>VGNCFileProcessor</value>
+		<value>MGIFileProcessor</value>
+		<value>RGDFileProcessor</value>
+		<value>XenbaseFileProcessor</value>
+		<value>ZFINFileProcessor</value>
+		<value>EnsemblBioMartFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -135,6 +149,14 @@
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
+		<value>HPAReferenceCreator</value>
+		<value>VGNCReferenceCreator</value>
+		<value>MGIReferenceCreator</value>
+		<value>RGDReferenceCreator</value>
+		<value>XenbaseReferenceCreator</value>
+		<value>ZFINReferenceCreator</value>
+		<value>EnsemblReferenceCreator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -171,6 +193,16 @@
 		<value>HMDB Protein</value>
 		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
+		<value>HPA</value>
+		<value>MGI</value>
+		<value>RGD</value>
+		<value>Xenbase</value>
+		<value>ZFIN</value>
+		<value>Ensembl</value>
+		<!--
+		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
+		This prevents an identifier search in the page from becoming possible, since it is just searching the template.
+		<value>VGNC</value> -->
 		<!--
 		OpenTargets use ENSEMBL identifiers, but
 		the identifiers do not appear in the body of the web page.

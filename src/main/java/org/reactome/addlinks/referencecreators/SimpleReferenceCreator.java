@@ -1,10 +1,6 @@
 package org.reactome.addlinks.referencecreators;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
@@ -20,7 +16,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 
 /**
  * Creates references from one database to another.
- * @param T - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
+ * @param <T> - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
  * but subclasses may have more complex mappings, such as List&lt;String&gt; - this will also require those subclasses
  * to override the createIdentifiers method.
  * @author sshorser
@@ -129,20 +125,26 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 							speciesID = new Long(speciesInst.getDBID());
 						}
 					}
-					
-					String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
-					this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
-					// Look for cross-references.
-					boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
-					if (!xrefAlreadyExists)
-					{
-						this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
-						sourceIdentifiersWithNewIdentifier.incrementAndGet();
-						thingsToCreate.add(targetRefDBIdentifier+","+String.valueOf(sourceReference.getDBID())+","+speciesID);
+
+					// The T value of the mapping can be either a List or a String depending on the FileProcessors invoked.
+					Set<String> targetRefDBIdentifiers = new HashSet<>();
+					if (mapping.get(sourceReferenceIdentifier) instanceof List) {
+						targetRefDBIdentifiers.addAll((List) mapping.get(sourceReferenceIdentifier));
+					} else {
+						targetRefDBIdentifiers.add((String) mapping.get(sourceReferenceIdentifier));
 					}
-					else
-					{
-						sourceIdentifiersWithExistingIdentifier.incrementAndGet();
+
+					for (String targetRefDBIdentifier : targetRefDBIdentifiers) {
+						this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
+						// Look for cross-references.
+						boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
+						if (!xrefAlreadyExists) {
+							this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
+							sourceIdentifiersWithNewIdentifier.incrementAndGet();
+							thingsToCreate.add(targetRefDBIdentifier + "," + String.valueOf(sourceReference.getDBID()) + "," + speciesID);
+						} else {
+							sourceIdentifiersWithExistingIdentifier.incrementAndGet();
+						}
 					}
 				}
 				else
