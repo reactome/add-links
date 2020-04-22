@@ -27,17 +27,17 @@ public final class KEGGSpeciesCache
 	private static final Logger logger = LogManager.getLogger();
 	private static String speciesURL = "http://www.genome.jp/kegg-bin/download_htext?htext=br08601.keg&format=htext&filedir=";
 	// The map of KEGG codes will be keyed of the proper (Latin) species name, as they are found in KEGG.
-	private static Map<String, List<Map<String,String>>> speciesMap = new HashMap<String, List<Map<String,String>>>();
-	private static Map<String, String> codesToSpecies = new HashMap<String, String>();
+	private static Map<String, List<Map<String,String>>> speciesMap = new HashMap<>();
+	private static Map<String, String> codesToSpecies = new HashMap<>();
 	private static Set<String> allCodes;
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
 	private KEGGSpeciesCache()
 	{
-		
+
 	}
-	
+
 	/**
 	 * Static initializer will query KEGG and populate the caches the first time
 	 * this class is referenced.
@@ -55,7 +55,7 @@ public final class KEGGSpeciesCache
 			{
 				logger.info("Response: {}",response.getStatusLine());
 				String s = EntityUtils.toString(response.getEntity());
-	
+
 				// Process each line with the following regexp:
 				//     ^[A-Z]\W*([a-z]{3,4})\W*([a-zA-Z0-9 .=#+,\[\]\/:\-_']*)\W*(\(([a-zA-Z0-9 .=#+,\[\]\/:\-_']*).*\).*)?$
 				// Pattern tested here: http://regexr.com/3emij
@@ -79,8 +79,8 @@ public final class KEGGSpeciesCache
 						{
 							commonName = m.group(3).replace("(", "").replace(")","").trim();
 						}
-						
-						Map<String,String> map = new HashMap<String,String>(2);
+
+						Map<String,String> map = new HashMap<>(2);
 						map.put(KEGG_CODE, code);
 						map.put(COMMON_NAME, commonName);
 						// Check that the name isn't already in the map. Yes, the KEGG species file *does* contain duplicated names with different codes.
@@ -90,7 +90,7 @@ public final class KEGGSpeciesCache
 						}
 						else
 						{
-							List<Map<String,String>> list = new ArrayList<Map<String,String>>();
+							List<Map<String,String>> list = new ArrayList<>();
 							list.add(map);
 							speciesMap.put(name, list);
 						}
@@ -103,7 +103,7 @@ public final class KEGGSpeciesCache
 						// or summary/group headings.
 						logger.trace("Line/pattern mismatch: {}",line);
 					}
-					
+
 				}
 				logger.info("{} keys added to the KEGG species map.",KEGGSpeciesCache.speciesMap.keySet().size());
 			}
@@ -114,10 +114,10 @@ public final class KEGGSpeciesCache
 			throw new Error(e);
 		}
 	}
-	
+
 	/**
 	 * Get the KEGG codes for a species name.
-	 * @param name - The name of the species. 
+	 * @param name - The name of the species.
 	 * @return The KEGG code for that species.
 	 */
 	public static List<String> getKEGGCodes(String name)
@@ -130,7 +130,7 @@ public final class KEGGSpeciesCache
 		}
 		return codes;
 	}
-	
+
 	/**
 	 * Get the KEGG common names for a species. NOTE: Not all species have a common name in the KEGG database, so this may return null
 	 * even if it is a valid organism in the KEGG listing.
@@ -143,26 +143,25 @@ public final class KEGGSpeciesCache
 		List<String> commonNames = null;
 		if (list != null)
 		{
-			commonNames = list.stream().map( m -> m.get(COMMON_NAME)).collect(Collectors.toList()); 
+			commonNames = list.stream().map( m -> m.get(COMMON_NAME)).collect(Collectors.toList());
 		}
 		return commonNames;
 	}
-	
+
 	/**
 	 * Returns the set of KEGG species codes.
 	 * @return
 	 */
 	public static Set<String> getKeggSpeciesCodes()
 	{
-		// save the codes in a separate variable so that subsquent calls to this function are faster. 
+		// save the codes in a separate variable so that subsquent calls to this function are faster.
 		if (KEGGSpeciesCache.allCodes == null)
 		{
-			//KEGGSpeciesCache.allCodes =  KEGGSpeciesCache.speciesMap.values().stream().map( v -> v.get(KEGG_CODE) ).collect(Collectors.toSet());
 			KEGGSpeciesCache.allCodes =  KEGGSpeciesCache.speciesMap.values().stream().flatMap( v -> v.stream().map( i -> i.get(KEGG_CODE)).collect(Collectors.toList()).stream() ).collect(Collectors.toSet()) ;
 		}
 		return KEGGSpeciesCache.allCodes;
 	}
-	
+
 	/**
 	 * Returns the set of KEGG species names (not "common" names).
 	 * @return
@@ -171,7 +170,7 @@ public final class KEGGSpeciesCache
 	{
 		return speciesMap.keySet();
 	}
-	
+
 	/**
 	 * If <code>identifier</code> begins with a known KEGG species code, this function will return that prefix.
 	 * @param identifier An Identifier.
@@ -193,7 +192,7 @@ public final class KEGGSpeciesCache
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Strips out the species code prefix from a KEGG identifier string.
 	 * @param identifier - the identifier string to prune
@@ -201,12 +200,13 @@ public final class KEGGSpeciesCache
 	 */
 	public static String pruneKEGGSpeciesCode(String identifier)
 	{
+		String prunedIdentifier = identifier;
 		String prefix = KEGGSpeciesCache.extractKEGGSpeciesCode(identifier);
 		if (prefix != null)
 		{
-			identifier = identifier.replaceFirst(prefix + ":", "");
+			prunedIdentifier = identifier.replaceFirst(prefix + ":", "");
 		}
-		return identifier;
+		return prunedIdentifier;
 	}
 
 	/**
@@ -218,6 +218,6 @@ public final class KEGGSpeciesCache
 	{
 		return codesToSpecies.get(abbreviation);
 	}
-	
+
 }
 

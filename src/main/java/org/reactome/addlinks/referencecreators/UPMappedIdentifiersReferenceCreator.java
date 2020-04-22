@@ -26,12 +26,12 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 {
 
 	ReferenceObjectCache refObjectCache = new ReferenceObjectCache(this.adapter, true);
-	
+
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
 	}
-	
+
 	public UPMappedIdentifiersReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
@@ -42,14 +42,14 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 		this.entrezGeneReferenceCreators = entrezGeneRefCreators;
 	}
-	
+
 	/**
 	 * Creates identifiers based on the mappings found in files.
 	 * @param personID - The ID of the person ID that will be associated with the identifiers that will be created.
 	 * @param mappings - First level is species to Uniprot IDs. The next level maps UniProt IDs to Other identifers.
 	 * @throws IOException - if an I/O error occurs opening the file
 	 */
-	
+
 	@Override
 	public void createIdentifiers(long personID, Map<String, Map<String, List<String>>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
@@ -61,10 +61,10 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 		{
 			return "ENSEMBL_"+speciesName.replaceAll(" ", "_").toLowerCase() + "_" + (this.classToCreateName.equals(ReactomeJavaConstants.ReferenceGeneProduct) ? "PROTEIN" : "GENE");
 		};
-		
+
 		// First, we need a map of sourceReferences.
 		Map<String, List<GKInstance>> sourceRefMap = Collections.synchronizedMap(new HashMap<String, List<GKInstance>>(sourceReferences.size()));
-		
+
 		sourceReferences.parallelStream().forEach(sourceRef -> {
 			try
 			{
@@ -89,7 +89,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				throw new Error(e1);
 			}
 		});
-		
+
 		if (mappings != null && mappings.keySet() != null && mappings.keySet().size() > 0)
 		{
 			List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
@@ -103,10 +103,10 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				{
 					this.logger.info("No references to create for species {}", speciesID);
 				}
-				
-				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID -> 
+
+				mappings.get(speciesID).keySet().parallelStream().forEach(uniprotID ->
 				{
-					
+
 					for (String otherIdentifierID : mappings.get(speciesID).get(uniprotID))
 					{
 						String sourceIdentifier = uniprotID;
@@ -115,12 +115,14 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 						try
 						{
 							// Special case for KEGG - prune species code prefix.
-							if (this.targetRefDB.toUpperCase().trim().contains("KEGG"))
+							boolean targetIsKEGG = this.targetRefDB.toUpperCase().trim().contains("KEGG");
+							if (targetIsKEGG)
 							{
 								keggPrefix = KEGGSpeciesCache.extractKEGGSpeciesCode(targetIdentifier);
 								targetIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(targetIdentifier);
 							}
-							
+							//forbidden KEGG prefixes are set in the reference-creators.xml file.
+							boolean forbiddenKEGGPrefix = KEGGReferenceCreatorHelper.isKEGGPrefixForbidden(keggPrefix);
 							// Now we need to get the DBID of the pre-existing identifier.
 							Collection<GKInstance> sourceInstances = sourceRefMap.get(sourceIdentifier);
 							if (sourceInstances != null && sourceInstances.size() > 0)
@@ -130,7 +132,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									//Actually, it's OK to have > 1 instances. This just means that the SOURCE ID has multiple entities that will be references, such as a ReferenceGeneProduct and a ReferenceIsoform.
 									this.logger.info("Fetch instance by attribute ({}.{}={})yields {} items",this.classReferringToRefName, this.referringAttributeName, sourceIdentifier,sourceInstances.size());
 								}
-			
+
 								for (GKInstance inst : sourceInstances)
 								{
 									String targetDB = this.targetRefDB;
@@ -138,17 +140,17 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									{
 										this.logger.trace("\tDealing with duplicate instances (w.r.t. Identifier), instance: {} mapping to {}", inst, targetIdentifier);
 									}
-									
+
 									this.logger.trace("Target identifier: {}, source object: {}", targetIdentifier, inst);
-									
+
 									if (this.targetRefDB.contains("UCSC"))
 									{
 										// UCSC - the target identifier IS the UniProt identifier,
-										// since we are using a UCSC feature which takes in 
+										// since we are using a UCSC feature which takes in
 										// UniProt IDs and then redirects the use to the correct page.
 										targetIdentifier = uniprotID;
 									}
-									else if (this.targetRefDB.toUpperCase().contains("KEGG"))
+									else if (targetIsKEGG && !forbiddenKEGGPrefix)
 									{
 										synchronized (this)
 										{
@@ -164,18 +166,20 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									{
 										targetDB = setTargetDBForENSEMBL(generateENSEMBLRefDBName, speciesID);
 									}
-									
-									boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier, targetDB);
-									String thingToCreate = targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID+","+targetDB;
-									if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate) && targetDB != null)
+									if (!targetIsKEGG || !forbiddenKEGGPrefix)
 									{
-										//logger.info("Need to create {} references", thingsToCreate.size());
-										if (!this.testMode)
+										boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier, targetDB);
+										String thingToCreate = targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID+","+targetDB;
+										if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate) && targetDB != null)
 										{
-											// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
-											thingsToCreate.add(thingToCreate);
+											//logger.info("Need to create {} references", thingsToCreate.size());
+											if (!this.testMode)
+											{
+												// Store the data for future creation as <NewIdentifier>:<DB_ID of the thing that NewIdentifier refers to>:<Species ID>
+												thingsToCreate.add(thingToCreate);
+											}
+											createdCounter.getAndIncrement();
 										}
-										createdCounter.getAndIncrement();
 									}
 								}
 							}
@@ -203,7 +207,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 				//logger.trace("Creating new identifier {} ", identifierValue );
 				try
 				{
-					
+
 					// The string had a species-part.
 					if (species != null && !species.trim().equals(""))
 					{
@@ -236,7 +240,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 							+ "\t# Identifiers created: {}\n"
 							+ "\t# Identifiers which already existed: {} \n"
 							+ "\t# Identifiers that were not created: {}",
-					this.targetRefDB, 
+					this.targetRefDB,
 					createdCounter.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 		}
 		else
@@ -258,7 +262,7 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			if (speciesName.equals("Cricetulus griseus")) {
 				speciesName = "cricetulus_griseus_crigri";
 			}
-			
+
 			// ENSEMBL species-specific database.
 			// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
 			// Since we're not mapping to Transcript, we don't need to worry about that here.

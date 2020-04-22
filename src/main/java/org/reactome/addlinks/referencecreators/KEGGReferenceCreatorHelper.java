@@ -1,5 +1,8 @@
 package org.reactome.addlinks.referencecreators;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.kegg.KEGGReferenceDatabaseGenerator;
@@ -18,13 +21,15 @@ class KEGGReferenceCreatorHelper
 {
 	private ReferenceObjectCache refObjectCache;
 	private Logger logger;
-	
+
+	private static Set<String> forbiddenPrefixes = new HashSet<>();
+
 	public KEGGReferenceCreatorHelper(ReferenceObjectCache cache, Logger logger)
 	{
 		this.refObjectCache = cache;
 		this.logger = logger;
 	}
-	
+
 	/**
 	 * Create a new KEGG Reference Database.
 	 * @param targetIdentifier An identifier that will belong in this database. Not actually used in the process of ReferenceDatabase creation, just used in a logging message.
@@ -40,13 +45,13 @@ class KEGGReferenceCreatorHelper
 			String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggPrefix);
 			if (keggSpeciesName != null)
 			{
-				targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, refObjectCache);
+				targetDB = KEGGReferenceDatabaseGenerator.createReferenceDatabaseFromKEGGData(keggPrefix, keggSpeciesName, this.refObjectCache);
 				// TODO: Figure out a way to only refresh the cache if a new database was actually created. If the database already existed, it won't be created.
 				this.refObjectCache.rebuildRefDBNamesAndMappings();
 			}
 			if (targetDB == null)
 			{
-				logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, targetIdentifier);
+				this.logger.error("Could not create a new KEGG ReferenceDatabase for the KEGG code {} for KEGG species \"{}\". Identifier {} will not be added, since there is no ReferenceDatabase for it.", keggPrefix, keggSpeciesName, targetIdentifier);
 			}
 		}
 		return targetDB;
@@ -57,22 +62,23 @@ class KEGGReferenceCreatorHelper
 	 * it will *create* a new ReferenceDatabase object.
 	 * @param keggIdentifier - The KEGG Identifier
 	 * @param keggPrefix - The prefix for the KEGG Identifier.
-	 * @return An array with two elements: the first element is the ReferenceDatabase (a DB_ID, though in some cases, it could be the name of the ReferenceDatabase); the second element is the Kegg identifier, which might be 
+	 * @return An array with two elements: the first element is the ReferenceDatabase (a DB_ID, though in some cases, it could be the name of the ReferenceDatabase); the second element is the Kegg identifier, which might be
 	 */
 	public synchronized String[] determineKeggReferenceDatabase(String keggIdentifier, String keggPrefix)
 	{
+		String identifier = keggIdentifier;
 		String targetDB = null;
 		// "vg:" and "ad:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
 		// the identifier has already been pruned.
-		if (keggIdentifier.startsWith("vg:"))
+		if (identifier.startsWith("vg:"))
 		{
 			targetDB = "KEGG Gene (Viruses)";
-			keggIdentifier = keggIdentifier.replaceFirst("vg:", "");
+			identifier = identifier.replaceFirst("vg:", "");
 		}
-		else if (keggIdentifier.startsWith("ag:"))
+		else if (identifier.startsWith("ag:"))
 		{
 			targetDB = "KEGG Gene (Addendum)";
-			keggIdentifier = keggIdentifier.replaceFirst("ag:", "");
+			identifier = identifier.replaceFirst("ag:", "");
 		}
 		else
 		{
@@ -81,18 +87,28 @@ class KEGGReferenceCreatorHelper
 			{
 				targetDB = targetDBID.toString();
 			}
-			// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier. 
-			// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use. 
+			// If targetDB is STILL NULL, it means we weren't able to determine which KEGG ReferenceDatabase to use for this keggIdentifier.
+			// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use.
 			if (targetDB == null)
 			{
-				logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", keggIdentifier);
-				
+				this.logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", identifier);
+
 				if (keggPrefix != null)
 				{
-					targetDB = this.createNewKEGGReferenceDatabase(keggIdentifier, keggPrefix);
+					targetDB = this.createNewKEGGReferenceDatabase(identifier, keggPrefix);
 				}
 			}
 		}
-		return new String[] { targetDB, keggIdentifier } ;
+		return new String[] { targetDB, identifier };
+	}
+
+	public static boolean isKEGGPrefixForbidden(String prefix)
+	{
+		return KEGGReferenceCreatorHelper.forbiddenPrefixes.contains(prefix);
+	}
+
+	public static void setForbiddenPrefixes(Set<String> prefixes)
+	{
+		KEGGReferenceCreatorHelper.forbiddenPrefixes = prefixes;
 	}
 }
