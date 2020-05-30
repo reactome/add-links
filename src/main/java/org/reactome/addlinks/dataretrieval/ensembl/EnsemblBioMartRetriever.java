@@ -157,7 +157,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     /**
      * This method queries BioMart using either a URL (see variable 'microarrayTypesBaseQuery) or an XML (see biomart-query.xml in resources) query.
      * It will retry up to 5 times if errors are returned from BioMart instead of data. This initial method sets the initial retry count.
-     * There are multiple cases (Frog, both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
+     * There are multiple cases (Both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
      * @param queryString - String, URL/XML string that will be used to query BioMart.
      * @return - Set<String>, All lines of successful BioMart response.
      * @throws IOException - Thrown by HttpURLConnection, BufferedReader, URL classes.
@@ -175,7 +175,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     /**
      * This method queries BioMart using either a URL (see variable 'microarrayTypesBaseQuery) or an XML (see biomart-query.xml in resources) query.
      * It will retry up to 5 times if errors are returned from BioMart instead of data. This overloaded method actually performs the query.
-     * There are multiple cases (Frog, both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
+     * There are multiple cases (Both S. cerevisiae & S. pombe yeasts, P. falciparum and D. discoideum) where the data does not exist in BioMart.
      * @param queryString - String, URL/XML string that will be used to query BioMart.
      * @param retryCount - int, Denotes how many times this query has been tried with BioMart.
      * @return - Set<String>, All lines of successful BioMart response.
@@ -205,7 +205,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
                         // Yeast (S. cerevisiae) has Uniprot-SwissProt data but not UniProt-TrEMBL data; Yeast (S. pombe), P. falciparum
                         // and D. discoideum don't have UniProt or Microarray data, all at time of writing (January 2020).
                         throw new BioMartQueryException(line +
-                                "\nThis can happen without issue for certain species (X. tropicalis, D. discoideium, S. pombe, S. cerevisiae, P. falciparum) " +
+                                "\nThis can happen without issue for certain species (D. discoideium, S. pombe, S. cerevisiae, P. falciparum) " +
                                 "because the data doesn't exist in BioMart");
                     }
 
