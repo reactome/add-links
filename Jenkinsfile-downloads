@@ -57,11 +57,11 @@ pipeline{
 					sh "mkdir -p data/"
 					sh "cd /tmp/; tar -zcvf $downloadsArchive addlinks-downloaded-files/"
 					sh "mv /tmp/$downloadsArchive data/"
-					sh "gzip logs/* reports/*"
+					sh "gzip -r logs/* reports/*"
 					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
 					sh "aws s3 --no-progress --recursive cp data/ $s3Path/data/"
 					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
-					sh "rm -r logs data reports"
+					sh "rm -r logs data reports /tmp/$downloadsArchive"
 				}
 			}
 		}
