@@ -23,7 +23,7 @@ pipeline{
 			steps{
 				script{
 					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
-					sh "aws s3 --no-progress cp  --recursive ${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads/data/$downloadsArchive ."
+					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads/data/$downloadsArchive ."
 					sh "tar -xvf $downloadsArchive"
 					sh "mv addlinks-downloaded-files/ /tmp/"
 					sh "rm $downloadsArchive"
