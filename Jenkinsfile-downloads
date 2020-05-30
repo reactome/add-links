@@ -1,6 +1,7 @@
 import groovy.json.JsonSlurper
 // This Jenkinsfile is used by Jenkins to run the AddLinks-Downloads step of Reactome's release.
 // It requires that the ConfirmReleaseConfigs step has been run successfully before it can be run.
+def currentRelease
 pipeline{
 	agent any
 
@@ -9,7 +10,7 @@ pipeline{
 		stage('Check ConfirmReleaseConfigs build succeeded'){
 			steps{
 				script{
-					def currentRelease = (pwd() =~ /(\d+)\//)[0][1];
+					currentRelease = (pwd() =~ /(\d+)\//)[0][1];
 					// This queries the Jenkins API to confirm that the most recent build of ConfirmReleaseConfigs was successful.
 					def configStatusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/ConfirmReleaseConfigs/lastBuild/api/json"
 					if (configStatusUrl.getStatus() == 404) {
