@@ -44,6 +44,8 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     private static final String GO_SLIM_BIOMART_SEARCH_TERM = "goslim_goa_accession";
     private static final String UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM = "uniprotswissprot";
     private static final String UNIPROT_TREMBL_BIOMART_SEARCH_TERM = "uniprotsptrembl";
+    private static final String NCBI_ENTREZ_BIOMART_SEARCH_TERM = "entrezgene_id";
+
     /**
      * Downloads Ensembl-Microarray, Ensembl-GO, and Ensembl-Uniprot identifier mapping files for all species, if they exist.
      * @throws IOException - Thrown when file can't be found during writing or by HTTPConnection class.
@@ -67,16 +69,20 @@ public class EnsemblBioMartRetriever extends FileRetriever {
             // Query BioMart for existing microarray 'types' (not ids) that exist for this species.
             Set<String> microarrayTypes = queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES);
             // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
-            // All mappings are stored in a single file, (eg: hsapiens_microarray_ids_and_go_terms);
+            // All mappings are stored in a single file, (eg: hsapiens_microarray_go_ncbi_ids);
             for (String microarrayType : microarrayTypes) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, EnsemblBioMartUtil.MICROARRAY_IDS_AND_GO_TERMS_SUFFIX);
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
             }
 
-            // Query GO and GO_SLIM identifier mapping data from BioMart and write it to a file (eg: hsapiens_microarray_ids_and_go_terms)
+            // Query GO and GO_SLIM identifier mapping data from BioMart and write it to a file (eg: hsapiens_microarray_go_ncbi_ids)
             logger.info("Retrieving GO data");
             for (String goQueryId : Arrays.asList(GO_ID_BIOMART_SEARCH_TERM, GO_SLIM_BIOMART_SEARCH_TERM)) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), goQueryId, EnsemblBioMartUtil.MICROARRAY_IDS_AND_GO_TERMS_SUFFIX);
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), goQueryId, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
             }
+
+            // Query NCBI/Entrez identifier mapping data from BioMart and write it to a file (eg: hsapiens_microarray_go_ncbi_ids)
+            logger.info("Retrieving NCBI/Entrez data");
+            queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), NCBI_ENTREZ_BIOMART_SEARCH_TERM, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
 
             // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from BioMart and write it to a file (eg: hsapiens_uniprot).
             logger.info("Retrieving UniProt data");
@@ -204,7 +210,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
                         // Yeast (S. cerevisiae) has Uniprot-SwissProt data but not UniProt-TrEMBL data; Yeast (S. pombe), P. falciparum
                         // and D. discoideum don't have UniProt or Microarray data, all at time of writing (January 2020).
                         throw new BioMartQueryException(line +
-                                "\nThis can happen without issue for certain species (X. tropicalis, S. pombe, S. cerevisiae, P. falciparum) " +
+                                "\nThis can happen without issue for certain species (X. tropicalis, D. discoideium, S. pombe, S. cerevisiae, P. falciparum) " +
                                 "because the data doesn't exist in BioMart");
                     }
 

@@ -21,12 +21,11 @@ public class EnsemblBioMartUtil {
 
     protected static Logger logger;
     public static final String UNIPROT_SUFFIX = "_uniprot";
-    public static final String MICROARRAY_IDS_AND_GO_TERMS_SUFFIX = "_microarray_ids_and_go_terms";
+    public static final String OTHER_IDENTIFIERS_SUFFIX = "_microarray_go_ncbi_ids";
     public static final String TRANSCRIPT_TO_OTHER_IDENTIFIERS_SUFFIX = "_transcriptToOtherIdentifiers";
     public static final String PROTEIN_TO_GENES_SUFFIX = "_proteinToGenes";
     public static final String PROTEIN_TO_TRANSCRIPTS_SUFFIX = "_proteinToTranscripts";
     public static final String UNIPROT_TO_PROTEINS_SUFFIX = "_uniprotToProteins";
-    public static final String TRANSCRIPT_TO_GO_TERMS_SUFFIX = "_transcriptToGOTerms";
     /**
      * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
      * match Biomart formatting (first letter from genus + full species name, all lowercase -- eg: hsapiens).
@@ -66,7 +65,13 @@ public class EnsemblBioMartUtil {
      * @return String, BioMart-formatted string.
      */
     public static String getBioMartSpeciesName(String speciesName) {
-        return speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
+        String biomartSpeciesName = speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
+        // May 2020 -- BioMart changed the Dog BioMart name from 'cfamiliaris' to 'clfamiliaris'.
+        // This can't be done automatically, so needs to be adjusted specifically.
+        if (speciesName.equals("Canis familiaris")) {
+            biomartSpeciesName = speciesName.substring(0,1).toLowerCase() + "l" + speciesName.split(" ")[1];
+        }
+        return biomartSpeciesName;
     }
 
     /**
