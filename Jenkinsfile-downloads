@@ -10,7 +10,7 @@ pipeline{
 		stage('Check ConfirmReleaseConfigs build succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
+					currentRelease = (pwd() =~ /(\d+)\//)[0][1];
 					// This queries the Jenkins API to confirm that the most recent build of ConfirmReleaseConfigs was successful.
 					def configStatusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/ConfirmReleaseConfigs/lastBuild/api/json"
 					if (configStatusUrl.getStatus() == 404) {
@@ -52,7 +52,7 @@ pipeline{
 		stage('Post: Archive Outputs'){
 			steps{
 				script{
-					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads"
+				/*	def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads"
 					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
 					def addlinksFolder = "addlinks-downloaded-files/"
 					sh "mkdir -p data/"
@@ -62,7 +62,9 @@ pipeline{
 					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
 					sh "aws s3 --no-progress --recursive cp data/ $s3Path/data/"
 					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
-					sh "rm -r logs data reports /tmp/$addlinksFolder"
+					sh "rm -r logs data reports /tmp/$addlinksFolder" */
+					def addlinksFolder = "addlinks-downloaded-files/"
+					sh "rm -r /tmp/$addlinksFolder"
 				}
 			}
 		}
