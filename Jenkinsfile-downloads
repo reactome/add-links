@@ -23,6 +23,7 @@ pipeline{
 				}
 			}
 		}
+		/*
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
 			steps{
@@ -35,7 +36,7 @@ pipeline{
 		// at /tmp/addlinks-downloaded-files.
 		stage('Main: Download AddLinks files'){
 			steps{
-			script{
+				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
 						sh "cp $ConfigFile src/main/resources/auth.properties"
 						sh "ln -sf src/main/resources resources"
@@ -43,6 +44,23 @@ pipeline{
 						sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/file-download-context.xml"""
 						sh "rm -f src/main/resources/auth.properties"
 					}
+				}
+			}
+		}
+		*/
+		stage('Post: Archive Outputs'){
+			steps{
+				script{
+					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads"
+					def downloadsArchive = "addlinks-downloads-v${currentReleases}.tgz"
+					sh "mkdir -p data/"
+					sh "cd /tmp/; tar -zcvf $downloadsArchive addlinks-downloaded-files/"
+					sh "mv /tmp/$downloadsArchive data/"
+					sh "gzip logs/* reports/*"
+					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
+					sh "aws s3 --no-progress --recursive cp data/ $s3Path/data/"
+					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
+					sh "rm -r logs data reports"
 				}
 			}
 		}
