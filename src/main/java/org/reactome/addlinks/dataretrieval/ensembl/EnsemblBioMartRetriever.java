@@ -205,7 +205,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
                         // Yeast (S. cerevisiae) has Uniprot-SwissProt data but not UniProt-TrEMBL data; Yeast (S. pombe), P. falciparum
                         // and D. discoideum don't have UniProt or Microarray data, all at time of writing (January 2020).
                         throw new BioMartQueryException(line +
-                                "\nThis can happen without issue for certain species (D. discoideium, S. pombe, S. cerevisiae, P. falciparum) " +
+                                "\nThis can happen without issue for certain species (D. discoideum, S. pombe, S. cerevisiae, P. falciparum) " +
                                 "because the data doesn't exist in BioMart");
                     }
 
