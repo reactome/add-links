@@ -63,31 +63,32 @@ public class EnsemblBioMartRetriever extends FileRetriever {
         // Species names are in bioMart format (eg: hsapiens).
         for (String speciesName : EnsemblBioMartUtil.getSpeciesNames()) {
             String speciesBioMartName = EnsemblBioMartUtil.getBioMartSpeciesName(speciesName);
-            logger.info("Retrieving BiomMart files for " + speciesBioMartName);
-
+            logger.info("Retrieving BioMart files for " + speciesBioMartName);
+            Set<String> biomartSearchTerms = new HashSet<>(Arrays.asList(GO_ID_BIOMART_SEARCH_TERM, GO_SLIM_BIOMART_SEARCH_TERM, NCBI_ENTREZ_BIOMART_SEARCH_TERM));
             logger.info("Retrieving microarray data");
             // Query BioMart for existing microarray 'types' (not ids) that exist for this species.
-            Set<String> microarrayTypes = queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES);
-            // Iterate through each microarray type and retrieve Ensembl-Microarray identifier mappings.
+            biomartSearchTerms.addAll(queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES));
+            // Iterate through each Biomart search term and retrieve Ensembl-otherIdentifier identifier mappings.
             // All mappings are stored in a single file, (eg: hsapiens_microarray_go_ncbi_ids);
-            for (String microarrayType : microarrayTypes) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), microarrayType, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
+            String otherIdentifiersFilename = this.destination + speciesBioMartName + EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX;
+            if (!Files.exists(Paths.get(otherIdentifiersFilename))) {
+                for (String biomartSearchTerm : biomartSearchTerms) {
+                    logger.info("Retrieving " + biomartSearchTerm + " mappings from BioMart");
+                    queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), biomartSearchTerm, otherIdentifiersFilename);
+                }
+            } else {
+                logFileExistsMessage(otherIdentifiersFilename);
             }
-
-            // Query GO and GO_SLIM identifier mapping data from BioMart and write it to a file (eg: hsapiens_microarray_go_ncbi_ids)
-            logger.info("Retrieving GO data");
-            for (String goQueryId : Arrays.asList(GO_ID_BIOMART_SEARCH_TERM, GO_SLIM_BIOMART_SEARCH_TERM)) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), goQueryId, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
-            }
-
-            // Query NCBI/Entrez identifier mapping data from BioMart and write it to a file (eg: hsapiens_microarray_go_ncbi_ids)
-            logger.info("Retrieving NCBI/Entrez data");
-            queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), NCBI_ENTREZ_BIOMART_SEARCH_TERM, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
 
             // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from BioMart and write it to a file (eg: hsapiens_uniprot).
-            logger.info("Retrieving UniProt data");
-            for (String uniprotQueryId : Arrays.asList(UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM, UNIPROT_TREMBL_BIOMART_SEARCH_TERM)) {
-                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), uniprotQueryId, EnsemblBioMartUtil.UNIPROT_SUFFIX);
+            String uniprotFilename = this.destination + speciesBioMartName + EnsemblBioMartUtil.UNIPROT_SUFFIX;
+            if (!Files.exists(Paths.get(uniprotFilename))) {
+                logger.info("Retrieving UniProt mappings from BioMart");
+                for (String uniprotQueryId : Arrays.asList(UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM, UNIPROT_TREMBL_BIOMART_SEARCH_TERM)) {
+                    queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), uniprotQueryId, uniprotFilename);
+                }
+            } else {
+                logFileExistsMessage(uniprotFilename);
             }
 
             logger.info("Completed BioMart data retrieval for " + speciesBioMartName);
@@ -104,26 +105,20 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * @param biomartSpeciesName - String of species name in BioMart format (eg: hsapiens)
      * @param biomartQueryFilePath - String, Path to the BioMart XML Query file
      * @param biomartDataType - String, Type of data (either UniProt or Microarray) that will be queried for from BioMart
-     * @param fileSuffix - String that will be used to make filename (either _uniprot or _microarray) that will hold associated data.
+     * @param biomartFilename - Name of file (ending either with _uniprot or _microarray_go_ncbi_ids) that will hold associated data.
      * @throws IOException - Thrown when unable to write data to file.
      */
-    private void queryBioMartAndStoreData(String biomartSpeciesName, String biomartQueryFilePath, String biomartDataType, String fileSuffix) throws IOException {
-        String biomartFilename = this.destination + biomartSpeciesName + fileSuffix;
+    private void queryBioMartAndStoreData(String biomartSpeciesName, String biomartQueryFilePath, String biomartDataType, String biomartFilename) throws IOException {
         logger.info("Querying Biomart for species: {}; data type: {}", biomartSpeciesName, biomartDataType);
-        if (!Files.exists(Paths.get(biomartFilename))) {
-            Set<String> biomartResponseLines = new HashSet<>();
-            logger.info("Retrieving data associated with query ID: {}", biomartDataType);
-            try {
-                biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), biomartDataType);
-            } catch (Exception e) {
-                logger.error("Unable to retrieve data associated with query ID: " + biomartDataType, e);
-                e.printStackTrace();
-            }
-            storeBioMartData(biomartFilename, biomartResponseLines);
+        Set<String> biomartResponseLines = new HashSet<>();
+        logger.info("Retrieving data associated with query ID: {}", biomartDataType);
+        try {
+            biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), biomartDataType);
+        } catch (Exception e) {
+            logger.error("Unable to retrieve data associated with query ID: " + biomartDataType, e);
+            e.printStackTrace();
         }
-        else {
-        	logger.info("{} already exists. It is *assumed* to be complete, and will not be downloaded.", biomartFilename);
-        }
+        storeBioMartData(biomartFilename, biomartResponseLines);
     }
 
     /**
@@ -263,6 +258,11 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     private String joinQueryFileLines(String pathToFile) throws IOException {
         List<String> fileLines = Files.readAllLines(Paths.get(pathToFile));
         return String.join(System.lineSeparator(), fileLines);
+    }
+
+    // Message output whenever a file already exists.
+    private void logFileExistsMessage(String filename) {
+        logger.info("{} already exists. It is *assumed* to be complete, and will not be downloaded.", filename);
     }
 
     /**
