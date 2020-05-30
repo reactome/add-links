@@ -53,7 +53,7 @@ pipeline{
 			steps{
 				script{
 					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads"
-					def downloadsArchive = "addlinks-downloads-v${currentReleases}.tgz"
+					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
 					sh "mkdir -p data/"
 					sh "cd /tmp/; tar -zcvf $downloadsArchive addlinks-downloaded-files/"
 					sh "mv /tmp/$downloadsArchive data/"
