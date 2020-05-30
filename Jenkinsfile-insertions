@@ -15,10 +15,21 @@ pipeline{
 					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
 					checkUpstreamBuildsSucceeded("AddLinks-Download", "$currentRelease")
-					checkUpstreamBuildsSucceeded("Orthoinference", "$currentRelease")
+					checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/Orthoinference", "$currentRelease")
 	    			}
     			}
   		}
+		stage('Setup: Download AddLinks files from S3 bucket'){
+			steps{
+				script{
+					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
+					sh "aws s3 --no-progress cp  --recursive ${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads/data/$downloadsArchive ."
+					sh "tar -xvf $downloadsArchive"
+					sh "mv addlinks-downloaded-files/ /tmp/"
+					sh "rm $downloadsArchive"
+				}
+			}
+		}
 		// This stage backs up the release_current database before it is modified.
 		stage('Setup: Backup release_current'){
 			steps{
@@ -69,6 +80,7 @@ pipeline{
 			}
 		}
 		// This stage archives all logs and database backups produced by AddLink-Insertion.
+		/*
 		stage('Post:Archive logs and backups'){
 			steps{
 				script{
@@ -79,7 +91,8 @@ pipeline{
 				}
 			}
 		}
-  }
+		*/
+  	}
 }
 
 // Utility function that checks upstream builds of this project were successfully built.
