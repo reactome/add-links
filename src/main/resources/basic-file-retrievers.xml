@@ -185,7 +185,7 @@
 		<!-- The CTD file is not used directly for mappings, but it used to filter out NCBI Gene IDs that are not in CTD when creating CTD cross-references -->
 		<entry key="CTD">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="CTD">
-				<property name="dataURL" value="http://ctd.mdibl.org/reports/CTD_chem_gene_ixns.csv.gz" />
+				<property name="dataURL" value="http://ctdbase.org/reports/CTD_chem_gene_ixns.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CTD_chem_gene_ixns.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/CTD"/>
