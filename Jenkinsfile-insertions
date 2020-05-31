@@ -19,6 +19,7 @@ pipeline{
 	    			}
     			}
   		}
+		/*
 		stage('Setup: Download AddLinks files from S3 bucket'){
 			steps{
 				script{
@@ -42,6 +43,7 @@ pipeline{
 				}
 			}
 		}
+		*/
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
 			steps{
