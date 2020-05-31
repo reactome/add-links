@@ -261,7 +261,11 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			//is what should be used.
 			if (speciesName.equals("Cricetulus griseus")) {
 				speciesName = "cricetulus_griseus_crigri";
+			} else if (speciesName.equals("Canis familiaris") || speciesName.equals("canis_familiaris")) {
+				System.out.println(speciesName);
+				speciesName = "canis_lupus_familiaris";
 			}
+
 
 			// ENSEMBL species-specific database.
 			// ReactomeJavaConstants.ReferenceGeneProduct should be under ENSEMBL*PROTEIN and others should be under ENSEMBL*GENE
