@@ -11,15 +11,14 @@ pipeline{
 		stage('Check AddLinks-Download and Orthoinference builds succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /(\d+)\//)[0][1];
-					previousRelease = (pwd() =~ /(\d+)\//)[0][1].toInteger() - 1;
+					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
+					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
 					checkUpstreamBuildsSucceeded("AddLinks-Download", "$currentRelease")
 					checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/Orthoinference", "$currentRelease")
 	    			}
     			}
   		}
-		/*
 		stage('Setup: Download AddLinks files from S3 bucket'){
 			steps{
 				script{
@@ -43,7 +42,6 @@ pipeline{
 				}
 			}
 		}
-		*/
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
 			steps{
