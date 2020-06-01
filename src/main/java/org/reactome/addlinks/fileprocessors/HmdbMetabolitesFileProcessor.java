@@ -1,10 +1,8 @@
 package org.reactome.addlinks.fileprocessors;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -132,14 +130,14 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 	
 	private void transformXmlToTsv(String inputFilename, String outfileName)
 	{
-		
+		System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
 		try(OutputStream outStream = new FileOutputStream(outfileName);)
 		{
 			XMLInputFactory xif = XMLInputFactory.newInstance();
 			XMLStreamReader xsr = xif.createXMLStreamReader(new FileReader(inputFilename));
 			xsr.nextTag();
 			Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("hmdb_metabolites_transform.xsl"));
-			TransformerFactory factory = TransformerFactory.newDefaultInstance();
+			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer = factory.newTransformer(source);
 			// While there are start elements...
 			while (xsr.nextTag() == XMLStreamConstants.START_ELEMENT)
