@@ -139,7 +139,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 			XMLStreamReader xsr = xif.createXMLStreamReader(new FileReader(inputFilename));
 			xsr.nextTag();
 			Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream("hmdb_metabolites_transform.xsl"));
-			TransformerFactory factory = TransformerFactory.newInstance();
+			TransformerFactory factory = TransformerFactory.newDefaultInstance();
 			Transformer transformer = factory.newTransformer(source);
 			// While there are start elements...
 			while (xsr.nextTag() == XMLStreamConstants.START_ELEMENT)
