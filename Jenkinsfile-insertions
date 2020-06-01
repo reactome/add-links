@@ -19,7 +19,6 @@ pipeline{
 	    			}
     			}
   		}
-		/*
 		stage('Setup: Download AddLinks files from S3 bucket'){
 			steps{
 				script{
@@ -43,7 +42,6 @@ pipeline{
 				}
 			}
 		}
-		*/
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
 			steps{
@@ -82,18 +80,21 @@ pipeline{
 			}
 		}
 		// This stage archives all logs and database backups produced by AddLink-Insertion.
-		/*
-		stage('Post:Archive logs and backups'){
+		stage('Post: Archive Outputs'){
 			steps{
 				script{
-					sh "mkdir -p archive/${currentRelease}/logs"
-					sh "mv --backup=numbered *_${currentRelease}_*.dump.gz archive/${currentRelease}/"
-					sh "gzip logs/*.log logs/retrievers/* logs/file-processors/* logs/refCreators/*"
-					sh "mv logs/* archive/${currentRelease}/logs"
+					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/insertions"
+					def addlinksFolder = "addlinks-downloaded-files/"
+					sh "mkdir -p databases/"
+					sh "mv --backup=numbered *_${currentRelease}_*.dump.gz databases/"
+					sh "gzip -r logs/* reports/*"
+					sh "aws s3 --no-progress --recursive cp databases/ $s3Path/databases/"
+					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
+					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
+					sh "rm -r logs databases reports /tmp/$addlinksFolder"
 				}
 			}
 		}
-		*/
   	}
 }
 
