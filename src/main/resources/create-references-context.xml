@@ -67,7 +67,7 @@
 		<value>zincProtFileProcessor</value>
 		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
-	<!--	<value>HmdbMetabolitesFileProcessor</value> -->
+		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
@@ -113,7 +113,7 @@
 		<value>RheaReferenceCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
-	<!--	<value>HmdbMoleculeReferenceCreator</value> -->
+		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
@@ -156,7 +156,7 @@
 		<value>ZINC - Investigational</value>
 		<value>ZINC - Predictions - Purchasable</value>
 		<value>HMDB Protein</value>
-	<!--	<value>HMDB Metabolite</value> -->
+		<value>HMDB Metabolite</value>
 		<value>COSMIC</value>
 		<value>HPA</value>
 		<value>MGI</value>
