@@ -59,7 +59,7 @@ public class TestEnsemblBioMartOtherIdentifiersPopulator {
     }
 
     @Test
-    public void testEnsemblBiomartOtherIdentifiersPopulator() {
+    public void testEnsemblBioMartOtherIdentifiersPopulator() {
 
         List<GKInstance> mockSourceReferences = Arrays.asList(mockRGPInst);
         System.setProperty("config.location", "src/test/resources/addlinksTest-btau.properties");

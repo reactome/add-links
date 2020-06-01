@@ -28,7 +28,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
     private static final String BIOMART_SPECIES_NAME_PLACEHOLDER = "BIOMART_SPECIES_NAME";
     private static final String BIOMART_QUERY_ID_PLACEHOLDER = "BIOMART_QUERY_ID";
-    private static final String baseBiomartUrl = "https://www.ensembl.org/biomart/martservice?query=";
+    private static final String baseBioMartURL = "https://www.ensembl.org/biomart/martservice?query=";
     private static final String microarrayTypesBaseQuery = String.join("&",
             "type=listAttributes",
             "mart=ENSEMBL_MART_ENSEMBL",
@@ -114,7 +114,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * @throws IOException - Thrown when unable to write data to file.
      */
     private void queryBioMartAndStoreData(String biomartSpeciesName, String biomartQueryFilePath, String biomartDataType, String biomartFilename) throws IOException {
-        logger.info("Querying Biomart for species: {}; data type: {}", biomartSpeciesName, biomartDataType);
+        logger.info("Querying BioMart for species: {}; data type: {}", biomartSpeciesName, biomartDataType);
         Set<String> biomartResponseLines = new HashSet<>();
         logger.info("Retrieving data associated with query ID: {}", biomartDataType);
         try {
@@ -258,7 +258,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
     // Modifies default secondary URL with species name and the query type (for example microarray probe type, or uniprotsptrembl).
     private String getBioMartIdentifierQuery(String pathToQueryFile, String biomartSpeciesName, String queryId) throws IOException {
-        String biomartQuery = baseBiomartUrl + URLEncoder.encode(joinQueryFileLines(pathToQueryFile),"UTF-8");
+        String biomartQuery = baseBioMartURL + URLEncoder.encode(joinQueryFileLines(pathToQueryFile),"UTF-8");
         return biomartQuery.replace(BIOMART_SPECIES_NAME_PLACEHOLDER, biomartSpeciesName).replace(BIOMART_QUERY_ID_PLACEHOLDER, queryId);
     }
 

@@ -28,8 +28,8 @@ public class EnsemblBioMartUtil {
     public static final String UNIPROT_TO_PROTEINS_SUFFIX = "_uniprotToProteins";
     /**
      * Function that takes species name attribute from config file (eg: Homo sapiens) and modifies it to
-     * match Biomart formatting (first letter from genus + full species name, all lowercase -- eg: hsapiens).
-     * @return List<String> of species names in Biomart format (eg: hsapiens).
+     * match BioMart formatting (first letter from genus + full species name, all lowercase -- eg: hsapiens).
+     * @return List<String> of species names in BioMart format (eg: hsapiens).
      * @throws IOException - Thrown when unable to read file.
      */
     public static List<String> getSpeciesNames() throws IOException {
@@ -94,34 +94,34 @@ public class EnsemblBioMartUtil {
 
     /**
      * Returns data corresponding to 'species_uniprotToProteins' in mappings.
-     * @param speciesBiomartName - String, BioMart-formatted species name
+     * @param speciesBioMartName - String, BioMart-formatted species name
      * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
-    public static Map<String, List<String>> getUniprotToProteinsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String uniprotToProteinsKey = speciesBiomartName + UNIPROT_TO_PROTEINS_SUFFIX;
+    public static Map<String, List<String>> getUniprotToProteinsMappings(String speciesBioMartName, Map<String, Map<String, List<String>>> mappings) {
+        String uniprotToProteinsKey = speciesBioMartName + UNIPROT_TO_PROTEINS_SUFFIX;
         return mappings.computeIfAbsent(uniprotToProteinsKey, k -> new HashMap<>());
     }
 
     /**
      * Returns data corresponding to 'species_transcriptToOtherIdentifiers' in mappings.
-     * @param speciesBiomartName - String, BioMart-formatted species name
+     * @param speciesBioMartName - String, BioMart-formatted species name
      * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
-    public static Map<String, List<String>> getTranscriptToOtherIdentifiersMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String transcriptToOtherIdentifiersKey = speciesBiomartName + TRANSCRIPT_TO_OTHER_IDENTIFIERS_SUFFIX;
+    public static Map<String, List<String>> getTranscriptToOtherIdentifiersMappings(String speciesBioMartName, Map<String, Map<String, List<String>>> mappings) {
+        String transcriptToOtherIdentifiersKey = speciesBioMartName + TRANSCRIPT_TO_OTHER_IDENTIFIERS_SUFFIX;
         return mappings.computeIfAbsent(transcriptToOtherIdentifiersKey, k -> new HashMap<>());
     }
 
     /**
      * Returns data corresponding to 'species__proteinToTranscripts' in mappings.
-     * @param speciesBiomartName - String, BioMart-formatted species name
+     * @param speciesBioMartName - String, BioMart-formatted species name
      * @param mappings- Map<String, Map<String, List<String>>>, Mapping generated from EnsemblBioMartFileProcessor.
      * @return Map<String, List<String>>, corresponding mappings for species.
      */
-    public static Map<String, List<String>> getProteinToTranscriptsMappings(String speciesBiomartName, Map<String, Map<String, List<String>>> mappings) {
-        String proteinToTranscriptsKey = speciesBiomartName + PROTEIN_TO_TRANSCRIPTS_SUFFIX;
+    public static Map<String, List<String>> getProteinToTranscriptsMappings(String speciesBioMartName, Map<String, Map<String, List<String>>> mappings) {
+        String proteinToTranscriptsKey = speciesBioMartName + PROTEIN_TO_TRANSCRIPTS_SUFFIX;
         return mappings.computeIfAbsent(proteinToTranscriptsKey, k -> new HashMap<>());
     }
 
