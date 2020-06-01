@@ -5,7 +5,7 @@
 	<!-- Produce a TSV of HMDB accessions followed by a UniProt ID -->
 
 	<!-- Match any metabolite -->
-	<xsl:template match="/hmdb:hmdb/hmdb:metabolite/hmdb:accession" >
+	<xsl:template match="/hmdb:metabolite/hmdb:accession" >
 		<xsl:value-of select="./text()" />
  		<xsl:text>&#x9;</xsl:text>
 		<xsl:value-of select="../hmdb:chebi_id/text()"/>

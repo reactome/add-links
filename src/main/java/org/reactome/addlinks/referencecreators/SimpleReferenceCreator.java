@@ -29,43 +29,43 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 {
 	protected boolean testMode = true;
-
+	
 	protected MySQLAdaptor adapter;
 	protected ReferenceCreator refCreator;
 	protected Logger logger;
-
+	
 	protected String classToCreateName ;
 	protected String classReferringToRefName ;
 	protected String referringAttributeName ;
 	protected String targetRefDB ;
 	protected String sourceIdentifyingAttribute = ReactomeJavaConstants.identifier;
 	protected String sourceRefDB ;
-
+	
 	protected ReferenceObjectCache cache;
-
+	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		this(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, null);
 	}
-
+	
 	public SimpleReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB, String refCreatorName)
 	{
 		// Reference creators run a TRACE level so that we can get ALL the details of what they are creating.
 		this.logger = this.createLogger(refCreatorName, "RollingRandomAccessFile", this.getClass().getName(), true, Level.TRACE, this.logger, "Reference Creator");
-
+		
 		this.setClassReferringToRefName(classReferring);
 		this.setClassToCreateName(classToCreate);
 		this.setReferringAttributeName(referringAttribute);
 		this.setSourceRefDB(sourceDB);
 		this.setTargetRefDB(targetDB);
-
+		
 		// Y'know, this code was lifted straight from OrphanetReferenceCreator and is pretty much unchanged. Perhaps these two (and others to follow) could pull
 		// this code up into a common parent class/interface...
 		this.adapter = adapter;
 		SchemaClass schemaClass = this.adapter.getSchema().getClassByName(this.classToCreateName);
 
 		SchemaClass referringSchemaClass = adapter.getSchema().getClassByName(this.classReferringToRefName);
-
+		
 		GKSchemaAttribute referringSchemaAttribute = null;
 		try
 		{
@@ -87,14 +87,14 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		}
 		this.refCreator = new ReferenceCreator(schemaClass , referringSchemaClass, referringSchemaAttribute, this.adapter, this.logger);
 	}
-
+	
 	/**
 	 * Creates identifiers.
 	 * @param personID - Newly created Identifiers will be associated with an InstanceEdit. That InstanceEdit will be associated with the Person entity whose ID == personID
 	 * @param mapping - The mapping of Identifiers to create. This is a map of existing source identifiers to new identifiers. The Values in this case should be single-valued.
 	 * The mapping is from identifiers in the source system to identifiers in the target system.
 	 * @param sourceReferences - A list of GKInstance objects that were in the database. References will be created if they are in the keys of mapping and also in sourceReferences.
-	 * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome.
+	 * This is to handle cases where a mapping comes from a third-party file that may contain source identifiers that are in *their* system but aren't actually in Reactome. 
 	 * @throws Exception
 	 */
 	@Override
@@ -104,15 +104,15 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		AtomicInteger sourceIdentifiersWithNewIdentifier = new AtomicInteger(0);
 		AtomicInteger sourceIdentifiersWithExistingIdentifier = new AtomicInteger(0);
 		this.logger.traceEntry();
-
+		
 		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
-
+		
 		sourceReferences.parallelStream().forEach(sourceReference ->
 		{
 			try
 			{
 				String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(this.sourceIdentifyingAttribute);
-
+				
 				if (mapping.containsKey(sourceReferenceIdentifier))
 				{
 					// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
@@ -162,13 +162,14 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 			String targetRefDBIdentifier = parts[0];
 			String sourceDBID = parts[1];
 			String speciesID = parts[2];
-
+			
 			if (!this.testMode)
 			{
 				this.refCreator.createIdentifier(targetRefDBIdentifier, sourceDBID, this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(speciesID));
 			}
-		}
 
+		}
+		
 		this.logger.info("{} reference creation summary: \n"
 				+ "\t# {} IDs with a new {} identifier (a new {} reference was created): {};\n"
 				+ "\t# {} identifiers which already had the same {} reference (nothing new was created): {};\n"
@@ -192,7 +193,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	{
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, this.targetRefDB);
 	}
-
+	
 	/**
 	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
 	 * @param sourceReference - The source Object that has cross references.
@@ -219,7 +220,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		}
 		return checkXRefExists(sourceReference, targetRefDBIdentifier, refDB);
 	}
-
+	
 	/**
 	 * Checks to see if a cross-reference with a specific Identifier exists on a DatabaseObject.
 	 * @param sourceReference - The source Object that has cross references.
@@ -252,20 +253,20 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 					if (xrefRefDB.getDBID().equals(targetReferenceDB.getDBID()))
 					{
 						this.logger.trace("\tcross-references *include* \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
-						return true;
+						return true;	
 					}
 					else
 					{
 						this.logger.trace("\tcross-references *include* \"{}\" but the cross-reference is associated with a different ref db: {} instead of {}", targetRefDBIdentifier, refdbDisplayName, targetReferenceDB);
 					}
-
+					
 				}
 			}
 			this.logger.trace("\tcross-references do *not* include \"{}\": \t{}", targetRefDBIdentifier, xrefsb.toString().trim());
 		}
 		return false;
 	}
-
+	
 	public boolean isTestMode()
 	{
 		return this.testMode;
@@ -337,5 +338,5 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 	{
 		this.sourceIdentifyingAttribute = sourceIdentifyingAttribute;
 	}
-
+	
 }

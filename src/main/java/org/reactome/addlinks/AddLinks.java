@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -144,7 +143,7 @@ public class AddLinks
 		}
 		// Start by creating ReferenceDatabase objects that we might need later.
 		this.executeCreateReferenceDatabases(personID);
-		// Now that we've *created* new ref dbs, rebuild any caches that might have depended on them.
+		// Now that we've *created* new ref dbs, rebuild any caches that might have dependended on them.
 		ReferenceObjectCache.clearAndRebuildAllCaches();
 		CrossReferenceReporter xrefReporter = new CrossReferenceReporter(this.dbAdapter);
 		DuplicateIdentifierReporter duplicateIdentifierReporter = new DuplicateIdentifierReporter(this.dbAdapter);
@@ -197,6 +196,13 @@ public class AddLinks
 		this.reportsAfterAddLinks(xrefReporter, duplicateIdentifierReporter, preAddLinksReport);
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
+
+		logger.info("Now checking links.");
+
+		String linksReport = this.checkLinks();
+		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
+		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
+
 		logger.info("Process complete.");
 	}
 
@@ -296,6 +302,7 @@ public class AddLinks
 	private void reportsAfterAddLinks(CrossReferenceReporter xrefReporter, DuplicateIdentifierReporter duplicateIdentifierReporter, Map<String, Map<String, Integer>> preAddLinksReport) throws SQLException, IOException, Exception
 	{
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
+		reporter.printReport();
 		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
 		String report = xrefReporter.getReportContent(postAddLinksReport);
 		logger.info("\n{}", report);
@@ -362,6 +369,7 @@ public class AddLinks
 		}
 		return retrieverJobs;
 	}
+
 
 
 	/**

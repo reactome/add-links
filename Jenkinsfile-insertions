@@ -23,39 +23,33 @@ pipeline{
 		stage('Setup: Backup release_current'){
 			steps{
 				script{
-					dir('add-links'){
-						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_before_addlinks.dump"
-							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
-							sh "gzip -f $release_current_before_addlinks_dump"
-						}
+					withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
+						def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_before_addlinks.dump"
+						sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
+						sh "gzip -f $release_current_before_addlinks_dump"
 					}
 				}
 			}
 		}
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
-  		steps{
-  			script{
-        	dir('add-links'){
-						sh "mvn clean package -DskipTests"
-          }
-      	}
-      }
-    }
+			steps{
+				script{
+					sh "mvn clean package -DskipTests"
+				}
+			 }
+   		 }
 		// This stage runs the insertion component of AddLinks. It will build links to various external resources and connect them to the relevant instances.
 		// It also connects these linkouts to ReferenceDatabase objects that pertain to their original resource.
 		stage('Main: AddLinks Insertions'){
 			steps{
 				script{
-					dir('add-links'){
-						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-							sh "cp $ConfigFile src/main/resources/auth.properties"
-							sh "ln -sf src/main/resources resources"
-							sh "rm -f src/main/resources/db.properties"
-					    sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-${env.ADDLINKS_VERSION}.jar file://\$(pwd)/resources/create-references-context.xml"""
-							sh "rm -f src/main/resources/auth.properties"
-						}
+					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+						sh "cp $ConfigFile src/main/resources/auth.properties"
+						sh "ln -sf src/main/resources resources"
+						sh "rm -f src/main/resources/db.properties"
+						sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
+						sh "rm -f src/main/resources/auth.properties"
 					}
 				}
 			}
@@ -78,12 +72,10 @@ pipeline{
 		stage('Post:Archive logs and backups'){
 			steps{
 				script{
-					dir('add-links'){
-						sh "mkdir -p archive/${currentRelease}/logs"
-						sh "mv --backup=numbered *_${currentRelease}_*.dump.gz archive/${currentRelease}/"
-						sh "gzip logs/*.log logs/retrievers/* logs/file-processors/* logs/refCreators/*"
-						sh "mv logs/* archive/${currentRelease}/logs"
-					}
+					sh "mkdir -p archive/${currentRelease}/logs"
+					sh "mv --backup=numbered *_${currentRelease}_*.dump.gz archive/${currentRelease}/"
+					sh "gzip logs/*.log logs/retrievers/* logs/file-processors/* logs/refCreators/*"
+					sh "mv logs/* archive/${currentRelease}/logs"
 				}
 			}
 		}

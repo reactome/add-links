@@ -1,0 +1,21 @@
+{
+  "btau":{
+    "refdb":{
+      "url":"http:\/\/www.ensembl.org\/Bos_taurus\/Info\/Index\/",
+      "ensg_access":"http:\/\/www.ensembl.org\/Bos_taurus\/geneview?gene=###ID###&db=core",
+      "access":"http:\/\/www.ensembl.org\/Bos_taurus\/Transcript\/ProteinSummary?peptide=###ID###",
+      "dbname":[
+        "ENSEMBL",
+        "Ensembl",
+        "ENSEMBL_Bos_taurus_PROTEIN"
+      ]
+    },
+    "mart_group":"btaurus_gene_ensembl",
+    "name":[
+      "Bos taurus"
+    ],
+    "compara":"core",
+    "group":"Vertebrate",
+    "abbreviation": "BTA"
+  }
+}

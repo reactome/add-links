@@ -435,5 +435,93 @@
 				<!-- NOTE: No identifiers.org entry for TargetPathogen -->
 			</map>
 		</entry>
+
+		<entry key="HPA">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="HPA" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>The Human Protein Atlas</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://www.proteinatlas.org/" />
+				<entry key="AccessURL" value="https://www.proteinatlas.org/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100431"/>
+			</map>
+		</entry>
+
+		<entry key="VGNC">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="VGNC" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Vertebrate Gene Nomenclature Committee</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://vertebrate.genenames.org/" />
+				<entry key="AccessURL" value="https://vertebrate.genenames.org/data/gene-symbol-report/#!/vgnc_id/VGNC:###ID###" />
+			</map>
+		</entry>
+
+		<entry key="MGI">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="MGI" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Mouse Genome Informatics</value>
+					</list>
+				</entry>
+				<entry key="URL" value="http://www.informatics.jax.org/" />
+				<entry key="AccessURL" value="http://www.informatics.jax.org/marker/MGI:###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100062"/>
+			</map>
+		</entry>
+
+		<entry key="RGD">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="RGD" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>Rat Genome Database</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://rgd.mcw.edu/wg/" />
+				<entry key="AccessURL" value="https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100075"/>
+			</map>
+		</entry>
+
+		<entry key="Xenbase">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Xenbase" />
+				<entry key="URL" value="http://www.xenbase.org/" />
+				<entry key="AccessURL" value="http://www.xenbase.org/gene/showgene.do?method=display&amp;geneId=###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100232"/>
+
+			</map>
+		</entry>
+
+		<entry key="ZFIN">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="ZFIN" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>The Zebrafish Information Network</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://zfin.org/" />
+				<entry key="AccessURL" value="https://zfin.org/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100110"/>
+			</map>
+		</entry>
+
+		<entry key="Ensembl">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Ensembl" />
+				<entry key="URL" value="https://ensembl.org/" />
+				<entry key="AccessURL" value="https://ensembl.org/id/###ID###" />
+				<entry key="resourceIdentifier" value="MIR:00100011"/>
+			</map>
+		</entry>
 	</util:map>
 </beans>
