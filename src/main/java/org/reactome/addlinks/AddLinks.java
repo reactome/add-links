@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -197,12 +198,6 @@ public class AddLinks
 		logger.info("Purging unused ReferenceDatabse objects.");
 		this.purgeUnusedRefDBs();
 
-		logger.info("Now checking links.");
-
-		String linksReport = this.checkLinks();
-		String diffReportName = LINK_CHECK_REPORTS_PATH + "/linkCheckSummaryReport" + DateTimeFormatter.ofPattern(DATE_PATTERN_FOR_FILENAMES).format(LocalDateTime.now()) + ".tsv";
-		Files.write(Paths.get(diffReportName), linksReport.getBytes() );
-
 		logger.info("Process complete.");
 	}
 
@@ -302,7 +297,6 @@ public class AddLinks
 	private void reportsAfterAddLinks(CrossReferenceReporter xrefReporter, DuplicateIdentifierReporter duplicateIdentifierReporter, Map<String, Map<String, Integer>> preAddLinksReport) throws SQLException, IOException, Exception
 	{
 		logger.info("Counts of references to external databases currently in the database ({}), AFTER running AddLinks", this.dbAdapter.getConnection().getCatalog());
-		reporter.printReport();
 		Map<String, Map<String,Integer>> postAddLinksReport = xrefReporter.createReportMap();
 		String report = xrefReporter.getReportContent(postAddLinksReport);
 		logger.info("\n{}", report);
