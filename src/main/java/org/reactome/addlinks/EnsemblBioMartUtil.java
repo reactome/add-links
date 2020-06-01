@@ -61,17 +61,19 @@ public class EnsemblBioMartUtil {
 
     /**
      * Formats species scientific name to BioMart format (eg: hsapiens).
-     * @param speciesName - String, scientific species name (eg: Homo sapiens).
+     * @param genusAndSpeciesName - String, scientific species name (eg: Homo sapiens).
      * @return String, BioMart-formatted string.
      */
-    public static String getBioMartSpeciesName(String speciesName) {
-        String biomartSpeciesName = speciesName.substring(0,1).toLowerCase() + speciesName.split(" ")[1];
+    public static String getBioMartSpeciesName(String genusAndSpeciesName) {
+
         // May 2020 -- BioMart changed the Dog BioMart name from 'cfamiliaris' to 'clfamiliaris'.
         // This can't be done automatically, so needs to be adjusted specifically.
-        if (speciesName.equals("Canis familiaris")) {
-            biomartSpeciesName = speciesName.substring(0,1).toLowerCase() + "l" + speciesName.split(" ")[1];
+        if (genusAndSpeciesName.equals("Canis familiaris")) {
+           return "clfamiliaris";
         }
-        return biomartSpeciesName;
+        String genusAbbreviation = genusAndSpeciesName.substring(0,1).toLowerCase();
+        String speciesName =  genusAndSpeciesName.split(" ")[1];
+        return genusAbbreviation + speciesName;
     }
 
     /**

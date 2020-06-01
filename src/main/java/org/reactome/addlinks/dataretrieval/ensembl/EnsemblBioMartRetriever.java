@@ -64,34 +64,39 @@ public class EnsemblBioMartRetriever extends FileRetriever {
         for (String speciesName : EnsemblBioMartUtil.getSpeciesNames()) {
             String speciesBioMartName = EnsemblBioMartUtil.getBioMartSpeciesName(speciesName);
             logger.info("Retrieving BioMart files for " + speciesBioMartName);
-            Set<String> biomartSearchTerms = new HashSet<>(Arrays.asList(GO_ID_BIOMART_SEARCH_TERM, GO_SLIM_BIOMART_SEARCH_TERM, NCBI_ENTREZ_BIOMART_SEARCH_TERM));
+            Set<String> biomartOtherIdentifierSearchTerms = new HashSet<>(Arrays.asList(GO_ID_BIOMART_SEARCH_TERM, GO_SLIM_BIOMART_SEARCH_TERM, NCBI_ENTREZ_BIOMART_SEARCH_TERM));
             logger.info("Retrieving microarray data");
             // Query BioMart for existing microarray 'types' (not ids) that exist for this species.
-            biomartSearchTerms.addAll(queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES));
-            // Iterate through each Biomart search term and retrieve Ensembl-otherIdentifier identifier mappings.
-            // All mappings are stored in a single file, (eg: hsapiens_microarray_go_ncbi_ids);
-            String otherIdentifiersFilename = this.destination + speciesBioMartName + EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX;
-            if (!Files.exists(Paths.get(otherIdentifiersFilename))) {
-                for (String biomartSearchTerm : biomartSearchTerms) {
-                    logger.info("Retrieving " + biomartSearchTerm + " mappings from BioMart");
-                    queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), biomartSearchTerm, otherIdentifiersFilename);
-                }
-            } else {
-                logFileExistsMessage(otherIdentifiersFilename);
-            }
+            biomartOtherIdentifierSearchTerms.addAll(queryBioMart(getMicroarrayTypesQuery(speciesBioMartName), MICROARRAY_TYPES));
+            // Perform BioMart queries for OtherIdentifiers data. All mappings are stored in a single file, (eg: hsapiens_microarray_go_ncbi_ids).
+            queryBioMartForSearchTerms(speciesBioMartName, biomartOtherIdentifierSearchTerms, EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX);
 
             // Query Ensembl-Uniprot (swissprot and trembl) identifier mapping data from BioMart and write it to a file (eg: hsapiens_uniprot).
-            String uniprotFilename = this.destination + speciesBioMartName + EnsemblBioMartUtil.UNIPROT_SUFFIX;
-            if (!Files.exists(Paths.get(uniprotFilename))) {
-                logger.info("Retrieving UniProt mappings from BioMart");
-                for (String uniprotQueryId : Arrays.asList(UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM, UNIPROT_TREMBL_BIOMART_SEARCH_TERM)) {
-                    queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), uniprotQueryId, uniprotFilename);
-                }
-            } else {
-                logFileExistsMessage(uniprotFilename);
-            }
+            Set<String> biomartUniProtIdentifierSearchTerms = new HashSet<>(Arrays.asList(UNIPROT_SWISSPROT_BIOMART_SEARCH_TERM, UNIPROT_TREMBL_BIOMART_SEARCH_TERM));
+            queryBioMartForSearchTerms(speciesBioMartName, biomartUniProtIdentifierSearchTerms, EnsemblBioMartUtil.UNIPROT_SUFFIX);
 
             logger.info("Completed BioMart data retrieval for " + speciesBioMartName);
+        }
+    }
+
+    /**
+     * Query BioMart for every term in 'biomartSearchTerms', retrieving Ensembl-identifiers mappings where
+     * identifiers can be for microarray, GO, NCBI, and UniProt identifiers.
+     * @param speciesBioMartName String -- String of species name in BioMart format (eg: hsapiens).
+     * @param biomartSearchTerms Set<String> -- All BioMart search terms that will be queried.
+     * @param biomartFileSuffix String -- Suffix of file that will hold the queried BioMart data.
+     * @throws IOException -- Can be thrown by 'getBioMartXMLFilePath()' if XML query template file is not found.
+     */
+    private void queryBioMartForSearchTerms(String speciesBioMartName, Set<String> biomartSearchTerms, String biomartFileSuffix) throws IOException {
+        String biomartFilename = this.destination + speciesBioMartName + biomartFileSuffix;
+        if (!Files.exists(Paths.get(biomartFilename))) {
+            // Iterate through each BioMart search term and retrieve Ensembl-identifier  mappings.
+            for (String biomartSearchTerm : biomartSearchTerms) {
+                logger.info("Retrieving " + biomartSearchTerm + " mappings from BioMart");
+                queryBioMartAndStoreData(speciesBioMartName, getBioMartXMLFilePath(), biomartSearchTerm, biomartFilename);
+            }
+        } else {
+            logFileExistsMessage(biomartFilename);
         }
     }
 
@@ -113,7 +118,10 @@ public class EnsemblBioMartRetriever extends FileRetriever {
         Set<String> biomartResponseLines = new HashSet<>();
         logger.info("Retrieving data associated with query ID: {}", biomartDataType);
         try {
-            biomartResponseLines = queryBioMart(getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType), biomartDataType);
+            biomartResponseLines = queryBioMart(
+                    getBioMartIdentifierQuery(biomartQueryFilePath, biomartSpeciesName, biomartDataType),
+                    biomartDataType
+            );
         } catch (Exception e) {
             logger.error("Unable to retrieve data associated with query ID: " + biomartDataType, e);
             e.printStackTrace();
@@ -260,7 +268,10 @@ public class EnsemblBioMartRetriever extends FileRetriever {
         return String.join(System.lineSeparator(), fileLines);
     }
 
-    // Message output whenever a file already exists.
+    /**
+     * Logs when a file already exists. If it does, the BioMart queries will not be attempted.
+     * @param filename String -- Name of file that already exists.
+     */
     private void logFileExistsMessage(String filename) {
         logger.info("{} already exists. It is *assumed* to be complete, and will not be downloaded.", filename);
     }
