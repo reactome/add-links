@@ -261,8 +261,8 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 			//is what should be used.
 			if (speciesName.equals("Cricetulus griseus")) {
 				speciesName = "cricetulus_griseus_crigri";
-			} else if (speciesName.equals("Canis familiaris") || speciesName.equals("canis_familiaris")) {
-				System.out.println(speciesName);
+			// Ensembl updated C. familiaris db so that it needs to include the 'lupus' string
+			} else if (speciesName.equals("Canis familiaris")) {
 				speciesName = "canis_lupus_familiaris";
 			}
 
