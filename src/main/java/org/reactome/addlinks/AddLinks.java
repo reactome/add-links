@@ -517,7 +517,7 @@ public class AddLinks
 						}
 					}
 				}
-				if (refCreator instanceof NCBIGeneBasedReferenceCreator || refCreator instanceof ENSMappedIdentifiersReferenceCreator)
+				if (refCreator instanceof NCBIGeneBasedReferenceCreator) // remember this will execute for subclasses too...
 				{
 					for (EntrezGeneBasedReferenceCreator subCreator : ((NCBIGeneBasedReferenceCreator)refCreator).getSubCreators())
 					{
