@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 1.4.0
+ - New: Moved OtherIdentifiers into AddLinks
+ - Fixes:
+  - improved link-checking
+  - changes for Jenkins
+  - Fixed: https://github.com/reactome/add-links/issues/130
+  - NCBI identifiers added to OtherIdentifiers slots
+  - Updated Ensembl Canis Familiaris reference database name to Ensembl Canis lupus familiaris
+  - Remove BRENDA-related code
+  - Fixed memory issues
+
 ## 1.3.0
  - New: Changes for Jenkins
 
