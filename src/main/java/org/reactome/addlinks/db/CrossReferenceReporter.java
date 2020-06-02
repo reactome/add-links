@@ -432,7 +432,7 @@ public class CrossReferenceReporter
 	 * @param reportMap - The report, as a map, to print.
 	 * @return The report, as a formatted string.
 	 */
-	public String printReport(Map<String,Map<String,Integer>> reportMap)
+	public String getReportContent(Map<String,Map<String,Integer>> reportMap)
 	{
 		int refDBNameMaxWidth = 0;
 		int objectTypeMaxWidth = 0;
@@ -498,6 +498,6 @@ public class CrossReferenceReporter
 			}
 		}
 		
-		return this.printReport(reportMap);
+		return this.getReportContent(reportMap);
 	}
 }

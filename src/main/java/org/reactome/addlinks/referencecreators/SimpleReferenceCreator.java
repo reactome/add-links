@@ -1,6 +1,10 @@
 package org.reactome.addlinks.referencecreators;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
@@ -16,7 +20,7 @@ import org.reactome.addlinks.db.ReferenceObjectCache;
 
 /**
  * Creates references from one database to another.
- * @param <T> - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
+ * @param T - The type that will be mapped to in the createIdentifiers method. <i>This</i> class will assume String,
  * but subclasses may have more complex mappings, such as List&lt;String&gt; - this will also require those subclasses
  * to override the createIdentifiers method.
  * @author sshorser
@@ -74,7 +78,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 						+ " Check that the classes/attributes you have chosen match the data model in the database.",
 						referringSchemaAttribute, referringSchemaClass );
 			e.printStackTrace();
-			// Can't recover if there is no valid attribute object, throw it up the stack. 
+			// Can't recover if there is no valid attribute object, throw it up the stack.
 			throw new RuntimeException (e);
 		}
 		if (this.cache == null)
@@ -126,25 +130,19 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 						}
 					}
 
-					// The T value of the mapping can be either a List or a String depending on the FileProcessors invoked.
-					Set<String> targetRefDBIdentifiers = new HashSet<>();
-					if (mapping.get(sourceReferenceIdentifier) instanceof List) {
-						targetRefDBIdentifiers.addAll((List) mapping.get(sourceReferenceIdentifier));
-					} else {
-						targetRefDBIdentifiers.add((String) mapping.get(sourceReferenceIdentifier));
+					String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
+					this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
+					// Look for cross-references.
+					boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
+					if (!xrefAlreadyExists)
+					{
+						this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
+						sourceIdentifiersWithNewIdentifier.incrementAndGet();
+						thingsToCreate.add(targetRefDBIdentifier+","+String.valueOf(sourceReference.getDBID())+","+speciesID);
 					}
-
-					for (String targetRefDBIdentifier : targetRefDBIdentifiers) {
-						this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
-						// Look for cross-references.
-						boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
-						if (!xrefAlreadyExists) {
-							this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
-							sourceIdentifiersWithNewIdentifier.incrementAndGet();
-							thingsToCreate.add(targetRefDBIdentifier + "," + String.valueOf(sourceReference.getDBID()) + "," + speciesID);
-						} else {
-							sourceIdentifiersWithExistingIdentifier.incrementAndGet();
-						}
+					else
+					{
+						sourceIdentifiersWithExistingIdentifier.incrementAndGet();
 					}
 				}
 				else
@@ -157,7 +155,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 				e.printStackTrace();
 			}
 		});
-		
+
 		for(String thing : thingsToCreate)
 		{
 			String[] parts = thing.split(",");

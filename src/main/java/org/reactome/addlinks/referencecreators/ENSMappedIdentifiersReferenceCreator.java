@@ -16,7 +16,7 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 
-public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator //extends SimpleReferenceCreator<Map<String,List<String>>>
+public class ENSMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceCreator
 {
 	private static ReferenceObjectCache objectCache;
 	

@@ -25,6 +25,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<powermock.version>1.7.4</powermock.version>
 		<mockito.version>2.8.9</mockito.version>
+		<log4j.version>2.13.2</log4j.version>
 	</properties>
 
 	<dependencies>
@@ -51,8 +52,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.13.0</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -90,12 +96,6 @@
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/commons-discovery/commons-discovery -->
 		<dependency>
 			<groupId>commons-discovery</groupId>
@@ -225,6 +225,9 @@
 						<manifest>
 							<mainClass>org.reactome.addlinks.Main</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+						</manifestEntries>
 						<addMavenDescriptor>true</addMavenDescriptor>
 						<compress>true</compress>
 						<index>true</index>
@@ -275,8 +278,16 @@
 								</transformer>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>org.reactome.addlinks.Main</mainClass>
+									<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 								</transformer>
 							</transformers>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+								</excludes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
