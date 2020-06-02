@@ -23,22 +23,23 @@ public class KEGGReferenceDatabaseGenerator
 	private static ReferenceDatabaseCreator dbCreator;
 	private static MySQLAdaptor adaptor;
 	private static Map<String, GKInstance> keggCodesToRefDBMap = new HashMap<String, GKInstance>();
-	
+	private static final String KEGG_GENE = "KEGG Gene";
+
 	// private constructor to avoid instantiation.
 	private KEGGReferenceDatabaseGenerator()
 	{
 	}
-	
+
 	public static void setDBAdaptor(MySQLAdaptor adaptor)
 	{
 		KEGGReferenceDatabaseGenerator.adaptor = adaptor;
 	}
-	
+
 	public static void setDBCreator(ReferenceDatabaseCreator creator)
 	{
 		KEGGReferenceDatabaseGenerator.dbCreator = creator;
 	}
-	
+
 	private static Long createReferenceDatabase(String dbName, String speciesName, String speciesURL, ReferenceObjectCache objectCache) throws Exception
 	{
 		if (objectCache.getRefDbNamesToIds().keySet().contains(dbName))
@@ -49,7 +50,7 @@ public class KEGGReferenceDatabaseGenerator
 			// created with the correct KEGG species code.
 			@SuppressWarnings("unchecked")
 			Set<GKInstance> preexistingRefDBs = (Set<GKInstance>) adaptor.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.accessUrl, "=", speciesURL);
-			
+
 			// If there IS a preexisting reference database that has the same name AND accessUrl, then return that DB_ID.
 			if (preexistingRefDBs != null && preexistingRefDBs.size() > 0)
 			{
@@ -63,12 +64,12 @@ public class KEGGReferenceDatabaseGenerator
 		Long dbId = KEGGReferenceDatabaseGenerator.dbCreator.createReferenceDatabaseWithAliases(KEGG_URL, speciesURL, dbName, "KEGG", "KEGG Gene");
 		return dbId;
 	}
-	
+
 	/**
-	 * Generate new species-specific KEGG reference databases. The new database will be named in the form "KEGG Gene (${SPECIES_NAME})". 
+	 * Generate new species-specific KEGG reference databases. The new database will be named in the form "KEGG Gene (${SPECIES_NAME})".
 	 * @param objectCache - The object cache. The list of species in this cache will be what the new reference databases are based on.
 	 */
-	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) 
+	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache)
 	{
 		for (String speciesName : objectCache.getSpeciesNamesToIds().keySet())
 		{
@@ -81,7 +82,7 @@ public class KEGGReferenceDatabaseGenerator
 				String keggSpeciesName = KEGGSpeciesCache.getKeggSpeciesNames().parallelStream().filter(keggName -> keggName.contains(speciesName) || speciesName.contains(keggName)).findFirst().orElse(null);
 				keggCodes = KEGGSpeciesCache.getKEGGCodes(keggSpeciesName);
 			}
-			
+
 			if (keggCodes != null)
 			{
 				// Sometimes, a KEGG species will have multiple KEGG Codes. For example, "Oryza sativa japonica (Japanese rice)" has two codes: "osa" and "dosa".
@@ -90,7 +91,12 @@ public class KEGGReferenceDatabaseGenerator
 					try
 					{
 						String speciesURL = KEGG_URL.replace("###SP3###", code + ":");
-						String newDBName = "KEGG Gene ("+speciesName + ")";
+						String newDBName = KEGG_GENE + " (" + speciesName + ")";
+						if (code.equals("mtu") || code.equals("mtv"))
+						{
+							newDBName = KEGG_GENE + " ("+speciesName + " - " + code + ")";
+						}
+
 						Long dbId = createReferenceDatabase(newDBName, speciesName, speciesURL, objectCache);
 						GKInstance refDBInst = adaptor.fetchInstance(dbId);
 						KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.put(code, refDBInst);
@@ -110,12 +116,13 @@ public class KEGGReferenceDatabaseGenerator
 		}
 		// Special cases for viruses and "addendum"
 		String speciesURL = KEGG_URL.replace("###SP3###", "vg:");
-		String newDBName = "KEGG Gene (Viruses)";
+		String newDBName = KEGG_GENE + " (Viruses)";
 		try
 		{
 			createReferenceDatabase(newDBName, "Viruses", speciesURL, objectCache);
+			LinksToCheckCache.getRefDBsToCheck().add(newDBName);
 			speciesURL = KEGG_URL.replace("###SP3###", "ag:");
-			newDBName = "KEGG Gene (Addendum)";
+			newDBName = KEGG_GENE + " (Addendum)";
 			createReferenceDatabase(newDBName, "Addendum", speciesURL, objectCache);
 		}
 		catch (Exception e)
@@ -124,9 +131,9 @@ public class KEGGReferenceDatabaseGenerator
 			e.printStackTrace();
 		}
 		LinksToCheckCache.getRefDBsToCheck().add(newDBName);
-		
+
 	}
-	
+
 	/**
 	 * Gets the DBID of a KEGG ReferenceDatabase, based on a KEGG species code.
 	 * @param keggSpeciesCode KEGG species code.
@@ -171,7 +178,7 @@ public class KEGGReferenceDatabaseGenerator
 		}
 		return dbId;
 	}
-	
+
 	/**
 	 * Generate a KEGG reference database name.
 	 * @param objectCache
@@ -194,34 +201,34 @@ public class KEGGReferenceDatabaseGenerator
 
 			if (keggSpeciesName != null)
 			{
-				targetDB = "KEGG Gene (" + keggSpeciesName + ")";
+				targetDB = KEGG_GENE + " (" + keggSpeciesName + ")";
 			}
 		}
 		return targetDB;
 	}
-	
+
 	/**
 	 * Generates a ReferenceDatabase name based on a KEGG species code. This will do a look-up in the cache for the species code to get the KEGG species name.
-	 * @param objectCache 
+	 * @param objectCache
 	 * @param keggSpeciesCode A KEGG species code.
 	 * @return "Kegg Gene ("+keggSpeciesName+")"
 	 */
 	public static String generateDBNameFromKeggSpeciesCode(ReferenceObjectCache objectCache, String keggSpeciesCode)
 	{
 		String targetDB = null;
-		
+
 		String keggSpeciesName = KEGGSpeciesCache.getSpeciesName(keggSpeciesCode);
-		String possibleDBName = "Kegg Gene ("+keggSpeciesName+")";
+		String possibleDBName = KEGG_GENE + " ("+keggSpeciesName+")";
 		if (objectCache.getRefDbNamesToIds().keySet().contains(possibleDBName))
 		{
 			targetDB = possibleDBName;
 		}
 		return targetDB;
 	}
-	
+
 	/**
 	 * To be used when you have a valid KEGG identifier but you can't figure out which Reactome species it should be for because there
-	 * is a different between the KEGG and Reactome species names. Use this method to create a new ReferenceDatabase object based on the KEGG 
+	 * is a different between the KEGG and Reactome species names. Use this method to create a new ReferenceDatabase object based on the KEGG
 	 * prefix and species name. Rebuilding caches is <em>STRONGLY</em> recommended after calling this method.
 	 * @param keggPrefix
 	 * @param keggSpeciesName
@@ -229,8 +236,13 @@ public class KEGGReferenceDatabaseGenerator
 	 */
 	public static synchronized String createReferenceDatabaseFromKEGGData(String keggPrefix, String keggSpeciesName, ReferenceObjectCache objectCache)
 	{
+		String newDBName = KEGG_GENE + " ("+keggSpeciesName + ")";
+		if (keggSpeciesName.contains("Mycobacterium tuberculosis H37Rv")) // if we start needing to handle more exceptional cases than just Mycobacterium tuberculosis H37Rv, we may need to rethink the general design...
+		{
+			newDBName = KEGG_GENE + " ("+keggSpeciesName + " - " + keggPrefix + ")";
+		}
+
 		String speciesURL = KEGG_URL.replace("###SP3###", keggPrefix + ":");
-		String newDBName = "KEGG Gene ("+keggSpeciesName + ")";
 		try
 		{
 			Long dbId = new Long(createReferenceDatabase(newDBName, keggSpeciesName, speciesURL, objectCache));

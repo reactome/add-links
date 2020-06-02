@@ -239,18 +239,6 @@
 			</bean>
 		</entry>
 
-		<entry key="BrendaProcessor">
-			<bean id="BrendaProcessor" class="org.reactome.addlinks.fileprocessors.BRENDAFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/BrendaProcessor"/>
-				<property name="path">
-					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/BRENDA"/>
-					</bean>
-				</property>
-				<property name="fileGlob" value="/tmp/addlinks-downloaded-files/BRENDA/BRENDA*" />
-			</bean>
-		</entry>
-
 		<entry key="HGNCProcessor">
 			<bean id="HGNCProcessor" class="org.reactome.addlinks.fileprocessors.HGNCFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/HGNCProcessor"/>
@@ -329,6 +317,83 @@
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/target_pathogen_reactome_map.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="HPAFileProcessor">
+			<bean id="HPAFileProcessor" class="org.reactome.addlinks.fileprocessors.HPAFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/HPAFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/proteinatlas.tsv.zip"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="VGNCFileProcessor">
+			<bean id="VGNCFileProcessor" class="org.reactome.addlinks.fileprocessors.VGNCFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/VGNCFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/vgnc_gene_set_All.txt.gz"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="MGIFileProcessor">
+			<bean id="MGIFileProcessor" class="org.reactome.addlinks.fileprocessors.MGIFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/MGIFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/MGI_MRK_SwissProt_TrEMBL.rpt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="RGDFileProcessor">
+			<bean id="RGDFileProcessor" class="org.reactome.addlinks.fileprocessors.RGDFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/RGDFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/GENES_RAT.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="XenbaseFileProcessor">
+			<bean id="XenbaseFileProcessor" class="org.reactome.addlinks.fileprocessors.XenbaseFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/XenbaseFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/XenbaseGeneUniprotMapping.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="ZFINFileProcessor">
+			<bean id="ZFINFileProcessor" class="org.reactome.addlinks.fileprocessors.ZFINFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/ZFINFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-zfinpub.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="EnsemblBioMartFileProcessor">
+			<bean id="EnsemblBioMartFileProcessor" class="org.reactome.addlinks.fileprocessors.ensembl.EnsemblBioMartFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/BioMartFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/biomart/"/>
 					</bean>
 				</property>
 			</bean>

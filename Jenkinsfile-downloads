@@ -1,6 +1,7 @@
 import groovy.json.JsonSlurper
 // This Jenkinsfile is used by Jenkins to run the AddLinks-Downloads step of Reactome's release.
 // It requires that the ConfirmReleaseConfigs step has been run successfully before it can be run.
+def currentRelease
 pipeline{
 	agent any
 
@@ -9,7 +10,7 @@ pipeline{
 		stage('Check ConfirmReleaseConfigs build succeeded'){
 			steps{
 				script{
-					def currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
+					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
 					// This queries the Jenkins API to confirm that the most recent build of ConfirmReleaseConfigs was successful.
 					def configStatusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/ConfirmReleaseConfigs/lastBuild/api/json"
 					if (configStatusUrl.getStatus() == 404) {
@@ -27,9 +28,7 @@ pipeline{
 		stage('Setup: Build jar file'){
 			steps{
 				script{
-					dir('add-links'){
-						sh "mvn clean package -DskipTests"
-					}
+					sh "mvn clean package -DskipTests"
 				}
 			}
 		}
@@ -38,15 +37,30 @@ pipeline{
 		stage('Main: Download AddLinks files'){
 			steps{
 				script{
-					dir('add-links'){
-						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-							sh "cp $ConfigFile src/main/resources/auth.properties"
-							sh "ln -sf src/main/resources resources"
-							sh "rm -f src/main/resources/db.properties"
-							sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-${env.ADDLINKS_VERSION}.jar file://\$(pwd)/resources/file-download-context.xml"""
-							sh "rm -f src/main/resources/auth.properties"
-						}
+					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+						sh "cp $ConfigFile src/main/resources/auth.properties"
+						sh "ln -sf src/main/resources resources"
+						sh "rm -f src/main/resources/db.properties"
+						sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/file-download-context.xml"""
+						sh "rm -f src/main/resources/auth.properties"
 					}
+				}
+			}
+		}
+		stage('Post: Archive Outputs'){
+			steps{
+				script{
+					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads"
+					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
+					def addlinksFolder = "addlinks-downloaded-files/"
+					sh "mkdir -p data/"
+					sh "cd /tmp/; tar -zcvf $downloadsArchive $addlinksFolder"
+					sh "mv /tmp/$downloadsArchive data/"
+					sh "gzip -r logs/* reports/*"
+					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
+					sh "aws s3 --no-progress --recursive cp data/ $s3Path/data/"
+					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
+					sh "rm -r logs data reports /tmp/$addlinksFolder"
 				}
 			}
 		}

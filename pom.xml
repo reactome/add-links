@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.reactome.release</groupId>
 	<artifactId>AddLinks</artifactId>
-	<version>1.3.0</version>
+	<version>1.4.0</version>
 
 	<organization>
 		<name>Reactome</name>
@@ -18,6 +18,12 @@
 			<organizationUrl>https://oicr.on.ca/</organizationUrl>
 			<email>solomon.shorser@oicr.on.ca</email>
 		</developer>
+		<developer>
+			<organization>OICR</organization>
+			<organizationUrl>https://oicr.on.ca/</organizationUrl>
+			<email>justin.cook@oicr.on.ca</email>
+		</developer>
+
 	</developers>
 
 	<properties>
@@ -25,6 +31,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<powermock.version>1.7.4</powermock.version>
 		<mockito.version>2.8.9</mockito.version>
+		<log4j.version>2.13.2</log4j.version>
 	</properties>
 
 	<dependencies>
@@ -51,18 +58,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.8.2</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.reactome.server</groupId>
-			<artifactId>reactome-core</artifactId>
-			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -95,32 +102,16 @@
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.axis</groupId>
-			<artifactId>axis</artifactId>
-			<version>1.4</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.xml/jaxrpc-api -->
-		<dependency>
-			<groupId>javax.xml</groupId>
-			<artifactId>jaxrpc-api</artifactId>
-			<version>1.1</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-discovery/commons-discovery -->
 		<dependency>
 			<groupId>commons-discovery</groupId>
 			<artifactId>commons-discovery</artifactId>
-			<version>0.4</version>
+			<version>0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.40</version>
+			<version>5.1.48</version>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
@@ -152,6 +143,18 @@
 			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<version>2.1</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>javax.json</groupId>
@@ -170,9 +173,28 @@
 			<version>1.6</version>
 		</dependency>
 		<dependency>
+			<!--
+			***NOTE:***
+			For this dependency, you MUST *manually* install jnlp-1.2 from here:
+			https://github.com/reactome/CuratorTool/raw/master/lib/jnlp-1.2.jar
+			If you don't do this, you won't be able to build.
+			-->
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
-			<version>1.0.2</version>
+			<version>1.2.0</version>
+			<!-- I tried to exclude jnlp but it doesn't work because jnlp is
+			a dependency of reactome-base, not release-common-lib. -->
+<!-- 			<exclusions>
+				<exclusion>
+					<artifactId>jnlp-api</artifactId>
+					<groupId>javax.jnlp</groupId>
+				</exclusion>
+			</exclusions> -->
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
 		</dependency>
 	</dependencies>
 
@@ -209,6 +231,9 @@
 						<manifest>
 							<mainClass>org.reactome.addlinks.Main</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+						</manifestEntries>
 						<addMavenDescriptor>true</addMavenDescriptor>
 						<compress>true</compress>
 						<index>true</index>
@@ -259,8 +284,16 @@
 								</transformer>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>org.reactome.addlinks.Main</mainClass>
+									<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 								</transformer>
 							</transformers>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+								</excludes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
@@ -279,59 +312,4 @@
 			</resource>
 		</resources>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>nexus-ebi-repo</id>
-			<name>The EBI internal repository</name>
-			<url>http://www.ebi.ac.uk/Tools/maven/repos/content/groups/ebi-repo/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<!-- EBI SNAPSHOT repo -->
-		<repository>
-			<id>nexus-ebi-snapshot-repo</id>
-			<name>The EBI internal snapshot repository</name>
-			<url>http://www.ebi.ac.uk/Tools/maven/repos/content/groups/ebi-snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<name>EBI</name>
-			<url>http://www.ebi.ac.uk/Tools/maven/repos/content/repositories/releases/</url>
-			<id>EBI</id>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<!-- OICR respository for Reactome artefacts -->
-		<repository>
-			<id>oicr-central</id>
-			<name>artifacts.oicr.on.ca-releases</name>
-			<url>https://artifacts.oicr.on.ca/artifactory/reactome</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>oicr-snapshots</id>
-			<name>artifacts.oicr.on.ca-snapshots</name>
-			<url>https://artifacts.oicr.on.ca/artifactory/reactome</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 </project>

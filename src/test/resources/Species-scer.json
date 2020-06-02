@@ -1,0 +1,29 @@
+{
+  "scer":{
+    "mart_group":"scerevisiae_gene_ensembl",
+    "name":[
+      "Saccharomyces cerevisiae"
+    ],
+    "refdb":{
+      "dbname":[
+        "ENSEMBL",
+        "Ensembl",
+        "ENSEMBL_S_cerevisiae_PROTEIN"
+      ],
+      "access":"http:\/\/fungi.ensembl.org\/Saccharomyces_cerevisiae\/Transcript\/ProteinSummary?peptide=###ID###",
+      "url":"http:\/\/fungi.ensembl.org\/Saccharomyces_cerevisiae\/Info\/Index",
+      "ensg_access":"http:\/\/fungi.ensembl.org\/Saccharomyces_cerevisiae\/geneview?gene=###ID###&db=core"
+    },
+    "alt_refdb":{
+      "access":"http:\/\/db.yeastgenome.org\/cgi-bin\/locus.pl?locus=###ID###",
+      "dbname":[
+        "SGD",
+        "Saccharomyces Genome Database"
+      ],
+      "url":"http:\/\/www.yeastgenome.org"
+    },
+    "group":"Fungi\/Plants",
+    "compara":"core",
+    "abbreviation": "SCE"
+  }
+}

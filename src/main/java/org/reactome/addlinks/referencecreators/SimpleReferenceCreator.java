@@ -78,7 +78,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 						+ " Check that the classes/attributes you have chosen match the data model in the database.",
 						referringSchemaAttribute, referringSchemaClass );
 			e.printStackTrace();
-			// Can't recover if there is no valid attribute object, throw it up the stack. 
+			// Can't recover if there is no valid attribute object, throw it up the stack.
 			throw new RuntimeException (e);
 		}
 		if (this.cache == null)
@@ -129,7 +129,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 							speciesID = new Long(speciesInst.getDBID());
 						}
 					}
-					
+
 					String targetRefDBIdentifier = (String)mapping.get(sourceReferenceIdentifier);
 					this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
 					// Look for cross-references.
@@ -155,7 +155,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 				e.printStackTrace();
 			}
 		});
-		
+
 		for(String thing : thingsToCreate)
 		{
 			String[] parts = thing.split(",");

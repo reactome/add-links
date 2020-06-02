@@ -39,7 +39,7 @@ import org.reactome.addlinks.linkchecking.LinksToCheckCache;
  * This class will query ENSEMBL to get a list of supported species,
  * and then generate ReferenceDatabase objects in the database with
  * the appropriate species-specific accessURL.
- * The URL queried is https://rest.ensembl.org/info/species?content-type=text/xml 
+ * The URL queried is https://rest.ensembl.org/info/species?content-type=text/xml
  * @author sshorser
  *
  */
@@ -52,26 +52,26 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	private static Logger logger; // = LogManager.getLogger();
 	private static ReferenceDatabaseCreator dbCreator;
 	private static String speciesURL = "https://rest.ensembl.org/info/species?content-type=text/xml";
-	
+
 //	private static final Set<String> nonCoreSpecies = new HashSet<>(Arrays.asList("drosophila_melanogaster", "caenorhabditis_elegans", "dictyostelium_discoideum", "schizosaccharomyces_pombe", "saccharomyces_cerevisiae", "plasmodium_falciparum"));
 
 	private static Map<String, String> nonCoreSpeciesURLs = new HashMap<>(6);
-	
+
 	static
 	{
 		nonCoreSpeciesURLs.put("drosophila_melanogaster", METAZOA_URL);
 		nonCoreSpeciesURLs.put("caenorhabditis_elegans", METAZOA_URL);
-		
+
 		nonCoreSpeciesURLs.put("dictyostelium_discoideum", PROTISTS_URL);
 		nonCoreSpeciesURLs.put("plasmodium_falciparum", PROTISTS_URL);
-		
+
 		nonCoreSpeciesURLs.put("schizosaccharomyces_pombe", FUNGI_URL);
 		nonCoreSpeciesURLs.put("saccharomyces_cerevisiae", FUNGI_URL);
 	}
-	
+
 	/**
 	 * private constructor (to prevent instantiation) in a final class: This class is really more of a utility
-	 * class - creating multiple instances of it probably wouldn't make sense. 
+	 * class - creating multiple instances of it probably wouldn't make sense.
 	 */
 	private EnsemblReferenceDatabaseGenerator()
 	{
@@ -80,16 +80,16 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			EnsemblReferenceDatabaseGenerator.logger = this.createLogger("ENSEMBLReferenceDatabaseCreator", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
 		}
 	}
-	
+
 	static
 	{
-		// Ugh... the constructor is private because this class never really needed a constructor. But *now* 
+		// Ugh... the constructor is private because this class never really needed a constructor. But *now*
 		// we want to use the CustomLoggable methods to log the output to a separate log file. But those methods require an instance.
 		// So... a static initializer to create an instance that will trigger the creation of the custom logger.
 		@SuppressWarnings("unused")
 		EnsemblReferenceDatabaseGenerator generator = new EnsemblReferenceDatabaseGenerator();
 	}
-	
+
 	/**
 	 * Generate species-specific ENSEMBL ReferenceDatabases.
 	 * This function will query ENSEMBL for a list of species, transform the resulting XML into simple-to-parse text,
@@ -112,10 +112,13 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			CloseableHttpResponse response = client.execute(get) )
 		{
 			logger.info("Response: {}",response.getStatusLine());
-
+			if (response.getStatusLine().getStatusCode() > 400 )
+			{
+				throw new Error("Error getting list of species from ENSEMBL! HTTP response code: " + response.getStatusLine().getStatusCode() + " ; Message: " + response.getStatusLine().getReasonPhrase());
+			}
 			String s = EntityUtils.toString(response.getEntity());
 			InputStream inStream = new ByteArrayInputStream(s.getBytes());
-			
+
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Source xsl = new StreamSource(new File("resources/ensembl-species-transform.xsl"));
 			Templates template = factory.newTemplates(xsl);
@@ -124,10 +127,10 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			Result result = new StreamResult(outputStream);
 			transformer.transform(xml, result);
-			
+
 			logger.info("Flattened species list from ENSEMBL:\n{}",outputStream.toString());
 			String[] lines = outputStream.toString().split("\n");
-			// for each line, create a database for the proper name 
+			// for each line, create a database for the proper name
 			for (String line : lines)
 			{
 				// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
@@ -140,12 +143,24 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 				// In the Reactome database, the closest species name we have to that is "Cricetulus", so it *can* be mapped to.
 				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
 			}
+			// Now we need to create ReferenceDatabases for all of the species names in Reactome... because the Uniprot-mapped ENSEMBL 
+			// reference creator might try to create a reference for something that's not in the ENSEMBL species list.
+			// For example, the Uniprot-mapped-to-ENSEMBL reference creation process may want to create references for ENSEMBL
+			// for the hepatitis virus (hep. C, subtype 1a). That species is in Reactome's species list and it seems in UniProt's list as well,
+			// but it is not in the list of species that actually comes from ENSEMBL, even though ENSEMBL does have entries for hepatitis.
+			// So... now we add all Reactome species names as ENSEMBL Reference Database names. Anything that has 0 references will 
+			// be removed at the end of AddLinks.
+			for (String speciesName : objectCache.getSetOfSpeciesNames())
+			{
+				speciesName = speciesName.trim().toLowerCase().replace("_", " ");
+				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
+			}
 		}
 	}
 
 	/**
 	 * Creates a ReferenceDatabase for a species.
-	 * @param objectCache - A ReferenceObjectCache 
+	 * @param objectCache - A ReferenceObjectCache
 	 * @param speciesName - The speciesName
 	 * @throws Exception
 	 */
@@ -157,13 +172,13 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
 			//and only create a ReferenceDatbase object when it's discovered that one is needed.
 			String speciesURL = "http://www.ensembl.org/"+normalizedSpeciesName+"/geneview?gene=###ID###&db=core";
-			
+
 			// Special case: "Non-core" species use a different URL prefix than other species.
 			if (nonCoreSpeciesURLs.containsKey(normalizedSpeciesName))
 			{
 				speciesURL = speciesURL.replace("www.ensembl.org", nonCoreSpeciesURLs.get(normalizedSpeciesName));
 			}
-			
+
 			// Before we create a new ENSEMBL reference, let's see if it already exists, but with alternate spelling. In that case, we'll just create an alias to the existing database.
 			String newDBName = "ENSEMBL_"+speciesName.replaceAll(" ", "_")+"_PROTEIN";
 			// OLD style: Capitalization and spaces.
@@ -247,6 +262,6 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	{
 		EnsemblReferenceDatabaseGenerator.speciesURL = speciesURL;
 	}
-	
-	
+
+
 }

@@ -127,7 +127,6 @@ By default, the XML files that contain configuration are:
    - filterFileRetrievers - This setting is used to determine if file retrievers will be filtered based on the fileRetrieverFilter bean in the XML file. Consider this deprecated!
    - executeAsPersonID - This is the ID of the Person entity that new data will be associated with.
    - numberOfUniprotDownloadThreads - Number of threads that will be created to download Uniprot data.
-   - numberOfBrendaDownloadThreads - Number of threads that will be created to download Brenda data.
    - lazyLoadCache - determines if all of the object caches will be fully-loaded the first time *any* cache is referenced, or if caches will only be loaded the first time they are references (not all caches will be loaded - only the referenced cache will be loaded!)
    - proportionToLinkCheck - the proportion of new links to perform link-checking on, on a per-ReferenceDatabase basis. 0 means no new links will be checked. 1.0 means all new links will be checked. 0.5 means that half of the new links will be checked.
    - maxNumberLinksToCheck - the maximum number of new links to check. This overrides proportionToLinkCheck. For example, if 10 000 new links are created and proportionToLinkCheck == 0.5, that means that link-checking should check 5 000 links. If this is too many links to check in a reasonable amount of time (or if you don't want to send too many requests to someone's server) you can set maxNumberLinksToCheck to a more reasonable number (50, or 200, or something like that) and maxNumberLinksToCheck will act as as cap on the number of links that can be checked, on a per-ReferenceDatabase basis.
@@ -185,9 +184,6 @@ Most of the data retrievers are designed to download a single file, or submit qu
 Getting cross-references from ENSEMBL requires first getting doing a batch mapping from ENSP to ENST, then batch mapping ENST to ENSG.
 Then, individual cross-reference lookups on ENSG to get other databases. The batch lookups require a specific species, as an input. So, getting data for ENSEMBL takes a few steps.
 
-#### BRENDA
-Data is retrieve from BRENDA one identifier at a time, via a webservice. Each webservice call requires authentication information.
-
 #### KEGG
 To get data from KEGG, AddLinks must first get the UniProt-to-KEGG mappings. KEGG is then queried using these mapped values to get detailes for each of the KEGG identifiers. KEGG queries are species-specific.
 
@@ -197,7 +193,7 @@ This is a pretty simple web-service call. The difference here with UniProt is th
 #### File processing
  - Most file processors operate on text files, usually tab or comma delimited. Some file processors operate on XML. In these cases, there is usually one or more XSL files that is used to transform the XML into a much simpler structure (usually a CSV or TSV). This is done for ENSEMBL, Orphanet, and HMDB.
 
- - Some file processors operate on file globs (file name patterns). These include file processors for BRENDA, ENSEMBL, KEGG, UniProt, and OMIM. Usually, this is done becuase there are multiple input files, often distinguished by the target database of the mapping, a species ID, or both.
+ - Some file processors operate on file globs (file name patterns). These include file processors for ENSEMBL, KEGG, UniProt, and OMIM. Usually, this is done becuase there are multiple input files, often distinguished by the target database of the mapping, a species ID, or both.
  
 #### Reference creation
 

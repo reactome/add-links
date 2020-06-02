@@ -11,51 +11,56 @@ pipeline{
 		stage('Check AddLinks-Download and Orthoinference builds succeeded'){
 			steps{
 				script{
-					def currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
+					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
 					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
 					checkUpstreamBuildsSucceeded("AddLinks-Download", "$currentRelease")
-					checkUpstreamBuildsSucceeded("Orthoinference", "$currentRelease")
+					checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/Orthoinference", "$currentRelease")
 	    			}
     			}
   		}
+		stage('Setup: Download AddLinks files from S3 bucket'){
+			steps{
+				script{
+					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
+					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads/data/$downloadsArchive ."
+					sh "tar -xvf $downloadsArchive"
+					sh "mv addlinks-downloaded-files/ /tmp/"
+					sh "rm $downloadsArchive"
+				}
+			}
+		}
 		// This stage backs up the release_current database before it is modified.
 		stage('Setup: Backup release_current'){
 			steps{
 				script{
-					dir('add-links'){
-						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_before_addlinks.dump"
-							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
-							sh "gzip -f $release_current_before_addlinks_dump"
-						}
+					withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
+						def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_before_addlinks.dump"
+						sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
+						sh "gzip -f $release_current_before_addlinks_dump"
 					}
 				}
 			}
 		}
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
-  		steps{
-  			script{
-        	dir('add-links'){
-						sh "mvn clean package -DskipTests"
-          }
-      	}
-      }
-    }
+			steps{
+				script{
+					sh "mvn clean package -DskipTests"
+				}
+			 }
+   		 }
 		// This stage runs the insertion component of AddLinks. It will build links to various external resources and connect them to the relevant instances.
 		// It also connects these linkouts to ReferenceDatabase objects that pertain to their original resource.
 		stage('Main: AddLinks Insertions'){
 			steps{
 				script{
-					dir('add-links'){
-						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-							sh "cp $ConfigFile src/main/resources/auth.properties"
-							sh "ln -sf src/main/resources resources"
-							sh "rm -f src/main/resources/db.properties"
-					    sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-${env.ADDLINKS_VERSION}.jar file://\$(pwd)/resources/create-references-context.xml"""
-							sh "rm -f src/main/resources/auth.properties"
-						}
+					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+						sh "cp $ConfigFile src/main/resources/auth.properties"
+						sh "ln -sf src/main/resources resources"
+						sh "rm -f src/main/resources/db.properties"
+						sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
+						sh "rm -f src/main/resources/auth.properties"
 					}
 				}
 			}
@@ -75,19 +80,22 @@ pipeline{
 			}
 		}
 		// This stage archives all logs and database backups produced by AddLink-Insertion.
-		stage('Post:Archive logs and backups'){
+		stage('Post: Archive Outputs'){
 			steps{
 				script{
-					dir('add-links'){
-						sh "mkdir -p archive/${currentRelease}/logs"
-						sh "mv --backup=numbered *_${currentRelease}_*.dump.gz archive/${currentRelease}/"
-						sh "gzip logs/*.log logs/retrievers/* logs/file-processors/* logs/refCreators/*"
-						sh "mv logs/* archive/${currentRelease}/logs"
-					}
+					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/insertions"
+					def addlinksFolder = "addlinks-downloaded-files/"
+					sh "mkdir -p databases/"
+					sh "mv --backup=numbered *_${currentRelease}_*.dump.gz databases/"
+					sh "gzip -r logs/* reports/*"
+					sh "aws s3 --no-progress --recursive cp databases/ $s3Path/databases/"
+					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
+					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
+					sh "rm -r logs databases reports /tmp/$addlinksFolder"
 				}
 			}
 		}
-  }
+  	}
 }
 
 // Utility function that checks upstream builds of this project were successfully built.
