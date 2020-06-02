@@ -79,7 +79,7 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2020_01.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2020_02.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="passiveFTP" value="true" />
@@ -185,7 +185,7 @@
 		<!-- The CTD file is not used directly for mappings, but it used to filter out NCBI Gene IDs that are not in CTD when creating CTD cross-references -->
 		<entry key="CTD">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="CTD">
-				<property name="dataURL" value="http://ctd.mdibl.org/reports/CTD_chem_gene_ixns.csv.gz" />
+				<property name="dataURL" value="http://ctdbase.org/reports/CTD_chem_gene_ixns.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CTD_chem_gene_ixns.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/CTD"/>
@@ -230,7 +230,7 @@
 		</entry>
 
 		<entry key="VGNC">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HPA">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="VGNC">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/vgnc/tsv/vgnc_gene_set_All.txt.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/vgnc_gene_set_All.txt.gz" />
 				<property name="maxAge" ref="maxFileAge" />

@@ -106,10 +106,10 @@ public class EnsemblBioMartFileProcessor extends FileProcessor<Map<String, List<
                             // Add each mapping generated to the 'super' mapping
                             mappings.put(biomartFileSpecies + EnsemblBioMartUtil.PROTEIN_TO_GENES_SUFFIX, proteinToGenes);
                         }
-                    // Processing of OtherIdentifier (Microarray/GO term) mapping files.
+                    // Processing of OtherIdentifier (Microarray/GO/NCBI term) mapping files.
                     // OtherIdentifier mapping files are used to fully populate the
                     // 'proteinToTranscripts' and 'transcriptToOtherIdentifiers' mappings.
-                    } else if (bioMartFile.toString().endsWith(EnsemblBioMartUtil.MICROARRAY_IDS_AND_GO_TERMS_SUFFIX)) {
+                    } else if (bioMartFile.toString().endsWith(EnsemblBioMartUtil.OTHER_IDENTIFIERS_SUFFIX)) {
                         // 'proteinToTranscripts' mapping requires the 2nd (transcript) and 3rd (protein) values in the line.
                         Map<String, List<String>> proteinToTranscripts = getIdentifierMapping(bioMartFile, PROTEIN_IDENTIFIER_INDEX, TRANSCRIPT_IDENTIFIER_INDEX);
                         if (!proteinToTranscripts.isEmpty()) {
