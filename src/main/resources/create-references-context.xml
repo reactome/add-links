@@ -44,7 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>TargetPathogenFileProcessor</value>
+	<!--	<value>TargetPathogenFileProcessor</value> -->
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
@@ -82,8 +82,8 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>TargetPathogenReactionsReferenceCreator</value>
-		<value>TargetPathogenProteinsReferenceCreator</value>
+	<!--	<value>TargetPathogenReactionsReferenceCreator</value>
+		<value>TargetPathogenProteinsReferenceCreator</value> -->
 		<value>IntEnzRefCreator</value>		
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
@@ -129,7 +129,7 @@
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
-		<value>Target Pathogen</value>
+	<!--	<value>Target Pathogen</value> -->
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>
