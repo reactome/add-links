@@ -30,6 +30,7 @@ pipeline{
 				}
 			}
 		}
+		/*
 		// This stage backs up the release_current database before it is modified.
 		stage('Setup: Backup release_current'){
 			steps{
@@ -42,6 +43,7 @@ pipeline{
 				}
 			}
 		}
+		*/
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
 			steps{
