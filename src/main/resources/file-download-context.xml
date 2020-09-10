@@ -41,7 +41,7 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>TargetPathogen</value>
-	<!--	<value>IntEnz</value>		
+		<value>IntEnz</value>		
 		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
 		<value>OpenTargets</value>
@@ -75,7 +75,7 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>EnsemblBioMart</value> -->
+		<value>EnsemblBioMart</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
