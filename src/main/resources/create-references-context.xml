@@ -59,7 +59,7 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>PROFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
+	<!--	<value>ZincMoleculesFileProcessor</value>	-->
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
@@ -109,7 +109,7 @@
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
 		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value>
+	<!--	<value>zincToChEBIReferenceCreator</value> -->
 		<value>HGNCReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
