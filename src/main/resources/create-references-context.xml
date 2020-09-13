@@ -44,7 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>TargetPathogenFileProcessor</value>
+	<!--	<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
@@ -58,9 +58,9 @@
 		<value>UniprotToRefSeqRNAFileProcessor</value>
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
-		<value>PROFileProcessor</value>
+		<value>PROFileProcessor</value> 		-->
 	<!--	<value>ZincMoleculesFileProcessor</value>	-->
-		<value>COSMICProcessor</value>
+	<!--	<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>KEGGFileProcessor</value>
@@ -75,14 +75,14 @@
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
-		<value>RGDFileProcessor</value>
+		<value>RGDFileProcessor</value>			-->
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value>
+	<!--	<value>EnsemblBioMartFileProcessor</value>	-->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>TargetPathogenReactionsReferenceCreator</value>
+	<!--	<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>		
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
@@ -108,9 +108,9 @@
 		<value>zincBiogenicReferenceCreator</value>
 		<value>zincInvestigationalReferenceCreator</value>
 		<value>zincPurchasablePredictionsReferenceCreator</value>
-		<value>zincToUniProtReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>	-->
 	<!--	<value>zincToChEBIReferenceCreator</value> -->
-		<value>HGNCReferenceCreator</value>
+	<!--	<value>HGNCReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
@@ -121,15 +121,15 @@
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
-		<value>RGDReferenceCreator</value>
+		<value>RGDReferenceCreator</value>	-->
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value>
+	<!--	<value>EnsemblReferenceCreator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value> -->
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
-		<value>Target Pathogen</value>
+	<!--	<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>
@@ -167,7 +167,7 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>Ensembl</value>
+		<value>Ensembl</value> -->
 		<!--
 		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
 		This prevents an identifier search in the page from becoming possible, since it is just searching the template.
