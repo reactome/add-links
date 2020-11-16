@@ -1,6 +1,8 @@
 // This Jenkinsfile is used by Jenkins to run the AddLinks-Downloads step of Reactome's release.
 // It requires that the ConfirmReleaseConfigs step has been run successfully before it can be run.
 
+import org.reactome.release.jenkins.utilities.Utilities
+
 // Shared library maintained at 'release-jenkins-utils' repository.
 def utils = new Utilities()
 pipeline{
