@@ -282,7 +282,7 @@ public class AddLinks
 			}
 		}
 		reportLine.append(numLinkOK).append("\t").append(numLinkNotOK).append("\n");
-		logger.info("{} links were OK, {} links were NOT ok.", numLinkOK, numLinkNotOK);
+		logger.info("{} {} links were OK, {} links were NOT ok.", numLinkOK, refDBInst.getDisplayName(), numLinkNotOK);
 		return reportLine.toString();
 	}
 
@@ -346,7 +346,6 @@ public class AddLinks
 
 	/**
 	 * @param numUniprotDownloadThreads
-	 * @param retrieverJobs
 	 */
 	private List<Callable<Boolean>> createRetrieverJobs(int numUniprotDownloadThreads)
 	{
@@ -547,6 +546,7 @@ public class AddLinks
 				String line = checkLinksForRefCreator(refCreator);
 				Files.write(Paths.get(linkCheckReportName), line.getBytes(), StandardOpenOption.APPEND);
 			}
+			logger.info("Completed reference creator: {}", refCreatorName);
 		}
 	}
 
