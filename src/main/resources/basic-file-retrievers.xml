@@ -166,7 +166,7 @@
 			<bean class="org.reactome.addlinks.dataretrieval.COSMICFileRetriever" id="COSMIC">
 				<property name="userName" value="${cosmic.user}"/>
 				<property name="password" value="${cosmic.password}"/>
-				<property name="dataURL" value="https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v87/CosmicMutantExport.tsv.gz" />
+				<property name="dataURL" value="https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v92/CosmicMutantExport.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CosmicMutantExport.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/COSMIC"/>
