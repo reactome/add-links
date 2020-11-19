@@ -16,13 +16,15 @@ public class TestTargetPathogenFileProcessor
 {
 	private Path pathToFile;
 	private final static String URL_PREFIX = "http://target.sbg.qb.fcen.uba.ar/patho/protein";
-	private final static String fileContent = URL_PREFIX + "/5787f63fbe737e0acf790d69	R-DME-983157	P0CG69\n" +
-			URL_PREFIX + "/5787f63fbe737e0acf790d69	R-NUL-9604648	P0CG50\n" +
-			URL_PREFIX + "/5787f63fbe737e0acf790d69	R-NUL-9011324	P0CG48\n" +
-			URL_PREFIX + "/5787f654be737e0acf7919ab	R-DME-9619376	P62152\n" +
-			URL_PREFIX + "/5787f654be737e0acf7919ab	R-CEL-9619376	O16305\n" +
-			"";
-			
+	private final static String TEST_URL_1 = URL_PREFIX + "/5787f63fbe737e0acf790d69";
+	private final static String TEST_URL_2 = URL_PREFIX + "/5787f654be737e0acf7919ab";
+	private final static String fileContent = String.join("\n",
+			TEST_URL_1 + "	R-DME-983157	P0CG69",
+			TEST_URL_1 + "	R-NUL-9604648	P0CG50",
+			TEST_URL_1 + "	R-NUL-9011324	P0CG48",
+			TEST_URL_2 + "	R-DME-9619376	P62152",
+			TEST_URL_2 + "	R-CEL-9619376	O16305");
+
 	// There are 2 Target Pathogen identifiers in the sample file, even though there are 7 lines, because some map to multiple Reactome/UniProt identifiers.
 	private final static int numberOfExpectedMappings = 2;
 
