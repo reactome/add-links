@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.5.0
+ - TargetPathogen file processor updated to match new format of input file
+ - Updated FileRetriever to handle very large files (such as from COSMIC)
+ - Updated SimpleReferenceCreator to handle more complex mappings
+ - Updated URLs for files: Flybase, COSMIC, OpenTargets
+ - Updated version of JUnit
+
 ## 1.4.0
  - New: Moved OtherIdentifiers into AddLinks
  - Fixes:
