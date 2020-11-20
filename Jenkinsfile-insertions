@@ -69,12 +69,10 @@ pipeline{
 		stage('Post: Backup release_current'){
 			steps{
 				script{
-					dir('add-links'){
-						withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-							def release_current_after_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_after_addlinks.dump"
-							sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_after_addlinks_dump"
-							sh "gzip $release_current_after_addlinks_dump"
-						}
+					withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
+						def release_current_after_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_after_addlinks.dump"
+						sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_after_addlinks_dump"
+						sh "gzip $release_current_after_addlinks_dump"
 					}
 				}
 			}

@@ -75,7 +75,7 @@
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
-		<value>RGDFileProcessor</value>
+		<value>RGDFileProcessor</value>	
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
 		<value>EnsemblBioMartFileProcessor</value>
@@ -84,7 +84,7 @@
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
-		<value>IntEnzRefCreator</value>		
+		<value>IntEnzRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
 		<value>ENSEMBLToWormbaseRefCreator</value>

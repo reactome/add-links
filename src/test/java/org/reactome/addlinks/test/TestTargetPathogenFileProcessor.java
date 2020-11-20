@@ -15,17 +15,18 @@ import org.reactome.addlinks.fileprocessors.TargetPathogenFileProcessor;
 public class TestTargetPathogenFileProcessor
 {
 	private Path pathToFile;
-	private static final String URL_PREFIX = "http://target.sbg.qb.fcen.uba.ar/patho/protein/";
-	private final static String fileContent = "#HEADER LINE\n" + URL_PREFIX+"56425908be737e6c7a9fd4d0,H37Rv,Rv0046c|ino1,R-MTU-879331,P9WKI1\n" +
-			URL_PREFIX+"56425908be737e6c7a9fd525,H37Rv,Rv0126|treS,R-MTU-868709,P9WQ19\n" +
-			URL_PREFIX+"5b2801b3be737e35a6df1a69,MeloI,Minc3s11049g44572,R-CEL-74723,P34462\n" +
-			URL_PREFIX+"5b2801b3be737e35a6df151a,MeloI,Minc3s09360g43141|RP-L40e,|RPL40,R-XTR-983157,F6VNK4\n" +
-			URL_PREFIX+"5b2801b3be737e35a6df151a,MeloI,Minc3s09360g43141|RP-L40e,|RPL40,R-CFA-983157,F1PDG4\n" +
-			URL_PREFIX+"5b354852be737e166372e8dd,EcoAIEC_C7225,AIEC_C7225_05581|APU18_05390| pNDM102337_153|groEL| MS6198_A148| CA268_28940| pNDM10505_155|BET08_16250| NDM1Dok01_N0169,R-HSA-8850539,P48643\n" +
-			URL_PREFIX+"5b354852be737e166372e8dd,EcoAIEC_C7225,AIEC_C7225_05581|APU18_05390| pNDM102337_153|groEL| MS6198_A148| CA268_28940| pNDM10505_155|BET08_16250| NDM1Dok01_N0169,R-SSC-8850539,I3LR32\n";
+	private final static String URL_PREFIX = "http://target.sbg.qb.fcen.uba.ar/patho/protein";
+	private final static String TEST_URL_1 = URL_PREFIX + "/5787f63fbe737e0acf790d69";
+	private final static String TEST_URL_2 = URL_PREFIX + "/5787f654be737e0acf7919ab";
+	private final static String fileContent = String.join("\n",
+			TEST_URL_1 + "	R-DME-983157	P0CG69",
+			TEST_URL_1 + "	R-NUL-9604648	P0CG50",
+			TEST_URL_1 + "	R-NUL-9011324	P0CG48",
+			TEST_URL_2 + "	R-DME-9619376	P62152",
+			TEST_URL_2 + "	R-CEL-9619376	O16305");
 
-	// There are 5 Target Pathogen identifiers in the sample file, even though there are 7 lines, because some map to multiple Reactome/UniProt identifiers.
-	private final static int numberOfExpectedMappings = 5;
+	// There are 2 Target Pathogen identifiers in the sample file, even though there are 7 lines, because some map to multiple Reactome/UniProt identifiers.
+	private final static int numberOfExpectedMappings = 2;
 
 	@Before
 	public void setup() throws IOException
