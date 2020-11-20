@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -231,7 +232,8 @@ public class FileRetriever implements DataRetriever {
 		while(!done)
 		{
 			try( CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get, context) )
+				CloseableHttpResponse response = client.execute(get, context);
+				OutputStream outputFile = new FileOutputStream(path.toFile()))
 			{
 				int statusCode = response.getStatusLine().getStatusCode();
 				// If status code was not 200, we should print something so that the users know that an unexpected response was received.
@@ -246,8 +248,7 @@ public class FileRetriever implements DataRetriever {
 						logger.warn("Response was not \"200\". It was: {}", response.getStatusLine());
 					}
 				}
-					
-				Files.write(path, EntityUtils.toByteArray(response.getEntity()));
+				response.getEntity().writeTo(outputFile);
 				done = true;
 			}
 			catch (ConnectTimeoutException e)
