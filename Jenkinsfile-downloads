@@ -95,7 +95,7 @@ pipeline{
 					
 					def dataFiles = ["/tmp/$downloadsArchive"]
 					def logFiles = ["reports/*"]
-					def foldersToDelete = ["reports", "/tmp/$downloadsArchive"]
+					def foldersToDelete = ["reports", "/tmp/$downloadsArchive", "$addlinksFolder"]
 					
 					sh "cd /tmp/; tar -zcvf $downloadsArchive $addlinksFolder"
 					utils.cleanUpAndArchiveBuildFiles("add_links/downloads", dataFiles, logFiles, foldersToDelete)
