@@ -107,7 +107,7 @@ pipeline{
 	}
 }
 
-// This is just a localized method for updating the personId method that exists in the addlinks.properties file using grap/cut.
+// This is just a localized method for updating the personId method that exists in the addlinks.properties file using grep/cut.
 // TODO: Add to shared groovy library
 def updatePersonIdInProperties(configFile) {
     	def personId = sh (
