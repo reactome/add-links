@@ -1,7 +1,10 @@
-import groovy.json.JsonSlurper
 // This Jenkinsfile is used by Jenkins to run the AddLinks-Downloads step of Reactome's release.
 // It requires that the ConfirmReleaseConfigs step has been run successfully before it can be run.
-def currentRelease
+
+import org.reactome.release.jenkins.utilities.Utilities
+
+// Shared library maintained at 'release-jenkins-utils' repository.
+def utils = new Utilities()
 pipeline{
 	agent any
 
@@ -10,19 +13,31 @@ pipeline{
 		stage('Check ConfirmReleaseConfigs build succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
-					// This queries the Jenkins API to confirm that the most recent build of ConfirmReleaseConfigs was successful.
-					def configStatusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/ConfirmReleaseConfigs/lastBuild/api/json"
-					if (configStatusUrl.getStatus() == 404) {
-						error("ConfirmReleaseConfigs has not yet been run. Please complete a successful build.")
-					} else {
-						def configStatusJson = new JsonSlurper().parseText(configStatusUrl.getContent())
-						if (configStatusJson['result'] != "SUCCESS"){
-							error("Most recent ConfirmReleaseConfigs build status: " + configStatusJson['result'] + ". Please complete a successful build.")
-						}
-					}
+					utils.checkUpstreamBuildsSucceeded("ConfirmReleaseConfigs")
 				}
 			}
+		}
+		// The FlyBase URL changes every few months, so this step asks the user to check the FTP repository where the download file is and report the 'yyyy_MM' part of the file name.
+        	stage('User Input: Get FlyBase date in file URL and update it in basic-file-retrievers.xml'){
+			steps{
+				script{
+					def userInputFlyBase = input(
+					id: 'userInput', message: "Please submit the YYYY_MM value in in the filename of the file called \'fbgn_NAseq_Uniprot_fb_YYYY_MM.tsv.gz\'. It can be found at \'ftp://ftp.flybase.net/releases/current/precomputed_files/genes\'.",
+					parameters: [
+						[$class: 'TextParameterDefinition', description: "It should be in the format \'YYYY_MM\' (eg. \'2020_05\')", name: 'response']
+					])
+
+					// Checks that the submitted URL contains the string in $baseReleaseNewsURL
+					if (userInputFlyBase.length() == 7 && userInputFlyBase.substring(4,5).equals("_")) {
+						echo("Valid YYYY_MM value submitted, updating FlyBase file URL in basic-file-retrievers.xml")
+						def fileRetrievalsConfig = "src/main/resources/basic-file-retrievers.xml"
+						sh "git checkout ${fileRetrievalsConfig}"
+						sh "sed -i -e 's/YYYY_MM/${userInputFlyBase}/' ${fileRetrievalsConfig}"
+					} else {
+						error("Invalid value submitted. Please submit a value in the format \'YYYY_MM\', such as \'2020_05\'.")
+					}
+				}
+		    	}
 		}
 		// This stage builds the jar file using maven.
 		stage('Setup: Build jar file'){
@@ -32,12 +47,14 @@ pipeline{
 				}
 			}
 		}
-		// This stage executes the AddLinks file download step. It will download all files needed to run the AddLinks insertion step, storing them
-		// at /tmp/addlinks-downloaded-files.
+		// This stage executes the AddLinks file download step. It will download all files needed to run the AddLinks insertion step, 
+		//storing them at /tmp/addlinks-downloaded-files.
 		stage('Main: Download AddLinks files'){
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+						updatePersonIdInProperties("${ConfigFile}")
+					    
 						sh "cp $ConfigFile src/main/resources/auth.properties"
 						sh "ln -sf src/main/resources resources"
 						sh "rm -f src/main/resources/db.properties"
@@ -47,22 +64,57 @@ pipeline{
 				}
 			}
 		}
+		// Sends email notification to developers list regarding completion of AddLinks file downloads.
+		stage('Post: Email regarding completion of file downloads'){
+			steps{
+				script{
+					def releaseVersion = utils.getReleaseVersion()
+					def emailSubject = "AddLinks-Download has completed"
+					def emailBody = "Hello,\n\nThis is an automated message from Jenkins regarding an update for v${releaseVersion}. The file downloads for AddLinks has completed, and needs to be verified before it will be archived. \n\nThanks!"
+					utils.sendEmail("${emailSubject}", "${emailBody}")
+				}
+			}
+		}
+		// Program is stopped and waits for confirmation that the dry run was successful.
+		stage('User Input: Confirm successful AddLinks file downloads') {
+			steps {
+		        	script {
+		            		def userInput = input(
+						id: 'userInput', message: "Please proceed once you have reviewed the AddLinks file downloads.",
+						parameters: [
+							[$class: 'BooleanParameterDefinition', defaultValue: true, name: 'response']
+						])
+		       		}
+		    	}
+		}
+		// Archive everything on S3 and then delete on the server.
 		stage('Post: Archive Outputs'){
 			steps{
 				script{
-					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads"
-					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
+				    def releaseVersion = utils.getReleaseVersion()
+					def downloadsArchive = "addlinks-downloads-v${releaseVersion}.tar"
 					def addlinksFolder = "addlinks-downloaded-files/"
-					sh "mkdir -p data/"
+					
+					def dataFiles = ["/tmp/$downloadsArchive"]
+					def logFiles = ["reports/*"]
+					def foldersToDelete = ["reports", "/tmp/$downloadsArchive", "$addlinksFolder"]
+					
 					sh "cd /tmp/; tar -zcvf $downloadsArchive $addlinksFolder"
-					sh "mv /tmp/$downloadsArchive data/"
-					sh "gzip -r logs/* reports/*"
-					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
-					sh "aws s3 --no-progress --recursive cp data/ $s3Path/data/"
-					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
-					sh "rm -r logs data reports /tmp/$addlinksFolder"
+					utils.cleanUpAndArchiveBuildFiles("add_links/downloads", dataFiles, logFiles, foldersToDelete)
 				}
 			}
 		}
 	}
+}
+
+// This is just a localized method for updating the personId method that exists in the addlinks.properties file using grep/cut.
+// TODO: Add to shared groovy library
+def updatePersonIdInProperties(configFile) {
+    	def personId = sh (
+		script: "grep personId $configFile | cut -d = -f2",
+		returnStdout: true
+	).trim()
+	sh "git checkout src/main/resources/addlinks.properties"
+    // Splice in the person dbId from the config file	
+    sh "sed -i -e 's/executeAsPersonID=/executeAsPersonID=${personId}/g' src/main/resources/addlinks.properties"
 }

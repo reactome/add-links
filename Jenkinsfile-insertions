@@ -1,8 +1,11 @@
-import groovy.json.JsonSlurper
 // This Jenkinsfile is used by Jenkins to run the AddLinks-Insertion step of Reactome's release.
 // It requires that the AddLinks-Download and Orthoinference steps have been run successfully before it can be run.
-def currentRelease
-def previousRelease
+
+import org.reactome.release.jenkins.utilities.Utilities
+
+// Shared library maintained at 'release-jenkins-utils' repository.
+def utils = new Utilities()
+
 pipeline{
 	agent any
 
@@ -11,21 +14,22 @@ pipeline{
 		stage('Check AddLinks-Download and Orthoinference builds succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
-					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
-					checkUpstreamBuildsSucceeded("AddLinks-Download", "$currentRelease")
-					checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/Orthoinference", "$currentRelease")
+					utils.checkUpstreamBuildsSucceeded("AddLinks-Download")
+					utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/Orthoinference")
 	    			}
     			}
   		}
+		// Download from S3 the addlinks files that should have been created by the AddLinks-Downloads step.
 		stage('Setup: Download AddLinks files from S3 bucket'){
 			steps{
 				script{
-					def downloadsArchive = "addlinks-downloads-v${currentRelease}.tgz"
-					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/downloads/data/$downloadsArchive ."
-					sh "tar -xvf $downloadsArchive"
-					sh "mv addlinks-downloaded-files/ /tmp/"
+				    def releaseVersion = utils.getReleaseVersion()
+					def downloadsArchive = "addlinks-downloads-v${releaseVersion}.tar"
+					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${releaseVersion}/add_links/downloads/data/${downloadsArchive}.gz ."
+				    	sh "gunzip ${downloadsArchive}.gz"
+				    	sh "tar -xvf ${downloadsArchive}"
+				 	sh "mv addlinks-downloaded-files/ /tmp/"
 					sh "rm $downloadsArchive"
 				}
 			}
@@ -35,9 +39,7 @@ pipeline{
 			steps{
 				script{
 					withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-						def release_current_before_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_before_addlinks.dump"
-						sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_before_addlinks_dump"
-						sh "gzip -f $release_current_before_addlinks_dump"
+                        			utils.takeDatabaseDumpAndGzip("${env.RELEASE_CURRENT_DB}", "addlinks", "before", "${env.RELEASE_SERVER}")
 					}
 				}
 			}
@@ -46,7 +48,7 @@ pipeline{
 		stage('Setup: Build jar file'){
 			steps{
 				script{
-					sh "mvn clean package -DskipTests"
+				    sh "mvn clean package -DskipTests"
 				}
 			 }
    		 }
@@ -56,6 +58,9 @@ pipeline{
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+						// Take personId from config file and update it in addlinks.properties before building jar file.
+						updatePersonIdInProperties("${ConfigFile}")
+				        
 						sh "cp $ConfigFile src/main/resources/auth.properties"
 						sh "ln -sf src/main/resources resources"
 						sh "rm -f src/main/resources/db.properties"
@@ -70,9 +75,7 @@ pipeline{
 			steps{
 				script{
 					withCredentials([usernamePassword(credentialsId: 'mySQLUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-						def release_current_after_addlinks_dump = "${env.RELEASE_CURRENT}_${currentRelease}_after_addlinks.dump"
-						sh "mysqldump -u$user -p$pass ${env.RELEASE_CURRENT} > $release_current_after_addlinks_dump"
-						sh "gzip $release_current_after_addlinks_dump"
+                        utils.takeDatabaseDumpAndGzip("${env.RELEASE_CURRENT_DB}", "addlinks", "after", "${env.RELEASE_SERVER}")
 					}
 				}
 			}
@@ -81,30 +84,25 @@ pipeline{
 		stage('Post: Archive Outputs'){
 			steps{
 				script{
-					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/add_links/insertions"
 					def addlinksFolder = "addlinks-downloaded-files/"
-					sh "mkdir -p databases/"
-					sh "mv --backup=numbered *_${currentRelease}_*.dump.gz databases/"
-					sh "gzip -r logs/* reports/*"
-					sh "aws s3 --no-progress --recursive cp databases/ $s3Path/databases/"
-					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
-					sh "aws s3 --no-progress --recursive cp reports/ $s3Path/reports/"
-					sh "rm -r logs databases reports /tmp/$addlinksFolder"
+					def dataFiles = []
+					def logFiles = ["reports"]
+					def foldersToDelete = ["reports/", "/tmp/addlinks-downloaded-files/"]
+					
+					utils.cleanUpAndArchiveBuildFiles("add_links/insertions", dataFiles, logFiles, foldersToDelete)
 				}
 			}
 		}
   	}
 }
 
-// Utility function that checks upstream builds of this project were successfully built.
-def checkUpstreamBuildsSucceeded(String stepName, String currentRelease) {
-	def statusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/$stepName/lastBuild/api/json"
-	if (statusUrl.getStatus() == 404) {
-		error("$stepName has not yet been run. Please complete a successful build.")
-	} else {
-		def statusJson = new JsonSlurper().parseText(statusUrl.getContent())
-		if(statusJson['result'] != "SUCCESS"){
-			error("Most recent $stepName build status: " + statusJson['result'] + ". Please complete a successful build.")
-		}
-	}
+// Localized method for swapping the personId from the addlinks.properties file.
+// TODO: Add method to shared groovy library.
+def updatePersonIdInProperties(configFile) {
+    	def personId = sh (
+		script: "grep personId $configFile | cut -d = -f2",
+		returnStdout: true
+	).trim()
+	sh "git checkout src/main/resources/addlinks.properties"
+    sh "sed -i -e 's/executeAsPersonID=/executeAsPersonID=${personId}/g' src/main/resources/addlinks.properties"
 }
