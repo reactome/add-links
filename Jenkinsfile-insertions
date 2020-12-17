@@ -20,14 +20,15 @@ pipeline{
 	    			}
     			}
   		}
+		// Download from S3 the addlinks files that should have been created by the AddLinks-Downloads step.
 		stage('Setup: Download AddLinks files from S3 bucket'){
 			steps{
 				script{
 				    def releaseVersion = utils.getReleaseVersion()
 					def downloadsArchive = "addlinks-downloads-v${releaseVersion}.tar"
 					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${releaseVersion}/add_links/downloads/data/${downloadsArchive}.gz ."
-				    sh "gunzip ${downloadsArchive}.gz"
-				    sh "tar -xvf ${downloadsArchive}"
+				    	sh "gunzip ${downloadsArchive}.gz"
+				    	sh "tar -xvf ${downloadsArchive}"
 				 	sh "mv addlinks-downloaded-files/ /tmp/"
 					sh "rm $downloadsArchive"
 				}
@@ -95,6 +96,8 @@ pipeline{
   	}
 }
 
+// Localized method for swapping the personId from the addlinks.properties file.
+// TODO: Add method to shared groovy library.
 def updatePersonIdInProperties(configFile) {
     	def personId = sh (
 		script: "grep personId $configFile | cut -d = -f2",
