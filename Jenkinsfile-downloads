@@ -17,6 +17,7 @@ pipeline{
 				}
 			}
 		}
+		// The FlyBase URL changes every few months, so this step asks the user to check the FTP repository where the download file is and report the 'yyyy_MM' part of the file name.
         	stage('User Input: Get FlyBase date in file URL and update it in basic-file-retrievers.xml'){
 			steps{
 				script{
@@ -86,6 +87,7 @@ pipeline{
 		       		}
 		    	}
 		}
+		// Archive everything on S3 and then delete on the server.
 		stage('Post: Archive Outputs'){
 			steps{
 				script{
@@ -105,11 +107,13 @@ pipeline{
 	}
 }
 
+// This is just a localized method for updating the personId method that exists in the addlinks.properties file using grap/cut.
 def updatePersonIdInProperties(configFile) {
     	def personId = sh (
 		script: "grep personId $configFile | cut -d = -f2",
 		returnStdout: true
 	).trim()
 	sh "git checkout src/main/resources/addlinks.properties"
+    // Splice in the person dbId from the config file	
     sh "sed -i -e 's/executeAsPersonID=/executeAsPersonID=${personId}/g' src/main/resources/addlinks.properties"
 }
