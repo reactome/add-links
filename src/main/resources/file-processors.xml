@@ -93,7 +93,29 @@
 				<constructor-arg name="processorName" value="file-processors/ComplexPortalFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_9606_homo_sapiens.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		
+		<entry key="ComplexPortalSARSFileProcessor">
+			<bean id="ComplexPortalSARSFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/ComplexPortalSARSFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_694009_sars.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="ComplexPortalSARSCOV2FileProcessor">
+			<bean id="ComplexPortalSARSCOV2FileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/ComplexPortalSARSCOV2FileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/complexportal_2697049_sars_cov_2.tsv"/>
 					</bean>
 				</property>
 			</bean>
