@@ -58,6 +58,8 @@
 		<entry key="KEGGFileProcessor" value="KEGGReferenceCreator"/>
 		<entry key="RheaFileProcessor" value="RheaReferenceCreator"/>
 		<entry key="ComplexPortalFileProcessor" value="ComplexPortalRefCreator"/>
+		<entry key="ComplexPortalSARSCOV2FileProcessor" value="ComplexPortalSARSCOV2RefCreator"/>
+		<entry key="ComplexPortalSARSFileProcessor" value="ComplexPortalSARSRefCreator"/>
 		<entry key="HGNCProcessor" value="HGNCReferenceCreator"/>
 		<entry key="COSMICProcessor" value="COSMICReferenceCreator"/>
 		<entry key="CTDProcessor" value="CTDRefCreator"/>

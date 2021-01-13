@@ -36,6 +36,9 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>ComplexPortal</value>
+		<value>ComplexPortalSARS</value>
+		<value>ComplexPortalSARSCOV2</value>
 		<value>TargetPathogen</value>
 		<value>OpenTargets</value>
 		<value>IntEnz</value>
@@ -64,7 +67,6 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>ComplexPortal</value>
 		<value>HPA</value>
 		<value>VGNC</value>
 		<value>MGI</value>
@@ -75,6 +77,9 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>ComplexPortalFileProcessor</value>
+		<value>ComplexPortalSARSFileProcessor</value>
+		<value>ComplexPortalSARSCOV2FileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>OpenTargetsFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
@@ -102,7 +107,6 @@
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
-		<value>ComplexPortalFileProcessor</value>
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
@@ -113,6 +117,9 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>ComplexPortalRefCreator</value>
+		<value>ComplexPortalSARSCOV2RefCreator</value>
+		<value>ComplexPortalSARSRefCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>OpenTargetsReferenceCreator</value>
@@ -148,7 +155,6 @@
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>ComplexPortalRefCreator</value>
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>

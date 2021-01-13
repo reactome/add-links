@@ -72,6 +72,8 @@
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
+		<value>ComplexPortalSARSFileProcessor</value>
+		<value>ComplexPortalSARSCOV2FileProcessor</value>
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
@@ -118,6 +120,8 @@
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
+		<value>ComplexPortalSARSCOV2RefCreator</value>
+		<value>ComplexPortalSARSRefCreator</value>
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>

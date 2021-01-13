@@ -45,8 +45,28 @@
 
 		<entry key="ComplexPortal">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortal">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/homo_sapiens.tsv" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv" />
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/9606.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_9606_homo_sapiens.tsv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
+				<property name="passiveFTP" value="true" />
+			</bean>
+		</entry>
+
+		<entry key="ComplexPortalSARS">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortalSARS">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/694009.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_694009_sars.tsv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
+				<property name="passiveFTP" value="true" />
+			</bean>
+		</entry>
+
+		<entry key="ComplexPortalSARSCOV2">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortalSARSCOV2">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/2697049.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_2697049_sars_cov_2.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
 				<property name="passiveFTP" value="true" />
