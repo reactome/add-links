@@ -21,17 +21,6 @@
 		value-type="org.reactome.addlinks.fileprocessors.FileProcessor"
 		key-type="java.lang.String">
 
-		<entry key="DockblasterFileProcessor">
-			<bean id="DockblasterFileProcessor" class="org.reactome.addlinks.fileprocessors.DOCKBlasterFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/DockblasterFileProcessor"/>
-				<property name="path">
-					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt"/>
-					</bean>
-				</property>
-			</bean>
-		</entry>
-
 		<entry key="PROFileProcessor">
 			<bean id="PROFileProcessor" class="org.reactome.addlinks.fileprocessors.PROFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/PROFileProcessor"/>

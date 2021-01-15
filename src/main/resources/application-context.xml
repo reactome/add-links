@@ -224,11 +224,6 @@
 		got them there.
 		-->
 		<!--
-		<value>DOCK Blaster</value>
-		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
-		Even loading one page seems to make it take effort.
-		-->
-		<!--
 		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,
 		because the ID won't get loaded until after the JavaScript runs.
 		<value>BioGPS Gene</value>
