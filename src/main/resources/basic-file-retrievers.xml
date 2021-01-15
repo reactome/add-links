@@ -85,17 +85,6 @@
 			</bean>
 		</entry> -->
 
-		<entry key="DOCKBlaster">
-			<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="DOCKBlaster">
-				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
-				<property name="maxAge" ref="maxFileAge" />
-				<property name="userName" value="${dockblaster.user}"/>
-				<property name="password" value="${dockblaster.password}"/>
-				<constructor-arg name="retrieverName" value="retrievers/DOCKBlaster"/>
-			</bean>
-		</entry>
-
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
