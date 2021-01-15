@@ -7,6 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @deprecated DOCKBlaster data is not used anymore, this class will be removed in future releases. 
+ * @author sshorser
+ *
+ */
 public class DOCKBlasterFileProcessor extends FileProcessor<ArrayList<String>>
 {
 	public DOCKBlasterFileProcessor(String processorName)

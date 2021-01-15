@@ -20,6 +20,11 @@ import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration("/test-dockblaster-refcreator.xml")
 @RunWith(org.springframework.test.context.junit4.SpringJUnit4ClassRunner.class)
+/**
+ * @deprecated DOCKBlaster data is not used anymore, this class will be removed in the future.
+ * @author sshorser
+ *
+ */
 public class TestDOCKBlasterReferenceCreator
 {
 	@Autowired

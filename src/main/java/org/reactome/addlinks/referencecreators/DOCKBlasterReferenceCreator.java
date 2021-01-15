@@ -14,6 +14,7 @@ import org.gk.schema.InvalidAttributeException;
 
 /**
  * Creates PDB identifiers for UniProt IDs, based on DOCKBlaster's mapping.
+ * @deprecated DOCKBlaster data is not used anymore, this class will be removed in the future.
  * @author sshorser
  *
  */
