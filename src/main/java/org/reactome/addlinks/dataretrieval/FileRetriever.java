@@ -289,18 +289,21 @@ public class FileRetriever implements DataRetriever {
 	}
 	
 	@Override
-	public void setDataURL(URI uri) {
-		this.uri = uri;
+	public void setDataURL(URI ... uri)
+	{
+		this.uri = uri[0];
 	}
 
 	@Override
-	public void setFetchDestination(String destination) {
-		this.destination = destination;
+	public void setFetchDestination(String ... destination)
+	{
+		this.destination = destination[0];
 	}
 
 	@Override
-	public void setMaxAge(Duration age) {
-		this.maxAge = age;
+	public void setMaxAge(Duration ... age)
+	{
+		this.maxAge = age[0];
 	}
 
 	public void setNumRetries(int i)
