@@ -20,7 +20,7 @@
 
 	<!-- PharmacoDB requires a multi-file retriever so here are
 	the lists of values to pass in. -->
-	<util:list id="pharmacoDbDataUrls" value-type="java.net.URI">
+<!--	<util:list id="pharmacoDbDataUrls" value-type="java.net.URI">
 		<value>https://www.guidetopharmacology.org/DATA/ligands.csv</value>
 		<value>https://pharmacodb.pmgenomics.ca/download?drug_annotation=y</value>
 	</util:list>
@@ -31,7 +31,7 @@
 	<util:list id="pharmacoDbMaxAges" value-type="java.time.Duration">
 		<ref bean="maxFileAge"/>
 		<ref bean="maxFileAge"/>
-	</util:list>
+	</util:list>-->
 
 	<util:map id="fileRetrievers"
 		value-type="org.reactome.addlinks.dataretrieval.FileRetriever"
@@ -310,12 +310,21 @@
 			</bean>
 		</entry>
 
+		<!-- NOTE: The files retrieved from PharmacoDB and IUPHAR are *both* required to create references for PharmacoDB -->
 		<entry key="PharmacoDB">
-			<bean class="org.reactome.addlinks.dataretrieval.MultifileRetriever" id="PharmacoDB">
-				<property name="dataURL" ref="pharmacoDbDataUrls" />
-				<property name="fetchDestination" ref="pharmacoDbFetchDests" />
-				<property name="maxAge" ref="pharmacoDbMaxAges" />
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PharmacoDB">
+				<property name="dataURL" value="https://pharmacodb.pmgenomics.ca/download?drug_annotation=y" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharmacodb-drug-annotations.csv" />
+				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PharmacoDB"/>
+			</bean>
+		</entry>
+		<entry key="IUPHAR">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IUPHAR">
+				<property name="dataURL" value="https://www.guidetopharmacology.org/DATA/ligands.csv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/iuphar-ligands.csv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/IUPHAR"/>
 			</bean>
 		</entry>
 	</util:map>
