@@ -31,7 +31,7 @@ public final class ReferenceObjectCache
 	private static boolean lazyLoad = true;
 	private static boolean cacheInitializedMessageHasBeenPrinted = false;
 	private static MySQLAdaptor adapter;
-	private static Map<Long,MySQLAdaptor> adapterPool = new HashMap<Long,MySQLAdaptor>();
+	private static Map<Long,MySQLAdaptor> adapterPool = new HashMap<>();
 	
 	/**
 	 * Sets up the internal caches.
@@ -42,13 +42,13 @@ public final class ReferenceObjectCache
 	{
 		ReferenceObjectCache.lazyLoad = lazyLoad;
 		ReferenceObjectCache.adapter = adapter;
-		if (!lazyLoad)
+		if (!ReferenceObjectCache.lazyLoad)
 		{
 			if (!ReferenceObjectCache.cachesArePopulated)
 			{
 				logger.info("Cache is not initialized. Will initialize now.");
 				//ReferenceObjectCache.cache = ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
-				ReferenceObjectCache.populateCaches(adapter);
+				ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
 			}
 			else
 			{
@@ -106,8 +106,8 @@ public final class ReferenceObjectCache
 				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", identifierAttribute, referenceObject, e.getMessage());
 			}
 
-			// ReferenceMolecules and DatabaseIdentifiers do not have associated species.
-			if ( !className.equals(ReactomeJavaConstants.ReferenceMolecule) && !className.equals(ReactomeJavaConstants.DatabaseIdentifier) )
+			// ReferenceMolecules and DatabaseIdentifiers and ReferenceTherapeutics do not have associated species.
+			if ( !className.equals(ReactomeJavaConstants.ReferenceMolecule) && !className.equals(ReactomeJavaConstants.DatabaseIdentifier) && !className.equals(ReactomeJavaConstants.ReferenceTherapeutic))
 			{
 				// Sets do not allow duplicates.
 				Set<String> allSpecies = null;
@@ -279,6 +279,7 @@ public final class ReferenceObjectCache
 					(cacheByRefDB!=null ? cacheByRefDB.size() : "N/A"),
 					(!className.equals(ReactomeJavaConstants.ReferenceMolecule)
 							&& !className.equals(ReactomeJavaConstants.DatabaseIdentifier)
+							&& !className.equals(ReactomeJavaConstants.ReferenceTherapeutic)
 						? cacheBySpecies.size() : "N/A"),
 					objectCacheByIdentifier.size(),
 					cacheByID.size()
@@ -332,6 +333,7 @@ public final class ReferenceObjectCache
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceMolecule, null, moleculeCacheByDBID, moleculeCacheByIdentifier, moleculeCacheByRefDB);
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.Reaction, reactionCacheBySpecies, reactionCacheByDBID, reactionCacheByIdentifier, null);
 				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.DatabaseIdentifier, null, databaseIdentifiersByDBID, databaseIdentifiersByIdentifier, databaseIdentifiersByRefDb);
+				ReferenceObjectCache.buildReferenceCaches(ReactomeJavaConstants.ReferenceTherapeutic, null, ReferenceTherapeuticsByDBID, ReferenceTherapeuticsByIdentifier, ReferenceTherapeuticsByRefDb);
 				
 				// Build up the Reference Database caches.
 				buildReferenceDatabaseCache(adapter);
@@ -431,48 +433,53 @@ public final class ReferenceObjectCache
 	
 	// TODO: Add a cache for Reactions. Cache should be keyed by Stable ID.
 	// Reaction Cache
-	private static Map<String, GKInstance> reactionCacheByDBID = new ConcurrentHashMap<String, GKInstance>();
-	private static Map<String, List<GKInstance>> reactionCacheByIdentifier = new ConcurrentHashMap<String, List<GKInstance>>();
-	private static Map<String, List<GKInstance>> reactionCacheBySpecies = new ConcurrentHashMap<String, List<GKInstance>>();
+	private static Map<String, GKInstance> reactionCacheByDBID = new ConcurrentHashMap<>();
+	private static Map<String, List<GKInstance>> reactionCacheByIdentifier = new ConcurrentHashMap<>();
+	private static Map<String, List<GKInstance>> reactionCacheBySpecies = new ConcurrentHashMap<>();
 	
 	// ReferenceMolecule caches
-	private static Map<String, GKInstance> moleculeCacheByDBID = new ConcurrentHashMap<String, GKInstance>();
-	private static Map<String, List<GKInstance>> moleculeCacheByIdentifier = new ConcurrentHashMap<String, List<GKInstance>>();
-	private static Map<String, List<GKInstance>> moleculeCacheByRefDB = new ConcurrentHashMap<String, List<GKInstance>>();
+	private static Map<String, GKInstance> moleculeCacheByDBID = new ConcurrentHashMap<>();
+	private static Map<String, List<GKInstance>> moleculeCacheByIdentifier = new ConcurrentHashMap<>();
+	private static Map<String, List<GKInstance>> moleculeCacheByRefDB = new ConcurrentHashMap<>();
 	
 	// ReferenceDNASequence caches
-	private static Map<String,List<GKInstance>> refDNASeqCacheBySpecies = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> refDNASeqCacheByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> refDNASeqCacheByDBID = new ConcurrentHashMap<String,GKInstance>();
-	private static Map<String,List<GKInstance>> refDNASeqCacheByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refDNASeqCacheBySpecies = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> refDNASeqCacheByRefDb = new ConcurrentHashMap<>();
+	private static Map<String,GKInstance> refDNASeqCacheByDBID = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> refDNASeqCacheByIdentifier = new ConcurrentHashMap<>();
 
 	// ReferenceRNASequence caches
-	private static Map<String,List<GKInstance>> refRNASeqCacheBySpecies = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> refRNASeqCacheByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> refRNASeqCacheByDBID = new ConcurrentHashMap<String,GKInstance>();
-	private static Map<String,List<GKInstance>> refRNASeqCacheByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refRNASeqCacheBySpecies = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> refRNASeqCacheByRefDb = new ConcurrentHashMap<>();
+	private static Map<String,GKInstance> refRNASeqCacheByDBID = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> refRNASeqCacheByIdentifier = new ConcurrentHashMap<>();
 	
 	// ReferenceGeneProduct caches
-	private static Map<String,List<GKInstance>> refGeneProdCacheBySpecies = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,List<GKInstance>> refGeneProdCacheByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> refGeneProdCacheByDBID = new ConcurrentHashMap<String,GKInstance>();
-	private static Map<String,List<GKInstance>> refGeneProdCacheByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> refGeneProdCacheBySpecies = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> refGeneProdCacheByRefDb = new ConcurrentHashMap<>();
+	private static Map<String,GKInstance> refGeneProdCacheByDBID = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> refGeneProdCacheByIdentifier = new ConcurrentHashMap<>();
 	
 	// DatabaseIdentifier cache
-	private static Map<String,List<GKInstance>> databaseIdentifiersByRefDb = new ConcurrentHashMap<String,List<GKInstance>>();
-	private static Map<String,GKInstance> databaseIdentifiersByDBID = new ConcurrentHashMap<String,GKInstance>();
-	private static Map<String,List<GKInstance>> databaseIdentifiersByIdentifier = new ConcurrentHashMap<String,List<GKInstance>>();
+	private static Map<String,List<GKInstance>> databaseIdentifiersByRefDb = new ConcurrentHashMap<>();
+	private static Map<String,GKInstance> databaseIdentifiersByDBID = new ConcurrentHashMap<>();
+	private static Map<String,List<GKInstance>> databaseIdentifiersByIdentifier = new ConcurrentHashMap<>();
 	
 	// Cache objects by Stable Identifier
-	private static Map<String, GKInstance> cachedByStableIdentifier = new ConcurrentHashMap<String, GKInstance>();
+	private static Map<String, GKInstance> cachedByStableIdentifier = new ConcurrentHashMap<>();
 	
 	//also need some secondary mappings: species name-to-id and refdb name-to-id
 	//These really should be 1:n mappings...
-	private static Map<String,List<String>> speciesMapping = new ConcurrentHashMap<String,List<String>>();
-	private static Map<String,List<String>> refdbMapping = new ConcurrentHashMap<String,List<String>>();
+	private static Map<String,List<String>> speciesMapping = new ConcurrentHashMap<>();
+	private static Map<String,List<String>> refdbMapping = new ConcurrentHashMap<>();
 	//...Aaaaaand mappings from names to IDs which will be 1:n
-	private static Map<String,List<String>> refDbNamesToIds = new ConcurrentHashMap<String,List<String>>();
-	private static Map<String,List<String>> speciesNamesToIds = new ConcurrentHashMap<String,List<String>>();
+	private static Map<String,List<String>> refDbNamesToIds = new ConcurrentHashMap<>();
+	private static Map<String,List<String>> speciesNamesToIds = new ConcurrentHashMap<>();
+
+	// Caches for ReferenceTherapeutics (added to support PharmacoDB references).
+	private static Map<String, GKInstance> ReferenceTherapeuticsByDBID  = new ConcurrentHashMap<>();
+	private static Map<String, List<GKInstance>> ReferenceTherapeuticsByIdentifier = new ConcurrentHashMap<>();
+	private static Map<String, List<GKInstance>> ReferenceTherapeuticsByRefDb = new ConcurrentHashMap<>();
 	
 	/**
 	 * Get a list of ReferenceGeneProduct/ReferenceDNASequeces/ReferenceMolecules/ReferenceRNASequences keyed by Reference Database.
@@ -508,6 +515,11 @@ public final class ReferenceObjectCache
 			{
 				buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, ReferenceObjectCache.lazyLoad);
 				return ReferenceObjectCache.databaseIdentifiersByRefDb.containsKey(refDb) ? ReferenceObjectCache.databaseIdentifiersByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
+			}
+			case ReactomeJavaConstants.ReferenceTherapeutic:
+			{
+				buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceTherapeutic, null, ReferenceObjectCache.ReferenceTherapeuticsByDBID, ReferenceObjectCache.ReferenceTherapeuticsByIdentifier, ReferenceObjectCache.ReferenceTherapeuticsByRefDb, ReferenceObjectCache.lazyLoad);
+				return ReferenceObjectCache.ReferenceTherapeuticsByRefDb.containsKey(refDb) ? ReferenceObjectCache.ReferenceTherapeuticsByRefDb.get(refDb) : new ArrayList<GKInstance>(0);
 			}
 			default:
 				logger.error("Invalid className: {} Nothing will be returned.", className);
@@ -831,6 +843,11 @@ public final class ReferenceObjectCache
 				buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, ReferenceObjectCache.lazyLoad);
 				return ReferenceObjectCache.databaseIdentifiersByIdentifier.get(identifier);
 			}
+			case ReactomeJavaConstants.ReferenceTherapeutic:
+			{
+				buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceTherapeutic, null, ReferenceObjectCache.ReferenceTherapeuticsByDBID, ReferenceObjectCache.ReferenceTherapeuticsByIdentifier, ReferenceObjectCache.ReferenceTherapeuticsByRefDb, ReferenceObjectCache.lazyLoad);
+				return ReferenceObjectCache.databaseIdentifiersByIdentifier.get(identifier);
+			}
 			default:
 				logger.error("Invalid className: {} Nothing will be returned.", className);
 				return null;
@@ -857,6 +874,7 @@ public final class ReferenceObjectCache
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheByDBID, ReferenceObjectCache.refRNASeqCacheByIdentifier, ReferenceObjectCache.refRNASeqCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheByDBID, ReferenceObjectCache.refGeneProdCacheByIdentifier, ReferenceObjectCache.refGeneProdCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, false);
+		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceTherapeutic, null, ReferenceObjectCache.ReferenceTherapeuticsByDBID, ReferenceObjectCache.ReferenceTherapeuticsByIdentifier, ReferenceObjectCache.ReferenceTherapeuticsByRefDb, false);
 	}
 	
 	public synchronized void rebuildRefDBNamesAndMappings()
@@ -895,11 +913,16 @@ public final class ReferenceObjectCache
 		ReferenceObjectCache.refdbMapping.clear();
 		ReferenceObjectCache.refDbNamesToIds.clear();
 		
+		ReferenceObjectCache.ReferenceTherapeuticsByDBID.clear();
+		ReferenceObjectCache.ReferenceTherapeuticsByIdentifier.clear();
+		ReferenceObjectCache.ReferenceTherapeuticsByRefDb.clear();
+		
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceMolecule, null, ReferenceObjectCache.moleculeCacheByDBID, ReferenceObjectCache.moleculeCacheByIdentifier, ReferenceObjectCache.moleculeCacheByRefDB, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceDNASequence, ReferenceObjectCache.refDNASeqCacheBySpecies, ReferenceObjectCache.refDNASeqCacheByDBID, ReferenceObjectCache.refDNASeqCacheByIdentifier, ReferenceObjectCache.refDNASeqCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheByDBID, ReferenceObjectCache.refRNASeqCacheByIdentifier, ReferenceObjectCache.refRNASeqCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheByDBID, ReferenceObjectCache.refGeneProdCacheByIdentifier, ReferenceObjectCache.refGeneProdCacheByRefDb, false);
 		buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, false);
+		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceTherapeutic, null, ReferenceObjectCache.ReferenceTherapeuticsByDBID, ReferenceObjectCache.ReferenceTherapeuticsByIdentifier, ReferenceObjectCache.ReferenceTherapeuticsByRefDb, false);
 		getRefDBMappings();
 		getRefDbNamesToIds();
 	}
@@ -942,6 +965,10 @@ public final class ReferenceObjectCache
 		ReferenceObjectCache.refdbMapping.clear();
 		ReferenceObjectCache.refDbNamesToIds.clear();
 		ReferenceObjectCache.speciesNamesToIds.clear();
+		
+		ReferenceObjectCache.ReferenceTherapeuticsByDBID.clear();
+		ReferenceObjectCache.ReferenceTherapeuticsByIdentifier.clear();
+		ReferenceObjectCache.ReferenceTherapeuticsByRefDb.clear();
 		
 		ReferenceObjectCache.populateCaches(ReferenceObjectCache.adapter);
 	}
