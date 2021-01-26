@@ -409,5 +409,21 @@
 				</property>
 			</bean>
 		</entry>
+		
+		<entry key="PharmacoDBFileProcessor">
+			<bean id="PharmacoDBFileProcessor" class="org.reactome.addlinks.fileprocessors.PharmacoDBFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/PharmacoDBFileProcessor"/>
+				<property name="pharmacoDBFilePath">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharmacodb-drug-annotations.csv"/>
+					</bean>
+				</property>
+				<property name="iUPHARFilePath">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/iuphar-ligands.csv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>
