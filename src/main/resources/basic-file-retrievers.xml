@@ -18,21 +18,6 @@
 		</constructor-arg>
 	</bean>
 
-	<!-- PharmacoDB requires a multi-file retriever so here are
-	the lists of values to pass in. -->
-<!--	<util:list id="pharmacoDbDataUrls" value-type="java.net.URI">
-		<value>https://www.guidetopharmacology.org/DATA/ligands.csv</value>
-		<value>https://pharmacodb.pmgenomics.ca/download?drug_annotation=y</value>
-	</util:list>
-	<util:list id="pharmacoDbFetchDests" value-type="java.lang.String">
-		<value>/tmp/addlinks-downloaded-files/iuphar-ligands.csv</value>
-		<value>/tmp/addlinks-downloaded-files/pharmacodb-drug-annotations.csv</value>
-	</util:list>
-	<util:list id="pharmacoDbMaxAges" value-type="java.time.Duration">
-		<ref bean="maxFileAge"/>
-		<ref bean="maxFileAge"/>
-	</util:list>-->
-
 	<util:map id="fileRetrievers"
 		value-type="org.reactome.addlinks.dataretrieval.FileRetriever"
 		key-type="java.lang.String">
