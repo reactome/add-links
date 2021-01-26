@@ -64,4 +64,10 @@
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Complex"/>
 		</constructor-arg>
 	</bean>
+	
+	<bean id="ReferenceTherapeuticBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceTherapeutic"/>
+		</constructor-arg>
+	</bean>
 </beans>

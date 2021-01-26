@@ -413,12 +413,15 @@
 		<entry key="PharmacoDBFileProcessor">
 			<bean id="PharmacoDBFileProcessor" class="org.reactome.addlinks.fileprocessors.PharmacoDBFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/PharmacoDBFileProcessor"/>
-				<property name="pharmacoDBFilePath">
+				<!-- PharmacoDB file processing requires TWO files from two different file retrievers,
+				so instead of using the "path" field, it defines two other fields (of type Path), and
+				we use them here. -->
+				<property name="pathToPharmacoDBFile">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharmacodb-drug-annotations.csv"/>
 					</bean>
 				</property>
-				<property name="iUPHARFilePath">
+				<property name="pathToIUPHARFile">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/iuphar-ligands.csv"/>
 					</bean>
