@@ -37,6 +37,13 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 		this.IUPHARFilePath = path;
 	}
 	
+	/**
+	 * Processes a CSV file, assumed to have the first row as the Header. A map will be returned, keyed by <code>mappingSourceField</code> with the values coming from <code>mappingTargetField</code>.
+	 * @param path - the path to the file to process.
+	 * @param mappingSourceField - the NAME of the source mapping field.
+	 * @param mappingTargetField - the NAME of the target mapping field.
+	 * @return A map, which maps <code>mappingSourceField</code> to <code>mappingTargetField</code>.
+	 */
 	private Map<String, String> processFile(Path path, String mappingSourceField, String mappingTargetField)
 	{
 		Map<String, String> mapping = new HashMap<>();
