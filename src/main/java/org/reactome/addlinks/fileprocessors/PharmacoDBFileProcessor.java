@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
-public class PharmacodbFileProcessor extends FileProcessor<String>
+public class PharmacoDBFileProcessor extends FileProcessor<String>
 {
 
 	private String pharmacodbFilePath;
@@ -49,6 +49,7 @@ public class PharmacodbFileProcessor extends FileProcessor<String>
 		{
 			logger.error("IOException was caught: ", e);
 		}
+		logger.info("There are {} IUPHAR->PubChem mappings", iuphar2PubChem.keySet().size());
 		
 		try(CSVParser pharmacodbParser = new CSVParser(new FileReader(this.pharmacodbFilePath), CSVFormat.DEFAULT.withFirstRecordAsHeader()))
 		{
@@ -64,6 +65,7 @@ public class PharmacodbFileProcessor extends FileProcessor<String>
 		{
 			logger.error("IOException was caught: ", e);
 		}
+		logger.info("There are {} PubChem->PharmacoDB mappings.", pubChem2Pharmacodb.keySet().size());
 		
 		Map<String, String> iuphar2PharmacoDB = new HashMap<>(iuphar2PubChem.keySet().size());
 		// Now we need to create the map that goes from IUPHAR to PharmacoDB.
@@ -77,7 +79,7 @@ public class PharmacodbFileProcessor extends FileProcessor<String>
 				iuphar2PharmacoDB.put(iuphar, pharmacoDB);
 			}
 		}
-		
+		logger.info("There are {} IUPHAR->PharmacoDB mappings.", iuphar2PharmacoDB.size());
 		return iuphar2PharmacoDB;
 	}
 
