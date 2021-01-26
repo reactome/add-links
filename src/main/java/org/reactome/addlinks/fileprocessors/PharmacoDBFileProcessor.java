@@ -26,6 +26,27 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 		this.IUPHARFilePath = path;
 	}
 	
+	private Map<String, String> processFile(String path, String mappingSourceField, String mappingTargetField)
+	{
+		Map<String, String> mapping = new HashMap<>();
+		
+		try(CSVParser parser = new CSVParser(new FileReader(path), CSVFormat.DEFAULT.withFirstRecordAsHeader()))
+		{
+			parser.forEach(record -> mapping.put(record.get(mappingSourceField), record.get(mappingTargetField)) );
+		}
+		catch (FileNotFoundException e)
+		{
+			logger.error("The file {} was not found.", path);
+		}
+		catch (IOException e)
+		{
+			logger.error("IOException was caught: ", e);
+		}
+		logger.info("There are {} IUPHAR->PubChem mappings", mapping.keySet().size());
+		
+		return mapping;
+	}
+	
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
@@ -35,37 +56,12 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 		// First, we need to use IUPHAR file to create IUPHAR->PubChem mapping.
 		// Then we use the PharmacoDB file to create PubChecm->PharmacoDB mapping.
 		// The result should be IUPHAR->PharmacoDB mapping.
-		try(CSVParser iupharParser = new CSVParser(new FileReader(this.IUPHARFilePath), CSVFormat.DEFAULT.withFirstRecordAsHeader()))
-		{
-			iupharParser.forEach(record -> {
-				iuphar2PubChem.put(record.get("Ligand id"), record.get("PubChem CID"));
-			});
-		}
-		catch (FileNotFoundException e)
-		{
-			logger.error("The file {} was not found.", this.IUPHARFilePath);
-		}
-		catch (IOException e)
-		{
-			logger.error("IOException was caught: ", e);
-		}
-		logger.info("There are {} IUPHAR->PubChem mappings", iuphar2PubChem.keySet().size());
 		
-		try(CSVParser pharmacodbParser = new CSVParser(new FileReader(this.pharmacodbFilePath), CSVFormat.DEFAULT.withFirstRecordAsHeader()))
-		{
-			pharmacodbParser.forEach(record -> {
-				pubChem2Pharmacodb.put(record.get("cid"), record.get("PharmacoDB.uid"));
-			});
-		}
-		catch (FileNotFoundException e)
-		{
-			logger.error("The file {} was not found.", this.pharmacodbFilePath);
-		}
-		catch (IOException e)
-		{
-			logger.error("IOException was caught: ", e);
-		}
-		logger.info("There are {} PubChem->PharmacoDB mappings.", pubChem2Pharmacodb.keySet().size());
+		// Process IUPHAR file
+		iuphar2PubChem = this.processFile(this.IUPHARFilePath, "Ligand id", "PubChecm CID");
+		
+		// Process PharmacoDB file.
+		pubChem2Pharmacodb = this.processFile(this.pharmacodbFilePath, "cid", "PharmacoDB.uid");
 		
 		Map<String, String> iuphar2PharmacoDB = new HashMap<>(iuphar2PubChem.keySet().size());
 		// Now we need to create the map that goes from IUPHAR to PharmacoDB.
