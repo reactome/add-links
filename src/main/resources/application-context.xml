@@ -36,6 +36,8 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>IUPHAR</value>
+		<!-- <value>PharmacoDB</value> --><!-- Wait until they actually have a proper link to a file with PharmacoDB UID values - until then, use the file they send by email. -->
 		<value>ComplexPortal</value>
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
@@ -77,6 +79,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PharmacoDBFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>ComplexPortalSARSFileProcessor</value>
 		<value>ComplexPortalSARSCOV2FileProcessor</value>
@@ -117,6 +120,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>ComplexPortalSARSCOV2RefCreator</value>
 		<value>ComplexPortalSARSRefCreator</value>

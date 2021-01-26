@@ -44,6 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PharmacoDBFileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
@@ -84,6 +85,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
