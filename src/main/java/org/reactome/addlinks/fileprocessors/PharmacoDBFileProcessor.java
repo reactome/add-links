@@ -3,6 +3,7 @@ package org.reactome.addlinks.fileprocessors;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,24 +14,34 @@ import org.apache.commons.csv.CSVParser;
 public class PharmacoDBFileProcessor extends FileProcessor<String>
 {
 
-	private String pharmacodbFilePath;
-	private String IUPHARFilePath;
+	private Path pharmacodbFilePath;
+	private Path IUPHARFilePath;
 	
-	public void setPharmacoDBFilePath(String path)
+	public PharmacoDBFileProcessor()
+	{
+		super(null);
+	}
+	
+	public PharmacoDBFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+	
+	public void setPathToPharmacoDBFile(Path path)
 	{
 		this.pharmacodbFilePath = path;
 	}
 	
-	public void setIUPHARFilePath(String path)
+	public void setPathToIUPHARFile(Path path)
 	{
 		this.IUPHARFilePath = path;
 	}
 	
-	private Map<String, String> processFile(String path, String mappingSourceField, String mappingTargetField)
+	private Map<String, String> processFile(Path path, String mappingSourceField, String mappingTargetField)
 	{
 		Map<String, String> mapping = new HashMap<>();
 		
-		try(CSVParser parser = new CSVParser(new FileReader(path), CSVFormat.DEFAULT.withFirstRecordAsHeader()))
+		try(CSVParser parser = new CSVParser(new FileReader(path.toString()), CSVFormat.DEFAULT.withFirstRecordAsHeader()))
 		{
 			parser.forEach(record -> mapping.put(record.get(mappingSourceField), record.get(mappingTargetField)) );
 		}
@@ -42,7 +53,6 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 		{
 			logger.error("IOException was caught: ", e);
 		}
-		logger.info("There are {} IUPHAR->PubChem mappings", mapping.keySet().size());
 		
 		return mapping;
 	}
@@ -58,10 +68,12 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 		// The result should be IUPHAR->PharmacoDB mapping.
 		
 		// Process IUPHAR file
-		iuphar2PubChem = this.processFile(this.IUPHARFilePath, "Ligand id", "PubChecm CID");
+		iuphar2PubChem = this.processFile(this.IUPHARFilePath, "Ligand id", "PubChem CID");
+		logger.info("There are {} IUPHAR->PubChem mappings", iuphar2PubChem.keySet().size());
 		
 		// Process PharmacoDB file.
 		pubChem2Pharmacodb = this.processFile(this.pharmacodbFilePath, "cid", "PharmacoDB.uid");
+		logger.info("There are {} PubChem->PharmacoDB mappings", pubChem2Pharmacodb.keySet().size());
 		
 		Map<String, String> iuphar2PharmacoDB = new HashMap<>(iuphar2PubChem.keySet().size());
 		// Now we need to create the map that goes from IUPHAR to PharmacoDB.
@@ -70,7 +82,10 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 			String iuphar = entry.getKey();
 			String pubChem = entry.getValue();
 			String pharmacoDB = pubChem2Pharmacodb.get(pubChem);
-			if (pharmacoDB != null && !pharmacoDB.isEmpty() && !pharmacoDB.isBlank())
+
+			// The regex "PDBC\d+" is because the sample file I got from PharmacoDB sometimes has none-identifiers in the PharmacoDB.uid field (such as "TRUE", "NA", etc...)
+			// Hopefully those issues will be resolved by the time they are publishing this file live.
+			if (pharmacoDB != null && !pharmacoDB.isEmpty() && !pharmacoDB.isBlank() && pharmacoDB.matches("PDBC\\d+"))
 			{
 				iuphar2PharmacoDB.put(iuphar, pharmacoDB);
 			}
