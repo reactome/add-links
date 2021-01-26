@@ -109,13 +109,13 @@ public final class ReferenceObjectCache
 			// ReferenceMolecules and DatabaseIdentifiers and ReferenceTherapeutics do not have associated species.
 			if ( !className.equals(ReactomeJavaConstants.ReferenceMolecule) && !className.equals(ReactomeJavaConstants.DatabaseIdentifier) && !className.equals(ReactomeJavaConstants.ReferenceTherapeutic))
 			{
-				populateSpeciesCache(className, cacheBySpecies, referenceObject);
+				addObjectToSpeciesCache(className, cacheBySpecies, referenceObject);
 			}
 			//ReferenceDatabase Cache
 			//
 			if (cacheByRefDB != null)
 			{
-				populateRefDBCache(cacheByRefDB, referenceObject);
+				addObjectToRefDBCache(cacheByRefDB, referenceObject);
 			}
 			// DB_ID Cache
 			cacheByID.put(String.valueOf(referenceObject.getDBID()), referenceObject);
@@ -123,7 +123,7 @@ public final class ReferenceObjectCache
 			// Identifier cache
 			if ( !className.equals(ReactomeJavaConstants.Reaction) )
 			{
-				populateIdentifierCache(className, objectCacheByIdentifier, referenceObject);
+				addObjectToIdentifierCache(className, objectCacheByIdentifier, referenceObject);
 			}
 		});
 		logger.info("Built {} caches:"
@@ -141,7 +141,14 @@ public final class ReferenceObjectCache
 				);
 	}
 
-	private static void populateIdentifierCache(String className, Map<String, List<GKInstance>> objectCacheByIdentifier, GKInstance referenceObject) throws Error
+	/**
+	 * Adds an object to a cache that caches by identifier.
+	 * @param className - type of object being cached.
+	 * @param objectCacheByIdentifier - the cache to add the object into.
+	 * @param referenceObject - The object that will be added to a cache.
+	 * @throws Error
+	 */
+	private static void addObjectToIdentifierCache(String className, Map<String, List<GKInstance>> objectCacheByIdentifier, GKInstance referenceObject) throws Error
 	{
 		try
 		{
@@ -180,7 +187,12 @@ public final class ReferenceObjectCache
 		}
 	}
 
-	private static void populateRefDBCache(Map<String, List<GKInstance>> cacheByRefDB, GKInstance referenceObject)
+	/**
+	 * Adds an object to a cache that is indexed by ReferenceDatabase.
+	 * @param cacheByRefDB - the cache to add to.
+	 * @param referenceObject - the object to add.
+	 */
+	private static void addObjectToRefDBCache(Map<String, List<GKInstance>> cacheByRefDB, GKInstance referenceObject)
 	{
 		String refDBID;
 		try
@@ -208,7 +220,13 @@ public final class ReferenceObjectCache
 		}
 	}
 
-	private static void populateSpeciesCache(String className, Map<String, List<GKInstance>> cacheBySpecies, GKInstance referenceObject)
+	/**
+	 * Adds an object to a cache that is indexed by species.
+	 * @param className - the className of the object.
+	 * @param cacheBySpecies - the cache to add the object to.
+	 * @param referenceObject - the object to add.
+	 */
+	private static void addObjectToSpeciesCache(String className, Map<String, List<GKInstance>> cacheBySpecies, GKInstance referenceObject)
 	{
 		// Sets do not allow duplicates.
 		Set<String> allSpecies = null;
@@ -333,6 +351,10 @@ public final class ReferenceObjectCache
 		return localAdapter;
 	}
 	
+	/**
+	 * Populates all of the caches.
+	 * @param adapter - a database adaptor to use.
+	 */
 	private static synchronized void populateCaches(MySQLAdaptor adapter)
 	{
 		ReferenceObjectCache.adapter = adapter;
@@ -446,7 +468,6 @@ public final class ReferenceObjectCache
 		buildOneToManyCache(adapter, ReactomeJavaConstants.ReferenceDatabase, ReferenceObjectCache.refDbNamesToIds, ReferenceObjectCache.refdbMapping);
 	}
 	
-	// TODO: Add a cache for Reactions. Cache should be keyed by Stable ID.
 	// Reaction Cache
 	private static Map<String, GKInstance> reactionCacheByDBID = new ConcurrentHashMap<>();
 	private static Map<String, List<GKInstance>> reactionCacheByIdentifier = new ConcurrentHashMap<>();
@@ -898,20 +919,20 @@ public final class ReferenceObjectCache
 		getRefDbNamesToIds();
 	}
 	
+	/**
+	 * Clear and rebuild caches that are of things that could be cached by ReferenceDatabase.
+	 */
 	public synchronized void rebuildRefDBCachesWithClearing()
 	{
 		ReferenceObjectCache.clearCachesWithRefDBs();
-		
-		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceMolecule, null, ReferenceObjectCache.moleculeCacheByDBID, ReferenceObjectCache.moleculeCacheByIdentifier, ReferenceObjectCache.moleculeCacheByRefDB, false);
-		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceDNASequence, ReferenceObjectCache.refDNASeqCacheBySpecies, ReferenceObjectCache.refDNASeqCacheByDBID, ReferenceObjectCache.refDNASeqCacheByIdentifier, ReferenceObjectCache.refDNASeqCacheByRefDb, false);
-		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceRNASequence, ReferenceObjectCache.refRNASeqCacheBySpecies, ReferenceObjectCache.refRNASeqCacheByDBID, ReferenceObjectCache.refRNASeqCacheByIdentifier, ReferenceObjectCache.refRNASeqCacheByRefDb, false);
-		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceGeneProduct, ReferenceObjectCache.refGeneProdCacheBySpecies, ReferenceObjectCache.refGeneProdCacheByDBID, ReferenceObjectCache.refGeneProdCacheByIdentifier, ReferenceObjectCache.refGeneProdCacheByRefDb, false);
-		buildLazilyLoadedCaches(ReactomeJavaConstants.DatabaseIdentifier, null, ReferenceObjectCache.databaseIdentifiersByDBID, ReferenceObjectCache.databaseIdentifiersByIdentifier, ReferenceObjectCache.databaseIdentifiersByRefDb, false);
-		buildLazilyLoadedCaches(ReactomeJavaConstants.ReferenceTherapeutic, null, ReferenceObjectCache.referenceTherapeuticsByDBID, ReferenceObjectCache.referenceTherapeuticsByIdentifier, ReferenceObjectCache.referenceTherapeuticsByRefDb, false);
+		this.rebuildRefDBCachesWithoutClearing();
 		getRefDBMappings();
 		getRefDbNamesToIds();
 	}
 
+	/**
+	 * Clear all caches that are caches of types that could be cached by ReferenceDatabase.
+	 */
 	private static void clearCachesWithRefDBs()
 	{
 		ReferenceObjectCache.moleculeCacheByDBID.clear();
