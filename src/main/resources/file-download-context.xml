@@ -72,7 +72,7 @@
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
 		<value>IUPHAR</value>
-		<!-- <value>PharmacoDB</value> --><!-- Not yet ready -->
+		<value>PharmacoDB</value>
 		<value>HPA</value>
 		<value>VGNC</value>
 		<value>MGI</value>
