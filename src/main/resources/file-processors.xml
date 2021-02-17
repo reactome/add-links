@@ -418,7 +418,7 @@
 				we use them here. -->
 				<property name="pathToPharmacoDBFile">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharmacodb-drug-annotations.csv"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharmacodb_drugs_with_ids.csv"/>
 					</bean>
 				</property>
 				<property name="pathToIUPHARFile">
