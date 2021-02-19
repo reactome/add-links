@@ -92,7 +92,7 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 
 			// The regex "PDBC\d+" is because the sample file I got from PharmacoDB sometimes has none-identifiers in the PharmacoDB.uid field (such as "TRUE", "NA", etc...)
 			// Hopefully those issues will be resolved by the time they are publishing this file live.
-			if (pharmacoDB != null && !pharmacoDB.isEmpty() && !pharmacoDB.isBlank() && pharmacoDB.matches("PDBC\\d+"))
+			if (pharmacoDB != null && !pharmacoDB.isEmpty() && !pharmacoDB.trim().isEmpty() && pharmacoDB.matches("PDBC\\d+"))
 			{
 				iuphar2PharmacoDB.put(iuphar, pharmacoDB);
 			}
