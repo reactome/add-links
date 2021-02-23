@@ -172,7 +172,6 @@ public final class ReferenceObjectCache
 					e.printStackTrace();
 					throw new Error(e);
 				}
-
 			}
 		}
 		catch (InvalidAttributeException e)
@@ -228,80 +227,81 @@ public final class ReferenceObjectCache
 	 */
 	private static void addObjectToSpeciesCache(String className, Map<String, List<GKInstance>> cacheBySpecies, GKInstance referenceObject)
 	{
-		// Sets do not allow duplicates.
-		Set<String> allSpecies = null;
-		//ReferenceRNASequence objects don't always have Species info, for some reason, so we need to get that from the associated ReferenceGeneProduct
-		if (className.equals(ReactomeJavaConstants.ReferenceRNASequence))
+		if (cacheBySpecies != null)
 		{
-			Object species = null;
-			try
+			// Sets do not allow duplicates.
+			Set<String> allSpecies = null;
+			//ReferenceRNASequence objects don't always have Species info, for some reason, so we need to get that from the associated ReferenceGeneProduct
+			if (className.equals(ReactomeJavaConstants.ReferenceRNASequence))
 			{
-				species = referenceObject.getAttributeValue(ReactomeJavaConstants.species);
-			}
-			catch (InvalidAttributeException e)
-			{
-				logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, referenceObject);
-			}
-			catch (Exception e)
-			{
-				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, referenceObject, e.getMessage());
-			}
-			
-			if (null == species)
-			{
+				GKInstance species = null;
 				try
 				{
-					@SuppressWarnings("unchecked")
-					Collection<GKInstance> referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
-					allSpecies = new HashSet<>(referringRefTranscripts.size());
-					// Populate a list of species that this ReferenceRNASequence could be cached by.
-					for (GKInstance refTranscript : referringRefTranscripts)
+					species = (GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species);
+				}
+				catch (InvalidAttributeException e)
+				{
+					logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, referenceObject);
+				}
+				catch (Exception e)
+				{
+					logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, referenceObject, e.getMessage());
+				}
+				
+				if (null == species)
+				{
+					try
 					{
-						try
+						@SuppressWarnings("unchecked")
+						Collection<GKInstance> referringRefTranscripts = (Collection<GKInstance>) referenceObject.getReferers(ReactomeJavaConstants.referenceTranscript);
+						allSpecies = new HashSet<>(referringRefTranscripts.size());
+						// Populate a list of species that this ReferenceRNASequence could be cached by.
+						for (GKInstance refTranscript : referringRefTranscripts)
 						{
-							allSpecies.add(  ((GKInstance)refTranscript.getAttributeValue(ReactomeJavaConstants.species)).getDBID().toString() );
-						}
-						catch (InvalidAttributeException e)
-						{
-							logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, refTranscript);
-						}
-						catch (Exception e)
-						{
-							logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, refTranscript, e.getMessage());
+							try
+							{
+								allSpecies.add(  ((GKInstance)refTranscript.getAttributeValue(ReactomeJavaConstants.species)).getDBID().toString() );
+							}
+							catch (InvalidAttributeException e)
+							{
+								logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, refTranscript);
+							}
+							catch (Exception e)
+							{
+								logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, refTranscript, e.getMessage());
+							}
 						}
 					}
+					catch (Exception e1)
+					{
+						logger.error("Could not get ReferenceTranscripts for {} (while trying to determine the species)", referenceObject);
+					}
+					
 				}
-				catch (Exception e1)
+			}
+	
+			// If the list wasn't initialized yet, it means that we are probably dealing with a ReferenceGeneProduct or a ReferenceDNASequence which should
+			// have its own species.
+			if (allSpecies == null)
+			{
+				allSpecies = new HashSet<>(1);
+				String species;
+				try
 				{
-					logger.error("Could not get ReferenceTranscripts for {} (while trying to determine the species)", referenceObject);
+					species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
+					allSpecies.add(species);
+				}
+				catch (InvalidAttributeException e)
+				{
+					logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, referenceObject);
+				}
+				catch (Exception e)
+				{
+					logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, referenceObject, e.getMessage());
 				}
 				
 			}
-		}
 
-		// If the list wasn't initialized yet, it means that we are probably dealing with a ReferenceGeneProduct or a ReferenceDNASequence which should
-		// have its own species.
-		if (allSpecies == null)
-		{
-			allSpecies = new HashSet<>(1);
-			String species;
-			try
-			{
-				species = String.valueOf( ((GKInstance) referenceObject.getAttributeValue(ReactomeJavaConstants.species)).getDBID() );
-				allSpecies.add(species);
-			}
-			catch (InvalidAttributeException e)
-			{
-				logger.error("Could not get the \"{}\" attribute for {} because it not valid for this object.", ReactomeJavaConstants.species, referenceObject);
-			}
-			catch (Exception e)
-			{
-				logger.error("Could not get the \"{}\" attribute for {}. Reason: {}", ReactomeJavaConstants.species, referenceObject, e.getMessage());
-			}
-			
-		}
-		if (cacheBySpecies != null)
-		{
 			for (String species : allSpecies)
 			{
 				//Add to the Species Cache
