@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.5.1
+ - Add SARS files for ComplexPortal
+ - Remove unused DOCKBlaster code
+ - Add reference creation process for PharmacoDB
+
 ## 1.5.0
  - TargetPathogen file processor updated to match new format of input file
  - Updated FileRetriever to handle very large files (such as from COSMIC)
