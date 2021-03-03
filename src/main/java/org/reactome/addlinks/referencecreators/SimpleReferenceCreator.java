@@ -122,14 +122,14 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 						GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
 						if (speciesInst != null)
 						{
-							speciesID = new Long(speciesInst.getDBID());
+							speciesID = speciesInst.getDBID();
 						}
 					}
 
 					// The T value of the mapping can be either a List or a String depending on the FileProcessors invoked.
 					Set<String> targetRefDBIdentifiers = new HashSet<>();
 					if (mapping.get(sourceReferenceIdentifier) instanceof List) {
-						targetRefDBIdentifiers.addAll((List) mapping.get(sourceReferenceIdentifier));
+						targetRefDBIdentifiers.addAll((List<String>) mapping.get(sourceReferenceIdentifier));
 					} else {
 						targetRefDBIdentifiers.add((String) mapping.get(sourceReferenceIdentifier));
 					}
@@ -141,7 +141,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 						if (!xrefAlreadyExists) {
 							this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
 							sourceIdentifiersWithNewIdentifier.incrementAndGet();
-							thingsToCreate.add(targetRefDBIdentifier + "," + String.valueOf(sourceReference.getDBID()) + "," + speciesID);
+							thingsToCreate.add(targetRefDBIdentifier + "," + sourceReference.getDBID() + "," + speciesID);
 						} else {
 							sourceIdentifiersWithExistingIdentifier.incrementAndGet();
 						}
@@ -167,7 +167,8 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 
 			if (!this.testMode)
 			{
-				this.refCreator.createIdentifier(targetRefDBIdentifier, sourceDBID, this.targetRefDB, personID, this.getClass().getName(), Long.valueOf(speciesID));
+				this.refCreator.createIdentifier(targetRefDBIdentifier, sourceDBID, this.targetRefDB, personID, this.getClass().getName(),
+						speciesID == null || speciesID.equals("null") ? null : Long.valueOf(speciesID) );
 			}
 
 		}
@@ -237,7 +238,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		@SuppressWarnings("unchecked")
 		Collection<GKInstance> xrefs = (Collection<GKInstance>) sourceReference.getAttributeValuesList(this.referringAttributeName);
 		StringBuilder xrefsb = new StringBuilder();
-		if (xrefs.size() > 0)
+		if (!xrefs.isEmpty())
 		{
 			for (GKInstance xref : xrefs)
 			{

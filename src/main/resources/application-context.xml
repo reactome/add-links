@@ -36,6 +36,8 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>PharmacoDB</value>
+		<value>IUPHAR</value>
 		<value>ComplexPortal</value>
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
@@ -70,13 +72,14 @@
 		<value>HPA</value>
 		<value>VGNC</value>
 		<value>MGI</value>
+		<value>EnsemblBioMart</value>
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>EnsemblBioMart</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PharmacoDBFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>ComplexPortalSARSFileProcessor</value>
 		<value>ComplexPortalSARSCOV2FileProcessor</value>
@@ -110,13 +113,14 @@
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
+		<value>EnsemblBioMartFileProcessor</value>
 		<value>RGDFileProcessor</value>
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>ComplexPortalSARSCOV2RefCreator</value>
 		<value>ComplexPortalSARSRefCreator</value>
@@ -158,11 +162,11 @@
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
+		<value>EnsemblReferenceCreator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 		<value>RGDReferenceCreator</value>
 		<value>XenbaseReferenceCreator</value>
 		<value>ZFINReferenceCreator</value>
-		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
