@@ -69,7 +69,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	 * @return The path to the directory that contains the unzipped file(s).
 	 * @throws Exception
 	 */
-	public String unzipFile(Path pathToZipfile, boolean flattenZipOutput) throws Exception
+	protected String unzipFile(Path pathToZipfile, boolean flattenZipOutput) throws Exception
 	{
 		String fileName = null ;
 		logger.debug("Unzipping {}",pathToZipfile);
@@ -156,7 +156,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	 * @return The directory where the files are unzipped.
 	 * @throws Exception
 	 */
-	public String unzipFile(Path pathToZipfile) throws Exception 
+	protected String unzipFile(Path pathToZipfile) throws Exception 
 	{
 		return this.unzipFile(pathToZipfile, false);
 	}

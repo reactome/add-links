@@ -45,8 +45,28 @@
 
 		<entry key="ComplexPortal">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortal">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/homo_sapiens.tsv" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_homo_sapiens.tsv" />
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/9606.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_9606_homo_sapiens.tsv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
+				<property name="passiveFTP" value="true" />
+			</bean>
+		</entry>
+
+		<entry key="ComplexPortalSARS">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortalSARS">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/694009.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_694009_sars.tsv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
+				<property name="passiveFTP" value="true" />
+			</bean>
+		</entry>
+
+		<entry key="ComplexPortalSARSCOV2">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortalSARSCOV2">
+				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/2697049.tsv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_2697049_sars_cov_2.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/ComplexPortal"/>
 				<property name="passiveFTP" value="true" />
@@ -65,21 +85,10 @@
 			</bean>
 		</entry> -->
 
-		<entry key="DOCKBlaster">
-			<bean class="org.reactome.addlinks.dataretrieval.AuthenticatingFileRetriever" id="DOCKBlaster">
-				<property name="dataURL" value="http://files.docking.org/private/uniprot-to-pdb.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/DOCKBlaster_Uniprot2PDB.txt" />
-				<property name="maxAge" ref="maxFileAge" />
-				<property name="userName" value="${dockblaster.user}"/>
-				<property name="password" value="${dockblaster.password}"/>
-				<constructor-arg name="retrieverName" value="retrievers/DOCKBlaster"/>
-			</bean>
-		</entry>
-
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
-				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_2020_05.tsv.gz" />
+				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_YYYY_MM.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<property name="passiveFTP" value="true" />
@@ -283,6 +292,24 @@
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/biomart/" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/EnsemblBioMart"/>
+			</bean>
+		</entry>
+
+		<!-- NOTE: The files retrieved from PharmacoDB and IUPHAR are *both* required to create references for PharmacoDB -->
+		<entry key="PharmacoDB">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PharmacoDB">
+				<property name="dataURL" value="https://raw.githubusercontent.com/BHKLAB-Pachyderm/Annotations/master/drugs_with_ids.csv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharmacodb_drugs_with_ids.csv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/PharmacoDB"/>
+			</bean>
+		</entry>
+		<entry key="IUPHAR">
+			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IUPHAR">
+				<property name="dataURL" value="https://www.guidetopharmacology.org/DATA/ligands.csv" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/iuphar-ligands.csv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/IUPHAR"/>
 			</bean>
 		</entry>
 	</util:map>

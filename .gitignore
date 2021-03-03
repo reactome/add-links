@@ -19,7 +19,7 @@ hs_err_pid*
 
 auth.properties
 
-.dbeaver-data-sources.xml
+.dbeaver*
 /misc/
 
 #ignore logging directory

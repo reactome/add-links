@@ -36,6 +36,11 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>PharmacoDB</value>
+		<value>IUPHAR</value>
+		<value>ComplexPortal</value>
+		<value>ComplexPortalSARS</value>
+		<value>ComplexPortalSARSCOV2</value>
 		<value>TargetPathogen</value>
 		<value>OpenTargets</value>
 		<value>IntEnz</value>
@@ -64,17 +69,20 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>ComplexPortal</value>
 		<value>HPA</value>
 		<value>VGNC</value>
 		<value>MGI</value>
+		<value>EnsemblBioMart</value>
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>EnsemblBioMart</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PharmacoDBFileProcessor</value>
+		<value>ComplexPortalFileProcessor</value>
+		<value>ComplexPortalSARSFileProcessor</value>
+		<value>ComplexPortalSARSCOV2FileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>OpenTargetsFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
@@ -102,17 +110,20 @@
 		<value>HmdbMetabolitesFileProcessor</value>
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
-		<value>ComplexPortalFileProcessor</value>
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
+		<value>EnsemblBioMartFileProcessor</value>
 		<value>RGDFileProcessor</value>
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
+		<value>ComplexPortalRefCreator</value>
+		<value>ComplexPortalSARSCOV2RefCreator</value>
+		<value>ComplexPortalSARSRefCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>OpenTargetsReferenceCreator</value>
@@ -148,15 +159,14 @@
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
-		<value>ComplexPortalRefCreator</value>
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
+		<value>EnsemblReferenceCreator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 		<value>RGDReferenceCreator</value>
 		<value>XenbaseReferenceCreator</value>
 		<value>ZFINReferenceCreator</value>
-		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -216,11 +226,6 @@
 		The UCSC redirects make it hard to check and since we're linking to them via UniProt ID (not UCSC ID),
 		their redirect service might take the user to a page that is correct but does not display the UniProt ID that
 		got them there.
-		-->
-		<!--
-		<value>DOCK Blaster</value>
-		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
-		Even loading one page seems to make it take effort.
 		-->
 		<!--
 		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,

@@ -44,6 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PharmacoDBFileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
@@ -72,6 +73,8 @@
 		<value>OrphanetFileProcessor</value>
 		<value>OMIMProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
+		<value>ComplexPortalSARSFileProcessor</value>
+		<value>ComplexPortalSARSCOV2FileProcessor</value>
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
@@ -82,6 +85,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
@@ -118,6 +122,8 @@
 		<value>HMDBProtReferenceCreator</value>
 		<value>HmdbMoleculeReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
+		<value>ComplexPortalSARSCOV2RefCreator</value>
+		<value>ComplexPortalSARSRefCreator</value>
 		<value>HPAReferenceCreator</value>
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
@@ -185,11 +191,6 @@
 		The UCSC redirects make it hard to check and since we're linking to them via UniProt ID (not UCSC ID),
 		their redirect service might take the user to a page that is correct but does not display the UniProt ID that
 		got them there.
-		-->
-		<!-- 
-		<value>DOCK Blaster</value>
-		I'm concerned that checking many links for DOCK Blaster could put a strain on its server.
-		Even loading one page seems to make it take effort.
 		-->
 		<!--
 		BioGPS is all JavaScript based so you'll never get the search phrase in the response body,

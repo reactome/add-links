@@ -40,6 +40,8 @@
 	
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>UniProtToKEGG</value>
+		<value>KEGGRetriever</value>
 		<value>TargetPathogen</value>
 		<value>IntEnz</value>		
 		<value>UniProtToENSEMBL</value>
@@ -52,7 +54,6 @@
 		<value>UniProtToRefSeqPeptide</value>
 		<value>UniProtToRefSeqRNA</value>
 		<value>UniProtToPDB</value>
-		<value>UniProtToKEGG</value>
 		<value>UniProtToWormbase</value>
 		<value>UniProtToOMIM</value>
 		<value>PROToReferencePeptideSequence</value>
@@ -61,7 +62,6 @@
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
-		<value>KEGGRetriever</value>
 		<value>OrphanetToUniprotReferenceDNASequence</value>
 		<value>RheaRetriever</value>
 		<value>OMIM</value>
@@ -69,6 +69,10 @@
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
 		<value>ComplexPortal</value>
+		<value>ComplexPortalSARS</value>
+		<value>ComplexPortalSARSCOV2</value>
+		<value>IUPHAR</value>
+		<value>PharmacoDB</value>
 		<value>HPA</value>
 		<value>VGNC</value>
 		<value>MGI</value>
