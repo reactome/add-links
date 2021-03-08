@@ -86,6 +86,7 @@
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 		<value>PharmacoDBReferenceCreator</value>
+		<value>KEGGReferenceCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
@@ -116,7 +117,6 @@
 		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
-		<value>KEGGReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
