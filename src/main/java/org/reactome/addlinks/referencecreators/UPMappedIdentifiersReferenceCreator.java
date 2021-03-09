@@ -166,8 +166,12 @@ public class UPMappedIdentifiersReferenceCreator extends NCBIGeneBasedReferenceC
 									{
 										targetDB = setTargetDBForENSEMBL(generateENSEMBLRefDBName, speciesID);
 									}
-									if (!targetIsKEGG || !forbiddenKEGGPrefix)
+									if (!targetIsKEGG || !forbiddenKEGGPrefix) // If target is NOT kegg ...OR... if kegg prefix is NOT forbidden...
 									{
+										if (targetDB == null || targetDB.trim().equals("") || targetDB.equalsIgnoreCase("null"))
+										{
+											logger.error("Got a NULL targetDB for targetIdentifier: {}, sourceIdentifier: {}", targetIdentifier, sourceIdentifier);
+										}
 										boolean xrefAlreadyExists = checkXRefExists(inst, targetIdentifier, targetDB);
 										String thingToCreate = targetIdentifier+","+String.valueOf(inst.getDBID())+","+speciesID+","+targetDB;
 										if (!xrefAlreadyExists && !thingsToCreate.contains(thingToCreate) && targetDB != null)

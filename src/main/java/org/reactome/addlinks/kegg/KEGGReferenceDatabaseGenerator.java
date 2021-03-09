@@ -40,7 +40,7 @@ public class KEGGReferenceDatabaseGenerator
 		KEGGReferenceDatabaseGenerator.dbCreator = creator;
 	}
 
-	private static Long createReferenceDatabase(String dbName, String speciesName, String speciesURL, ReferenceObjectCache objectCache) throws Exception
+	private static synchronized Long createReferenceDatabase(String dbName, String speciesName, String speciesURL, ReferenceObjectCache objectCache) throws Exception
 	{
 		if (objectCache.getRefDbNamesToIds().keySet().contains(dbName))
 		{
@@ -69,7 +69,7 @@ public class KEGGReferenceDatabaseGenerator
 	 * Generate new species-specific KEGG reference databases. The new database will be named in the form "KEGG Gene (${SPECIES_NAME})".
 	 * @param objectCache - The object cache. The list of species in this cache will be what the new reference databases are based on.
 	 */
-	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache)
+	public static synchronized void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache)
 	{
 		for (String speciesName : objectCache.getSpeciesNamesToIds().keySet())
 		{
@@ -139,7 +139,7 @@ public class KEGGReferenceDatabaseGenerator
 	 * @param keggSpeciesCode KEGG species code.
 	 * @return The DBID of the KEGG ReferenceDatabase object, if it exists. If no ReferenceDatabase can be found (or too many matching ReferenceDatabases), then NULL will be returned.
 	 */
-	public static Long getKeggReferenceDatabase(String keggSpeciesCode)
+	public static synchronized Long getKeggReferenceDatabase(String keggSpeciesCode)
 	{
 		Long dbId = null;
 		if (KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.containsKey(keggSpeciesCode))
@@ -162,7 +162,7 @@ public class KEGGReferenceDatabaseGenerator
 					// And we will add to the cache since it wasn't there.
 					KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.put(keggSpeciesCode, refDB);
 				}
-				else if (refDBs.size() == 0)
+				else if (refDBs.isEmpty())
 				{
 					logger.error("Sorry, there was no KEGG ReferenceDatabase with the KEGG species code {}", keggSpeciesCode);
 				}
@@ -245,7 +245,7 @@ public class KEGGReferenceDatabaseGenerator
 		String speciesURL = KEGG_URL.replace("###SP3###", keggPrefix + ":");
 		try
 		{
-			Long dbId = new Long(createReferenceDatabase(newDBName, keggSpeciesName, speciesURL, objectCache));
+			Long dbId = createReferenceDatabase(newDBName, keggSpeciesName, speciesURL, objectCache);
 			GKInstance refDBInst = adaptor.fetchInstance(dbId);
 			KEGGReferenceDatabaseGenerator.keggCodesToRefDBMap.put(keggPrefix, refDBInst);
 			return dbId.toString();

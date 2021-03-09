@@ -91,7 +91,7 @@ class KEGGReferenceCreatorHelper
 			// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use.
 			if (targetDB == null)
 			{
-				this.logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", identifier);
+				this.logger.warn("No KEGG DB Name could be obtained for this identifier: {} with this prefix: {}. The next step is to try to create a *new* ReferenceDatabase.", identifier, keggPrefix);
 
 				if (keggPrefix != null)
 				{
