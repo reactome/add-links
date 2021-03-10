@@ -44,6 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<!-- <value>UniprotToKEGGFileProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
@@ -65,7 +66,6 @@
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>KEGGFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
 		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
@@ -81,11 +81,11 @@
 		<value>RGDFileProcessor</value>	
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value>
+		<value>EnsemblBioMartFileProcessor</value> -->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>upMappedKEGGRefCreator</value>
+		<!-- <value>upMappedKEGGRefCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
@@ -117,7 +117,6 @@
 		<value>zincToUniProtReferenceCreator</value>
 		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-		
 		<value>RheaReferenceCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
@@ -132,7 +131,7 @@
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
 		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value> -->
 	</util:list>
 	
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
