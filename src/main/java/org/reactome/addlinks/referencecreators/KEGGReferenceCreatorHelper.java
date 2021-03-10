@@ -68,8 +68,8 @@ class KEGGReferenceCreatorHelper
 	{
 		String identifier = keggIdentifier;
 		String targetDB = null;
-		// "vg:" and "ad:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
-		// the identifier has already been pruned.
+		// "vg:" and "ag:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
+		// the identifier has already been pruned. Virus: https://www.genome.jp/dbget-bin/www_bfind?vg ; Addendum: https://www.genome.jp/dbget-bin/www_bfind?ag
 		if (identifier.startsWith("vg:"))
 		{
 			targetDB = "KEGG Gene (Viruses)";

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,9 +104,19 @@ public final class KEGGSpeciesCache
 						// or summary/group headings.
 						logger.trace("Line/pattern mismatch: {}",line);
 					}
-
 				}
-				logger.info("{} keys added to the KEGG species map.",KEGGSpeciesCache.speciesMap.keySet().size());
+				// Add vg for Virus, and ag for Addendum - they are not in the KEGG species list, but are still valid prefixes.
+				codesToSpecies.put("vg", "Virus");
+				codesToSpecies.put("ag", "Addendum");
+				HashMap<String, String> virusMap = new HashMap<>();
+				virusMap.put(KEGG_CODE, "vg");
+				virusMap.put(COMMON_NAME, "");
+				speciesMap.put("Virus", Arrays.asList(virusMap));
+				HashMap<String, String> addendumMap = new HashMap<>();
+				addendumMap.put(KEGG_CODE, "ag");
+				addendumMap.put(COMMON_NAME, "");
+				speciesMap.put("Addendum", Arrays.asList(addendumMap));
+				logger.info("{} keys added to the KEGG species map.", KEGGSpeciesCache.speciesMap.keySet().size());
 			}
 		}
 		catch (URISyntaxException | IOException e)
@@ -188,6 +199,10 @@ public final class KEGGSpeciesCache
 			if (KEGGSpeciesCache.getKeggSpeciesCodes().contains(prefix))
 			{
 				return prefix;
+			}
+			else
+			{
+				logger.warn("Could not extract a KEGG species prefix from identifier: \"{}\". Maybe check the KEGG species list?", identifier);
 			}
 		}
 		return null;
