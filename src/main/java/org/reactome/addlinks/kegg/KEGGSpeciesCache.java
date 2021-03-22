@@ -108,11 +108,11 @@ public final class KEGGSpeciesCache
 				// Add vg for Virus, and ag for Addendum - they are not in the KEGG species list, but are still valid prefixes.
 				codesToSpecies.put("vg", "Virus");
 				codesToSpecies.put("ag", "Addendum");
-				HashMap<String, String> virusMap = new HashMap<>();
+				Map<String, String> virusMap = new HashMap<>();
 				virusMap.put(KEGG_CODE, "vg");
 				virusMap.put(COMMON_NAME, "");
 				speciesMap.put("Virus", Arrays.asList(virusMap));
-				HashMap<String, String> addendumMap = new HashMap<>();
+				Map<String, String> addendumMap = new HashMap<>();
 				addendumMap.put(KEGG_CODE, "ag");
 				addendumMap.put(COMMON_NAME, "");
 				speciesMap.put("Addendum", Arrays.asList(addendumMap));
