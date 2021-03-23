@@ -68,8 +68,8 @@ class KEGGReferenceCreatorHelper
 	{
 		String identifier = keggIdentifier;
 		String targetDB = null;
-		// "vg:" and "ad:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
-		// the identifier has already been pruned.
+		// "vg:" and "ag:" aren't in the species list because they are not actually species. So that's why it's OK to check for them here, after
+		// the identifier has already been pruned. Virus: https://www.genome.jp/dbget-bin/www_bfind?vg ; Addendum: https://www.genome.jp/dbget-bin/www_bfind?ag
 		if (identifier.startsWith("vg:"))
 		{
 			targetDB = "KEGG Gene (Viruses)";
@@ -91,7 +91,7 @@ class KEGGReferenceCreatorHelper
 			// So, we can't add the cross-reference since we don't know which species-specific ReferenceDatabase to use.
 			if (targetDB == null)
 			{
-				this.logger.warn("No KEGG DB Name could be obtained for this identifier: {}. The next step is to try to create a *new* ReferenceDatabase.", identifier);
+				this.logger.warn("No KEGG DB Name could be obtained for this identifier: {} with this prefix: {}. The next step is to try to create a *new* ReferenceDatabase.", identifier, keggPrefix);
 
 				if (keggPrefix != null)
 				{

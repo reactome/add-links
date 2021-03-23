@@ -44,6 +44,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>UniprotToKEGGFileProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
@@ -65,7 +66,6 @@
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
 		<value>KEGGFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
 		<value>zincProtFileProcessor</value>
 		<value>RheaFileProcessor</value>
 		<value>HmdbProteinsFileProcessor</value>
@@ -85,7 +85,9 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>upMappedKEGGRefCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
+		<value>KEGGReferenceCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
@@ -115,8 +117,6 @@
 		<value>zincToUniProtReferenceCreator</value>
 		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
-		<value>upMappedKEGGRefCreator</value>
-		<value>KEGGReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
 		<value>OrphanetReferenceCreator</value>
 		<value>HMDBProtReferenceCreator</value>
