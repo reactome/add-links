@@ -88,6 +88,13 @@
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
+				<!--
+				The Jenkinsfile that runs AddLinks will replace the YYYY_MM with a value that is supplied by the user.
+				If you are running AddLinks locally, be sure to check the file listing in
+				http://ftp.flybase.net/releases/current/precomputed_files/genes/ for the most recent file, and then replace YYYY_MM
+				with the year/month values of the most recent flybase file. DO NOT check this change in, as it will break the process
+				in Jenkins.
+				-->
 				<property name="dataURL" value="ftp://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_NAseq_Uniprot_fb_YYYY_MM.tsv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/FlyBase.tsv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -97,7 +104,7 @@
 
 		<entry key="HmdbMolecules">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbMolecules">
-				<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
+				<property name="dataURL" value="https://hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_metabolites.zip" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/HmdbMolecules"/>
@@ -106,7 +113,7 @@
 
 		<entry key="HmdbProteins">
 			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbProteins">
-				<property name="dataURL" value="http://www.hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
+				<property name="dataURL" value="https://hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_proteins.zip" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/HmdbProteins"/>
