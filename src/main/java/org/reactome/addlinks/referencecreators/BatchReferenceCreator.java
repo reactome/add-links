@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gk.model.GKInstance;
-import org.reactome.addlinks.CustomLoggable;
+import org.reactome.release.common.CustomLoggable;
 
 /**
  * Basic interface for classes for objects that will create many references in a batch.

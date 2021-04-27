@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.reactome.addlinks.test;
 
@@ -34,11 +34,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.reactome.addlinks.dataretrieval.DataRetriever;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.release.common.dataretrieval.DataRetriever;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import static org.mockito.Matchers.*;
 
 /**
+ * This test should probably be deleted, since the code under test now exists in release-common-lib.
  * @author sshorser
  *
  */
@@ -46,26 +47,26 @@ import static org.mockito.Matchers.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ java.net.URI.class,
 				org.apache.commons.net.ftp.FTPClient.class,
-				org.reactome.addlinks.dataretrieval.FileRetriever.class,
+				org.reactome.release.common.dataretrieval.FileRetriever.class,
 				org.apache.http.impl.client.HttpClients.class })
 public class TestFileRetriever {
 
 	private static final String MESSAGE_CONTENT = "this is a test";
-	
+
 	@Mock
 	FTPClient mockFtpClient ;
-	
+
 	@Mock
 	CloseableHttpClient mockClient;
-	
+
 	@Mock
 	CloseableHttpResponse mockResponse;
 
-	
+
 	HttpEntity entity = new ByteArrayEntity(MESSAGE_CONTENT.getBytes());
 	/**
 	 * Test method for {@link org.reactome.addlinks.dataretrieval.FileRetriever#fetchData()}.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@Test
 	public void testFetchData() throws Exception {
@@ -73,22 +74,22 @@ public class TestFileRetriever {
 		//retrieve google - it should be pretty easy.
 		URI uri = new URI("http://www.google.com");
 		retriever.setDataURL(uri);
-		
+
 		Mockito.when(mockResponse.getEntity()).thenReturn(entity);
 
 		Mockito.when(mockClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
-		
+
 		PowerMockito.mockStatic(HttpClients.class);
 		PowerMockito.when(HttpClients.createDefault()).thenReturn(mockClient);
-		
+
 		String dest = "/tmp/testFetchData_"+ String.valueOf((new Random()).nextInt(Integer.MAX_VALUE));
 		retriever.setFetchDestination(dest);
 		Duration age = Duration.of(5,ChronoUnit.SECONDS);
 		retriever.setMaxAge(age);
-		
+
 		retriever.fetchData();
 		assertTrue(Files.exists(Paths.get(dest)));
-		
+
 		//Sleep for two seconds, and then re-download because the file is stale
 		Thread.sleep(Duration.of(2,ChronoUnit.SECONDS).toMillis());
 		retriever.fetchData();
@@ -102,13 +103,13 @@ public class TestFileRetriever {
 		assertTrue(Files.exists(Paths.get(dest)));
 	}
 
-	
+
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
 	}
 
-	
+
 	@Test
 	public void testFetchFTPData() throws Exception
 	{
@@ -127,21 +128,21 @@ public class TestFileRetriever {
 		DataRetriever retriever = new FileRetriever();
 		PowerMockito.mockStatic(URI.class);
 		URI mockUri = PowerMockito.mock(URI.class);
-		
+
 		PowerMockito.doReturn("ftp").when(mockUri).getScheme();
 		PowerMockito.when(mockUri.getHost()).thenReturn("testhost");
 		PowerMockito.doReturn("/some/path").when(mockUri).getPath();
-		
+
 		retriever.setDataURL(mockUri);
 		String dest = "/tmp/testFetchData_"+ String.valueOf((new Random()).nextInt(Integer.MAX_VALUE));
 		retriever.setFetchDestination(dest);
 		Duration age = Duration.of(1,ChronoUnit.SECONDS);
 		retriever.setMaxAge(age);
-		
+
 		retriever.fetchData();
 		assertTrue(Files.exists(Paths.get(dest)));
 	}
-	
+
 	@Test
 	public void testFetchFTPErr() throws Exception
 	{
@@ -160,17 +161,17 @@ public class TestFileRetriever {
 		DataRetriever retriever = new FileRetriever();
 		PowerMockito.mockStatic(URI.class);
 		URI mockUri = PowerMockito.mock(URI.class);
-		
+
 		PowerMockito.doReturn("ftp").when(mockUri).getScheme();
 		PowerMockito.when(mockUri.getHost()).thenReturn("testhost");
 		PowerMockito.doReturn("/some/path").when(mockUri).getPath();
-		
+
 		retriever.setDataURL(mockUri);
 		String dest = "/tmp/testFetchData_"+ String.valueOf((new Random()).nextInt(Integer.MAX_VALUE));
 		retriever.setFetchDestination(dest);
 		Duration age = Duration.of(1,ChronoUnit.SECONDS);
 		retriever.setMaxAge(age);
-		
+
 		try
 		{
 			retriever.fetchData();
@@ -181,14 +182,14 @@ public class TestFileRetriever {
 			assertTrue(e.getMessage().contains("500 ERROR"));
 		}
 	}
-	
+
 	@Test
 	public void testHttpErr() throws ClientProtocolException, IOException, Exception
 	{
 		Mockito.when(mockClient.execute(any(HttpUriRequest.class))).thenThrow(new ClientProtocolException("MOCK Generic Error"));
 		PowerMockito.mockStatic(HttpClients.class);
 		PowerMockito.when(HttpClients.createDefault()).thenReturn(mockClient);
-		
+
 		DataRetriever retriever = new FileRetriever();
 		//retrieve google - it should be pretty easy.
 		URI uri = new URI("http://www.google.com");
@@ -209,14 +210,14 @@ public class TestFileRetriever {
 			assertTrue(e.getMessage().contains("MOCK Generic Error"));
 		}
 	}
-	
+
 	@Test
 	public void testHttpRetry() throws ClientProtocolException, IOException, Exception
 	{
 		Mockito.when(mockClient.execute(any(HttpUriRequest.class))).thenThrow(new ConnectTimeoutException("MOCK Timeout Error"));
 		PowerMockito.mockStatic(HttpClients.class);
 		PowerMockito.when(HttpClients.createDefault()).thenReturn(mockClient);
-		
+
 		DataRetriever retriever = new FileRetriever();
 		//retrieve google - it should be pretty easy.
 		URI uri = new URI("http://www.google.com");

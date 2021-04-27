@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.reactome.release.common.dataretrieval.FileRetriever;
+
 /**
  * Makes a batch of webservice calls to an endpoint to get data.
  * @author sshorser
@@ -14,7 +16,7 @@ public class BatchWebServiceDataRetriever extends FileRetriever {
 	private String name;
 	private String dataUrl;
 	private Supplier<List<String>> sourceForWSCalls;
-	
+
 	@Override
 	public void fetchData() throws Exception  {
 		String originalDest = this.destination;
@@ -28,18 +30,18 @@ public class BatchWebServiceDataRetriever extends FileRetriever {
 			this.setFetchDestination ( originalDest+"/"+this.name+"_"+id );
 			super.fetchData();
 		}
-	}	
+	}
 
 	public void setDataURL(String dataUrl)
 	{
 		this.dataUrl = dataUrl;
 	}
-	
+
 	public void setName(String name)
 	{
 		this.name = name;
 	}
-	
+
 	public void setInputSupplier(Supplier<List<String>> s)
 	{
 		this.sourceForWSCalls = s;

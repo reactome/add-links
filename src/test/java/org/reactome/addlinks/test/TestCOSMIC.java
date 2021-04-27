@@ -9,7 +9,7 @@ import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.addlinks.dataretrieval.COSMICFileRetriever;
+import org.reactome.release.common.dataretrieval.cosmic.COSMICFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.COSMICFileProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,22 +23,22 @@ public class TestCOSMIC
 
 	@Autowired
 	MySQLAdaptor dbAdapter;
-	
+
 	@Autowired
 	ReferenceObjectCache objectCache;
 
 	//@Autowired
 	//FileRetriever COSMICRetriever;
-	
+
 	@Autowired
 	COSMICFileProcessor COSMICProcessor;
-	
+
 	@Autowired
 	COSMICReferenceCreator COSMICReferenceCreator;
-	
+
 	@Autowired
 	COSMICFileRetriever COSMICFileRetriever;
-	
+
 	@Test
 	public void testCOSMICDataRetrievalIT()
 	{
@@ -52,7 +52,7 @@ public class TestCOSMIC
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testCOSMICFileProcessorIT()
 	{
@@ -60,15 +60,15 @@ public class TestCOSMIC
 		assertTrue(mapping.keySet().size() > 0);
 		System.out.println(mapping);
 	}
-	
+
 	@Test
 	public void testCOSMICReferenceCreationIT()
 	{
 		Map<String,String> mapping = this.COSMICProcessor.getIdMappingsFromFile();
 		assertTrue(mapping.keySet().size() > 0);
-		
+
 		List<GKInstance> sourceReferences = this.objectCache.getBySpecies("48887", "ReferenceGeneProduct");
-		
+
 		try
 		{
 			this.COSMICReferenceCreator.createIdentifiers(1234, mapping, sourceReferences);

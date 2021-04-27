@@ -3,11 +3,11 @@ package org.reactome.addlinks.dataretrieval.executor;
 import java.util.List;
 import java.util.Map;
 
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 public class SimpleFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 {
-	public SimpleFileRetrieverExecutor(Map<String,FileRetriever> retrievers, List<String> retrieverFilter)
+	public SimpleFileRetrieverExecutor(Map<String, FileRetriever> retrievers, List<String> retrieverFilter)
 	{
 		super(retrievers, retrieverFilter);
 	}

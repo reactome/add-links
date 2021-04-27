@@ -34,24 +34,24 @@ import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ java.net.URI.class,
 				org.apache.commons.net.ftp.FTPClient.class,
-				org.reactome.addlinks.dataretrieval.FileRetriever.class,
+				org.reactome.release.common.dataretrieval.FileRetriever.class,
 				org.apache.http.impl.client.HttpClients.class })
 public class TestUniprotFileRetriever
 {
 
 	@Test
 	public void testUniProtFileRetrieverIT() throws URISyntaxException, IOException
-	{	
+	{
 		//Some logging/debugging for monitoring the connection to the server.
 		System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
 		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-		
+
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.conn", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
-		
+
 		UniprotFileRetriever retriever = new UniprotFileRetriever();
 		retriever.setDataURL(new URI("https://www.uniprot.org/uploadlists/"));
 		FileInputStream inStream = new FileInputStream(this.getClass().getClassLoader().getResource("uniprot_ids.txt").getFile());
@@ -65,14 +65,14 @@ public class TestUniprotFileRetriever
 		retriever.setMapFromDb(mapFrom);
 		retriever.setMapToDb(mapTo);
 		retriever.downloadData();
-		
+
 		System.out.println("Contents of "+pathToFile);
 		List<String> lines = Files.readAllLines(Paths.get(pathToFile));
 		for (String line : lines)
 		{
 			System.out.println(line);
 		}
-		
+
 		System.out.println("Contents of "+pathToFile.replace(".txt", ".notMapped.txt"));
 		lines = Files.readAllLines(Paths.get(pathToFile.replace(".txt", ".notMapped.txt")));
 		for (String line : lines)
@@ -80,20 +80,20 @@ public class TestUniprotFileRetriever
 			System.out.println(line);
 		}
 	}
-	
+
 	@Test
 	public void testUniProtFileRetrieverRetryingIT() throws URISyntaxException, IOException
-	{	
+	{
 		//Some logging/debugging for monitoring the connection to the server.
 		System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
 		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-		
+
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.conn", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
-		
+
 		UniprotFileRetriever retriever = new UniprotFileRetriever();
 		retriever.setDataURL(new URI("https://www.uniprot.org/uploadlists/"));
 		FileInputStream inStream = new FileInputStream(this.getClass().getClassLoader().getResource("uniprot_ids.txt").getFile());
@@ -106,7 +106,7 @@ public class TestUniprotFileRetriever
 		retriever.setMaxAge(Duration.ofSeconds(1));
 		retriever.setMapFromDb(mapFrom);
 		retriever.setMapToDb(mapTo);
-		
+
 		// Mock the HttpEntity to return NULL the first time, to test retrying.
 		// The second time, it will succeed.
 		// When it comes to get the "not mapped" values, NULL will be returned again,
@@ -124,16 +124,16 @@ public class TestUniprotFileRetriever
 		when(httpClient.execute( any())).thenReturn(httpResponse).thenReturn(httpResponse);
 		PowerMockito.mockStatic(HttpClients.class);
 		when(HttpClients.createDefault()).thenCallRealMethod().thenReturn(httpClient);
-		
+
 		retriever.downloadData();
-		
+
 		System.out.println("Contents of "+pathToFile);
 		List<String> lines = Files.readAllLines(Paths.get(pathToFile));
 		for (String line : lines)
 		{
 			System.out.println(line);
 		}
-		
+
 		System.out.println("Contents of "+pathToFile.replace(".txt", ".notMapped.txt"));
 		lines = Files.readAllLines(Paths.get(pathToFile.replace(".txt", ".notMapped.txt")));
 		for (String line : lines)

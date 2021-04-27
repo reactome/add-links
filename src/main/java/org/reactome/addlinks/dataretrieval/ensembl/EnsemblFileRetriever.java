@@ -20,8 +20,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor;
 
 
@@ -37,7 +37,7 @@ public class EnsemblFileRetriever extends FileRetriever
 	{
 		super(retrieverName);
 	}
-	
+
 	public enum EnsemblDB
 	{
 		// For a list of reference database IDs that ENSEMBL can map to, see: http://rest.ensembl.org/info/external_dbs/homo_sapiens?content-type=text/xml
@@ -55,26 +55,26 @@ public class EnsemblFileRetriever extends FileRetriever
 		EMBL("EMBL"),
 		OMIM("MIM_GENE"),
 		//Wormbase("wormbase_id"),
-		// ENSEMBL Rest API is aware of a  number of external wormbase 
-		// databases (wormbase_id, wormbase_gene, etc...) but wormbase_gene 
+		// ENSEMBL Rest API is aware of a  number of external wormbase
+		// databases (wormbase_id, wormbase_gene, etc...) but wormbase_gene
 		// is what the old Perl code used.
-		Wormbase("wormbase_gene"), 
+		Wormbase("wormbase_gene"),
 		EntrezGene("EntrezGene"),
 		RefSeqPeptide("RefSeq_peptide"),
 		RefSeqRNA("RefSeq_mRNA"),
 		KEGG("KEGG"),
 		IntAct("IntAct"),
 		UniProt("Uniprot/SWISSPROT");
-		
+
 		private String ensemblName;
 		private static Map<String,EnsemblDB> mapToEnum;
-		
+
 		private EnsemblDB(String s)
 		{
 			this.ensemblName = s;
 			updateMap(s);
 		}
-		
+
 		private void updateMap(String s)
 		{
 			if (mapToEnum == null )
@@ -88,49 +88,49 @@ public class EnsemblFileRetriever extends FileRetriever
 		{
 			return this.ensemblName;
 		}
-		
+
 		public static EnsemblDB ensemblDBFromEnsemblName(String ensemblName)
 		{
 			return mapToEnum.get(ensemblName);
 		}
 	}
-	
+
 	public String getMapToDb()
 	{
 		return this.mapToDb;
 	}
-	
+
 	public void setMapToDbEnum(EnsemblDB mapToDb)
 	{
 		this.mapToDb = mapToDb.getEnsemblName();
 	}
-	
+
 	public void setMapToDb(String mapToDb)
 	{
 		this.mapToDb = mapToDb;
 	}
-	
+
 	public String getFetchDestination()
 	{
 		return this.destination;
 	}
-	
+
 	public void setSpecies(String s)
 	{
 		this.species = s;
 	}
-	
+
 	public void setIdentifiers(List<String> identifiers)
 	{
 		this.identifiers = identifiers;
 	}
-	
+
 	@Override
 	public void downloadData()
 	{
 		//TODO: migrate to Unirest client: https://github.com/Ensembl/ensembl-rest/wiki/Example-Java-Client-with-Unirest
-		// (I kinda wish I'd known about this sooner!) 
-		
+		// (I kinda wish I'd known about this sooner!)
+
 		if(this.mapToDb == null || this.mapToDb.trim().length() == 0)
 		{
 			throw new RuntimeException("You must provide a database name to map to!");
@@ -143,15 +143,15 @@ public class EnsemblFileRetriever extends FileRetriever
 		{
 			throw new RuntimeException("You must provide a list of identifiers to map!") ;
 		}
-		
-		
+
+
 		// Need to hit URLs that look like this:
 		// http://rest.ensembl.org/xrefs/id/ENSOCUT00000003872?content-type=text/xml&all_levels=1&species=Oryctolagus_cuniculus&external_db=RefSeq_peptide_predicted
 		// or
 		// http://rest.ensembl.org/xrefs/id/ENSOCUT00000003872?content-type=text/xml&all_levels=1&species=Oryctolagus_cuniculus&external_db=uniprot/swissprot
 		// or
 		// http://rest.ensembl.org/xrefs/id/ENSG00000175899?content-type=text/xml&all_levels=1&species=Homo_Sapiens&external_db=EntrezGene
-		// ...then, extract all primary_id attributes. Be sure to get any synonyms as well (the EntrezGene URI demonstrates this). 
+		// ...then, extract all primary_id attributes. Be sure to get any synonyms as well (the EntrezGene URI demonstrates this).
 
 		// 2017-01-05
 		// This will all need to be redone! Getting data from ENSEMBL REST API isn't as simple as I thought.
@@ -161,14 +161,14 @@ public class EnsemblFileRetriever extends FileRetriever
 		// You can test this with this curl command: `curl -H "Content-type: application/json" -H "Accept:text/xml" -X POST -d '{ "ids":["ENSGALP00000056694","ENSGALP00000056695"]}' http://rest.ensembl.org/lookup/id/?species=gallus_gallus`
 		// 2) Process the results. Extract the "Parent" value for each "id" in the resultset. This Parent is probably a Transcript ID which you can use to do another lookup (or maybe batch of lookups?)
 		// 3) Process the results again. This time, the "Parent" should be a gene ID. This can be used to query against the xref endpoint (http://rest.ensembl.org/xrefs/id/) but it does not accept POST so must do them 1 by 1!
-		
+
 		try
 		{
 			Path path = Paths.get(new URI("file://" + this.destination));
 			StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ensemblResponses>\n");
 			logger.debug("{} identifiers to look up.", identifiers.size());
 			identifiers.parallelStream().forEach( identifier ->
-			{ 
+			{
 				URIBuilder builder = new URIBuilder();
 
 				builder.setHost(this.uri.getHost())
@@ -215,14 +215,14 @@ public class EnsemblFileRetriever extends FileRetriever
 						{
 							e.printStackTrace();
 							throw new Error(e);
-							
-						} 
+
+						}
 					}
 				}
 				catch (URISyntaxException e)
 				{
 					e.printStackTrace();
-					throw new Error(e); 
+					throw new Error(e);
 				}
 				catch (ClientProtocolException e)
 				{

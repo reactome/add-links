@@ -37,6 +37,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 public class UniprotFileRetriever extends FileRetriever
 {
@@ -62,28 +63,28 @@ public class UniprotFileRetriever extends FileRetriever
 		OMIM("MIM_ID"),
 		PDB("PDB_ID"),
 		RefSeqPeptide("P_REFSEQ_AC"),
-		RefSeqRNA("REFSEQ_NT_ID"), 
+		RefSeqRNA("REFSEQ_NT_ID"),
 		ENSEMBL("ENSEMBL_ID"),
 		ENSEMBLProtein("ENSEMBL_PRO_ID"),
 		ENSEMBLGenomes("ENSEMBLGENOME_ID"),
 		ENSEMBLTranscript("ENSEMBL_TRS_ID"),
-		Ensembl("ENSEMBL_ID"), 
-		Wormbase("WORMBASE_ID"), 
+		Ensembl("ENSEMBL_ID"),
+		Wormbase("WORMBASE_ID"),
 		Entrez_Gene("P_ENTREZGENEID"),
 		GeneName("GENENAME"),
 		KEGG("KEGG_ID"),
 		UniProt("ACC+ID"),
 		UCSC("UCSC_ID");
-		
+
 		private String uniprotName;
 		private static Map<String,UniprotDB> mapToEnum;
-		
+
 		private UniprotDB(String s)
 		{
 			this.uniprotName = s;
 			updateMap(s);
 		}
-		
+
 		private void updateMap(String s)
 		{
 			if (mapToEnum == null )
@@ -92,25 +93,25 @@ public class UniprotFileRetriever extends FileRetriever
 			}
 			mapToEnum.put(s, this);
 		}
-		
+
 		public String getUniprotName()
 		{
 			return this.uniprotName;
 		}
-		
+
 		public static UniprotDB uniprotDBFromUniprotName(String uniprotName)
 		{
 			return mapToEnum.get(uniprotName);
 		}
 	}
-	
+
 	public UniprotFileRetriever() { super(); }
 
 	public UniprotFileRetriever(String retrieverName)
 	{
 		super(retrieverName);
 	}
-	
+
 	private URIBuilder uriBuilderFromDataLocation(String location) throws URISyntaxException
 	{
 		URIBuilder builder = new URIBuilder();
@@ -132,10 +133,10 @@ public class UniprotFileRetriever extends FileRetriever
 			builder.setScheme(this.uri.getScheme());
 			builder.setHost(this.uri.getHost()+"/"+schemeAndHost[0]);
 		}
-		
+
 		if (parts.length>1)
 		{
-			// If the Location header string contains query information, we need to properly reformat that before requesting it. 
+			// If the Location header string contains query information, we need to properly reformat that before requesting it.
 			String[] params = parts[1].split("&");
 			for(String s : params)
 			{
@@ -151,7 +152,7 @@ public class UniprotFileRetriever extends FileRetriever
 		}
 		return builder;
 	}
-	
+
 	/**
 	 * Attempt to GET data from UniProt.
 	 * @param get - the HttpGet object.
@@ -194,7 +195,7 @@ public class UniprotFileRetriever extends FileRetriever
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Attempt to POST to UniProt. If successful, the URL to the *actual* data will be returned.
 	 * @param post - the POST object.
@@ -210,7 +211,7 @@ public class UniprotFileRetriever extends FileRetriever
 		String mappingLocationURI = null;
 		while(!done)
 		{
-			
+
 			{
 				try (CloseableHttpClient postClient = HttpClients.createDefault();
 						CloseableHttpResponse postResponse = postClient.execute(post);)
@@ -223,7 +224,7 @@ public class UniprotFileRetriever extends FileRetriever
 						case HttpStatus.SC_GATEWAY_TIMEOUT:
 							logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
 							break;
-						
+
 						case HttpStatus.SC_OK:
 						case HttpStatus.SC_MOVED_PERMANENTLY:
 						case HttpStatus.SC_MOVED_TEMPORARILY:
@@ -269,7 +270,7 @@ public class UniprotFileRetriever extends FileRetriever
 		}
 		return mappingLocationURI;
 	}
-	
+
 	/**
 	 * Getting data from UniProt is a 3-stage process:
 	 * 1) POST a list of identifiers to UniProt. The response received contains a URL to the mapped data.
@@ -292,8 +293,8 @@ public class UniprotFileRetriever extends FileRetriever
 		{
 			throw new RuntimeException("You must provide a database name to map to!");
 		}
-		
-		
+
+
 		try
 		{
 			String location = getDataLocation();
@@ -361,7 +362,7 @@ public class UniprotFileRetriever extends FileRetriever
 					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
 					.build();
 			post.setEntity(attachment);
-			
+
 			try
 			{
 				location = this.attemptPostToUniprot(post);
@@ -388,7 +389,7 @@ public class UniprotFileRetriever extends FileRetriever
 					logger.error("Could not get the Location of the data in {} attempts.", attemptCount);
 				}
 			}
-			
+
 		}
 		return location;
 	}
@@ -406,7 +407,7 @@ public class UniprotFileRetriever extends FileRetriever
 	{
 		int numAttempts = 0;
 		boolean done = false;
-		
+
 		while (!done)
 		{
 			HttpGet get = new HttpGet( uri );
@@ -438,7 +439,7 @@ public class UniprotFileRetriever extends FileRetriever
 	}
 
 	/**
-	 * Create the URI to get data from. <code>mapped</code> is used to determine if ".not" will be in the URI, which is used to get 
+	 * Create the URI to get data from. <code>mapped</code> is used to determine if ".not" will be in the URI, which is used to get
 	 * identifiers which were not mapped.
 	 * @param location - The URL to the data, for the mapped values. UniProt will return this by default.
 	 * @param mapped - Set to true if you want the URI for mapped values. Set to false if you want values that UniProt couldn't map.
@@ -490,12 +491,12 @@ public class UniprotFileRetriever extends FileRetriever
 	{
 		return this.mapFromDb;
 	}
-	
+
 	public String getMapToDb()
 	{
 		return this.mapToDb;
 	}
-	
+
 	public void setMapFromDbEnum(UniprotDB mapFromDb)
 	{
 		this.mapFromDb = mapFromDb.getUniprotName();
@@ -505,7 +506,7 @@ public class UniprotFileRetriever extends FileRetriever
 	{
 		this.mapToDb = mapToDb.getUniprotName();
 	}
-	
+
 	public void setMapFromDb(String mapFromDb)
 	{
 		this.mapFromDb = mapFromDb;
@@ -515,12 +516,12 @@ public class UniprotFileRetriever extends FileRetriever
 	{
 		this.mapToDb = mapToDb;
 	}
-	
+
 	public void setDataInputStream(BufferedInputStream inStream)
 	{
 		this.inStream = inStream;
 	}
-	
+
 	public String getFetchDestination()
 	{
 		return this.destination;

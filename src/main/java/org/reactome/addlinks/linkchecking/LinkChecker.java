@@ -18,7 +18,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.reactome.addlinks.CustomLoggable;
+import org.reactome.release.common.CustomLoggable;
 
 public class LinkChecker implements CustomLoggable
 {

@@ -17,10 +17,10 @@ import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.schema.InvalidAttributeException;
-import org.reactome.addlinks.CustomLoggable;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever.UniprotDB;
 import org.reactome.addlinks.db.ReferenceObjectCache;
+import org.reactome.release.common.CustomLoggable;
 
 public class UniProtFileRetrieverExecutor implements CustomLoggable
 {
@@ -29,12 +29,12 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 	private List<String> fileRetrieverFilter;
 	private ReferenceObjectCache objectCache;
 	private int numberOfUniprotDownloadThreads = 10;
-	
+
 	public UniProtFileRetrieverExecutor()
 	{
 		this.logger = this.createLogger("retrievers/Uniprot", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, this.logger, "UniProtFileRetreiverExecutor");
 	}
-	
+
 	public void execute()
 	{
 		//Now download mapping data from Uniprot.
@@ -42,12 +42,12 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 		{
 			logger.info("Executing Downloader: {}", key);
 			UniprotFileRetriever retriever = this.uniprotFileRetrievers.get(key);
-			
+
 			UniprotDB toDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapToDb());
 			UniprotDB fromDb = UniprotDB.uniprotDBFromUniprotName(retriever.getMapFromDb());
 			//String toDb = retriever.getMapToDb();
 			String originalFileDestinationName = retriever.getFetchDestination();
-			
+
 			List<String> refDbIds;
 			//ENSEMBL Protein is special because the lookup DB ID is "ENSEMBL_PRO_ID", but in the Reactome database, it is "ENSEMBL_<species name>_PROTEIN".
 			if (fromDb == UniprotDB.ENSEMBLProtein)
@@ -66,11 +66,11 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 			{
 				refDbIds = Collections.unmodifiableList(objectCache.getRefDbNamesToIds().get(fromDb.toString() ));
 			}
-			
+
 			if (refDbIds != null && refDbIds.size() > 0 )
 			{
 				AtomicInteger uniprotRequestcounter = new AtomicInteger(0);
-				
+
 				logger.info("Number of Reference Database IDs to process: {}",refDbIds.size());
 				for (String refDb : refDbIds)
 				{
@@ -80,11 +80,11 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 					ForkJoinPool pool = new ForkJoinPool(numRequestedThreads);
 					int stepSize = pool.getParallelism();
 					logger.debug("Degree of parallelism in the pool: {}", stepSize);
-					
+
 					for (int i = 0; i < speciesList.size(); i+= stepSize)
 					{
 						List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
-						
+
 						//do n tasks at a time, where n is the degree of parallelism.
 						for (int j = 0; j < stepSize; j++)
 						{
@@ -93,9 +93,9 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 							{
 								String speciesId = speciesList.get(speciesIndex);
 								List<GKInstance> refGenes = objectCache.getByRefDbAndSpecies(refDb,speciesId,ReactomeJavaConstants.ReferenceGeneProduct);
-								
+
 								String speciesName = objectCache.getSpeciesNamesByID().get(speciesId).get(0);
-								
+
 								Callable<Boolean> task = new Callable<Boolean>()
 								{
 									@Override
@@ -103,7 +103,7 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 									{
 										if (refGenes != null && refGenes.size() > 0)
 										{
-											
+
 											logger.info("Number of identifiers that we will attempt to map from UniProt to {} (db_id: {}, species: {}/{} ) is: {}",toDb.toString(),refDb, speciesId, speciesName, refGenes.size());
 											String identifiersList = refGenes.stream().map(refGeneProduct -> {
 												try
@@ -120,9 +120,9 @@ public class UniProtFileRetrieverExecutor implements CustomLoggable
 													throw new RuntimeException(e1);
 												}
 											}).collect(Collectors.joining("\n"));
-											
+
 											BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(identifiersList.getBytes()));
-											// if we want to execute multiple retrievers in parallel, we need to create a 
+											// if we want to execute multiple retrievers in parallel, we need to create a
 											// NEW retriever and pass in the relevant values from the retriever that came from the original Uniprot file retriever
 											// defined in the spring config file.
 											UniprotFileRetriever innerRetriever = new UniprotFileRetriever(retriever.getRetrieverName());

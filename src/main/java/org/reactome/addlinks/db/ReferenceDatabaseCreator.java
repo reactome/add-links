@@ -15,11 +15,9 @@ import org.gk.model.GKInstance;
 import org.gk.model.InstanceDisplayNameGenerator;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.schema.InvalidAttributeException;
-import org.gk.schema.InvalidAttributeValueException;
 import org.gk.schema.SchemaAttribute;
 import org.gk.schema.SchemaClass;
-import org.reactome.addlinks.CustomLoggable;
+import org.reactome.release.common.CustomLoggable;
 import org.reactome.release.common.database.InstanceEditUtils;
 
 /**
@@ -32,7 +30,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 	private MySQLAdaptor adapter;
 	private static Logger logger ;
 	private long personID;
-	
+
 	/**
 	 * Creates a new ReferenceDatabase creator which uses a specified database adaptor
 	 * and a specified Person ID which will be used in InstanceEdits when objects are updated/created.
@@ -48,10 +46,10 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			ReferenceDatabaseCreator.logger = this.createLogger("ReferenceDatabaseCreator", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
 		}
 	}
-	
+
 	/**
 	 * Creates a reference database with a primary name and some (optional) aliases.
-	 * This will not create a reference database if an existing reference database has the same primaryName. 
+	 * This will not create a reference database if an existing reference database has the same primaryName.
 	 * @param url - The URL of the ReferenceDatabase.
 	 * @param accessUrl - The access URL of the ReferenceDatabase (cannot be null or IllegalArgumentException will be thrown).
 	 * @param primaryName - The primary name for this reference database (will have name_rank==0)
@@ -104,7 +102,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					// should be the first thing in the list, if there's anything at all.
 					@SuppressWarnings("unchecked")
 					List<String> names = (List<String>) refDBInst.getAttributeValuesList(ReactomeJavaConstants.name);
-					
+
 					// if primaryName is not already in use...
 					if ( (names==null || names.size() == 0) || (!names.get(0).equals(primaryName)) )
 					{
@@ -114,14 +112,14 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					{
 						logger.warn("The primaryName {} appears to already be in use by {}", primaryName, refDBInst);
 						// If the ReferenceDatabase already exists, it's possible that the accessURLs don't match and will need an update, do that here...
-						
+
 						String accessUrlInDB = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
 						// Uh-oh! we will need to update the object in the database.
 						if (!accessUrl.equals(accessUrlInDB))
 						{
 							this.updateRefDBAccessURL(refDBInst, accessUrl);
 						}
-						
+
 						dbid = refDBInst.getDBID();
 					}
 				}
@@ -130,7 +128,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			{
 				dbid = createRefDBWithAliases(url, accessUrl, primaryName, refDBClass, aliases);
 			}
-			
+
 		}
 		catch (Exception e)
 		{
@@ -143,7 +141,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 
 	/**
 	 * Creates a ReferenceDatabase with a name and some alias-names.
-	 * @param url - The URL for the ReferenceDatabase. 
+	 * @param url - The URL for the ReferenceDatabase.
 	 * @param accessUrl - The URL that will be used to actually access data. Should contain ###ID### which will be used when other parts of Reactome need to insert the ID of the thing being accessed at this URL.
 	 * @param primaryName - The primary name for this Reference database.
 	 * @param refDBClass - The SchemaClass for the object that will be created.
@@ -167,7 +165,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		logger.info("New ReferenceDatabase has been created: {}", newReferenceDB);
 		return refDBID;
 	}
-	
+
 	/**
 	 * Creates a ReferenceDatabase. If the ReferenceDatabase already exists, it will not be created.
 	 * @param url - The URL of the ReferenceDatabase.
@@ -188,14 +186,14 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		try
 		{
 			SchemaAttribute dbNameAttrib = refDBClass.getAttribute(ReactomeJavaConstants.name);
-			
+
 			List<String> namesNotYetInDB = new ArrayList<>(names.length);
 			List<GKInstance> instancesInDB = new ArrayList<>();
 			for (String name : names)
 			{
 				@SuppressWarnings("unchecked")
 				Collection<GKInstance> preexistingReferenceDBs = (Collection<GKInstance>) adapter.fetchInstanceByAttribute(ReactomeJavaConstants.ReferenceDatabase, ReactomeJavaConstants.name, "=", name);
-				
+
 				// Add to the list if the name is not yet in the database.
 				if (preexistingReferenceDBs.size() == 0  )
 				{
@@ -208,8 +206,8 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					instancesInDB.addAll(preexistingReferenceDBs);
 				}
 			}
-			
-			//No RefDatabases that match any of the given names exist, so we're creating the Reference Database with all names now. 
+
+			//No RefDatabases that match any of the given names exist, so we're creating the Reference Database with all names now.
 			if (instancesInDB.size() == 0)
 			{
 				GKInstance newReferenceDB = new GKInstance(refDBClass);
@@ -221,7 +219,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 				refDBID = storeNewReferenceDatabaseObject(url, accessUrl, newReferenceDB);
 				logger.info("New ReferenceDatabase has been created: {}", newReferenceDB);
 			}
-			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names. 
+			//Othwerwise, some ReferenceDatabase object(s) already exist with some of the names given here. So, we need to update it with the new names.
 			else
 			{
 				GKInstance updateRefDBInstanceEdit = InstanceEditUtils.createInstanceEdit(this.adapter, this.personID, "Updating ReferenceDatabase object from "+this.getClass().getName());
@@ -231,7 +229,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 					Set<String> preexistingNames = new HashSet<>(preexistingRefDB.getAttributeValuesList(dbNameAttrib));
 					// the names to add: everything that is in the input parameter "names" but not in "preexistingNames"
 					List<String> namesToAdd = (Arrays.asList(names)).stream().filter(p -> !preexistingNames.contains(p)).collect(Collectors.toList());
-					
+
 					for (String name : namesToAdd)
 					{
 						logger.info("Adding the name {} to the existing ReferenceDatabase {}",name,preexistingRefDB + "( " + preexistingRefDB.getAttributeValuesList(ReactomeJavaConstants.name).toString() + " )");
@@ -257,7 +255,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 
 	/**
 	 * Populates a new ReferenceDatabase GKInstance, and then stores it in the database.
-	 * This will also create a new InstanceEdit and put it into the "created" attribute of the 
+	 * This will also create a new InstanceEdit and put it into the "created" attribute of the
 	 * ReferenceDatabase object.
 	 * @param url
 	 * @param accessUrl
@@ -280,9 +278,9 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 		refDBID = this.adapter.storeInstance(newReferenceDB);
 		return refDBID;
 	}
-	
+
 	/**
-	 * Updates the accessUrl of a ReferenceDatabase. There is the <em>potential</em> to update more than one object, if multiple ReferenceDatabases have the same primary name, 
+	 * Updates the accessUrl of a ReferenceDatabase. There is the <em>potential</em> to update more than one object, if multiple ReferenceDatabases have the same primary name,
 	 * but if they all have the same primary name, updating them all is probably desirable. If you would rather update exactly one ReferenceDatabase, fetch it from the database and
 	 * then pass it to {@link ReferenceDatabaseCreator#updateRefDBAccessURL(GKInstance, String)}
 	 * @param name - the name of the ReferenceDatabase. This will be used to look up the ReferenceDatabase. If more than one ReferenceDatabase has this name, they will ALL be updated.
@@ -304,7 +302,7 @@ public class ReferenceDatabaseCreator implements CustomLoggable
 			this.updateRefDBAccessURL(refDB, newAccessUrl);
 		}
 	}
-	
+
 	/**
 	 * Updates a SINGLE ReferenceDatabase object.
 	 * @param refDB - The ReferenceDatabase object to update.
