@@ -19,7 +19,7 @@
 	</bean>
 
 	<util:map id="fileRetrievers"
-		value-type="org.reactome.addlinks.dataretrieval.FileRetriever"
+		value-type="org.reactome.release.common.dataretrieval.FileRetriever"
 		key-type="java.lang.String">
 		<entry key="OrphanetToUniprotReferenceDNASequence">
 			<bean id="OrphanetToUniprotReferenceDNASequence"
@@ -34,7 +34,7 @@
 		</entry>
 
 		<entry key="PROToReferencePeptideSequence">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
 				<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -44,7 +44,7 @@
 		</entry>
 
 		<entry key="ComplexPortal">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortal">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="ComplexPortal">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/9606.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_9606_homo_sapiens.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -54,7 +54,7 @@
 		</entry>
 
 		<entry key="ComplexPortalSARS">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortalSARS">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="ComplexPortalSARS">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/694009.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_694009_sars.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -64,7 +64,7 @@
 		</entry>
 
 		<entry key="ComplexPortalSARSCOV2">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ComplexPortalSARSCOV2">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="ComplexPortalSARSCOV2">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/2697049.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/complexportal_2697049_sars_cov_2.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -86,7 +86,7 @@
 		</entry> -->
 
 		<entry key="FlyBaseToUniprotReferenceDNASequence">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="FlyBaseToUniprotReferenceDNASequence">
 				<constructor-arg index="0" name="retrieverName" value="retrievers/FlyBaseToUniprotReferenceDNASequence"/>
 				<!--
 				The Jenkinsfile that runs AddLinks will replace the YYYY_MM with a value that is supplied by the user.
@@ -103,7 +103,7 @@
 		</entry>
 
 		<entry key="HmdbMolecules">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbMolecules">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="HmdbMolecules">
 				<property name="dataURL" value="https://hmdb.ca/system/downloads/current/hmdb_metabolites.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_metabolites.zip" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -112,7 +112,7 @@
 		</entry>
 
 		<entry key="HmdbProteins">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HmdbProteins">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="HmdbProteins">
 				<property name="dataURL" value="https://hmdb.ca/system/downloads/current/hmdb_proteins.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hmdb_proteins.zip" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -121,7 +121,7 @@
 		</entry>
 
 		<entry key="OrthologsFromZinc">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsFromZinc">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OrthologsFromZinc">
 				<property name="dataURL" value="http://zinc15.docking.org/orthologs.txt:uniprot?count=all" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -130,7 +130,7 @@
 		</entry>
 
 		<entry key="OrthologsCSVFromZinc">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OrthologsCSVFromZinc">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OrthologsCSVFromZinc">
 				<property name="dataURL" value="http://zinc15.docking.org/orthologs.csv?count=all" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/zinc_uniprot_ortholog.csv" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -139,7 +139,7 @@
 		</entry>
 
 		<entry key="Zinc">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="Zinc">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="Zinc">
 				<property name="dataURL" value="http://files.docking.org/catalogs/1/chebi/chebi.info.txt.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi.info.txt.gz" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -159,7 +159,7 @@
 		</entry>
 
 		<entry key="RheaRetriever">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RheaRetriever">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RheaRetriever">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
@@ -169,7 +169,7 @@
 		</entry>
 
 		<entry key="HGNC">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HGNC">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="HGNC">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/hgnc_complete_set.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -179,7 +179,7 @@
 		</entry>
 
 		<entry key="COSMIC">
-			<bean class="org.reactome.addlinks.dataretrieval.COSMICFileRetriever" id="COSMIC">
+			<bean class="org.reactome.release.common.dataretrieval.cosmic.COSMICFileRetriever" id="COSMIC">
 				<property name="userName" value="${cosmic.user}"/>
 				<property name="password" value="${cosmic.password}"/>
 				<property name="dataURL" value="https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v92/CosmicMutantExport.tsv.gz" />
@@ -191,7 +191,7 @@
 
 		<!-- The OMIM file is not used directly for mappings, but it used to filter out non-gene OMIM IDs. -->
 		<entry key="OMIM">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OMIM">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OMIM">
 				<property name="dataURL" value="https://omim.org/static/omim/data/mim2gene.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/mim2gene.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -200,7 +200,7 @@
 		</entry>
 		<!-- The CTD file is not used directly for mappings, but it used to filter out NCBI Gene IDs that are not in CTD when creating CTD cross-references -->
 		<entry key="CTD">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="CTD">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="CTD">
 				<property name="dataURL" value="http://ctdbase.org/reports/CTD_chem_gene_ixns.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/CTD_chem_gene_ixns.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -209,7 +209,7 @@
 		</entry>
 
 		<entry key="OpenTargets">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="OpenTargets">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OpenTargets">
 				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/20.09/output/20.09_target_list.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/open_target_list.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -218,7 +218,7 @@
 		</entry>
 
 		<entry key="IntEnz">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IntEnz">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="IntEnz">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
 				<property name="maxAge"  ref="maxFileAge"/>
@@ -228,7 +228,7 @@
 		</entry>
 
 		<entry key="TargetPathogen">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="TargetPathogen">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="TargetPathogen">
 				<property name="dataURL" value="https://target.sbg.qb.fcen.uba.ar/patho/reactome_map" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/target_pathogen_reactome_map.txt" />
 				<property name="maxAge" ref="maxFileAge"/>
@@ -237,7 +237,7 @@
 		</entry>
 
 		<entry key="HPA">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="HPA">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="HPA">
 				<property name="dataURL" value="https://www.proteinatlas.org/download/proteinatlas.tsv.zip" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/proteinatlas.tsv.zip" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -246,7 +246,7 @@
 		</entry>
 
 		<entry key="VGNC">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="VGNC">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="VGNC">
 				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/genenames/vgnc/tsv/vgnc_gene_set_All.txt.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/vgnc_gene_set_All.txt.gz" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -256,7 +256,7 @@
 		</entry>
 
 		<entry key="MGI">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="MGI">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="MGI">
 				<property name="dataURL" value="http://www.informatics.jax.org/downloads/reports/MRK_SwissProt_TrEMBL.rpt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/MGI_MRK_SwissProt_TrEMBL.rpt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -265,7 +265,7 @@
 		</entry>
 
 		<entry key="RGD">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="RGD">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RGD">
 				<property name="dataURL" value="ftp://ftp.rgd.mcw.edu/pub/data_release/GENES_RAT.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/GENES_RAT.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -275,7 +275,7 @@
 		</entry>
 
 		<entry key="Xenbase">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="Xenbase">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="Xenbase">
 				<property name="dataURL" value="ftp://ftp.xenbase.org/pub/DataExchange/Uniprot/XenbaseGeneUniprotMapping.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/XenbaseGeneUniprotMapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -285,7 +285,7 @@
 		</entry>
 
 		<entry key="ZFIN">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="ZFIN">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="ZFIN">
 				<property name="dataURL" value="https://zfin.org/downloads/uniprot-zfinpub.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-zfinpub.txt" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -304,7 +304,7 @@
 
 		<!-- NOTE: The files retrieved from PharmacoDB and IUPHAR are *both* required to create references for PharmacoDB -->
 		<entry key="PharmacoDB">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="PharmacoDB">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PharmacoDB">
 				<property name="dataURL" value="https://raw.githubusercontent.com/BHKLAB-Pachyderm/Annotations/master/drugs_with_ids.csv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharmacodb_drugs_with_ids.csv" />
 				<property name="maxAge" ref="maxFileAge" />
@@ -312,7 +312,7 @@
 			</bean>
 		</entry>
 		<entry key="IUPHAR">
-			<bean class="org.reactome.addlinks.dataretrieval.FileRetriever" id="IUPHAR">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="IUPHAR">
 				<property name="dataURL" value="https://www.guidetopharmacology.org/DATA/ligands.csv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/iuphar-ligands.csv" />
 				<property name="maxAge" ref="maxFileAge" />
