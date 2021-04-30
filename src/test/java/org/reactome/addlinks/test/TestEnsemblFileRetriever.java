@@ -17,7 +17,7 @@ import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever.EnsemblD
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ java.net.URI.class,
 				org.apache.commons.net.ftp.FTPClient.class,
-				org.reactome.addlinks.dataretrieval.FileRetriever.class,
+				org.reactome.release.common.dataretrieval.FileRetriever.class,
 				org.apache.http.impl.client.HttpClients.class })
 public class TestEnsemblFileRetriever
 {
@@ -29,12 +29,12 @@ public class TestEnsemblFileRetriever
 		System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
 		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-		
+
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.conn", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
-		
+
 		EnsemblFileRetriever retriever = new EnsemblFileRetriever();
 		retriever.setDataURL(new URI("http://rest.ensembl.org/xrefs/id/"));
 		String mapTo = EnsemblDB.EntrezGene.getEnsemblName();

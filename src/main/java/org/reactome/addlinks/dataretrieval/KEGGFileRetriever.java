@@ -20,6 +20,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 /**
  * Retrieves data from http://rest.kegg.jp/get/hsa:$kegg_gene_id
@@ -35,26 +36,26 @@ public class KEGGFileRetriever extends FileRetriever
 	// (if not available, use the first NAME value from the KEGG Name field, if not available, use the hsa:####).
 	// 4) Extract other xrefs from KEGG entry? Ask Robin. Answer: No.
 	// 5) KEGG for non-humans? ask Robin. Answer: Yes.
-	
+
 	private static final int sleepIncrSeconds = 5;
 	private MySQLAdaptor adapter;
-	
+
 	//private static final Logger logger = LogManager.getLogger();
 
 	// We need to have the lists of uniprot-to-kegg mappings before we attempt to get the KEGG entries.
 	// This file will have the KEGG identifiers that we will look up.
 	private List<Path> uniprotToKEGGFiles;
-	
+
 	public KEGGFileRetriever()
 	{
 		super(null);
 	}
-	
+
 	public KEGGFileRetriever(String retrieverName)
 	{
 		super(retrieverName);
 	}
-	
+
 	@Override
 	protected void downloadData() throws Exception
 	{
@@ -67,19 +68,19 @@ public class KEGGFileRetriever extends FileRetriever
 			String[] parts = uniprot2kegg.getFileName().toString().split("\\.");
 			String speciesCode = parts[1];
 			this.logger.debug("Species code: {}", speciesCode);
-			//ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter); 
+			//ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter);
 			//String speciesName = cache.getSpeciesMappings().get(speciesCode).get(0);
 			// Get the KEGG species code:
 			//String keggSpeciesCode = KEGGSpeciesCache.getKEGGCode(speciesName);
-			
+
 			// The file has two columns: left is UniProt ID, right is KEGG ID.
-			// We want all the KEGG IDs, collected into a list. 
+			// We want all the KEGG IDs, collected into a list.
 			List<String> keggIdentifiers = Files.lines(uniprot2kegg)
 												.filter(p -> !p.startsWith("From") && !p.trim().equals(""))
 												.map( line -> Arrays.asList(line.split("\t")).get(1) )
 												.collect(Collectors.toList());
 			Path path = Paths.get(new URI("file://" + this.destination));
-			// Delete any old files (if they weren't cleaned up before) - they could be incomplete 
+			// Delete any old files (if they weren't cleaned up before) - they could be incomplete
 			// files if a previous KEGG File Retriever was interrupted, so let's just get rid of them
 			// and start fresh.
 			try
@@ -125,19 +126,19 @@ public class KEGGFileRetriever extends FileRetriever
 							.setScheme(this.uri.getScheme());
 					HttpGet get = new HttpGet(builder.build());
 					this.logger.trace("URI: "+get.getURI());
-					
+
 					try (CloseableHttpClient getClient = HttpClients.createDefault();
 							CloseableHttpResponse getResponse = getClient.execute(get);)
 					{
 						attemptCount++;
 						switch (getResponse.getStatusLine().getStatusCode())
 						{
-						
+
 							case HttpStatus.SC_OK:
 								// Write the response to a file. Because we can only do 10 at a time, we need to constantly APPEND to the file.
 								// File creation should have been performed earlier, outside the loop.
 								String responseEntityString = EntityUtils.toString(getResponse.getEntity());
-								
+
 								Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
 								if (!Files.isReadable(path))
 								{
@@ -180,7 +181,7 @@ public class KEGGFileRetriever extends FileRetriever
 								this.logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), get.getURI());
 								done = true;
 								break;
-								// From KEGG response: use DEFINITION as name, 
+								// From KEGG response: use DEFINITION as name,
 								// For Identifier: use the KEGG name if available, otherwise use the KEGG ID.
 								// Actually, maybe ALWAYS include the "hsa:####" as an extra ReferenceEntity name.
 						}
@@ -194,7 +195,7 @@ public class KEGGFileRetriever extends FileRetriever
 
 		}
 	}
-	
+
 	public List<Path> getUniprotToKEGGFiles()
 	{
 		return this.uniprotToKEGGFiles;

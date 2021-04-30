@@ -181,7 +181,7 @@
 			-->
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
-			<version>1.2.0</version>
+			<version>1.2.2</version>
 			<!-- I tried to exclude jnlp but it doesn't work because jnlp is
 			a dependency of reactome-base, not release-common-lib. -->
 <!-- 			<exclusions>

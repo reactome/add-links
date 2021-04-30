@@ -24,18 +24,18 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
-	
+
 	@Override
 	public void createIdentifiers(long personID, Map<String,List<String>> mappings, List<GKInstance> sourceReferences) throws IOException
 	{
 		ReferenceObjectCache cache = new ReferenceObjectCache(this.adapter, true);
-		
+
 		AtomicInteger createdCounter = new AtomicInteger(0);
 		AtomicInteger notCreatedCounter = new AtomicInteger(0);
 		AtomicInteger xrefAlreadyExistsCounter = new AtomicInteger(0);
 		AtomicInteger referencingReactome = new AtomicInteger(0);
 		AtomicInteger referencingUniprot = new AtomicInteger(0);
-		
+
 		for (String complexPortalID : mappings.keySet())
 		{
 			try
@@ -83,7 +83,7 @@ public class ComplexPortalReferenceCreator extends SimpleReferenceCreator<List<S
 				+ "\t# Identifiers created: {}; {} for Reactome identifiers, {} for Uniprot identifiers\n"
 				+ "\t# Identifiers which already existed: {} \n"
 				+ "\t# Identifiers that were not created: {}",
-				this.targetRefDB, 
+				this.targetRefDB,
 				createdCounter.get(), referencingReactome.get(), referencingUniprot.get(), xrefAlreadyExistsCounter.get(), notCreatedCounter.get());
 	}
 }

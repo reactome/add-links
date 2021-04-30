@@ -29,7 +29,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
@@ -59,6 +59,7 @@ import org.reactome.addlinks.referencecreators.OneToOneReferenceCreator;
 import org.reactome.addlinks.referencecreators.RHEAReferenceCreator;
 import org.reactome.addlinks.referencecreators.TargetPathogenReferenceCreator;
 import org.reactome.addlinks.referencecreators.UPMappedIdentifiersReferenceCreator;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 
 public class AddLinks
@@ -87,7 +88,7 @@ public class AddLinks
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
 
 	private Map<String, FileProcessor<?>> fileProcessors;
-	private Map<String,FileRetriever> fileRetrievers;
+	private Map<String, FileRetriever> fileRetrievers;
 	private Map<String, Map<String, ?>> referenceDatabasesToCreate;
 	private Map<String, Object> processorCreatorLink;
 
@@ -227,7 +228,7 @@ public class AddLinks
 				Optional<String> longerName = ((List<String>)refDBInst.getAttributeValuesList(ReactomeJavaConstants.name)).stream()
 																		.filter(name -> name.length() > ENSEMBL.length())
 																		.sorted().findFirst();
-				
+
 				reportLine.append(longerName.orElse(ENSEMBL)).append("\t");
 			}
 			catch (InvalidAttributeException e)

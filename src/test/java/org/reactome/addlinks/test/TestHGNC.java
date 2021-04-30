@@ -9,7 +9,7 @@ import org.gk.model.GKInstance;
 import org.gk.persistence.MySQLAdaptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.HGNCFileProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +23,19 @@ public class TestHGNC
 
 	@Autowired
 	MySQLAdaptor dbAdapter;
-	
+
 	@Autowired
 	ReferenceObjectCache objectCache;
-	
+
 	@Autowired
 	FileRetriever HGNCRetriever;
-	
+
 	@Autowired
 	HGNCFileProcessor HGNCProcessor;
-	
+
 	@Autowired
 	HGNCReferenceCreator HGNCReferenceCreator;
-	
+
 	@Test
 	public void testHGNCDownload() throws Exception
 	{
@@ -67,10 +67,10 @@ public class TestHGNC
 			identifiers = objectCache.getByRefDb(refDBID, className);
 			System.out.println(refDb + " " + refDBID + " ; " );
 		}
-		
+
 		return identifiers;
 	}
-	
+
 	@Test
 	public void testHGNCReferenceCreation() throws Exception
 	{
@@ -79,7 +79,7 @@ public class TestHGNC
 		Map<String, List<String>> mappings = this.HGNCProcessor.getIdMappingsFromFile();
 		assertNotNull(mappings);
 		assertTrue(mappings.keySet().size() > 0);
-		
+
 		List<GKInstance> sourceIdentifiers = getIdentifiersList("UniProt", "Homo sapiens", "ReferenceGeneProduct");
 		System.out.println("db id: "+ objectCache.getRefDbNamesToIds().get("UniProt").get(0));
 		assertTrue(sourceIdentifiers.size() > 0);

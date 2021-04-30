@@ -1,13 +1,14 @@
 package org.reactome.addlinks.fileprocessors;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
@@ -15,23 +16,24 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.reactome.addlinks.CustomLoggable;
+import org.reactome.release.common.CustomLoggable;
+
 
 public abstract class FileProcessor<T> implements CustomLoggable
 {
 	protected Logger logger;// = LogManager.getLogger();
-	
+
 	protected Path pathToFile;
-	
+
 	protected String processorName;
-	
+
 	public FileProcessor(){}
-	
+
 	public void setProcessorName(String processorName)
 	{
 		this.processorName = processorName;
 	}
-	
+
 	/**
 	 * Sets the path to the file that will be processed.
 	 * @param p
@@ -40,7 +42,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 	{
 		this.pathToFile = p;
 	}
-	
+
 	public FileProcessor(String processorName)
 	{
 		this.setProcessorName(processorName);
@@ -51,14 +53,14 @@ public abstract class FileProcessor<T> implements CustomLoggable
 		}
 		this.logger = this.createLogger( logName , "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG, this.logger, "File Processor");
 	}
-	
+
 	/**
 	 * Returns a mapping based on what is in the file.
 	 * This assumes that the file contains a mapping, and in this context, it probably does.
 	 * @return
 	 */
 	public abstract Map<String, T> getIdMappingsFromFile();
-	
+
 	/**
 	 * Unzips a file.
 	 * @param pathToZipfile - the Path to the file to unzip.
@@ -76,7 +78,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 
 		String extension = pathToZipfile.toString().substring(pathToZipfile.toString().lastIndexOf(".")).toLowerCase();
 		String outFileName = pathToZipfile.toString().replace(extension, "");
-		
+
 		logger.debug("unzipping as {}",extension);
 		if (!extension.equals(".gz") && !(extension.equals(".zip")))
 		{
@@ -91,7 +93,7 @@ public abstract class FileProcessor<T> implements CustomLoggable
 										: new ZipInputStream(new FileInputStream(pathToZipfile.toFile()));
 			)
 		{
-			//This Consumer will write a zip stream to a file. 
+			//This Consumer will write a zip stream to a file.
 			BiConsumer<InflaterInputStream,String> dataWriter = (inStream,outputFileName) ->
 			{
 				byte[] buffer = new byte[1024];
@@ -148,15 +150,15 @@ public abstract class FileProcessor<T> implements CustomLoggable
 		//TODO: Re-write to return a list of the full paths of all unzipped files, instead of just the directory where they were unzipped to.
 		return fileName;
 	}
-	
-	
+
+
 	/**
 	 * Unzips a file.
 	 * @param pathToZipfile - The path to the file.
 	 * @return The directory where the files are unzipped.
 	 * @throws Exception
 	 */
-	protected String unzipFile(Path pathToZipfile) throws Exception 
+	protected String unzipFile(Path pathToZipfile) throws Exception
 	{
 		return this.unzipFile(pathToZipfile, false);
 	}

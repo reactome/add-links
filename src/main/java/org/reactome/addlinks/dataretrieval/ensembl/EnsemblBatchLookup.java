@@ -14,8 +14,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor;
 
 public class EnsemblBatchLookup  extends FileRetriever
@@ -27,24 +27,24 @@ public class EnsemblBatchLookup  extends FileRetriever
 	{
 		return this.destination;
 	}
-	
+
 	public void setSpecies(String s)
 	{
 		this.species = s;
 	}
-	
+
 	public void setIdentifiers(List<String> identifiers)
 	{
 		this.identifiers = identifiers;
 	}
-	
+
 	public EnsemblBatchLookup() { }
-	
+
 	public EnsemblBatchLookup(String retrieverName)
 	{
 		super(retrieverName);
 	}
-	
+
 	/**
 	 * Does a batch lookup by POSTing to http://rest.ensembl.org/lookup/id?${SPECIES}
 	 * @param identifiers - a list of ENSEMBL identifiers to look up.
@@ -81,7 +81,7 @@ public class EnsemblBatchLookup  extends FileRetriever
 			// See: ensembl-lookup-simplifier.xsl for actual implementation.
 			StringBuilder resultBuilder = new StringBuilder();
 			resultBuilder.append("<results>");
-			
+
 			boolean done = false;
 			int index = 0;
 			// Loop on groups of 1000 identifiers because their service limits to 1000 per request.
@@ -97,24 +97,24 @@ public class EnsemblBatchLookup  extends FileRetriever
 				index += i;
 				// Remove trailing "," and add the "]" to complete the JSON array.
 				String identifiersList = (sb.toString().substring(0, sb.toString().length() - 1)) + "]";
-	
-	
+
+
 				HttpPost post = new HttpPost(this.getDataURL().toString()+"?species="+species);
-				
+
 				HttpEntity attachment = EntityBuilder.create()
 										.setBinary(("{ \"ids\":"+identifiersList + " }").getBytes())
 										.setContentType(ContentType.APPLICATION_JSON)
 										.build();
 				post.setEntity(attachment);
 				post.addHeader("Accept","text/xml");
-				
+
 				try
 				{
 					boolean requestDone = false;
 					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor(this.logger);
 					while (!requestDone)
 					{
-						
+
 						logger.debug("Submitting batch request - {}", index);
 						try (CloseableHttpClient postClient = HttpClients.createDefault();
 								CloseableHttpResponse postResponse = postClient.execute(post);)
@@ -130,14 +130,14 @@ public class EnsemblBatchLookup  extends FileRetriever
 							{
 								if (result.getStatus() == HttpStatus.SC_OK)
 								{
-								
+
 									String responseString = result.getResult();
 									resultBuilder.append(responseString);
 									requestDone = true;
 								}
 								else if (result.isOkToRetry())
 								{
-									// The only case where isOkToRetry is true is when the rate limit was exceeded or when the endpoint timed out. 
+									// The only case where isOkToRetry is true is when the rate limit was exceeded or when the endpoint timed out.
 									// So, setting requestDone to !isOkToRetry should terminate the request-loop.
 									requestDone = false;
 								}
@@ -159,7 +159,7 @@ public class EnsemblBatchLookup  extends FileRetriever
 					// Throw a new error, this is probably not recoverable.
 					throw new Error(e);
 				}
-				
+
 				if (index >= this.identifiers.size())
 				{
 					done = true;
@@ -174,9 +174,9 @@ public class EnsemblBatchLookup  extends FileRetriever
 			logger.info("Empty/null identifiers list was given for species {}; no lookup request was sent.", species);
 			return "";
 		}
-		
+
 	}
-	
+
 	@Override
 	public void downloadData()
 	{

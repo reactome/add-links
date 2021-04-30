@@ -10,7 +10,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.FlyBaseFileProcessor;
 import org.reactome.addlinks.fileprocessors.OrphanetFileProcessor;
@@ -34,64 +34,64 @@ public class TestSimpleReferenceCreator
 {
 	@Autowired
 	FileRetriever FlyBaseToUniprotReferenceDNASequence;
-	
+
 	@Autowired
-	FlyBaseFileProcessor flyBaseFileProcessor; 
-	
+	FlyBaseFileProcessor flyBaseFileProcessor;
+
 	@Autowired
 	SimpleReferenceCreator<String> FlyBaseReferenceCreator;
-	
+
 	@Autowired
 	ReferenceObjectCache objectCache;
-	
+
 	@Autowired
 	FileRetriever OrphanetToUniprotReferenceDNASequence;
-	
+
 	@Autowired
-	OrphanetFileProcessor orphanetFileProcessor; 
-	
+	OrphanetFileProcessor orphanetFileProcessor;
+
 	@Autowired
 	SimpleReferenceCreator<String> OrphanetReferenceCreator;
 
 	@Autowired
 	FileRetriever PROToReferencePeptideSequence;
-	
+
 	@Autowired
-	PROFileProcessor proFileProcessor; 
-	
+	PROFileProcessor proFileProcessor;
+
 	@Autowired
 	SimpleReferenceCreator<String> proRefCreator;
-	
+
 	@Autowired
 	OneToOneReferenceCreator geneCardsRefCreator;
-	
+
 	@Autowired
 	FileRetriever ZincFileRetriever;
-	
+
 	@Autowired
 	ZincMoleculesFileProcessor zincMolFileProcessor;
-	
+
 	@Autowired
 	@Qualifier("zincToChEBIReferenceCreator")
 	SimpleReferenceCreator<List<String>> zincToChEBIReferenceCreator;
-	
+
 	@Autowired
 	FileRetriever OrthologsFromZinc;
-	
+
 	@Autowired
 	ZincProteinsFileProcessor zincProtFileProcessor;
-	
+
 	@Autowired
 	SimpleReferenceCreator<String> zincToUniProtReferenceCreator;
-	
-	
+
+
 	@Test
 	public void testFlyBaseReferenceCreator() throws Exception
 	{
 		FlyBaseToUniprotReferenceDNASequence.fetchData();
-		
+
 		Map<String, String> uniprotToFlyBaseMap = flyBaseFileProcessor.getIdMappingsFromFile();
-		
+
 		assertNotNull(uniprotToFlyBaseMap);
 		assertTrue(uniprotToFlyBaseMap.size() > 0);
 		//ReferenceObjectCache.setAdapter(adapter);
@@ -100,14 +100,14 @@ public class TestSimpleReferenceCreator
 		FlyBaseReferenceCreator.createIdentifiers(123456, uniprotToFlyBaseMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	}
-	
+
 	@Test
 	public void testOrphanetReferenceCreator() throws Exception
 	{
 		OrphanetToUniprotReferenceDNASequence.fetchData();
-		
+
 		Map<String, String> uniprotToOrphanetMap = orphanetFileProcessor.getIdMappingsFromFile();
-		
+
 		assertNotNull(uniprotToOrphanetMap);
 		assertTrue(uniprotToOrphanetMap.size() > 0);
 		//ReferenceObjectCache.setAdapter(adapter);
@@ -121,9 +121,9 @@ public class TestSimpleReferenceCreator
 	public void testPROReferenceCreator() throws Exception
 	{
 		PROToReferencePeptideSequence.fetchData();
-		
+
 		Map<String, String> uniprotToProMap = proFileProcessor.getIdMappingsFromFile();
-		
+
 		assertNotNull(uniprotToProMap);
 		assertTrue(uniprotToProMap.size() > 0);
 		//ReferenceObjectCache.setAdapter(adapter);
@@ -132,7 +132,7 @@ public class TestSimpleReferenceCreator
 		proRefCreator.createIdentifiers(123456, uniprotToProMap, uniprotReferences);
 		//TODO: Assert the creation worked. Maybe do this by intercepting the actual call with a mock class...
 	}
-	
+
 	@Test
 	public void testGeneCardsReferenceCreator() throws Exception
 	{
@@ -140,7 +140,7 @@ public class TestSimpleReferenceCreator
 		assertTrue(uniprotReferences.size() > 0);
 		geneCardsRefCreator.createIdentifiers(123456, uniprotReferences);
 	}
-	
+
 	@Test
 	public void testZincMoleculeReferenceCreator() throws Exception
 	{
@@ -152,7 +152,7 @@ public class TestSimpleReferenceCreator
 		Map<String,List<String>> mappings = zincMolFileProcessor.getIdMappingsFromFile();
 		zincToChEBIReferenceCreator.createIdentifiers(123456, mappings, chebiReferences);
 	}
-	
+
 	@Test
 	public void testZincProteinReferenceCreator() throws Exception
 	{

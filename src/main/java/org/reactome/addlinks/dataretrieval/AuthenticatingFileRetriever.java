@@ -17,6 +17,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.reactome.release.common.dataretrieval.AuthenticatableFileRetriever;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -30,12 +31,12 @@ public class AuthenticatingFileRetriever extends AuthenticatableFileRetriever
 	{
 		super(retrieverName);
 	}
-	
+
 	public AuthenticatingFileRetriever()
 	{
 		super();
 	}
-	
+
 	@Override
 	protected void downloadData() throws Exception
 	{
@@ -67,17 +68,17 @@ public class AuthenticatingFileRetriever extends AuthenticatableFileRetriever
 	{
 		String hostname = this.uri.getHost();
 		int port = this.uri.getPort();
-		
+
 		FileSystemOptions fileSystemOptions = new FileSystemOptions();
 		Session session = SftpClientFactory.createConnection(hostname, port, user.toCharArray(), password.toCharArray(), fileSystemOptions);
-		
+
 		Channel channel = session.openChannel("sftp");
 		channel.connect();
 		ChannelSftp sftpChannel = (ChannelSftp)channel;
 		InputStream inStream = sftpChannel.get(this.getDataURL().getPath());
-		
+
 		writeInputStreamToFile(inStream);
-		
+
 		sftpChannel.disconnect();
 		channel.disconnect();
 		session.disconnect();
