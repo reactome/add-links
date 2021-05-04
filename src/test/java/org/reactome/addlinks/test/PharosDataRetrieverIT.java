@@ -7,9 +7,9 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 
 import org.junit.Test;
-import org.reactome.addlinks.dataretrieval.PharosDataRetriever;
-import org.reactome.addlinks.dataretrieval.PharosLigandDataRetriever;
-import org.reactome.addlinks.dataretrieval.PharosTargetsDataRetriever;
+import org.reactome.addlinks.dataretrieval.pharos.PharosDataRetriever;
+import org.reactome.addlinks.dataretrieval.pharos.PharosLigandDataRetriever;
+import org.reactome.addlinks.dataretrieval.pharos.PharosTargetsDataRetriever;
 
 /**
  * Integration tests for the Pharos data retriever - will make calls to live Pharos webservice.
