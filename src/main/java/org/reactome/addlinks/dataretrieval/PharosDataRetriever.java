@@ -27,49 +27,24 @@ import org.reactome.release.common.dataretrieval.FileRetriever;
  * @author sshorser
  *
  */
-public class PharosDataRetriever extends FileRetriever
+public abstract class PharosDataRetriever extends FileRetriever
 {
+	protected static final String SKIP_AMOUNT_TOKEN = "##SKIPAMOUNT##";
+
+	protected static final String TOP_AMOUNT_TOKEN = "##TOPAMOUNT##";
+
+	private static final String APPLICATION_JSON = "application/json";
+
 	// Pharos requested that we use the DEV endpoint for large requests, since it's not used by
 	// as many users, and I guess they don't want us slowing down the main endpoint.
 	private static String pharosEndpoint = "https://ncatsidg-dev.appspot.com/graphql";
 //	private static String pharosEndpoint = "https://pharos-api.ncats.io/graphql";
 
-//	private static String queryForUniprotTargetsJSON = "\"query\": \"{\n"
-//			+ "  targets(filter: {facets: [{facet:\"Data Source\" values:[\"UniProt\"]}]}) {\n"
-//			+ "    count\n"
-//			+ "    filter\n"
-//			+ "    {\n"
-//			+ "      term\n"
-//			+ "        facets {\n"
-//			+ "        facet\n"
-//			+ "        values\n"
-//			+ "      }\n"
-//			+ "    }\n"
-//			+ "    facets {\n"
-//			+ "      facet\n"
-//			+ "      values {\n"
-//			+ "        name\n"
-//			+ "        value\n"
-//			+ "      }\n"
-//			+ "    }\n"
-//			+ "    targets(top:100 skip:2 ) {\n"
-//			+ "      name\n"
-//			+ "      synonyms {\n"
-//			+ "        name\n"
-//			+ "        value\n"
-//			+ "      }\n"
-//			+ "    }\n"
-//			+ "  }\n"
-//			+ "}\"";
-
-
+	// Some examples of testing Pharos' GraphQL endpoint.
 	//curl 'https://pharos-api.ncats.io/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://pharos-api.ncats.io' --data-binary '{"query":"query {\n  targets(filter: {facets: [{facet:\"Data Source\" values:[\"UniProt\"]}]}) {\n    count\n    filter\n    {\n      term\n    \tfacets {\n        facet\n        values\n      }\n    }\n    facets {\n      facet\n      values {\n        name\n        value\n      }\n    }\n    targets(top:100 skip:2 ) {\n      name\n      synonyms {\n        name\n        value\n      }\n    }\n  }\n}"}' --compressed
 	// curl 'https://ncatsidg-dev.appspot.com/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ncatsidg-dev.appspot.com' --data-binary '{"query":"query {  targets {    targets(top:100) {      uniprot    }  }}\n"}' --compressed
-	private static String queryForUniprotTargetsJSON = "{ \"query\": \"query { targets { count targets(top:##TOPAMOUNT## skip:##SKIPAMOUNT##) { uniprot } } }\"}";
 	private static int batchSize = 1000;
-	/**
-	 *
-	 */
+
 	@Override
 	protected void doHttpDownload(Path path, HttpClientContext context) throws Exception, HttpHostConnectException, IOException
 	{
@@ -96,14 +71,14 @@ public class PharosDataRetriever extends FileRetriever
 				post.setConfig(config);
 				// update the query: we just increment the "skip" value each time through the loop, until we send a query that returns an empty list.
 				// We *could* use the "count" value that comes back in the first query to request one huge batch, but I think this is nicer to their server.
-				String updatedQuery = PharosDataRetriever.queryForUniprotTargetsJSON
-															.replace("##TOPAMOUNT##", Integer.toString(PharosDataRetriever.batchSize))
-															.replace("##SKIPAMOUNT##", Integer.toString(numRequests * PharosDataRetriever.batchSize));
+				String updatedQuery = this.getQuery()
+										.replace(PharosDataRetriever.TOP_AMOUNT_TOKEN, Integer.toString(PharosDataRetriever.batchSize))
+										.replace(PharosDataRetriever.SKIP_AMOUNT_TOKEN, Integer.toString(numRequests * PharosDataRetriever.batchSize));
 				StringEntity stringEntity = new StringEntity(updatedQuery);
-				stringEntity.setContentType("application/json");
+				stringEntity.setContentType(PharosDataRetriever.APPLICATION_JSON);
 				post.setEntity(stringEntity);
-				post.setHeader(HttpHeaders.ACCEPT, "application/json");
-				post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				post.setHeader(HttpHeaders.ACCEPT, PharosDataRetriever.APPLICATION_JSON);
+				post.setHeader(HttpHeaders.CONTENT_TYPE, PharosDataRetriever.APPLICATION_JSON);
 				int retries = this.numRetries;
 				boolean done = retries + 1 <= 0;
 				while (!done)
@@ -130,13 +105,9 @@ public class PharosDataRetriever extends FileRetriever
 							String jsonResponse = EntityUtils.toString(response.getEntity());
 							JSONObject jsonObj = new JSONObject(jsonResponse);
 
-							JSONArray targets = (((JSONObject)((JSONObject) jsonObj.get("data")).get("targets")).getJSONArray("targets"));
-							for (int i = 0; i < targets.length(); i++)
-							{
-								fw.write(((JSONObject)targets.get(i)).get("uniprot") + "\n");
-							}
-							moreRecords = targets.length() >= 1;
-							System.out.println("Completed request #" + numRequests);
+							int numProcessed = processJSONArray(fw, jsonObj);
+							moreRecords = numProcessed >= 1;
+							logger.info("Completed request #{}", numRequests);
 							numRequests++;
 						}
 						done = true;
@@ -165,10 +136,24 @@ public class PharosDataRetriever extends FileRetriever
 						logger.error("Exception caught: {}",e.getMessage());
 						throw e;
 					}
-
 				}
 			}
 		}
 	}
+
+	/**
+	 * Implementors must return a specific query to be executed by this class' doHttpDownload
+	 * @return
+	 */
+	protected abstract String getQuery();
+
+	/**
+	 * Implementors must process an array of JSON objects.
+	 * @param fw A FileWriter - this can be used to write data to the output file.
+	 * @param jsonObj - the JSON object to process.
+	 * @return The number of items processed.
+	 * @throws IOException
+	 */
+	protected abstract int processJSONArray(FileWriter fw, JSONObject jsonObj) throws IOException;
 
 }
