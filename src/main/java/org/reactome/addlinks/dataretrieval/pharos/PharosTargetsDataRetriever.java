@@ -8,6 +8,16 @@ import org.json.JSONObject;
 
 public class PharosTargetsDataRetriever extends PharosDataRetriever
 {
+	public PharosTargetsDataRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
+
+	public PharosTargetsDataRetriever()
+	{
+		super(null);
+	}
+
 	// NOTE: It might be tempting to add "\n" at the end of the "lines" in this string below, but that will result in a "Bad request" response
 	// from the GraphQL service. Clearly, queries cannot contain real line breaks.
 	private static final String TARGETS_QUERY = "{ \"query\": \"query {"

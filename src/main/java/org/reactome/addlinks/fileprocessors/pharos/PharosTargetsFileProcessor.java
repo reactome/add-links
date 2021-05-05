@@ -12,6 +12,16 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 public class PharosTargetsFileProcessor extends FileProcessor<String>
 {
 
+	public PharosTargetsFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	public PharosTargetsFileProcessor()
+	{
+		super(null);
+	}
+
 	/**
 	 * Pharos Target mappings are very simple - they identify targets with UniProt identifiers. The data downloaded for targets for Pharos is also just a list of UniProt identifiers.
 	 */
@@ -26,6 +36,7 @@ public class PharosTargetsFileProcessor extends FileProcessor<String>
 			while (line != null)
 			{
 				mapping.put(line, line);
+				line = reader.readLine();
 			}
 		}
 		catch (FileNotFoundException e)

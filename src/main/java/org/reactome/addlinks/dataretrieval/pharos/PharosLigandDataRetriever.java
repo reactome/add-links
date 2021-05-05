@@ -9,6 +9,17 @@ import org.json.JSONObject;
 
 public class PharosLigandDataRetriever extends PharosDataRetriever
 {
+
+	public PharosLigandDataRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
+
+	public PharosLigandDataRetriever()
+	{
+		super(null);
+	}
+
 	// NOTE: It might be tempting to add "\n" at the end of the "lines" in this string below, but that will result in a "Bad request" response
 	// from the GraphQL service. Clearly, queries cannot contain real line breaks.
 	// we will create cross-references based on GtP identifiers.

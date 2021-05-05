@@ -45,6 +45,16 @@ public abstract class PharosDataRetriever extends FileRetriever
 	// curl 'https://ncatsidg-dev.appspot.com/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ncatsidg-dev.appspot.com' --data-binary '{"query":"query {  targets {    targets(top:100) {      uniprot    }  }}\n"}' --compressed
 	private static int batchSize = 1000;
 
+	public PharosDataRetriever(String retrieverName)
+	{
+		super(retrieverName);
+	}
+
+	public PharosDataRetriever()
+	{
+		super(null);
+	}
+
 	@Override
 	protected void doHttpDownload(Path path, HttpClientContext context) throws Exception, HttpHostConnectException, IOException
 	{

@@ -11,6 +11,16 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class PharosLigandsFileProcessor extends FileProcessor<String>
 {
+	public PharosLigandsFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
+	public PharosLigandsFileProcessor()
+	{
+		super(null);
+	}
+
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
@@ -24,6 +34,7 @@ public class PharosLigandsFileProcessor extends FileProcessor<String>
 				String[] parts = line.split("\t");
 				// first value is Guide to Pharmacology identifier, second value is ligid (Pharos ligand identifier).
 				mapping.put(parts[0], parts[1]);
+				line = reader.readLine();
 			}
 		}
 		catch (FileNotFoundException e)
