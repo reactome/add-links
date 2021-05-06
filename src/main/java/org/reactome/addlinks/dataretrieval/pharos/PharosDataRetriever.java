@@ -52,6 +52,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 		boolean moreRecords = true;
 		try(FileWriter fw = new FileWriter(this.destination))
 		{
+			final int timeoutInMilliseconds = 1000 * (int)this.timeout.getSeconds();
 			while (moreRecords)
 			{
 				// TODO: In the future, make FileRetriever in release-common-lib more generic so that it deals with HttpEntityEnclosingRequestBase
@@ -63,9 +64,9 @@ public abstract class PharosDataRetriever extends FileRetriever
 
 				// We will need to keep making posts until we have them all. Requests will get 100 items at a time.
 				RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-											.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
-											.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
-											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds())
+											.setConnectTimeout(timeoutInMilliseconds)
+											.setSocketTimeout(timeoutInMilliseconds)
+											.setConnectionRequestTimeout(timeoutInMilliseconds)
 											.setContentCompressionEnabled(true)
 											.build();
 				post.setConfig(config);
@@ -80,7 +81,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 				post.setHeader(HttpHeaders.ACCEPT, PharosDataRetriever.APPLICATION_JSON);
 				post.setHeader(HttpHeaders.CONTENT_TYPE, PharosDataRetriever.APPLICATION_JSON);
 				int retries = this.numRetries;
-				boolean done = retries + 1 <= 0;
+				boolean done = retries < 0;
 				while (!done)
 				{
 					try (CloseableHttpClient client = HttpClients.createDefault();
@@ -120,7 +121,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 						e.printStackTrace();
 						logger.info("Failed due to ConnectTimeout, but will retry {} more time(s).", retries);
 						retries--;
-						done = retries + 1 <= 0;
+						done = retries < 0;
 						if (done)
 						{
 							throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
