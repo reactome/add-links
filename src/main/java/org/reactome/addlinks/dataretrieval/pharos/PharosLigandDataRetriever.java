@@ -114,7 +114,7 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 					JSONArray synonyms = ligand.getJSONArray("synonyms");
 					boolean done = false;
 					int j = 0;
-					while (!done)
+					while (!done || j < synonyms.length())
 					{
 						JSONObject synonym = (JSONObject)synonyms.get(j);
 						if (synonym.getString("name").equals("Guide to Pharmacology"))
@@ -123,7 +123,6 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 							done = true;
 						}
 						j++;
-						done = j >= synonyms.length();
 					}
 					if (gtpIdentifier != null && ligid != null)
 					{
