@@ -128,12 +128,12 @@ public abstract class PharosDataRetriever extends FileRetriever
 					}
 					catch (HttpHostConnectException e)
 					{
-						logger.error("Could not connect to host {} !",post.getURI().getHost());
-						e.printStackTrace();
+						logger.error("Could not connect to host {} ! Exception: {}", post.getURI().getHost(), e.getMessage());
 						throw e;
 					}
-					catch (IOException e) {
-						logger.error("Exception caught: {}",e.getMessage());
+					catch (IOException e)
+					{
+						logger.error("IOException caught: {}", e.getMessage());
 						throw e;
 					}
 				}
@@ -143,17 +143,17 @@ public abstract class PharosDataRetriever extends FileRetriever
 
 	/**
 	 * Implementors must return a specific query to be executed by this class' doHttpDownload
-	 * @return
+	 * @return a string that will be used as graphql query.
 	 */
 	protected abstract String getQuery();
 
 	/**
-	 * Implementors must process an array of JSON objects.
-	 * @param fw A FileWriter - this can be used to write data to the output file.
+	 * Implementors must process an array of JSON objects and write it to a file.
+	 * @param writer A FileWriter - this can be used to write data to the output file.
 	 * @param jsonObj - the JSON object to process.
 	 * @return The number of items processed.
-	 * @throws IOException
+	 * @throws IOException Thrown when there is a problem writing the file.
 	 */
-	protected abstract int processJSONArray(FileWriter fw, JSONObject jsonObj) throws IOException;
+	protected abstract int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException;
 
 }

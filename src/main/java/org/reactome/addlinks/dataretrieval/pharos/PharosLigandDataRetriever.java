@@ -27,35 +27,107 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 			+ "  }"
 			+ "}\"}";
 
+	// Data from Pharos should look like this:
+	//{
+	//  "data": {
+	//    "ligands": {
+	//      "count": 5136,
+	//      "ligands": [
+	//        {
+	//          "ligid": "9XY1117CMPQQ",
+	//          "name": "acetazolamide",
+	//          "isdrug": true,
+	//          "synonyms": [
+	//            {
+	//              "name": "unii",
+	//              "value": "O3FX965V0I"
+	//            },
+	//            {
+	//              "name": "PubChem",
+	//              "value": "1986"
+	//            },
+	//            {
+	//              "name": "Guide to Pharmacology",
+	//              "value": "6792"
+	//            },
+	//            {
+	//              "name": "ChEMBL",
+	//              "value": "CHEMBL20"
+	//            },
+	//            {
+	//              "name": "DrugCentral",
+	//              "value": "56"
+	//            },
+	//            {
+	//              "name": "pt",
+	//              "value": "ACETAZOLAMIDE"
+	//            },
+	//            {
+	//              "name": "LyCHI",
+	//              "value": "9XY1117CMPQQ"
+	//            }
+	//          ]
+	//        },
+	//        {
+	//          "ligid": "4UXS9UGRZQTR",
+	//          "name": "staurosporin",
+	//          "isdrug": false,
+	//          "synonyms": [
+	//            {
+	//              "name": "PubChem",
+	//              "value": "44259"
+	//            },
+	//            {
+	//              "name": "Guide to Pharmacology",
+	//              "value": "346"
+	//            },
+	//            {
+	//              "name": "ChEMBL",
+	//              "value": "CHEMBL388978"
+	//            },
+	//            {
+	//              "name": "LyCHI",
+	//              "value": "4UXS9UGRZQTR"
+	//            }
+	//          ]
+	//        },
+	//        ...
+
 	@Override
-	protected int processJSONArray(FileWriter fw, JSONObject jsonObj) throws IOException
+	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException
 	{
+		int i = 0;
 		try
 		{
 			JSONArray ligands = (((JSONObject)((JSONObject) jsonObj.get("data")).get("ligands")).getJSONArray("ligands"));
-			for (int i = 0; i < ligands.length(); i++)
+			for (i = 0; i < ligands.length(); i++)
 			{
 				JSONObject ligand = ((JSONObject)ligands.get(i));
-				Boolean isDrug = ligand.getBoolean("isdrug");
+				boolean isDrug = ligand.getBoolean("isdrug");
 				// Check that the ligand has "isdrug==true" and then get the GtP synonym's value (synonym's "name" will be "Guide to Pharmacology").
-				if (isDrug.booleanValue())
+				if (isDrug)
 				{
 					// Get the ligand ID used by Pharos
 					String ligid = ligand.getString("ligid");
 					String gtpIdentifier = null;
 					// Now we process the synonyms...
 					JSONArray synonyms = ligand.getJSONArray("synonyms");
-					for (int j = 0; j < synonyms.length(); j++)
+					boolean done = false;
+					int j = 0;
+					while (!done)
 					{
 						JSONObject synonym = (JSONObject)synonyms.get(j);
 						if (synonym.getString("name").equals("Guide to Pharmacology"))
 						{
 							gtpIdentifier = synonym.getString("value");
+							done = true;
 						}
+						j++;
+						done = j >= synonyms.length();
 					}
 					if (gtpIdentifier != null && ligid != null)
 					{
-						fw.write(gtpIdentifier + "\t" + ligid + "\n");
+						writer.write(gtpIdentifier + "\t" + ligid + "\n");
 					}
 
 				}
@@ -64,9 +136,11 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 		}
 		catch (JSONException e)
 		{
-			logger.error("Error processing JSON! JSON is: {}", jsonObj.toString());
+			logger.error("Error processing JSON! JSON source is: {}", jsonObj.toString());
 			logger.error("Exception is: ", e);
-			return 0;
+			// Still need to return something so return the number of items examined.
+			// But if a JSONException occurs, this will very likely be 0.
+			return i;
 		}
 	}
 
