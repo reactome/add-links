@@ -3,6 +3,7 @@ package org.reactome.addlinks.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,10 +13,9 @@ import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.time.Duration;
 
-import org.apache.http.StatusLine;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
@@ -24,21 +24,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Matchers.any;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.reactome.addlinks.dataretrieval.pharos.PharosDataException;
 import org.reactome.addlinks.dataretrieval.pharos.PharosDataRetriever;
 import org.reactome.addlinks.dataretrieval.pharos.PharosLigandDataRetriever;
@@ -49,10 +40,6 @@ import org.reactome.addlinks.dataretrieval.pharos.PharosTargetsDataRetriever;
  * @author sshorser
  *
  */
-//@RunWith(PowerMockRunner.class)
-//@PrepareForTest({ EntityUtils.class, HttpEntity.class })
-//@PowerMockIgnore({"jdk.internal.reflect.*", "jdk.xml.internal.*", "javax.xml.*", "org.apache.logging.*", "javax.management.*","javax.net.ssl.*", "org.xml.*"})
-//@PrepareForTest({ org.apache.http.impl.client.HttpClients.class, PharosDataRetriever.class, PharosTargetsDataRetriever.class})
 public class PharosDataRetrieverIT
 {
 
@@ -90,6 +77,12 @@ public class PharosDataRetrieverIT
 	}
 
 
+	/**
+	 * Test bad JSON
+	 * @throws URISyntaxException
+	 * @throws ParseException
+	 * @throws IOException
+	 */
 	@Test
 	public void testPharosBadJSON() throws URISyntaxException, ParseException, IOException
 	{
@@ -137,6 +130,12 @@ public class PharosDataRetrieverIT
 		Mockito.when(mockClient.execute(any(HttpUriRequest.class), any(HttpContext.class))).thenReturn(response);
 	}
 
+	/**
+	 * Test bad data
+	 * @throws URISyntaxException
+	 * @throws ParseException
+	 * @throws IOException
+	 */
 	@Test
 	public void testPharosBadData() throws URISyntaxException, ParseException, IOException
 	{
