@@ -1,4 +1,4 @@
-package org.reactome.addlinks.fileprocessors;
+package org.reactome.addlinks.fileprocessors.hmdb;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -27,6 +27,8 @@ import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.reactome.addlinks.fileprocessors.FileProcessor;
+
 public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>>
 {
 	private static final Object METABOLITE_ELEMENT_NAME = "metabolite";
@@ -41,7 +43,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 	{
 		super(null);
 	}
-	
+
 	public enum HMDBFileMappingKeys
 	{
 		CHEBI,
@@ -49,7 +51,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 	}
 
 	/**
-	 * This override will process all the HMDB Molecules files. 
+	 * This override will process all the HMDB Molecules files.
 	 * It will return a map that is keyed by HMDB accession. <br />
 	 *  - The values are maps: one key is "UniProt" and will return a list of UniProt IDs that the HMDB Accession maps to. <br/>
 	 *  - The other key is "ChEBI" which is a list of ChEBI IDs (there will never be more than 1 value in this list because there can only be 1 ChEBI in the XML)
@@ -57,31 +59,31 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 	 * @see org.reactome.addlinks.fileprocessors.FileProcessor#getIdMappingsFromFile()
 	 */
 	@Override
-	public Map<String, Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>> getIdMappingsFromFile() 
+	public Map<String, Map<HmdbMetabolitesFileProcessor.HMDBFileMappingKeys, ? extends Collection<String>>> getIdMappingsFromFile()
 	{
 		try
 		{
 			String dirToHmdbFiles = this.unzipFile(this.pathToFile);
-			
+
 			Map<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>> hmdb2ChebiAndUniprot = new ConcurrentHashMap<String, Map<HMDBFileMappingKeys, ? extends Collection<String>>>();
-			
+
 			// These probably don't need to be atomic anymore since we're no longer processing the "files" in parallel.
 			AtomicInteger fileCounter = new AtomicInteger(0);
 			AtomicInteger totalChEBIMappingCounter = new AtomicInteger(0);
 			AtomicInteger totalUniProtMappingCounter = new AtomicInteger(0);
-			
+
 			TransformerFactory factory = TransformerFactory.newInstance();
 			try
 			{
 				//String dirToFile = this.unzipFile(this.pathToFile);
 				String inputFilename = dirToHmdbFiles + "/" + this.pathToFile.getFileName().toString().replaceAll(".zip", ".xml");
-				
+
 				//Transform the HMDB XML into a more usable CSV file.
 				String outfileName = inputFilename + ".transformed.tsv";
 				this.transformXmlToTsv(inputFilename, outfileName);
-				
+
 				//Now we need to read the file.
-				Files.readAllLines(Paths.get(outfileName)).stream().forEach(line -> 
+				Files.readAllLines(Paths.get(outfileName)).stream().forEach(line ->
 				{
 					String[] parts = line.split("\t");
 					// Map uniprot to accession.
@@ -91,13 +93,13 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 						hmdbVals.put( HMDBFileMappingKeys.CHEBI, Arrays.asList(parts[1]));
 						totalChEBIMappingCounter.incrementAndGet();
 					}
-					
+
 					if (parts.length >= 3 && parts[2] != null && !parts[2].trim().equals(""))
 					{
 						hmdbVals.put( HMDBFileMappingKeys.UNIPROT, Arrays.asList(Arrays.copyOfRange(parts, 2, parts.length - 1)));
 						totalUniProtMappingCounter.addAndGet(parts.length);
 					}
-					
+
 					hmdb2ChebiAndUniprot.put(parts[0], hmdbVals);
 				});
 			}
@@ -111,7 +113,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 				e.printStackTrace();
 				throw new Error(e);
 			}
-			
+
 			logger.debug("\nHMDB Metabolites file processing Summary:"
 						+ "\n\tNumber of ChEBI mappings: {} ;"
 						+ "\n\tNumber of Uniprot mappings: {} ;"
@@ -127,7 +129,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 		return null;
 	}
 
-	
+
 	private void transformXmlToTsv(String inputFilename, String outfileName)
 	{
 		System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
@@ -147,7 +149,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 				{
 					// Get everything rooted under the "metabolite" element.
 					StAXSource src = new StAXSource(xsr);
-					// get a Result that points to the output file 
+					// get a Result that points to the output file
 					Result result = new StreamResult(outStream);
 					// execute the XSL transform - the transformed output will go to the output file via `result`.
 					transformer.transform(src, result);
@@ -155,7 +157,7 @@ public class HmdbMetabolitesFileProcessor extends FileProcessor<Map<HmdbMetaboli
 			}
 			xsr.close();
 		}
-		catch (FileNotFoundException e ) 
+		catch (FileNotFoundException e )
 		{
 			logger.error("Input XML file was not found!", e);
 		}
