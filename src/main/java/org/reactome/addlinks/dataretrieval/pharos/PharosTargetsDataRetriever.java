@@ -43,6 +43,8 @@ public class PharosTargetsDataRetriever extends PharosDataRetriever
 	{
 		try
 		{
+			// result could be simply flattened with jq using the jq expression: ".data.targets.targets[].uniprot"
+			// but some people find jq weird, so we'll just stick with javax.json and explicitly access elements by keys.
 			JSONArray targets = (((JSONObject)((JSONObject) jsonObj.get("data")).get("targets")).getJSONArray("targets"));
 			for (int i = 0; i < targets.length(); i++)
 			{
