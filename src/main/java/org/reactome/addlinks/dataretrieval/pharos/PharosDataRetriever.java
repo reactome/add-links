@@ -188,7 +188,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 	 * @param jsonObj - the JSON object to process.
 	 * @return The number of items processed.
 	 * @throws IOException Thrown when there is a problem writing the file.
-	 * @throws PharosDataException
+	 * @throws PharosDataException - Thrown when there is a problem with the data from Pharos, <em>possibly</em> caused by problems with JSON.
 	 */
 	protected abstract int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException;
 

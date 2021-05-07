@@ -36,9 +36,9 @@ public class PharosTargetsDataRetriever extends PharosDataRetriever
 
 
 	/**
-	 * Implements the logic to process JSON from Pharos.
-	 * @throws PharosDataException
+	 * {@link org.reactome.addlinks.dataretrieval.pharos.PharosDataRetriever#processJSONArray()}
 	 */
+	@Override
 	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException
 	{
 		try

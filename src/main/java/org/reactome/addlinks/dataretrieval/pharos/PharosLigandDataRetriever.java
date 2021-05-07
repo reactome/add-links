@@ -93,6 +93,9 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 	//        },
 	//        ...
 
+	/**
+	 * {@link org.reactome.addlinks.dataretrieval.pharos.PharosDataRetriever#processJSONArray()}
+	 */
 	@Override
 	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException
 	{
