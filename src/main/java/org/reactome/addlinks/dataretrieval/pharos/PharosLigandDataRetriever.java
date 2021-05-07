@@ -94,7 +94,7 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 	//        ...
 
 	@Override
-	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException
+	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException
 	{
 		int i = 0;
 		try
@@ -136,10 +136,8 @@ public class PharosLigandDataRetriever extends PharosDataRetriever
 		catch (JSONException e)
 		{
 			logger.error("Error processing JSON! JSON source is: {}", jsonObj.toString());
-			logger.error("Exception is: ", e);
-			// Still need to return something so return the number of items examined.
-			// But if a JSONException occurs, this will very likely be 0.
-			return i;
+			// Throw an exception if there's a problem with the JSON that came from Pharos.
+			throw new PharosDataException(e.getMessage());
 		}
 	}
 

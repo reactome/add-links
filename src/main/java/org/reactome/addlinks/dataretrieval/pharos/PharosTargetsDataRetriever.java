@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PharosTargetsDataRetriever extends PharosDataRetriever
@@ -36,24 +37,34 @@ public class PharosTargetsDataRetriever extends PharosDataRetriever
 
 	/**
 	 * Implements the logic to process JSON from Pharos.
+	 * @throws PharosDataException
 	 */
-	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException
+	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException
 	{
-		JSONArray targets = (((JSONObject)((JSONObject) jsonObj.get("data")).get("targets")).getJSONArray("targets"));
-		for (int i = 0; i < targets.length(); i++)
+		try
 		{
-			if (((JSONObject)targets.get(i)).has("uniprot"))
+			JSONArray targets = (((JSONObject)((JSONObject) jsonObj.get("data")).get("targets")).getJSONArray("targets"));
+			for (int i = 0; i < targets.length(); i++)
 			{
-				writer.write(((JSONObject)targets.get(i)).get("uniprot") + "\n");
+				if (((JSONObject)targets.get(i)).has("uniprot"))
+				{
+					writer.write(((JSONObject)targets.get(i)).get("uniprot") + "\n");
+				}
+				else
+				{
+					// A missing "uniprot" key suggests a possibly serious problem with the data that was returned from Pharos.
+					throw new PharosDataException("The \"uniprot\" key was not present, but it should be (in fact, it should be the ONLY key at this depth in the document). Check your query!");
+				}
 			}
-			else
-			{
-				logger.error("The \"uniprot\" key was not present, but it should be (in fact, it should be the ONLY key at this depth in the document). Check your query!");
-				// Something's wrong with the data, so gracefully exit the loop.
-				i = targets.length() + 1;
-			}
+			return targets.length();
 		}
-		return targets.length();
+		catch (JSONException e)
+		{
+			// If there's a problem with the JSON, log the JSON and throw a PharosDataException
+			logger.error("Error processing JSON! JSON source is: {}", jsonObj.toString());
+			throw new PharosDataException(e.getMessage());
+		}
+
 	}
 
 

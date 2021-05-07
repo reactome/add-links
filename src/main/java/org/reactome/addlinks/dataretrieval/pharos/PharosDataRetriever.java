@@ -17,6 +17,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 
@@ -50,7 +51,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 	{
 		int numRequests = 0;
 		boolean moreRecords = true;
-		try(FileWriter fw = new FileWriter(this.destination))
+		try(FileWriter writer = new FileWriter(this.destination))
 		{
 			final int timeoutInMilliseconds = 1000 * (int)this.timeout.getSeconds();
 			while (moreRecords)
@@ -84,6 +85,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 				boolean done = retries < 0;
 				while (!done)
 				{
+					String jsonResponse = "";
 					try (CloseableHttpClient client = HttpClients.createDefault();
 						CloseableHttpResponse response = client.execute(post, context); )
 					{
@@ -103,10 +105,10 @@ public abstract class PharosDataRetriever extends FileRetriever
 						else
 						{
 							// result could be flattened with jq using the jq expression: ".data.targets.targets[].uniprot"
-							String jsonResponse = EntityUtils.toString(response.getEntity());
+							jsonResponse = EntityUtils.toString(response.getEntity());
 							JSONObject jsonObj = new JSONObject(jsonResponse);
 
-							int numProcessed = processJSONArray(fw, jsonObj);
+							int numProcessed = processJSONArray(writer, jsonObj);
 							moreRecords = numProcessed >= 1;
 							logger.info("Completed request #{}", numRequests);
 							numRequests++;
@@ -126,6 +128,16 @@ public abstract class PharosDataRetriever extends FileRetriever
 						{
 							throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
 						}
+					}
+					catch (PharosDataException e)
+					{
+						logger.error("There was a problem with data from Pharos: " + e.getMessage(), e);
+						throw e;
+					}
+					catch (JSONException e)
+					{
+						logger.error("There was a problem with the JSON: {}", jsonResponse);
+						throw new PharosDataException("There was a problem with the JSON from Pharos: " + e.getMessage());
 					}
 					catch (HttpHostConnectException e)
 					{
@@ -154,7 +166,8 @@ public abstract class PharosDataRetriever extends FileRetriever
 	 * @param jsonObj - the JSON object to process.
 	 * @return The number of items processed.
 	 * @throws IOException Thrown when there is a problem writing the file.
+	 * @throws PharosDataException
 	 */
-	protected abstract int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException;
+	protected abstract int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException;
 
 }
