@@ -1,7 +1,6 @@
 package org.reactome.addlinks.dataretrieval.pharos;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import org.json.JSONArray;
