@@ -73,6 +73,8 @@
 		<entry key="ZFINFileProcessor" value="ZFINReferenceCreator" />
 		<entry key="EnsemblBioMartFileProcessor" value-ref="EnsemblReferenceCreators" />
 		<entry key="PharmacoDBFileProcessor" value="PharmacoDBReferenceCreator" />
+		<entry key="GtPLigandsProcessor" value="GtPLigandsReferenceCreator"/>
+		<entry key="GtPTargetsProcessor" value="GtPTargetsReferenceCreator"/>
 	</util:map>
 
 </beans>

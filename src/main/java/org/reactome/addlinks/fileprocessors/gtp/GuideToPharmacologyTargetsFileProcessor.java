@@ -12,6 +12,16 @@ import org.reactome.addlinks.fileprocessors.FileProcessor;
 public class GuideToPharmacologyTargetsFileProcessor extends FileProcessor<String>
 {
 
+	public GuideToPharmacologyTargetsFileProcessor()
+	{
+		super(null);
+	}
+
+	public GuideToPharmacologyTargetsFileProcessor(String processorName)
+	{
+		super(processorName);
+	}
+
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
