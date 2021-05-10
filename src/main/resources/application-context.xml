@@ -36,6 +36,8 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>GuideToPharmacologyLigands</value>
+		<value>GuideToPharmacologyTargets</value>
 		<value>PharmacoDB</value>
 		<value>IUPHAR</value>
 		<value>ComplexPortal</value>
@@ -79,6 +81,8 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>GtPLigandsProcessor</value>
+		<value>GtPTargetsProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>ComplexPortalSARSFileProcessor</value>
@@ -120,6 +124,8 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>GtPLigandsReferenceCreator</value>
+		<value>GtPTargetsReferenceCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>ComplexPortalSARSCOV2RefCreator</value>
@@ -170,6 +176,12 @@
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<!-- Be aware that the Guide to Pharmacology will
+		return a 200 response code even if the identifier
+		is not found, so you need to look for "WARN" messages
+		in the LinkCheckManager log. -->
+		<value>Guide to Pharmacology - Targets</value>
+		<value>Guide to Pharmacology - Ligands</value>
 		<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>

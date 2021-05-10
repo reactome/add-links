@@ -659,11 +659,12 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceGeneProductBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="UniProt"/>
-				<constructor-arg index="5" name="targetDB" value="Guide to Pharmacology"/>
+				<constructor-arg index="5" name="targetDB" value="Guide to Pharmacology - Targets"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/GtPTargetsReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
 		</entry>
+
 		<entry key="GtPLigandsReferenceCreator">
 			<bean class="org.reactome.addlinks.referencecreators.SimpleReferenceCreator" id="GtPLigandsReferenceCreator">
 				<constructor-arg index="0" name="adapter" ref="dbAdapter"/>
@@ -671,7 +672,7 @@
 				<constructor-arg index="2" name="classReferring" ref="ReferenceMoleculeBean"/>
 				<constructor-arg index="3" name="referringAttribute" ref="crossReferenceBean"/>
 				<constructor-arg index="4" name="sourceDB" value="ChEBI"/>
-				<constructor-arg index="5" name="targetDB" value="Guide to Pharmacology"/>
+				<constructor-arg index="5" name="targetDB" value="Guide to Pharmacology - Ligands"/>
 				<constructor-arg index="6" name="refCreatorName" value="refCreators/GtPLigandsReferenceCreator"/>
 				<property name="testMode" value="false"/>
 			</bean>
