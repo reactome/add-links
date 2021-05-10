@@ -85,7 +85,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 						// If status code was not 200, we should print something so that the users know that an unexpected response was received.
 						if (statusCode != HttpStatus.SC_OK)
 						{
-							reportNotOKResponse(response.getStatusLine(), statusCode);
+							reportNotOKResponse(response.getStatusLine());
 						}
 						else
 						{
@@ -140,18 +140,18 @@ public abstract class PharosDataRetriever extends FileRetriever
 
 	/**
 	 * Reports on a not-OK (non-200) HTTP response. Nothing will be logged if response is 200.
-	 * @param response - Response object.
 	 * @param statusLine - StatusLine object (includes the status code).
 	 */
-	private void reportNotOKResponse(StatusLine statusLine, int statusCode)
+	private void reportNotOKResponse(StatusLine statusLine)
 	{
+		int statusCode = statusLine.getStatusCode();
 		if (String.valueOf(statusCode).startsWith("4") || String.valueOf(statusCode).startsWith("5"))
 		{
-			logger.error("Response code was 4xx/5xx: {}, Status line is: {}", statusCode, statusLine);
+			logger.error("Response code was 4xx/5xx: {}, Reason code is: {}", statusCode, statusLine.getReasonPhrase());
 		}
 		else
 		{
-			logger.warn("Response was not \"200\". It was: {}", statusLine);
+			logger.warn("Response was not \"200\". It was: {}", statusLine.toString());
 		}
 	}
 
