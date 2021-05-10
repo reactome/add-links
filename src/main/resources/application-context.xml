@@ -36,17 +36,18 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>TargetPathogen</value>
 		<value>PharmacoDB</value>
 		<value>IUPHAR</value>
 		<value>ComplexPortal</value>
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
-		<value>TargetPathogen</value>
 		<value>OpenTargets</value>
 		<value>IntEnz</value>
 		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>COSMIC</value>
 		<value>CTD</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToUCSC</value>
@@ -58,7 +59,6 @@
 		<value>UniProtToOMIM</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>Zinc</value>
-		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
@@ -76,14 +76,16 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
+		<value>PharosTargets</value>
+		<value>PharosLigands</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>TargetPathogenFileProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>ComplexPortalSARSFileProcessor</value>
 		<value>ComplexPortalSARSCOV2FileProcessor</value>
-		<value>TargetPathogenFileProcessor</value>
 		<value>OpenTargetsFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
@@ -117,15 +119,19 @@
 		<value>RGDFileProcessor</value>
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
+		<value>PharosTargetsFileProcessor</value>
+		<value>PharosLigandsFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharosTargetsReferenceCreator</value>
+		<value>PharosLigandsReferenceCreator</value>
+		<value>TargetPathogenReactionsReferenceCreator</value>
+		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>ComplexPortalSARSCOV2RefCreator</value>
 		<value>ComplexPortalSARSRefCreator</value>
-		<value>TargetPathogenReactionsReferenceCreator</value>
-		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>OpenTargetsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
@@ -209,6 +215,13 @@
 		<value>Xenbase</value>
 		<value>ZFIN</value>
 		<value>Ensembl</value>
+		<!-- NOTE: Sometimes Pharos will return a 502 (Bad Gateway) error code,
+		but when you load the URL manually in your browser, it works. I suspect
+		this is a transient issue which will make link-checking of Pharos
+		a bit error-prone. If you see a few Pharos link-check errors,
+		verify them manually. They will *probably* be OK. -->
+		<value>Pharos - Targets</value>
+		<value>Pharos - Ligands</value>
 		<!--
 		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
 		This prevents an identifier search in the page from becoming possible, since it is just searching the template.

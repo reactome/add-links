@@ -523,7 +523,7 @@
 				<entry key="resourceIdentifier" value="MIR:00100011"/>
 			</map>
 		</entry>
-		
+
 		<entry key="PharmacoDB">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="PharmacoDB" />
@@ -534,5 +534,46 @@
 				-->
 			</map>
 		</entry>
+
+		<entry key="Guide to Pharmacology">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Guide to Pharmacology" />
+				<entry key="Aliases">
+					<list value-type="java.lang.String">
+						<value>GtP</value>
+						<value>IUPHAR</value>
+					</list>
+				</entry>
+				<entry key="URL" value="https://www.guidetopharmacology.org" />
+				<entry key="AccessURL" value="https://www.guidetopharmacology.org/GRAC/LigandDisplayForward?ligandId=###ID###" />
+				<!-- No entry in identifiers.org for Pharos
+				<entry key="resourceIdentifier" value="MIR:"/>
+				-->
+			</map>
+		</entry>
+
+
+		<entry key="PharosTargets">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Pharos - Targets" />
+				<entry key="URL" value="https://pharos.nih.gov" />
+				<entry key="AccessURL" value="https://pharos.nih.gov/targets/###ID###" />
+				<!-- No entry in identifiers.org for Pharos
+				<entry key="resourceIdentifier" value="MIR:"/>
+				-->
+			</map>
+		</entry>
+
+		<entry key="PharosLigands">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="Pharos - Ligands" />
+				<entry key="URL" value="https://pharos.nih.gov" />
+				<entry key="AccessURL" value="https://pharos.nih.gov/ligands/###ID###" />
+				<!-- No entry in identifiers.org for Pharos
+				<entry key="resourceIdentifier" value="MIR:"/>
+				-->
+			</map>
+		</entry>
+
 	</util:map>
 </beans>

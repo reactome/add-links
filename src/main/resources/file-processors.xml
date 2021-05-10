@@ -87,7 +87,7 @@
 				</property>
 			</bean>
 		</entry>
-		
+
 		<entry key="ComplexPortalSARSFileProcessor">
 			<bean id="ComplexPortalSARSFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/ComplexPortalSARSFileProcessor"/>
@@ -409,7 +409,29 @@
 				</property>
 			</bean>
 		</entry>
-		
+
+		<entry key="PharosTargetsFileProcessor">
+			<bean id="PharosTargetsFileProcessor" class="org.reactome.addlinks.fileprocessors.pharos.PharosTargetsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/PharosTargetsFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharos-targets.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="PharosLigandsFileProcessor">
+			<bean id="PharosLigandsFileProcessor" class="org.reactome.addlinks.fileprocessors.pharos.PharosLigandsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/PharosLigandsFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharos-ligands.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
 		<entry key="PharmacoDBFileProcessor">
 			<bean id="PharmacoDBFileProcessor" class="org.reactome.addlinks.fileprocessors.PharmacoDBFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/PharmacoDBFileProcessor"/>
