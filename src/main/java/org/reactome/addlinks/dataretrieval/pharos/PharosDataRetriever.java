@@ -1,8 +1,10 @@
 package org.reactome.addlinks.dataretrieval.pharos;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.http.HttpHeaders;
@@ -47,10 +49,19 @@ public abstract class PharosDataRetriever extends FileRetriever
 	// curl 'https://ncatsidg-dev.appspot.com/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ncatsidg-dev.appspot.com' --data-binary '{"query":"query {  targets {    targets(top:100) {      uniprot    }  }}\n"}' --compressed
 	private static int batchSize = 1000;
 
+	/**
+	 * Performs a download of a file via http.
+	 * @param path This is where the file gets downloaded to.
+	 * @param context An HttpClientContext object. Passed in by another method of the FileRetriever class. Don't worry about this.
+	 * @throws PharosDataException - When there is a problem with Pharos data
+	 * @throws HttpHostConnectException - When there is a problem connecting
+	 * @throws IOException - Could be caused by an error when creating the output file.
+	 * @throws Exception - Could happen if the number of retries is reached and still no data has been retrieved
+	 */
 	@Override
-	protected void doHttpDownload(Path path, HttpClientContext context) throws Exception, HttpHostConnectException, IOException
+	protected void doHttpDownload(Path path, HttpClientContext context) throws PharosDataException, HttpHostConnectException, IOException, Exception
 	{
-		try(FileWriter writer = new FileWriter(this.destination))
+		try (BufferedWriter writer = Files.newBufferedWriter(path))
 		{
 			final int timeoutInMilliseconds = 1000 * (int)this.timeout.getSeconds();
 			boolean moreRecords = true;
@@ -98,6 +109,7 @@ public abstract class PharosDataRetriever extends FileRetriever
 						done = retries < 0;
 						if (done)
 						{
+							// TODO: implement better custom exceptions in release-common-lib
 							throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
 						}
 					}
@@ -127,9 +139,9 @@ public abstract class PharosDataRetriever extends FileRetriever
 	}
 
 	/**
-	 * Report on a not-OK (non-200) HTTP response.
+	 * Reports on a not-OK (non-200) HTTP response. Nothing will be logged if response is 200.
 	 * @param response - Response object.
-	 * @param statusCode - status code.
+	 * @param statusLine - StatusLine object (includes the status code).
 	 */
 	private void reportNotOKResponse(StatusLine statusLine, int statusCode)
 	{
@@ -190,6 +202,6 @@ public abstract class PharosDataRetriever extends FileRetriever
 	 * @throws IOException Thrown when there is a problem writing the file.
 	 * @throws PharosDataException - Thrown when there is a problem with the data from Pharos, <em>possibly</em> caused by problems with JSON.
 	 */
-	protected abstract int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException;
+	protected abstract int processJSONArray(BufferedWriter writer, JSONObject jsonObj) throws IOException, PharosDataException;
 
 }

@@ -1,5 +1,6 @@
 package org.reactome.addlinks.dataretrieval.pharos;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -39,7 +40,7 @@ public class PharosTargetsDataRetriever extends PharosDataRetriever
 	 * {@link org.reactome.addlinks.dataretrieval.pharos.PharosDataRetriever#processJSONArray()}
 	 */
 	@Override
-	protected int processJSONArray(FileWriter writer, JSONObject jsonObj) throws IOException, PharosDataException
+	protected int processJSONArray(BufferedWriter writer, JSONObject jsonObj) throws IOException, PharosDataException
 	{
 		try
 		{
