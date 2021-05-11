@@ -8,7 +8,7 @@ import java.util.Map;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
-import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor.HMDBFileMappingKeys;
+import org.reactome.addlinks.fileprocessors.hmdb.HmdbMetabolitesFileProcessor.HMDBFileMappingKeys;
 
 public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMDBFileMappingKeys, ? extends Collection<String>>>
 {
@@ -16,7 +16,7 @@ public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMD
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB, refCreatorName);
 	}
-	
+
 	public HMDBMoleculeReferenceCreator(MySQLAdaptor adapter, String classToCreate, String classReferring, String referringAttribute, String sourceDB, String targetDB)
 	{
 		super(adapter, classToCreate, classReferring, referringAttribute, sourceDB, targetDB);
@@ -26,15 +26,15 @@ public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMD
 	public void createIdentifiers(long personID, Map<String,Map<HMDBFileMappingKeys, ? extends Collection<String>>> mapping, List<GKInstance> sourceReferences) throws Exception
 	{
 		logger.traceEntry();
-		
+
 		int sourceUniProtIdentifiersWithNoMapping = 0;
 		int sourceUniProtIdentifiersWithNewIdentifier = 0;
 		int sourceUniProtIdentifiersWithExistingIdentifier = 0;
-		
+
 		int sourceChEBIIdentifiersWithNoMapping = 0;
 		int sourceChEBIIdentifiersWithNewIdentifier = 0;
 		int sourceChEBIIdentifiersWithExistingIdentifier = 0;
-		
+
 		// Need to turn the list of source references into a Map for easier access.
 		Map<String, GKInstance> sourceRefMap = new HashMap<String, GKInstance>(sourceReferences.size());
 		for (GKInstance instance : sourceReferences)
@@ -42,7 +42,7 @@ public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMD
 			String ident = ((String) instance.getAttributeValue(ReactomeJavaConstants.identifier));
 			sourceRefMap.put(ident, instance);
 		}
-		
+
 		//loop on HMDB IDs
 		for (String hmdbID : mapping.keySet())
 		{
@@ -106,8 +106,8 @@ public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMD
 				}
 			}
 		}
-		
-		
+
+
 		// One HMDB could be mapped to multiple UniProts - I haven't actually seen this happen, myself,
 		// but supposedly it's possible, based on how I interpret the old AddLinks code...
 //		for (String chebiOrUniProtID : mapping.keySet())
@@ -137,7 +137,7 @@ public class HMDBMoleculeReferenceCreator extends SimpleReferenceCreator<Map<HMD
 //				{
 //					sourceIdentifiersWithNoMapping++;
 //				}
-//				
+//
 //			}
 //		}
 		logger.info("{} reference creation summary: \n"

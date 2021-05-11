@@ -1,6 +1,7 @@
 package org.reactome.addlinks.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,13 +11,13 @@ import java.util.Map;
 import org.gk.model.GKInstance;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
-import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor;
-import org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor.HMDBFileMappingKeys;
-import org.reactome.addlinks.fileprocessors.HmdbProteinsFileProcessor;
+import org.reactome.addlinks.fileprocessors.hmdb.HmdbMetabolitesFileProcessor;
+import org.reactome.addlinks.fileprocessors.hmdb.HmdbMetabolitesFileProcessor.HMDBFileMappingKeys;
+import org.reactome.addlinks.fileprocessors.hmdb.HmdbProteinsFileProcessor;
 import org.reactome.addlinks.referencecreators.HMDBMoleculeReferenceCreator;
 import org.reactome.addlinks.referencecreators.HMDBProteinReferenceCreator;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 

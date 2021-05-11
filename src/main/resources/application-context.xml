@@ -36,18 +36,19 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>TargetPathogen</value>
+		<value>GuideToPharmacologyLigands</value>
+		<value>GuideToPharmacologyTargets</value>
 		<value>PharmacoDB</value>
 		<value>IUPHAR</value>
 		<value>ComplexPortal</value>
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
+		<value>TargetPathogen</value>
 		<value>OpenTargets</value>
 		<value>IntEnz</value>
 		<value>UniProtToENSEMBL</value>
 		<value>EnsemblToALL</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
-		<value>COSMIC</value>
 		<value>CTD</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToUCSC</value>
@@ -59,6 +60,7 @@
 		<value>UniProtToOMIM</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>Zinc</value>
+		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
@@ -81,11 +83,13 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>TargetPathogenFileProcessor</value>
+		<value>GtPLigandsProcessor</value>
+		<value>GtPTargetsProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>ComplexPortalSARSFileProcessor</value>
 		<value>ComplexPortalSARSCOV2FileProcessor</value>
+		<value>TargetPathogenFileProcessor</value>
 		<value>OpenTargetsFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
@@ -126,12 +130,14 @@
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 		<value>PharosTargetsReferenceCreator</value>
 		<value>PharosLigandsReferenceCreator</value>
-		<value>TargetPathogenReactionsReferenceCreator</value>
-		<value>TargetPathogenProteinsReferenceCreator</value>
+		<value>GtPLigandsReferenceCreator</value>
+		<value>GtPTargetsReferenceCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>ComplexPortalSARSCOV2RefCreator</value>
 		<value>ComplexPortalSARSRefCreator</value>
+		<value>TargetPathogenReactionsReferenceCreator</value>
+		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>OpenTargetsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
@@ -176,6 +182,12 @@
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<!-- Be aware that the Guide to Pharmacology will
+		return a 200 response code even if the identifier
+		is not found, so you need to look for "WARN" messages
+		in the LinkCheckManager log. -->
+		<value>Guide to Pharmacology - Targets</value>
+		<value>Guide to Pharmacology - Ligands</value>
 		<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>

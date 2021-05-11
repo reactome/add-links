@@ -1,9 +1,11 @@
-package org.reactome.addlinks.fileprocessors;
+package org.reactome.addlinks.fileprocessors.zinc;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class ZincOrthologsFileProcessor extends FileProcessor<String>
 {
@@ -12,12 +14,12 @@ public class ZincOrthologsFileProcessor extends FileProcessor<String>
 	{
 		super(null);
 	}
-	
+
 	public ZincOrthologsFileProcessor(String processorName)
 	{
 		super(processorName);
 	}
-	
+
 	@Override
 	public Map<String, String> getIdMappingsFromFile()
 	{
