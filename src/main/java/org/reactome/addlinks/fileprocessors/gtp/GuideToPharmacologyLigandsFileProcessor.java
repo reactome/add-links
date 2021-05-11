@@ -33,7 +33,7 @@ public class GuideToPharmacologyLigandsFileProcessor extends FileProcessor<Strin
 				String ligandID = line.get("Ligand id");
 				// we will try to map with ChEBI ID
 				String chebiID = line.get("Chebi ID");
-				// but for future reference, some entities don'rt have ChEBI IDs but they may have CHEMBL, PubChem, or UniProt
+				// but for future reference, some entities don't have ChEBI IDs but they may have CHEMBL, PubChem, or UniProt
 				// identifiers so you could also extract those mappings. It will make reference creation more complicated,
 				// and it may be better to have a different file-process/reference-creator pair for the different sources that map to GtP
 				// in the GtP Ligands identifiers mapping file. Or you could try to do it all in this file processor.
@@ -42,7 +42,7 @@ public class GuideToPharmacologyLigandsFileProcessor extends FileProcessor<Strin
 		}
 		catch (IOException e)
 		{
-			logger.error("There was a problem opening/reading the file.", e);
+			logger.error("There was a problem opening/reading the file " + this.pathToFile.toString(), e);
 		}
 		return mapping;
 	}

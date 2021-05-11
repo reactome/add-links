@@ -36,7 +36,7 @@ public class GuideToPharmacologyTargetsFileProcessor extends FileProcessor<Strin
 		}
 		catch (IOException e)
 		{
-			logger.error("There was a problem opening/reading the file.", e);
+			logger.error("There was a problem opening/reading the file " + this.pathToFile.toString(), e);
 		}
 		return mapping;
 	}
