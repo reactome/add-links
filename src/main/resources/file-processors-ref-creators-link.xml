@@ -75,6 +75,8 @@
 		<entry key="PharmacoDBFileProcessor" value="PharmacoDBReferenceCreator" />
 		<entry key="GtPLigandsProcessor" value="GtPLigandsReferenceCreator"/>
 		<entry key="GtPTargetsProcessor" value="GtPTargetsReferenceCreator"/>
+		<entry key="PharosTargetsFileProcessor" value="PharosTargetsReferenceCreator" />
+		<entry key="PharosLigandsFileProcessor" value="PharosLigandsReferenceCreator" />
 	</util:map>
 
 </beans>

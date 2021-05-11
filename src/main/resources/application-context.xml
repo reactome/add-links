@@ -78,6 +78,8 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
+		<value>PharosTargets</value>
+		<value>PharosLigands</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -121,9 +123,13 @@
 		<value>RGDFileProcessor</value>
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
+		<value>PharosTargetsFileProcessor</value>
+		<value>PharosLigandsFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharosTargetsReferenceCreator</value>
+		<value>PharosLigandsReferenceCreator</value>
 		<value>GtPLigandsReferenceCreator</value>
 		<value>GtPTargetsReferenceCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
@@ -221,6 +227,13 @@
 		<value>Xenbase</value>
 		<value>ZFIN</value>
 		<value>Ensembl</value>
+		<!-- NOTE: Sometimes Pharos will return a 502 (Bad Gateway) error code,
+		but when you load the URL manually in your browser, it works. I suspect
+		this is a transient issue which will make link-checking of Pharos
+		a bit error-prone. If you see a few Pharos link-check errors,
+		verify them manually. They will *probably* be OK. -->
+		<value>Pharos - Targets</value>
+		<value>Pharos - Ligands</value>
 		<!--
 		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
 		This prevents an identifier search in the page from becoming possible, since it is just searching the template.
