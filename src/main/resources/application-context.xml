@@ -36,6 +36,7 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>GlyGen</value>
 		<value>GuideToPharmacologyLigands</value>
 		<value>GuideToPharmacologyTargets</value>
 		<value>PharmacoDB</value>
@@ -83,6 +84,7 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>GlyGenFileProcessor</value>
 		<value>GtPLigandsProcessor</value>
 		<value>GtPTargetsProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
@@ -128,6 +130,7 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>GlyGenReferenceCreator</value>
 		<value>PharosTargetsReferenceCreator</value>
 		<value>PharosLigandsReferenceCreator</value>
 		<value>GtPLigandsReferenceCreator</value>
@@ -188,6 +191,7 @@
 		in the LinkCheckManager log. -->
 		<value>Guide to Pharmacology - Targets</value>
 		<value>Guide to Pharmacology - Ligands</value>
+		<value>GlyGen</value>
 		<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>

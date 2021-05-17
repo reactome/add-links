@@ -87,7 +87,7 @@
 				</property>
 			</bean>
 		</entry>
-		
+
 		<entry key="ComplexPortalSARSFileProcessor">
 			<bean id="ComplexPortalSARSFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/ComplexPortalSARSFileProcessor"/>
@@ -470,5 +470,17 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="GlyGenFileProcessor">
+			<bean id="GlyGenFileProcessor" class="org.reactome.addlinks.fileprocessors.GlyGenFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GlyGenFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/protein_glygen_uniprotkb_xref_mapping.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
 	</util:map>
 </beans>

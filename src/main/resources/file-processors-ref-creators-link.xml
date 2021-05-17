@@ -77,6 +77,7 @@
 		<entry key="GtPTargetsProcessor" value="GtPTargetsReferenceCreator"/>
 		<entry key="PharosTargetsFileProcessor" value="PharosTargetsReferenceCreator" />
 		<entry key="PharosLigandsFileProcessor" value="PharosLigandsReferenceCreator" />
+		<entry key="GlyGenFileProcessor" value="GlyGenReferenceCreator" />
 	</util:map>
 
 </beans>
