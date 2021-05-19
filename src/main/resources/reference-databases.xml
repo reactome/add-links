@@ -607,7 +607,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="GlyGen" />
 				<entry key="URL" value="https://www.glygen.org" />
-				<entry key="AccessURL" value="https://www.glygen.org/protein/###ID###" />
+				<!-- It was requested that we link to the "Glycosylation" part of the page. -->
+				<entry key="AccessURL" value="https://www.glygen.org/protein/###ID####Glycosylation" />
 				<!-- No entry in identifiers.org for GlyGen
 				<entry key="resourceIdentifier" value="MIR:"/>
 				-->
