@@ -523,7 +523,7 @@
 				<entry key="resourceIdentifier" value="MIR:00100011"/>
 			</map>
 		</entry>
-		
+
 		<entry key="PharmacoDB">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="PharmacoDB" />
@@ -572,8 +572,10 @@
 				</entry>
 				<entry key="URL" value="https://www.guidetopharmacology.org" />
 				<entry key="AccessURL" value="https://www.guidetopharmacology.org/GRAC/LigandDisplayForward?ligandId=###ID###" />
-				<!-- No entry in identifiers.org for Pharos
-				<entry key="resourceIdentifier" value="MIR:"/>
+				<!--
+				GtP has multiple resource identifiers for different databases. See the referenceDatabase objects for "Guide to Pharmacology - Ligands"
+				and "Guide to Pharmacology - Targets" for their specific resource identifiers.
+				This *generic* Guide to Pharmacology reference database does not have a resource identifier.
 				-->
 			</map>
 		</entry>
@@ -596,6 +598,18 @@
 				<entry key="URL" value="https://pharos.nih.gov" />
 				<entry key="AccessURL" value="https://pharos.nih.gov/ligands/###ID###" />
 				<!-- No entry in identifiers.org for Pharos
+				<entry key="resourceIdentifier" value="MIR:"/>
+				-->
+			</map>
+		</entry>
+
+		<entry key="GlyGen">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="GlyGen" />
+				<entry key="URL" value="https://www.glygen.org" />
+				<!-- It was requested that we link to the "Glycosylation" part of the page. -->
+				<entry key="AccessURL" value="https://www.glygen.org/protein/###ID####Glycosylation" />
+				<!-- No entry in identifiers.org for GlyGen
 				<entry key="resourceIdentifier" value="MIR:"/>
 				-->
 			</map>
