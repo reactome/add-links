@@ -36,7 +36,7 @@ public class GlyGenFileProcessor extends FileProcessor<String>
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			logger.error(e);
 		}
 
 		return mapping;
