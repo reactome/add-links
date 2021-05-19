@@ -347,7 +347,6 @@
 			</bean>
 		</entry>
 
-		<!-- GlyGen server seems to be causing an certiciation validation error - do not run the GlyGen components until GlyGen resolves this. -->
 		<entry key="GlyGen">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="GlyGen">
 				<!-- alternate URL (version-specific): https://data.glygen.org/ln2releases/v-1.8.25/reviewed/protein_glygen_uniprotkb_xref_mapping.tsv -->
