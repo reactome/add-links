@@ -249,7 +249,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Rhea" />
 				<entry key="URL" value="http://www.rhea-db.org/" />
-				<entry key="AccessURL" value="http://www.rhea-db.org/reaction?id=###ID###" />
+				<entry key="AccessURL" value="https://www.rhea-db.org/rhea/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100113"/>
 			</map>
 		</entry>
