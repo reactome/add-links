@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.6.0
+ - Add links for:
+   - GlyGen
+   - Guide to Pharmacology
+   - Pharos
+ - Switch to new version of release-common-lib (1.2.2)
+ - Minor fixes for KEGG
+
 ## 1.5.1
  - Add SARS files for ComplexPortal
  - Remove unused DOCKBlaster code
