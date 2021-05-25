@@ -3,7 +3,7 @@ package org.reactome.addlinks.dataretrieval.ensembl;
 import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
 import org.reactome.addlinks.EnsemblBioMartUtil;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 import java.io.*;
 import java.net.HttpURLConnection;

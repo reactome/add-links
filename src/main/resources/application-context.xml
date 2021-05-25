@@ -36,6 +36,9 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>GlyGen</value>
+		<value>GuideToPharmacologyLigands</value>
+		<value>GuideToPharmacologyTargets</value>
 		<value>PharmacoDB</value>
 		<value>IUPHAR</value>
 		<value>ComplexPortal</value>
@@ -76,9 +79,14 @@
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
+		<value>PharosTargets</value>
+		<value>PharosLigands</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>GlyGenFileProcessor</value>
+		<value>GtPLigandsProcessor</value>
+		<value>GtPTargetsProcessor</value>
 		<value>PharmacoDBFileProcessor</value>
 		<value>ComplexPortalFileProcessor</value>
 		<value>ComplexPortalSARSFileProcessor</value>
@@ -117,9 +125,16 @@
 		<value>RGDFileProcessor</value>
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
+		<value>PharosTargetsFileProcessor</value>
+		<value>PharosLigandsFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>GlyGenReferenceCreator</value>
+		<value>PharosTargetsReferenceCreator</value>
+		<value>PharosLigandsReferenceCreator</value>
+		<value>GtPLigandsReferenceCreator</value>
+		<value>GtPTargetsReferenceCreator</value>
 		<value>PharmacoDBReferenceCreator</value>
 		<value>ComplexPortalRefCreator</value>
 		<value>ComplexPortalSARSCOV2RefCreator</value>
@@ -170,6 +185,12 @@
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
+		<!-- Be aware that the Guide to Pharmacology will
+		return a 200 response code even if the identifier
+		is not found, so you need to look for "WARN" messages
+		in the LinkCheckManager log. -->
+		<value>Guide to Pharmacology - Targets</value>
+		<value>Guide to Pharmacology - Ligands</value>
 		<value>Target Pathogen</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
@@ -209,6 +230,17 @@
 		<value>Xenbase</value>
 		<value>ZFIN</value>
 		<value>Ensembl</value>
+		<!-- NOTE: Sometimes Pharos will return a 502 (Bad Gateway) error code,
+		but when you load the URL manually in your browser, it works. I suspect
+		this is a transient issue which will make link-checking of Pharos
+		a bit error-prone. If you see a few Pharos link-check errors,
+		verify them manually. They will *probably* be OK. -->
+		<value>Pharos - Targets</value>
+		<value>Pharos - Ligands</value>
+		<!--
+		GlyGen uses Javscript to load the page contents so a simple GET is not enough
+		to verify the link.
+		<value>GlyGen</value> -->
 		<!--
 		VGNC pages load an initial template page before using JavaScript to retrieve the data that is displayed.
 		This prevents an identifier search in the page from becoming possible, since it is just searching the template.

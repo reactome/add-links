@@ -16,7 +16,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.InvalidAttributeException;
-import org.reactome.addlinks.CustomLoggable;
+import org.reactome.release.common.CustomLoggable;
 
 
 public class LinkCheckManager implements CustomLoggable
@@ -25,7 +25,7 @@ public class LinkCheckManager implements CustomLoggable
 	private static final String IDENTIFIER_TOKEN = "###ID###";
 	private static Logger logger ;
 	private MySQLAdaptor dbAdaptor;
-	
+
 	public LinkCheckManager()
 	{
 		if (LinkCheckManager.logger  == null)
@@ -33,12 +33,12 @@ public class LinkCheckManager implements CustomLoggable
 			LinkCheckManager.logger = this.createLogger("LinkCheckManager", "RollingRandomAccessFile", this.getClass().getName(), true, Level.DEBUG);
 		}
 	}
-	
+
 	public void setDbAdaptor(MySQLAdaptor adaptor)
 	{
-		this.dbAdaptor = adaptor;	
+		this.dbAdaptor = adaptor;
 	}
-	
+
 	/**
 	 * Takes in a list of instances that have Identifier attributes and checks them as links.
 	 * @param refDBInst - This accessURL of refDBInst will be used to generate the links that will be checked.
@@ -63,9 +63,9 @@ public class LinkCheckManager implements CustomLoggable
 		{
 			throw new IllegalArgumentException("\"maxToCheck\" cannot be negative.");
 		}
-		
+
 		Map<String, LinkCheckInfo> linkCheckResults = Collections.synchronizedMap( new HashMap<String, LinkCheckInfo>(instances.size()) );
-		
+
 		int numberOfInstancesToCheck ;
 		if (instances.size() < maxToCheck)
 		{
@@ -75,13 +75,13 @@ public class LinkCheckManager implements CustomLoggable
 		{
 			numberOfInstancesToCheck = Math.min( Math.min( (int)(instances.size() * proportionToCheck) , instances.size()), maxToCheck);
 		}
-		
+
 		Collections.shuffle(instances);
 		List<GKInstance> instancesToCheck = instances.subList(0, numberOfInstancesToCheck);
-		
+
 		logger.info("Checking links for {}; requested proportion of links to check: {}; max allows links to check: {}; Total # of possible links to check: {}; {}*{}: {}; *actual* number of links to check: {}",
 				refDBInst, proportionToCheck, maxToCheck, instances.size(), proportionToCheck , instances.size(), (int)(instances.size() * proportionToCheck), instancesToCheck.size());
-		
+
 		String refDBID = refDBInst.getDBID().toString();
 		instancesToCheck.parallelStream().forEach( inst -> {
 			try
@@ -91,7 +91,7 @@ public class LinkCheckManager implements CustomLoggable
 				String accessURL = ((String)refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl));
 				accessURL = LinkCheckManager.tweakIfZinc(refDBInst);
 				String referenceDatabaseName = refDBInst.getDisplayName();
-				
+
 				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
 			}
 			catch (URISyntaxException e)
@@ -127,13 +127,13 @@ public class LinkCheckManager implements CustomLoggable
 	 * In theory, this is supposed to reduce the amount of time it takes for Zinc to respond.
 	 * @param refDBInst - The ReferenceDatabase to tweak.
 	 * @return The updated URL IF it is for a Zinc URL. If not Zinc, the original accessURL will be returned.
-	 * @throws Exception 
-	 * @throws InvalidAttributeException 
+	 * @throws Exception
+	 * @throws InvalidAttributeException
 	 */
 	private static String tweakIfZinc(GKInstance refDBInst) throws InvalidAttributeException, Exception
 	{
 		String refDBName = refDBInst.getDisplayName();
-		
+
 		String accessURL = (String) refDBInst.getAttributeValue(ReactomeJavaConstants.accessUrl);
 		String newURL = accessURL;
 		// Zinc databases all start with "Zinc" such as "Zinc - Substances". But we'll normalize to lowercase.
@@ -143,7 +143,7 @@ public class LinkCheckManager implements CustomLoggable
 		}
 		return newURL;
 	}
-	
+
 	/**
 	 * Takes in a (possibly) heterogeneous list of instances with Identifier attributes and then gets links out of them and then checks them.
 	 * The instances do NOT need to be associated with the same Reference Database.
@@ -153,23 +153,23 @@ public class LinkCheckManager implements CustomLoggable
 	public Map<String, LinkCheckInfo> checkLinks(List<GKInstance> instances)
 	{
 		Map<String, GKInstance> refDBCache = new HashMap<>();
-		
+
 		// This map stores results, keyed by DB_ID of the objects.
 		Map<String, LinkCheckInfo> linkCheckResults = Collections.synchronizedMap( new HashMap<String, LinkCheckInfo>(instances.size()) );
-		
+
 		//for (GKInstance inst : instances)
-		instances.parallelStream().forEach( inst -> 
+		instances.parallelStream().forEach( inst ->
 		{
 			// checking a link is more than just a true/false - the status code needs
-			// to be taken into account too. And we could track other things such as number of 
+			// to be taken into account too. And we could track other things such as number of
 			// retries, and time to get the response.
-			// Maybe we should pass a call-back function to the link-checker 
+			// Maybe we should pass a call-back function to the link-checker
 			// to be called when the link-checker has gotten a response.
-			
+
 			try
 			{
 				String identifierString = (String) inst.getAttributeValue("identifier");
-				
+
 				String refDBID =  ((GKInstance) inst.getAttributeValue("referenceDatabase")).getDBID().toString();
 				GKInstance refDBInstance;
 				if (!refDBCache.containsKey(refDBID))
@@ -186,7 +186,7 @@ public class LinkCheckManager implements CustomLoggable
 				String accessURL = ((String)refDBCache.get(refDBID).getAttributeValue("accessUrl"));
 				accessURL = LinkCheckManager.tweakIfZinc(refDBInstance);
 				String referenceDatabaseName = ((String)refDBCache.get(refDBID).getDisplayName());
-				
+
 				LinkCheckManager.checkTheLink(linkCheckResults, refDBID, inst, identifierString, accessURL, referenceDatabaseName);
 			}
 			catch (Exception e)
@@ -194,11 +194,11 @@ public class LinkCheckManager implements CustomLoggable
 				e.printStackTrace();
 				throw new Error(e);
 			}
-			
+
 		});
 		return linkCheckResults;
 	}
-	
+
 	private static void checkTheLink(Map<String, LinkCheckInfo> linkCheckResults, String refDBID, GKInstance inst, String identifierString, String accessURL, String referenceDatabaseName)
 			throws URISyntaxException, HttpHostConnectException, IOException, Exception, InterruptedException
 	{
@@ -206,8 +206,8 @@ public class LinkCheckManager implements CustomLoggable
 		// Normally, we don't create references for these databases so we normally do not check links for these databases. BUT...
 		// just in cas someone tries to run link-checking on such a database OR if somehow, a ReferenceDatabase accessURL loses it's token,
 		// we will check for the token before proceeding, and issue a warning if no token was found.
-		// 
-		// This should not be an exception because there are legitimate ReferenceDatabases that do not have this value, but still, it's 
+		//
+		// This should not be an exception because there are legitimate ReferenceDatabases that do not have this value, but still, it's
 		// a good idea to warn the user about it. Most likely, this will happen if they try to link-check on something that they should not
 		// be checking.
 		if (!accessURL.contains(IDENTIFIER_TOKEN))

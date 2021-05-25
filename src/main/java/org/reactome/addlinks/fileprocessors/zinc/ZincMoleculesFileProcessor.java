@@ -1,4 +1,4 @@
-package org.reactome.addlinks.fileprocessors;
+package org.reactome.addlinks.fileprocessors.zinc;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class ZincMoleculesFileProcessor extends FileProcessor<List<String>>
 {

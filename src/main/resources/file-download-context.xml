@@ -8,11 +8,11 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<context:property-placeholder location="file:resources/*.properties"  />
-	
+
 <!-- 	<context:annotation-config/>
-	
+
 	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
- -->	
+ -->
 	<import resource="reference-databases.xml"/>
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
@@ -21,7 +21,7 @@
 	<import resource="file-processors-ref-creators-link.xml"/>
 	<import resource="reference-creators.xml"/>
 
-	<!-- DB Adapter 
+	<!-- DB Adapter
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
 	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
@@ -31,20 +31,26 @@
 		<constructor-arg name="password" index="3" value="${release.database.password}"/>
 		<constructor-arg name="port" index="4" value="${release.database.port}"/>
 	</bean>
-	
-	
+
+
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" type="boolean" name="lazyLoad" value="${lazyLoadCache}" />
 	</bean>
-	
+
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>UniProtToKEGG</value>
-		<value>KEGGRetriever</value>
+		<value>GlyGen</value>
+		<value>GuideToPharmacologyLigands</value>
+		<value>GuideToPharmacologyTargets</value>
+		<value>PharosTargets</value>
+		<value>PharosLigands</value>
+		<value>COSMIC</value>
+		<value>IntEnz</value>
 		<value>TargetPathogen</value>
-		<value>IntEnz</value>		
+		<value>UniProtToKEGG</value>
 		<value>UniProtToENSEMBL</value>
+		<value>KEGGRetriever</value>
 		<value>EnsemblToALL</value>
 		<value>OpenTargets</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
@@ -58,7 +64,6 @@
 		<value>UniProtToOMIM</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>Zinc</value>
-		<value>COSMIC</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
 		<value>OrthologsCSVFromZinc</value>
@@ -83,15 +88,15 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		 
+
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		 
+
 	</util:list>
-	
+
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
-		
+
 	</util:list>
 
 	<bean id="addLinks" name="addLinks" class="org.reactome.addlinks.AddLinks" scope="singleton" autowire="byName"
@@ -103,6 +108,6 @@
 		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
 		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
 	</bean>
-	
-	
+
+
 </beans>

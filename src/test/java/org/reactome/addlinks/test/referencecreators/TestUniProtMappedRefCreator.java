@@ -12,7 +12,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.OMIMFileProcessor;
@@ -32,110 +32,110 @@ public class TestUniProtMappedRefCreator
 {
 	@Autowired
 	ReferenceObjectCache objectCache;
-	
+
 	// For Wormbase
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedWormbaseRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToWormbase;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToWormbaseFileProcessor;
 
 	// For OMIM
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedOMIMRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToOMIM;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToOMIMFileProcessor;
-	
+
 	// *New* OMIM
 	@Autowired FileRetriever OMIMFileRetriever;
-	
+
 	@Autowired OMIMFileProcessor OMIMProcessor;
-	
+
 	// For PDB
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedPDBRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToPDB;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToPDBFileProcessor;
-	
+
 	// For RefSeqPeptide
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedRefSeqPeptideRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToRefSeqPeptide;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToRefSeqPeptideFileProcessor;
-	
+
 	// For RefSeqRNA
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedRefSeqRNARefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToRefSeqRNA;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToRefSeqRNAFileProcessor;
-	
+
 	// For ENSEMBLGene
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedENSEMBLGeneRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToENSEMBLGene;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToENSEMBLGeneFileProcessor;
-	
+
 	// For EntrezGene
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedEntrezGeneRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToEntrezGene;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToEntrezGeneFileProcessor;
-	
+
 	// For EntrezGene - from ENSEMBL
 	@Autowired
 	UPMappedIdentifiersReferenceCreator ENSEMBLToEntrezGeneRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever ENSEMBLToEntrezGeneRetriever;
-	
+
 	@Autowired
 	UniprotFileProcessor ENSEMBLToEntrezGeneFileProcessor;
-	
-	
+
+
 	// For KEGG
 	@Autowired
 	UPMappedIdentifiersReferenceCreator upMappedKEGGRefCreator;
-	
+
 	@Autowired
 	UniprotFileRetriever UniProtToKEGG;
-	
+
 	@Autowired
 	UniprotFileProcessor UniprotToKEGGFileProcessor;
-	
+
 //	@BeforeClass
 //	public static void setup()
 //	{
 //		System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
 //		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
 //		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-//		
+//
 //		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.conn", "DEBUG");
 //		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.impl.client", "DEBUG");
 //		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client", "DEBUG");
@@ -159,7 +159,7 @@ public class TestUniProtMappedRefCreator
 			));
 		return inStream;
 	}
-	
+
 	private List<GKInstance> getIdentifiersList(String refDb, String species, String className)
 	{
 		// Need a list of identifiers.
@@ -176,7 +176,7 @@ public class TestUniProtMappedRefCreator
 			identifiers = objectCache.getByRefDb(refDBID, className);
 			System.out.println(refDb + " " + refDBID + " ; " );
 		}
-		
+
 		return identifiers;
 	}
 
@@ -197,7 +197,7 @@ public class TestUniProtMappedRefCreator
 		refCreator.setTestMode(true);
 		refCreator.createIdentifiers(123456, mappings, identifiers );
 	}
-	
+
 	private void testReferenceCreation(String refDb, String species, String className, UniprotFileRetriever retriever, FileRetriever altRetriever, UniprotFileProcessor processor, UPMappedIdentifiersReferenceCreator refCreator) throws Exception, IOException
 	{
 		String refDBID = objectCache.getRefDbNamesToIds().get(refDb).get(0);
@@ -216,7 +216,7 @@ public class TestUniProtMappedRefCreator
 		refCreator.setTestMode(true);
 		refCreator.createIdentifiers(123456, mappings, identifiers );
 	}
-	
+
 	@Test
 	public void testUPRefCreatorWormbase() throws Exception
 	{
@@ -234,7 +234,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToOMIM, UniprotToOMIMFileProcessor, upMappedOMIMRefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorOMIMNewFileProcessor() throws Exception
 	{
@@ -243,7 +243,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToOMIM, OMIMFileRetriever, OMIMProcessor, upMappedOMIMRefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorPDB() throws Exception
 	{
@@ -252,7 +252,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToPDB, UniprotToPDBFileProcessor, upMappedPDBRefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorRefSeqPeptide() throws Exception
 	{
@@ -261,7 +261,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToRefSeqPeptide, UniprotToRefSeqPeptideFileProcessor, upMappedRefSeqPeptideRefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorRefSeqRNA() throws Exception
 	{
@@ -270,7 +270,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToRefSeqRNA, UniprotToRefSeqRNAFileProcessor, upMappedRefSeqRNARefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorENSEMBLGene() throws Exception
 	{
@@ -279,7 +279,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToENSEMBLGene, UniprotToENSEMBLGeneFileProcessor, upMappedENSEMBLGeneRefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorEntrezGene() throws Exception
 	{
@@ -288,7 +288,7 @@ public class TestUniProtMappedRefCreator
 		String className = "ReferenceGeneProduct";
 		testReferenceCreation(refDb, species, className, UniProtToEntrezGene, UniprotToEntrezGeneFileProcessor, upMappedEntrezGeneRefCreator);
 	}
-	
+
 	@Test
 	public void testUPRefCreatorKEGG() throws Exception
 	{
@@ -299,7 +299,7 @@ public class TestUniProtMappedRefCreator
 	}
 
 
-	
+
 //	// Nope. UniProt won't map non-uniprot input IDs.
 //	@Test
 //	public void testExperimentalENSEMBLToEntrezGene() throws Exception

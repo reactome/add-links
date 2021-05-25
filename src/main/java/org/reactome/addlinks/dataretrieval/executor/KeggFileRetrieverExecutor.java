@@ -12,17 +12,17 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.KEGGFileRetriever;
 import org.reactome.addlinks.dataretrieval.UniprotFileRetriever;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.kegg.KEGGSpeciesCache;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 {
 	private ReferenceObjectCache objectCache;
 	private Map<String, UniprotFileRetriever> uniprotFileRetrievers;
-	
+
 	public KeggFileRetrieverExecutor(Map<String, ? extends FileRetriever> retrievers, Map<String, UniprotFileRetriever> uniprotRetrievers, List<String> retrieverFilter, ReferenceObjectCache cache)
 	{
 		super(retrievers, retrieverFilter);
@@ -39,12 +39,12 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 			UniprotFileRetriever uniprotToKeggRetriever = this.uniprotFileRetrievers.get("UniProtToKEGG");
 			// Get the KEGG retriever that is defined in the Spring config.
 			KEGGFileRetriever keggFileRetriever = (KEGGFileRetriever) this.fileRetrievers.get("KEGGRetriever");
-			
+
 			// Now we need to loop through the species.
 			String downloadDestination = keggFileRetriever.getFetchDestination();
 
 			List<Callable<Boolean>> keggJobs = new ArrayList<Callable<Boolean>>();
-			
+
 			// Loop over the species that are valid for KEGG...
 			for (String speciesName : objectCache.getSetOfSpeciesNames().stream().sequential()
 												.filter(speciesName -> KEGGSpeciesCache.getKEGGCodes(speciesName)!=null)
@@ -52,7 +52,7 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 			{
 				String speciesCode = objectCache.getSpeciesNamesToIds().get(speciesName).get(0);
 				logger.debug("Species Name: {} Species Code: {}", speciesName, speciesCode);
-				
+
 				// A predicate to determine if a UniProt mapping file is valid for KEGG to use.
 				// It's valid if: it's not a "notMapped" file; it contains "KEGG"; it's valid on the filesystem; the current (of this loop) species is in the filename; it has content
 				Predicate<String> isValidKEGGmappingFile = new Predicate<String>()
@@ -75,18 +75,18 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 						}
 					}
 				};
-				
+
 				List<Path> uniProtToKeggFiles = uniprotToKeggRetriever.getActualFetchDestinations().stream()
 																			.filter(fileName -> isValidKEGGmappingFile.test(fileName))
 																			.map(fileName -> Paths.get(fileName))
 																			.collect(Collectors.toList());
-				// This could happen if the UniProt files were already downloaded. In that case, uniprotToKeggRetriever.getActualFetchDestinations() will return 
+				// This could happen if the UniProt files were already downloaded. In that case, uniprotToKeggRetriever.getActualFetchDestinations() will return
 				// NULL because nothing was downloaded this time.
 				if (uniProtToKeggFiles == null || uniProtToKeggFiles.isEmpty())
 				{
 					// Since the uniprotToKeggRetriever didn't download anything, maybe we can check in the directory and see if there are any other files there.
 					String uniProtToKeggDestination = uniprotToKeggRetriever.getFetchDestination();
-					
+
 					try
 					{
 						// We'll try to search for everything in the uniprotToKeggRetriever's destination's directory.
@@ -98,10 +98,10 @@ public class KeggFileRetrieverExecutor extends AbstractFileRetrieverExecutor
 					{
 						e.printStackTrace();
 					}
-					
+
 				}
 
-				// If we have an OK file... 
+				// If we have an OK file...
 				if (uniProtToKeggFiles != null && uniProtToKeggFiles.size() > 0)
 				{
 					List<Path> files = uniProtToKeggFiles;

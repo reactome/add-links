@@ -20,25 +20,25 @@ import org.gk.persistence.MySQLAdaptor;
 import org.gk.persistence.MySQLAdaptor.AttributeQueryRequest;
 import org.gk.schema.InvalidAttributeException;
 import org.gk.schema.InvalidClassException;
-import org.reactome.addlinks.CustomLoggable;
-import org.reactome.addlinks.dataretrieval.FileRetriever;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblBatchLookup;
 import org.reactome.addlinks.dataretrieval.ensembl.EnsemblFileRetriever;
 import org.reactome.addlinks.dataretrieval.executor.AbstractFileRetrieverExecutor;
 import org.reactome.addlinks.db.ReferenceObjectCache;
 import org.reactome.addlinks.fileprocessors.ensembl.EnsemblBatchLookupFileProcessor;
+import org.reactome.release.common.CustomLoggable;
+import org.reactome.release.common.dataretrieval.FileRetriever;
 
 public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor implements CustomLoggable
 {
 	private Logger logger;
-	
+
 	private EnsemblBatchLookup ensemblBatchLookup;
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrievers;
 	private Map<String, EnsemblFileRetriever> ensemblFileRetrieversNonCore;
 	private ReferenceObjectCache objectCache;
 
 	private MySQLAdaptor dbAdapter;
-	
+
 	public EnsemblFileRetrieverExecutor(Map<String, ? extends FileRetriever> retrievers, Map<String, ? extends FileRetriever> nonCoreRetrievers, List<String> retrieverFilter, EnsemblBatchLookup batchLookup, ReferenceObjectCache cache, MySQLAdaptor adaptor)
 	{
 		super(retrievers, retrieverFilter);
@@ -49,22 +49,22 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 		this.objectCache = cache;
 		this.dbAdapter = adaptor;
 	}
-	
+
 	private void execute() throws Exception
 	{
 		// Getting cross-references from ENSEMBL requires first getting doing a batch mapping from ENSP to ENST, then batch mapping ENST to ENSG.
 		// Then, individual xref lookups on ENSG.
 		// To do the batch lookups, you will need the species, and also the species-specific ENSEMBL db_id.
 		// To do the xref lookup, you will need the target database.
-		
-		// Ok, here's what to do: 
+
+		// Ok, here's what to do:
 		// 1) Find all ReferenceDatabase objects whose name is LIKE 'ENSEMBL_%_PROTEIN' and accessUrl is LIKE '%www.ensembl.org%'
 		//    (this will capture "core" databases. We'll handle the ones that are for other ENSEMBL databases, such as "plants.ensembl.org" and "fungi.ensembl.org" separately)
 		// 2) do batch lookups on everything in the database for that Ensembl ReferenceDatabase.
 		// 3) do batch lookups to get ENSG ENSEMBL IDs, where necessary.
 		// 4) Use list of ensemblFileRetrievers to do xref lookups.
 		// Consider refactoring all of this into a separate class.
-		
+
 		String dbName = "ENSEMBL_%_PROTEIN";
 		logger.debug("Trying to find database with name {}", dbName);
 		String url = "%www.ensembl.org%";
@@ -74,32 +74,32 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 			logger.debug("Database {} exists ({} matches), now trying to find entities that reference it.", dbName, databases.size());
 
 			List<GKInstance> refGeneProducts = getRefGeneProds(databases);
-			
+
 			// generate list of ENSP identifiers. This code would look prettier if getAttributeValue didn't throw Exception ;)
 			Map<String, List<String>> refGeneProdsBySpecies = getRefGeneProdsBySpecies(refGeneProducts);
-			
+
 			// now, do batch look-ups by species. This will perform Protein-to-Transcript mappings.
 			String baseFetchDestination = ensemblBatchLookup.getFetchDestination();
 			for (String species : refGeneProdsBySpecies.keySet())
 			{
 				String speciesName = objectCache.getSpeciesNamesByID().get(species).get(0).replaceAll(" ", "_");
-				
+
 				ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENSP_batch_lookup."+species+".xml");
 				ensemblBatchLookup.setSpecies(speciesName);
 				ensemblBatchLookup.setIdentifiers(refGeneProdsBySpecies.get(species));
 				ensemblBatchLookup.fetchData();
-				
+
 				EnsemblBatchLookupFileProcessor enspProcessor = new EnsemblBatchLookupFileProcessor("file-processors/EnsemblBatchLookupFileProcessor");
 				enspProcessor.setPath(Paths.get(baseFetchDestination+"ENSP_batch_lookup."+species+".xml"));
 				Map<String, String> enspToEnstMap = enspProcessor.getIdMappingsFromFile();
-				
+
 				if (!enspToEnstMap.isEmpty())
 				{
 					ensemblBatchLookup.setFetchDestination(baseFetchDestination+"ENST_batch_lookup."+species+".xml");
 					ensemblBatchLookup.setSpecies(speciesName);
 					ensemblBatchLookup.setIdentifiers(new ArrayList<String>(enspToEnstMap.values()));
 					ensemblBatchLookup.fetchData();
-					
+
 					enspProcessor.setPath(Paths.get(baseFetchDestination+"ENST_batch_lookup."+species+".xml"));
 					Map<String, String> enstToEnsgMap = enspProcessor.getIdMappingsFromFile();
 
@@ -124,7 +124,7 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 		{
 			logger.debug("Could not find a database with name = {} and url like {}", dbName, url);
 		}
-		
+
 		url = "%www.ensembl.org%";
 		dbName = "ENSEMBL_%";
 		databases = getRefDatabaseObjects(dbName, url, " NOT LIKE ");
@@ -151,7 +151,7 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 	private void executeEnsemblFileRetrievers(Map<String, EnsemblFileRetriever> retrievers, String species, String speciesName, List<String> identifiers)
 	{
 		List<Callable<Boolean>> jobs = Collections.synchronizedList(new ArrayList<Callable<Boolean>>());
-		
+
 		retrievers.keySet().parallelStream().forEach( ensemblRetrieverName ->
 		{
 			Callable<Boolean> job = new Callable<Boolean>()
@@ -211,7 +211,7 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 			{
 				e.printStackTrace();
 			}
-			
+
 		});
 		return refGeneProdsBySpecies;
 	}
@@ -231,7 +231,7 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 				List<GKInstance> results = objectCache.getByRefDb(String.valueOf(database.getDBID()) , "ReferenceGeneProduct");
 				refGeneProducts.addAll(results);
 				logger.debug("{} results found in cache", results.size());
-				
+
 			}
 		}
 		logger.debug("{} ReferenceGeneProducts found", refGeneProducts.size());

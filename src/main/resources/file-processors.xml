@@ -45,7 +45,7 @@
 		</entry>
 
 		<entry key="HmdbProteinsFileProcessor">
-			<bean id="HmdbProteinsFileProcessor" class="org.reactome.addlinks.fileprocessors.HmdbProteinsFileProcessor">
+			<bean id="HmdbProteinsFileProcessor" class="org.reactome.addlinks.fileprocessors.hmdb.HmdbProteinsFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/HmdbProteinsFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
@@ -56,7 +56,7 @@
 		</entry>
 
 		<entry key="HmdbMetabolitesFileProcessor">
-			<bean id="HmdbMetabolitesFileProcessor" class="org.reactome.addlinks.fileprocessors.HmdbMetabolitesFileProcessor">
+			<bean id="HmdbMetabolitesFileProcessor" class="org.reactome.addlinks.fileprocessors.hmdb.HmdbMetabolitesFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/HmdbMetabolitesFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
@@ -87,7 +87,7 @@
 				</property>
 			</bean>
 		</entry>
-		
+
 		<entry key="ComplexPortalSARSFileProcessor">
 			<bean id="ComplexPortalSARSFileProcessor" class="org.reactome.addlinks.fileprocessors.ComplexPortalFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/ComplexPortalSARSFileProcessor"/>
@@ -111,7 +111,7 @@
 		</entry>
 
 		<entry key="ZincMoleculesFileProcessor">
-			<bean id="ZincMoleculesFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincMoleculesFileProcessor">
+			<bean id="ZincMoleculesFileProcessor" class="org.reactome.addlinks.fileprocessors.zinc.ZincMoleculesFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/ZincMoleculesFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
@@ -206,7 +206,7 @@
 		</entry>
 
 		<entry key="zincProtFileProcessor">
-			<bean id="zincProtFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincProteinsFileProcessor">
+			<bean id="zincProtFileProcessor" class="org.reactome.addlinks.fileprocessors.zinc.ZincProteinsFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/zincProtFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
@@ -217,7 +217,7 @@
 		</entry>
 
 		<entry key="zincOrthologFileProcessor">
-			<bean id="zincOrthologFileProcessor" class="org.reactome.addlinks.fileprocessors.ZincOrthologsFileProcessor">
+			<bean id="zincOrthologFileProcessor" class="org.reactome.addlinks.fileprocessors.zinc.ZincOrthologsFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/zincOrthologFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
@@ -409,7 +409,49 @@
 				</property>
 			</bean>
 		</entry>
-		
+		<entry key="PharosTargetsFileProcessor">
+			<bean id="PharosTargetsFileProcessor" class="org.reactome.addlinks.fileprocessors.pharos.PharosTargetsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/PharosTargetsFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharos-targets.txt"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="PharosLigandsFileProcessor">
+			<bean id="PharosLigandsFileProcessor" class="org.reactome.addlinks.fileprocessors.pharos.PharosLigandsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/PharosLigandsFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharos-ligands.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+		<entry key="GtPTargetsProcessor">
+			<bean id="GtPTargetsProcessor" class="org.reactome.addlinks.fileprocessors.gtp.GuideToPharmacologyTargetsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GtPTargetsProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/gtp-targets.csv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="GtPLigandsProcessor">
+			<bean id="GtPTargetsProcessor" class="org.reactome.addlinks.fileprocessors.gtp.GuideToPharmacologyLigandsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GtPTargetsProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/gtp-ligands.csv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
 		<entry key="PharmacoDBFileProcessor">
 			<bean id="PharmacoDBFileProcessor" class="org.reactome.addlinks.fileprocessors.PharmacoDBFileProcessor">
 				<constructor-arg name="processorName" value="file-processors/PharmacoDBFileProcessor"/>
@@ -428,5 +470,17 @@
 				</property>
 			</bean>
 		</entry>
+
+		<entry key="GlyGenFileProcessor">
+			<bean id="GlyGenFileProcessor" class="org.reactome.addlinks.fileprocessors.GlyGenFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GlyGenFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/protein_glygen_uniprotkb_xref_mapping.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
 	</util:map>
 </beans>

@@ -1,9 +1,11 @@
-package org.reactome.addlinks.fileprocessors;
+package org.reactome.addlinks.fileprocessors.zinc;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.reactome.addlinks.fileprocessors.FileProcessor;
 
 public class ZincProteinsFileProcessor extends FileProcessor<String>
 {
@@ -11,7 +13,7 @@ public class ZincProteinsFileProcessor extends FileProcessor<String>
 	{
 		super(null);
 	}
-	
+
 	public ZincProteinsFileProcessor(String processorName)
 	{
 		super(processorName);

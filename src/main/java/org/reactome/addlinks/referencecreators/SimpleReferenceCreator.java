@@ -1,6 +1,12 @@
 package org.reactome.addlinks.referencecreators;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
@@ -103,61 +109,67 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 
 		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
 
-		sourceReferences.parallelStream().forEach(sourceReference ->
+		if (mapping == null)
 		{
-			try
+			logger.error("Input mapping is null. Something must have gone wrong in the file processing stage.");
+		}
+		else
+		{
+			sourceReferences.parallelStream().forEach(sourceReference ->
 			{
-				String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(this.sourceIdentifyingAttribute);
-
-				if (mapping.containsKey(sourceReferenceIdentifier))
+				try
 				{
-					// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
-					// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
-					// if we want new identifiers to have the same species of the thing which they refer to.
-					Long speciesID = null;
-					@SuppressWarnings("unchecked")
-					Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
-					if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
+					String sourceReferenceIdentifier = (String) sourceReference.getAttributeValue(this.sourceIdentifyingAttribute);
+
+					if (mapping.containsKey(sourceReferenceIdentifier))
 					{
-						GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
-						if (speciesInst != null)
+						// It's possible that we could get a list of things from some third-party that contains mappings for multiple species.
+						// So we need to get the species for EACH thing we iterate on. I worry this will slow it down, but  it needs to be done
+						// if we want new identifiers to have the same species of the thing which they refer to.
+						Long speciesID = null;
+						@SuppressWarnings("unchecked")
+						Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
+						if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
 						{
-							speciesID = speciesInst.getDBID();
+							GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
+							if (speciesInst != null)
+							{
+								speciesID = speciesInst.getDBID();
+							}
 						}
-					}
 
-					// The T value of the mapping can be either a List or a String depending on the FileProcessors invoked.
-					Set<String> targetRefDBIdentifiers = new HashSet<>();
-					if (mapping.get(sourceReferenceIdentifier) instanceof List) {
-						targetRefDBIdentifiers.addAll((List<String>) mapping.get(sourceReferenceIdentifier));
-					} else {
-						targetRefDBIdentifiers.add((String) mapping.get(sourceReferenceIdentifier));
-					}
-
-					for (String targetRefDBIdentifier : targetRefDBIdentifiers) {
-						this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
-						// Look for cross-references.
-						boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
-						if (!xrefAlreadyExists) {
-							this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
-							sourceIdentifiersWithNewIdentifier.incrementAndGet();
-							thingsToCreate.add(targetRefDBIdentifier + "," + sourceReference.getDBID() + "," + speciesID);
+						// The T value of the mapping can be either a List or a String depending on the FileProcessors invoked.
+						Set<String> targetRefDBIdentifiers = new HashSet<>();
+						if (mapping.get(sourceReferenceIdentifier) instanceof List) {
+							targetRefDBIdentifiers.addAll((List<String>) mapping.get(sourceReferenceIdentifier));
 						} else {
-							sourceIdentifiersWithExistingIdentifier.incrementAndGet();
+							targetRefDBIdentifiers.add((String) mapping.get(sourceReferenceIdentifier));
+						}
+
+						for (String targetRefDBIdentifier : targetRefDBIdentifiers) {
+							this.logger.trace("{} ID: {}; {} ID: {}", this.sourceRefDB, sourceReferenceIdentifier, this.targetRefDB, targetRefDBIdentifier);
+							// Look for cross-references.
+							boolean xrefAlreadyExists = checkXRefExists(sourceReference, targetRefDBIdentifier);
+							if (!xrefAlreadyExists) {
+								this.logger.trace("\tCross-reference {} does not yet exist, need to create a new identifier!", targetRefDBIdentifier);
+								sourceIdentifiersWithNewIdentifier.incrementAndGet();
+								thingsToCreate.add(targetRefDBIdentifier + "," + sourceReference.getDBID() + "," + speciesID);
+							} else {
+								sourceIdentifiersWithExistingIdentifier.incrementAndGet();
+							}
 						}
 					}
+					else
+					{
+						sourceIdentifiersWithNoMapping.incrementAndGet();
+					}
 				}
-				else
+				catch (Exception e)
 				{
-					sourceIdentifiersWithNoMapping.incrementAndGet();
+					e.printStackTrace();
 				}
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		});
-
+			});
+		}
 		for(String thing : thingsToCreate)
 		{
 			String[] parts = thing.split(",");
