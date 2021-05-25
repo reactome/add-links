@@ -40,21 +40,11 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		<value>GlyGen</value>
-		<value>GuideToPharmacologyLigands</value>
-		<value>GuideToPharmacologyTargets</value>
-		<value>PharosTargets</value>
-		<value>PharosLigands</value>
-		<value>COSMIC</value>
-		<value>IntEnz</value>
-		<value>TargetPathogen</value>
+		<value>ComplexPortal</value>
+		<value>ComplexPortalSARS</value>
+		<value>ComplexPortalSARSCOV2</value>
 		<value>UniProtToKEGG</value>
 		<value>UniProtToENSEMBL</value>
-		<value>KEGGRetriever</value>
-		<value>EnsemblToALL</value>
-		<value>OpenTargets</value>
-		<value>FlyBaseToUniprotReferenceDNASequence</value>
-		<value>CTD</value>
 		<value>UniProtToEntrez_Gene</value>
 		<value>UniProtToUCSC</value>
 		<value>UniProtToRefSeqPeptide</value>
@@ -62,7 +52,21 @@
 		<value>UniProtToPDB</value>
 		<value>UniProtToWormbase</value>
 		<value>UniProtToOMIM</value>
+		<value>KEGGRetriever</value>
 		<value>PROToReferencePeptideSequence</value>
+		<value>VGNC</value>
+		<!--<value>GlyGen</value>
+		<value>GuideToPharmacologyLigands</value>
+		<value>GuideToPharmacologyTargets</value>
+		<value>PharosTargets</value>
+		<value>PharosLigands</value>
+		<value>COSMIC</value>
+		<value>IntEnz</value>
+		<value>TargetPathogen</value>
+		<value>EnsemblToALL</value>
+		<value>OpenTargets</value>
+		<value>FlyBaseToUniprotReferenceDNASequence</value>
+		<value>CTD</value>
 		<value>Zinc</value>
 		<value>HGNC</value>
 		<value>OrthologsFromZinc</value>
@@ -73,18 +77,14 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>ComplexPortal</value>
-		<value>ComplexPortalSARS</value>
-		<value>ComplexPortalSARSCOV2</value>
 		<value>IUPHAR</value>
 		<value>PharmacoDB</value>
 		<value>HPA</value>
-		<value>VGNC</value>
 		<value>MGI</value>
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>EnsemblBioMart</value>
+		<value>EnsemblBioMart</value>-->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
