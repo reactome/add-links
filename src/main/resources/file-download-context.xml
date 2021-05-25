@@ -40,6 +40,11 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>GlyGen</value>
+		<value>GuideToPharmacologyLigands</value>
+		<value>GuideToPharmacologyTargets</value>
+		<value>PharosTargets</value>
+		<value>PharosLigands</value>
 		<value>COSMIC</value>
 		<value>IntEnz</value>
 		<value>TargetPathogen</value>
