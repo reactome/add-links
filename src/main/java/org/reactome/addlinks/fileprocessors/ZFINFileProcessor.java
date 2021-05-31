@@ -5,7 +5,7 @@ import org.reactome.addlinks.EnsemblBioMartUtil;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ZFINFileProcessor extends FileProcessor{
+public class ZFINFileProcessor extends FileProcessor<List<String>>{
 
     public ZFINFileProcessor(String processorName)
     {
@@ -38,6 +38,7 @@ public class ZFINFileProcessor extends FileProcessor{
                 mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(zfinId);
             }
         }
+        logger.info("{} keys in mapping.", mappings.size());
         return mappings;
     }
 }

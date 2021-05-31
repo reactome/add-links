@@ -8,11 +8,11 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<context:property-placeholder location="file:resources/*.properties"  />
-	
+
 <!-- 	<context:annotation-config/>
-	
+
 	<context:component-scan base-package="org.reactome.addlinks" annotation-config="true" />
- -->	
+ -->
 	<import resource="reference-databases.xml"/>
 	<import resource="basic-file-retrievers.xml"/>
 	<import resource="uniprot-file-retrievers.xml"/>
@@ -21,7 +21,7 @@
 	<import resource="file-processors-ref-creators-link.xml"/>
 	<import resource="reference-creators.xml"/>
 
-	<!-- DB Adapter 
+	<!-- DB Adapter
 	public MySQLAdaptor(String host,String database,String username,String password,int port)
 	-->
 	<bean id="dbAdapter" name="dbAdapter" class="org.gk.persistence.MySQLAdaptor" scope="singleton">
@@ -31,20 +31,22 @@
 		<constructor-arg name="password" index="3" value="${release.database.password}"/>
 		<constructor-arg name="port" index="4" value="${release.database.port}"/>
 	</bean>
-	
-	
+
+
 	<bean id="objectCache" class="org.reactome.addlinks.db.ReferenceObjectCache" scope="singleton">
 		<constructor-arg index="0" type="org.gk.persistence.MySQLAdaptor" name="adapter" ref="dbAdapter"/>
 		<constructor-arg index="1" type="boolean" name="lazyLoad" value="${lazyLoadCache}" />
 	</bean>
-	
+
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
-		 
+
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>GlyGenFileProcessor</value>
+		<value>XenbaseFileProcessor</value>
+		<value>ZFINFileProcessor</value>
+		<!-- <value>GlyGenFileProcessor</value>
 		<value>GtPLigandsProcessor</value>
 		<value>GtPTargetsProcessor</value>
 		<value>PharosTargetsFileProcessor</value>
@@ -83,14 +85,14 @@
 		<value>HPAFileProcessor</value>
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
-		<value>RGDFileProcessor</value>	
-		<value>XenbaseFileProcessor</value>
-		<value>ZFINFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value>
+		<value>RGDFileProcessor</value>
+		<value>EnsemblBioMartFileProcessor</value> -->
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>GlyGenReferenceCreator</value>
+		<value>XenbaseFileProcessor</value>
+		<value>ZFINFileProcessor</value>
+		<!-- <value>GlyGenReferenceCreator</value>
 		<value>PharosTargetsReferenceCreator</value>
 		<value>PharosLigandsReferenceCreator</value>
 		<value>GtPLigandsReferenceCreator</value>
@@ -138,12 +140,10 @@
 		<value>VGNCReferenceCreator</value>
 		<value>MGIReferenceCreator</value>
 		<value>RGDReferenceCreator</value>
-		<value>XenbaseFileProcessor</value>
-		<value>ZFINFileProcessor</value>
 		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value>
+		<value>EnsemblBioMartOtherIdentifierPopulator</value> -->
 	</util:list>
-	
+
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
 		<!-- Be aware that the Guide to Pharmacology will
 		return a 200 response code even if the identifier
@@ -209,9 +209,9 @@
 		OpenTargets use ENSEMBL identifiers, but
 		the identifiers do not appear in the body of the web page.
 		<value>OpenTargets</value> -->
-		<!-- 
+		<!--
 		HGNC pages are now loaded using JavaScript so a simple GET request is not enough to see if
-		the identifier is on the page. 
+		the identifier is on the page.
 		<value>HGNC</value> -->
 		<!--
 		<value>UCSC</value>
@@ -226,7 +226,7 @@
 		-->
 		<!--
 		GeneCards returns a 403 for every request.
-		<value>GeneCards</value> 
+		<value>GeneCards</value>
 		-->
 		<!--
 		Don't bother testing OMIM - they will return a 403 each time you hit their page.
@@ -239,7 +239,7 @@
 		ComplexPortal does not actually contain the identifier in the page content, so we can't properly check it.
 		 -->
 		 <!--
-		 PRO returns a 503 error when accessed via Java 
+		 PRO returns a 503 error when accessed via Java
 		 <value>PRO</value> -->
 	</util:list>
 
@@ -252,6 +252,6 @@
 		<property name="proportionToLinkCheck" value="${proportionToLinkCheck}"/>
 		<property name="maxNumberLinksToCheck" value="${maxNumberLinksToCheck}"/>
 	</bean>
-	
-	
+
+
 </beans>
