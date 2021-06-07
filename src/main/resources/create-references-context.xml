@@ -44,15 +44,16 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
+		<value>PharmacoDBFileProcessor</value>
+		<!-- 
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<!-- <value>GlyGenFileProcessor</value>
+		<value>GlyGenFileProcessor</value>
 		<value>GtPLigandsProcessor</value>
 		<value>GtPTargetsProcessor</value>
 		<value>PharosTargetsFileProcessor</value>
 		<value>PharosLigandsFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
-		<value>PharmacoDBFileProcessor</value>
 		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
@@ -90,15 +91,16 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
+		<!-- 
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
-		<!-- <value>GlyGenReferenceCreator</value>
+		<value>GlyGenReferenceCreator</value>
 		<value>PharosTargetsReferenceCreator</value>
 		<value>PharosLigandsReferenceCreator</value>
 		<value>GtPLigandsReferenceCreator</value>
 		<value>GtPTargetsReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
-		<value>PharmacoDBReferenceCreator</value>
 		<value>KEGGReferenceCreator</value>
 		<value>TargetPathogenReactionsReferenceCreator</value>
 		<value>TargetPathogenProteinsReferenceCreator</value>
