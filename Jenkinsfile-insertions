@@ -81,16 +81,16 @@ pipeline{
 			}
 		}
 		// This stage archives all logs and database backups produced by AddLink-Insertion.
-		stage('Post: Archive Outputs'){
-			steps{
-				script{
-					def addlinksFolder = "addlinks-downloaded-files/"
-					def dataFiles = []
-					def logFiles = ["reports"]
-					def foldersToDelete = ["reports/", "/tmp/addlinks-downloaded-files/"]
-					
-					utils.cleanUpAndArchiveBuildFiles("add_links/insertions", dataFiles, logFiles, foldersToDelete)
-				}
+//		stage('Post: Archive Outputs'){
+//			steps{
+//				script{
+//					def addlinksFolder = "addlinks-downloaded-files/"
+//					def dataFiles = []
+//					def logFiles = ["reports"]
+//					def foldersToDelete = ["reports/", "/tmp/addlinks-downloaded-files/"]
+//					
+//					utils.cleanUpAndArchiveBuildFiles("add_links/insertions", dataFiles, logFiles, foldersToDelete)
+//				}
 			}
 		}
   	}
