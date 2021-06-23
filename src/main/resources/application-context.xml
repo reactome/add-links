@@ -40,7 +40,6 @@
 		<value>GuideToPharmacologyLigands</value>
 		<value>GuideToPharmacologyTargets</value>
 		<value>PharmacoDB</value>
-		<!-- <value>IUPHAR</value> --><!-- Renamed to GuideToPharmacologyLigands -->
 		<value>ComplexPortal</value>
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
