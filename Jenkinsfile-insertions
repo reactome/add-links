@@ -60,7 +60,7 @@ pipeline{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
 						// Take personId from config file and update it in addlinks.properties before building jar file.
 						updatePersonIdInProperties("${ConfigFile}")
-				        
+
 						sh "cp $ConfigFile src/main/resources/auth.properties"
 						sh "ln -sf src/main/resources resources"
 						sh "rm -f src/main/resources/db.properties"
@@ -81,19 +81,19 @@ pipeline{
 			}
 		}
 		// This stage archives all logs and database backups produced by AddLink-Insertion.
-//		stage('Post: Archive Outputs'){
-//			steps{
-//				script{
-//					def addlinksFolder = "addlinks-downloaded-files/"
-//					def dataFiles = []
-//					def logFiles = ["reports"]
-//					def foldersToDelete = ["reports/", "/tmp/addlinks-downloaded-files/"]
-//					
-//					utils.cleanUpAndArchiveBuildFiles("add_links/insertions", dataFiles, logFiles, foldersToDelete)
-//				}
-//			}
-//		}
-  	}
+		stage('Post: Archive Outputs'){
+			steps{
+				script{
+					def addlinksFolder = "addlinks-downloaded-files/"
+					def dataFiles = []
+					def logFiles = ["reports"]
+					def foldersToDelete = ["reports/", "/tmp/addlinks-downloaded-files/"]
+
+					utils.cleanUpAndArchiveBuildFiles("add_links/insertions", dataFiles, logFiles, foldersToDelete)
+				}
+			}
+		}
+	}
 }
 
 // Localized method for swapping the personId from the addlinks.properties file.
