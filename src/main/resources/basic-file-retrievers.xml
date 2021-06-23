@@ -35,7 +35,7 @@
 
 		<entry key="PROToReferencePeptideSequence">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
-				<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
+				<property name="dataURL" value="ftp://ftp.proteininformationresource.org/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PROToReferencePeptideSequence"/>

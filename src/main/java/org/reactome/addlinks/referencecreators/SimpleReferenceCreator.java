@@ -108,13 +108,14 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 		this.logger.traceEntry();
 
 		List<String> thingsToCreate = Collections.synchronizedList(new ArrayList<String>());
-
 		if (mapping == null)
 		{
 			logger.error("Input mapping is null. Something must have gone wrong in the file processing stage.");
 		}
 		else
 		{
+			this.logger.info("{} things in input map", mapping.size());
+			this.logger.info("{} source references", sourceReferences.size());
 			sourceReferences.parallelStream().forEach(sourceReference ->
 			{
 				try
