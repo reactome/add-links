@@ -40,7 +40,7 @@
 		<value>GuideToPharmacologyLigands</value>
 		<value>GuideToPharmacologyTargets</value>
 		<value>PharmacoDB</value>
-		<value>IUPHAR</value>
+		<!-- <value>IUPHAR</value> --><!-- Renamed to GuideToPharmacologyLigands -->
 		<value>ComplexPortal</value>
 		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
@@ -192,6 +192,7 @@
 		<value>Guide to Pharmacology - Targets</value>
 		<value>Guide to Pharmacology - Ligands</value>
 		<value>Target Pathogen</value>
+		<value>PharmacoDB</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>

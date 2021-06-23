@@ -45,7 +45,6 @@
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
 		<value>PharmacoDBFileProcessor</value>
-		<!-- 
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
 		<value>GlyGenFileProcessor</value>
@@ -87,12 +86,11 @@
 		<value>VGNCFileProcessor</value>
 		<value>MGIFileProcessor</value>
 		<value>RGDFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value> -->
+		<value>EnsemblBioMartFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
 		<value>PharmacoDBReferenceCreator</value>
-		<!-- 
 		<value>XenbaseFileProcessor</value>
 		<value>ZFINFileProcessor</value>
 		<value>GlyGenReferenceCreator</value>
@@ -143,7 +141,7 @@
 		<value>MGIReferenceCreator</value>
 		<value>RGDReferenceCreator</value>
 		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value> -->
+		<value>EnsemblBioMartOtherIdentifierPopulator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -161,6 +159,7 @@
 		<value>Pharos - Targets</value>
 		<value>Pharos - Ligands</value>
 		<value>Target Pathogen</value>
+		<value>PharmacoDB</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
 		<value>PDB</value>

@@ -55,7 +55,7 @@
 		<value>KEGGRetriever</value>
 		<value>PROToReferencePeptideSequence</value>
 		<value>VGNC</value>
-		<!--<value>GlyGen</value>
+		<value>GlyGen</value>
 		<value>GuideToPharmacologyLigands</value>
 		<value>GuideToPharmacologyTargets</value>
 		<value>PharosTargets</value>
@@ -77,14 +77,14 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>IUPHAR</value>
+		<!-- <value>IUPHAR</value> --><!-- Renamed to GuideToPharmacologyLigands -->
 		<value>PharmacoDB</value>
 		<value>HPA</value>
 		<value>MGI</value>
 		<value>RGD</value>
 		<value>Xenbase</value>
 		<value>ZFIN</value>
-		<value>EnsemblBioMart</value>-->
+		<value>EnsemblBioMart</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
