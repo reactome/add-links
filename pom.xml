@@ -1,177 +1,251 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>org.reactome.release</groupId>
 	<artifactId>AddLinks</artifactId>
 	<version>1.6.0</version>
+	<packaging>jar</packaging>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>
+		AddLinks is a program whose purpose is to create links to external resources from Reactome
+	</description>
+	<url>https://github.com/reactome/AddLinks</url>
 
 	<organization>
 		<name>Reactome</name>
 		<url>https://reactome.org</url>
 	</organization>
 
-	<name>AddLinks</name>
+	<licenses>
+		<license>
+			<name></name>
+			<url></url>
+		</license>
+	</licenses>
 
 	<developers>
 		<developer>
-			<organization>OICR</organization>
-			<organizationUrl>https://oicr.on.ca/</organizationUrl>
+			<id>SolomonShorser-OICR</id>
+			<name>Solomon Shorser</name>
 			<email>solomon.shorser@oicr.on.ca</email>
-		</developer>
-		<developer>
-			<organization>OICR</organization>
+			<organization>Ontario Institute for Cancer Research</organization>
 			<organizationUrl>https://oicr.on.ca/</organizationUrl>
-			<email>justin.cook@oicr.on.ca</email>
 		</developer>
 
+		<developer>
+			<id>cookersjs</id>
+			<name>Justin Cook</name>
+			<roles>
+				<role>alumni</role>
+			</roles>
+		</developer>
 	</developers>
 
+	<scm>
+		<connection>scm:git:git://github.com/reactome/AddLinks.git</connection>
+		<developerConnection>scm:git:ssh://github.com:reactome/AddLinks.git</developerConnection>
+		<url>https://github.com/reactome/AddLinks/tree/master</url>
+	</scm>
+
 	<properties>
-		<spring.version>5.1.10.RELEASE</spring.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<powermock.version>2.0.9</powermock.version>
-		<mockito.version>3.9.0</mockito.version>
+		<!-- dependencies -->
+		<commons.csv.version>1.6</commons.csv.version>
+		<commons.discovery.version>0.5</commons.discovery.version>
+		<commons.net.version>3.5</commons.net.version>
+		<commons.vsf2.version>2.1</commons.vsf2.version>
+		<hamcrest.version>2.1</hamcrest.version>
+		<httpclient.version>4.5.2</httpclient.version>
+		<httpmime.version>4.5</httpmime.version>
+		<javax.json.version>1.1</javax.json.version>
+		<jsch.version>0.1.54</jsch.version>
+		<junit.version>4.13.1</junit.version>
 		<log4j.version>2.13.2</log4j.version>
+		<mockito.version>3.9.0</mockito.version>
+		<mysql.connector.version>5.1.48</mysql.connector.version>
+		<powermock.version>2.0.9</powermock.version>
+		<reactome.release.common.lib.version>1.2.2</reactome.release.common.lib.version>
+		<spring.version>5.1.10.RELEASE</spring.version>
+
+		<!-- build -->
+		<jdk.version>1.8</jdk.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- maven build and plugins -->
+		<maven.assembly.version>3.1.0</maven.assembly.version>
+		<maven.compiler.version>3.7.0</maven.compiler.version>
+		<maven.cobertura.version>2.7</maven.cobertura.version>
+		<maven.gpg.version>1.5</maven.gpg.version>
+		<maven.javadoc.version>2.10.3</maven.javadoc.version>
+		<maven.release.version>2.5.3</maven.release.version>
+		<maven.shade.version>3.1.0</maven.shade.version>
+		<maven.source.version>2.4</maven.source.version>
+		<nexus-staging-maven-plugin>1.6.7</nexus-staging-maven-plugin>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
-			<version>2.1</version>
+			<version>${commons.vsf2.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.54</version>
+			<version>${jsch.version}</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
+			<version>${httpclient.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5</version>
+			<version>${httpmime.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>3.5</version>
+			<version>${commons.net.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-expression</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aop</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/commons-discovery/commons-discovery -->
 		<dependency>
 			<groupId>commons-discovery</groupId>
 			<artifactId>commons-discovery</artifactId>
-			<version>0.5</version>
+			<version>${commons.discovery.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.48</version>
+			<version>${mysql.connector.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito2</artifactId>
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4-rule</artifactId>
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-core</artifactId>
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
-			<version>2.1</version>
+			<version>${hamcrest.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.json</groupId>
 			<artifactId>javax.json-api</artifactId>
-			<version>1.1</version>
+			<version>${javax.json.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.json</artifactId>
-			<version>1.1</version>
+			<version>${javax.json.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.6</version>
+			<version>${commons.csv.version}</version>
 		</dependency>
+
 		<dependency>
 			<!--
 			***NOTE:***
@@ -181,7 +255,7 @@
 			-->
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
-			<version>1.2.2</version>
+			<version>${reactome.release.common.lib.version}</version>
 			<!-- I tried to exclude jnlp but it doesn't work because jnlp is
 			a dependency of reactome-base, not release-common-lib. -->
 <!-- 			<exclusions>
@@ -194,20 +268,23 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.artifactId}</finalName>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>${maven.compiler.version}</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${jdk.version}</source>
+					<target>${jdk.version}</target>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.7</version>
+				<version>${maven.cobertura.version}</version>
 				<configuration>
 					<formats>
 						<format>html</format>
@@ -215,9 +292,10 @@
 					</formats>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>${maven.assembly.version}</version>
 				<configuration>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
@@ -244,11 +322,12 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
  				<!-- Shade plugin is used to merge spring files, and define main class since it seems to get overwritten from the assembly plugin. -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>${maven.shade.version}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -293,6 +372,79 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Nexus staging plugin for Sonatype deployment -->
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>${nexus-staging-maven-plugin}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+
+			<!-- Generate source jar file -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${maven.source.version}</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Generate JavaDoc jar file -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven.javadoc.version}</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Signs deployed jar, source jar, and JavaDoc jar with GPG -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>${maven.gpg.version}</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Allows "release" mvn goal to deploy a SNAPSHOT or version release to Sonatype -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${maven.release.version}</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<goals>deploy</goals>
+				</configuration>
+			</plugin>
+
 		</plugins>
 
 		<resources>
@@ -307,4 +459,21 @@
 			</resource>
 		</resources>
 	</build>
+
+	<!-- Configures the distribution to nexus repository -->
+	<distributionManagement>
+		<!-- Sonatype Release repo -->
+		<repository>
+			<id>ossrh</id>
+			<name>Sonatype Release Repository</name>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+
+		<!-- Sonatype SNAPSHOT repo -->
+		<snapshotRepository>
+			<id>ossrh</id>
+			<name>Sonatype Snapshot Repository</name>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
