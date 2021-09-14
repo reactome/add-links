@@ -53,7 +53,6 @@
 		<value>PharosTargetsFileProcessor</value>
 		<value>PharosLigandsFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
-		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
@@ -68,7 +67,6 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>PROFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
@@ -100,8 +98,6 @@
 		<value>GtPTargetsReferenceCreator</value>
 		<value>upMappedKEGGRefCreator</value>
 		<value>KEGGReferenceCreator</value>
-		<value>TargetPathogenReactionsReferenceCreator</value>
-		<value>TargetPathogenProteinsReferenceCreator</value>
 		<value>IntEnzRefCreator</value>
 		<value>ENSEMBLToEntrezGeneRefCreator</value>
 		<value>ENSEMBLEnspToEnsgRefCreator</value>
@@ -158,7 +154,6 @@
 		verify them manually. They will *probably* be OK. -->
 		<value>Pharos - Targets</value>
 		<value>Pharos - Ligands</value>
-		<value>Target Pathogen</value>
 		<value>PharmacoDB</value>
 		<value>IntEnz</value>
 		<value>ENSEMBL</value>
