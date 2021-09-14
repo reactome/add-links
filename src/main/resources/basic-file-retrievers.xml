@@ -210,7 +210,7 @@
 
 		<entry key="OpenTargets">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OpenTargets">
-				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/20.09/output/20.09_target_list.csv.gz" />
+				<property name="dataURL" value="http://ftp.ebi.ac.uk/pub/databases/opentargets/platform/21.02/output/21.02_target_list.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/open_target_list.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
@@ -305,7 +305,7 @@
 		<!-- NOTE: The files retrieved from PharmacoDB and IUPHAR are *both* required to create references for PharmacoDB -->
 		<entry key="PharmacoDB">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PharmacoDB">
-				<property name="dataURL" value="https://raw.githubusercontent.com/BHKLAB-Pachyderm/Annotations/master/drugs_with_ids.csv" />
+				<property name="dataURL" value="https://github.com/BHKLAB-Pachyderm/Annotations/blob/master/drugs_with_ids.csv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharmacodb_drugs_with_ids.csv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PharmacoDB"/>
