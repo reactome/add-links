@@ -528,7 +528,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="PharmacoDB" />
 				<entry key="URL" value="https://pharmacodb.ca" />
-				<entry key="AccessURL" value="https://pharmacodb.ca/drugs/###ID###" />
+				<entry key="AccessURL" value="https://pharmacodb.ca/compounds/###ID###" />
 				<!-- No entry in identifiers.org for PharmacoDB
 				<entry key="resourceIdentifier" value="MIR:"/>
 				-->
