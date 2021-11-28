@@ -41,14 +41,6 @@
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
 		<value>ComplexPortalSARSCOV2</value>
-		<value>VGNC</value>
-		<value>COSMIC</value>
-		<value>TargetPathogen</value>
-		<value>OpenTargets</value>
-		<value>Zinc</value>
-		<value>PharmacoDB</value>
-		<!--
-		<value>ComplexPortalSARSCOV2</value>
 		<value>UniProtToKEGG</value>
 		<value>UniProtToENSEMBL</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -90,7 +82,6 @@
 		<value>Xenbase</value>
 		<value>ZFIN</value>
 		<value>EnsemblBioMart</value>
-		-->
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
