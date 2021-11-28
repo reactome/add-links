@@ -236,7 +236,8 @@ public class CrossReferenceReporter
 			"	inner join DatabaseObject on DatabaseObject.db_id = GO_BiologicalProcess.db_id\n" +
 			"	group by GO_BiologicalProcess.referenceDatabase,  ref_db_subq.name, DatabaseObject._class\n" +
 			"	) as subq\n" +
-			" group by ref_db_names_and_aliases asc, object_type asc with rollup;\n";
+			" group by ref_db_names_and_aliases, object_type with rollup\n" +
+			" order by ref_db_names_and_aliases asc, object_type asc";
 
 
 	public CrossReferenceReporter(MySQLAdaptor adaptor)
