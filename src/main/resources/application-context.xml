@@ -80,6 +80,9 @@
 		<value>ZFIN</value>
 		<value>PharosTargets</value>
 		<value>PharosLigands</value>
+		<value>GlyCosmos</value>
+		<value>GlyTouCan</value>
+		<value>PubChemCompound</value>
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
@@ -126,6 +129,9 @@
 		<value>ZFINFileProcessor</value>
 		<value>PharosTargetsFileProcessor</value>
 		<value>PharosLigandsFileProcessor</value>
+		<value>GlyCosmosFileProcessor</value>
+		<value>GlyTouCanFileProcessor</value>
+		<value>PubChemCompoundFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -181,6 +187,9 @@
 		<value>RGDReferenceCreator</value>
 		<value>XenbaseReferenceCreator</value>
 		<value>ZFINReferenceCreator</value>
+		<value>PubChemCompoundReferenceCreator</value>
+		<value>GlyCosmosReferenceCreator</value>
+		<value>GlyTouCanReferenceCreator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -237,6 +246,9 @@
 		verify them manually. They will *probably* be OK. -->
 		<value>Pharos - Targets</value>
 		<value>Pharos - Ligands</value>
+		<value>GlyCosmos</value>
+		<value>GlyToucan</value>
+		<value>PubChem</value>
 		<!--
 		GlyGen uses Javscript to load the page contents so a simple GET is not enough
 		to verify the link.
