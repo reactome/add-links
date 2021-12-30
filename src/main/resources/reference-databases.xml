@@ -606,5 +606,29 @@
 				-->
 			</map>
 		</entry>
+
+		<entry key="GlyCosmos">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="GlyCosmos" />
+				<entry key="URL" value="https://glycosmos.org/" />
+				<entry key="AccessURL" value="https://glycosmos.org/pathways/show?id=###ID###" />
+			</map>
+		</entry>
+
+		<entry key="GlyTouCan">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="GlyTouCan" />
+				<entry key="URL" value="https://glytoucan.org/" />
+				<entry key="AccessURL" value="https://glytoucan.org/Structures/Glycans/###ID####" />
+			</map>
+		</entry>
+
+		<entry key="PubChem">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="PrimaryName" value="PubChem" />
+				<entry key="URL" value="https://pubchem.ncbi.nlm.nih.gov/" />
+				<entry key="AccessURL" value="https://pubchem.ncbi.nlm.nih.gov/compound/###ID####" />
+			</map>
+		</entry>
 	</util:map>
 </beans>
