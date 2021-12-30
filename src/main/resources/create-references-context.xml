@@ -85,6 +85,9 @@
 		<value>MGIFileProcessor</value>
 		<value>RGDFileProcessor</value>
 		<value>EnsemblBioMartFileProcessor</value>
+		<value>GlyCosmosFileProcessor</value>
+		<value>GlyTouCanFileProcessor</value>
+		<value>PubChemCompoundFileProcessor</value>
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
@@ -102,6 +105,9 @@
 		<value>RGDReferenceCreator</value>
 		<value>EnsemblReferenceCreator</value>
 		<value>EnsemblBioMartOtherIdentifierPopulator</value>
+		<value>GlyCosmosReferenceCreator</value>
+		<value>GlyTouCanReferenceCreator</value>
+		<value>PubChemCompoundReferenceCreator</value>
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -157,6 +163,9 @@
 		<value>Xenbase</value>
 		<value>ZFIN</value>
 		<value>Ensembl</value>
+		<value>GlyCosmos</value>
+		<value>GlyToucan</value>
+		<value>PubChem</value>
 		<!--
 		GlyGen uses Javscript to load the page contents so a simple GET is not enough
 		to verify the link.
