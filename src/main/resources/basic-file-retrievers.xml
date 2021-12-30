@@ -266,7 +266,7 @@
 
 		<entry key="RGD">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RGD">
-				<property name="dataURL" value="ftp://ftp.rgd.mcw.edu/pub/data_release/GENES_RAT.txt" />
+				<property name="dataURL" value="https://download.rgd.mcw.edu/data_release/GENES.RAT.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/GENES_RAT.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/RGD"/>
