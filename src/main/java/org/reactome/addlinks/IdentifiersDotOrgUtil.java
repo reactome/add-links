@@ -1,20 +1,18 @@
 package org.reactome.addlinks;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,59 +57,56 @@ public class IdentifiersDotOrgUtil
 
 		try
 		{
-			HttpGet get = new HttpGet(new URI(url));
-			try(CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get))
+			HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
+
+			int statusCode = urlConnection.getResponseCode();
+			switch (statusCode)
 			{
-				int statusCode = response.getStatusLine().getStatusCode();
-				String responseString = EntityUtils.toString(response.getEntity());
-				switch (statusCode)
-				{
-					case HttpStatus.SC_OK:
-						JsonReader reader = Json.createReader(new StringReader(responseString));
-						JsonObject responseObject = reader.readObject();
-						String responseAccessURL = responseObject.getString(ACCESS_URL_TOKEN).toString().replaceAll("\"", "");
-						// Before accepting the AccessURL from the response,
-						// check that the identifier is not deprecated. If identifiers.org
-						// deprecates an identifier, the AccessURL in the response
-						// will look something like this: https://registry.identifiers.org/deprecation/resources/MIR:00100113/{$id}
-						// (this example uses the deactivated/deprecated Rhea identifier that caused a problem
-						// during Releaes 77)
-						// But the HTTP Response code is 200 so we can't just blindly replace our Access URL with the
-						// one from identifiers.org.
-						if (responseAccessURL.contains("registry.identifiers.org/deprecation"))
-						{
-							logger.error("De-activated/deprecated identifier detected for resource identifier {}\nYou should check on identifiers.org to find a new resource identifier for your resource.", resourceIdentifier);
-						}
-						else
-						{
-							// Leave the {$id} in the URL and let the caller replace it.
-							accessUrl = responseAccessURL;
-						}
-						break;
-					case HttpStatus.SC_NOT_FOUND:
-						// For a 404, we want to tell the user specifically what happened.
-						// This is the error code for invalid identifier strings.
-						// It should also be accompanied by the message: "Required {prefix}:{identifier}"
-						logger.error("Got 404 from identifiers.org for the resource identifier request: \"{}\". You might want to verify that the resource identifier you requested is correct.", url);
-						break;
-					default:
-						logger.error("Non-200 status code: {} Response String is: {}", statusCode, responseString);
-						break;
-				}
-			}
-			catch (IOException e)
-			{
-				logger.error(e);
-				e.printStackTrace();
+				case HttpURLConnection.HTTP_OK:
+					JsonReader reader = Json.createReader(new StringReader(getContent(urlConnection)));
+					JsonObject responseObject = reader.readObject();
+					String responseAccessURL = responseObject.getString(ACCESS_URL_TOKEN).toString().replaceAll("\"", "");
+					// Before accepting the AccessURL from the response,
+					// check that the identifier is not deprecated. If identifiers.org
+					// deprecates an identifier, the AccessURL in the response
+					// will look something like this: https://registry.identifiers.org/deprecation/resources/MIR:00100113/{$id}
+					// (this example uses the deactivated/deprecated Rhea identifier that caused a problem
+					// during Release 77)
+					// But the HTTP Response code is 200 so we can't just blindly replace our Access URL with the
+					// one from identifiers.org.
+					if (responseAccessURL.contains("registry.identifiers.org/deprecation"))
+					{
+						logger.error("De-activated/deprecated identifier detected for resource identifier {}\nYou should check on identifiers.org to find a new resource identifier for your resource.", resourceIdentifier);
+					}
+					else
+					{
+						// Leave the {$id} in the URL and let the caller replace it.
+						accessUrl = responseAccessURL;
+					}
+					break;
+				case HttpURLConnection.HTTP_NOT_FOUND:
+					// For a 404, we want to tell the user specifically what happened.
+					// This is the error code for invalid identifier strings.
+					// It should also be accompanied by the message: "Required {prefix}:{identifier}"
+					logger.error("Got 404 from identifiers.org for the resource identifier request: \"{}\". You might want to verify that the resource identifier you requested is correct.", url);
+					break;
+				default:
+					logger.error("Non-200 status code: {} ", urlConnection.getResponseMessage());
+					break;
 			}
 		}
-		catch (URISyntaxException e)
+		catch (IOException e)
 		{
 			logger.error(e);
 			e.printStackTrace();
 		}
 
 		return accessUrl;
+	}
+
+	private static String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 	}
 }

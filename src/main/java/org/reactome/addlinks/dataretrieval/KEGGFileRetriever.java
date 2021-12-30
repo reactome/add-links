@@ -1,6 +1,9 @@
 package org.reactome.addlinks.dataretrieval;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,13 +15,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.gk.persistence.MySQLAdaptor;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 
@@ -119,76 +115,70 @@ public class KEGGFileRetriever extends FileRetriever
 				boolean done = false;
 				while(!done)
 				{
-					URIBuilder builder = new URIBuilder();
+					//URIBuilder builder = new URIBuilder();
 					// Append the list of identifiers to the URL string
-					builder.setHost(this.uri.getHost())
-							.setPath(this.uri.getPath() + identifiersForRequest)
-							.setScheme(this.uri.getScheme());
-					HttpGet get = new HttpGet(builder.build());
-					this.logger.trace("URI: "+get.getURI());
+					HttpURLConnection urlConnection = (HttpURLConnection) this.getDataURL().resolve("identifier").toURL().openConnection();
 
-					try (CloseableHttpClient getClient = HttpClients.createDefault();
-							CloseableHttpResponse getResponse = getClient.execute(get);)
+					this.logger.trace("URI: "+ this.uri);
+
+
+					attemptCount++;
+					switch (urlConnection.getResponseCode())
 					{
-						attemptCount++;
-						switch (getResponse.getStatusLine().getStatusCode())
-						{
+						case HttpURLConnection.HTTP_OK:
+							// Write the response to a file. Because we can only do 10 at a time, we need to constantly APPEND to the file.
+							// File creation should have been performed earlier, outside the loop.
+							String responseEntityString = getContent(urlConnection);
 
-							case HttpStatus.SC_OK:
-								// Write the response to a file. Because we can only do 10 at a time, we need to constantly APPEND to the file.
-								// File creation should have been performed earlier, outside the loop.
-								String responseEntityString = EntityUtils.toString(getResponse.getEntity());
-
-								Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
-								if (!Files.isReadable(path))
-								{
-									throw new Exception("The new file "+ path +" is not readable!");
-								}
+							Files.write(path,responseEntityString.getBytes(), StandardOpenOption.APPEND);
+							if (!Files.isReadable(path))
+							{
+								throw new Exception("The new file "+ path +" is not readable!");
+							}
+							done = true;
+							break;
+						case HttpURLConnection.HTTP_NOT_FOUND:
+							this.logger.error("\"NOT FOUND\" response was received: {}, URL was: {}",
+								urlConnection.getResponseMessage(), urlConnection.getURL());
+							done = true;
+							break;
+						case HttpURLConnection.HTTP_BAD_REQUEST:
+							this.logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}",
+								urlConnection.getResponseMessage(), urlConnection.getURL());
+							done = true;
+							break;
+						case HttpURLConnection.HTTP_FORBIDDEN:
+							this.logger.error("\"FORBIDDEN\" response was received: {}, URL was: {}",
+								urlConnection.getResponseMessage(), urlConnection.getURL());
+							// If we get a FORBIDDEN response, we might have some luck if we back off and wait for a little bit.
+							if (attemptCount <= this.numRetries)
+							{
+								done = false;
+								// increase the sleep amount by sleepIncrSeconds PLUS some random number of milliseconds (could be *up to* 2 seconds' worth),
+								// to ensure that if multiple requests are happening, they don't all go at the exact same moment.
+								sleepMillis += ((KEGGFileRetriever.sleepIncrSeconds * 1000) + rand.nextInt(2000));
+								this.logger.info("Backing off for {} seconds after {} attempts, then will try again.", Duration.ofMillis(sleepMillis).toString(), attemptCount);
+								Thread.sleep(sleepMillis);
+							}
+							else
+							{
+								// We've exhausted all attempts and still couldn't get data. Log an error telling the user they may
+								// need to retry for this particular file.
+								this.logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
+											+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}\t "
+											+ "Suggested remediation: (re)move/rename the aforementioned file and then re-run the download process to force re-population of the file.",
+											this.numRetries, path);
 								done = true;
-								break;
-							case HttpStatus.SC_NOT_FOUND:
-								this.logger.error("\"NOT FOUND\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
-								done = true;
-								break;
-							case HttpStatus.SC_BAD_REQUEST:
-								this.logger.error("\"BAD REQUEST\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
-								done = true;
-								break;
-							case HttpStatus.SC_FORBIDDEN:
-								this.logger.error("\"FORBIDDEN\" response was received: {}, URL was: {}", getResponse.getStatusLine().toString(), get.getURI());
-								// If we get a FORBIDDEN response, we might have some luck if we back off and wait for a little bit.
-								if (attemptCount <= this.numRetries)
-								{
-									done = false;
-									// increase the sleep amount by sleepIncrSeconds PLUS some random number of milliseconds (could be *up to* 2 seconds' worth),
-									// to ensure that if multiple requests are happening, they don't all go at the exact same moment.
-									sleepMillis += ((KEGGFileRetriever.sleepIncrSeconds * 1000) + rand.nextInt(2000));
-									this.logger.info("Backing off for {} seconds after {} attempts, then will try again.", Duration.ofMillis(sleepMillis).toString(), attemptCount);
-									Thread.sleep(sleepMillis);
-								}
-								else
-								{
-									// We've exhausted all attempts and still couldn't get data. Log an error telling the user they may
-									// need to retry for this particular file.
-									this.logger.warn("Reached max number of attempts ({}), will not try again. Downloaded data might not be complete,"
-												+ "you may need to re-run the Download portion of AddLinks just for KEGG, for this file: {}\t "
-												+ "Suggested remdiation: (re)move/rename the aforementioned file and then re-run the download process to force repopulation of the file.",
-												this.numRetries, path);
-									done = true;
-								}
-								break;
-							default:
-								this.logger.info("Unexpected response code: {} ; full response message: {}, URL was: {}", getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine().toString(), get.getURI());
-								done = true;
-								break;
-								// From KEGG response: use DEFINITION as name,
-								// For Identifier: use the KEGG name if available, otherwise use the KEGG ID.
-								// Actually, maybe ALWAYS include the "hsa:####" as an extra ReferenceEntity name.
-						}
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
+							}
+							break;
+						default:
+							this.logger.info("Unexpected response - full message: {}, URL was: {}",
+								urlConnection.getResponseMessage(), urlConnection.getURL());
+							done = true;
+							break;
+							// From KEGG response: use DEFINITION as name,
+							// For Identifier: use the KEGG name if available, otherwise use the KEGG ID.
+							// Actually, maybe ALWAYS include the "hsa:####" as an extra ReferenceEntity name.
 					}
 				}
 			}
@@ -219,5 +209,11 @@ public class KEGGFileRetriever extends FileRetriever
 	public String getFetchDestination()
 	{
 		return this.destination;
+	}
+
+	private String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 	}
 }

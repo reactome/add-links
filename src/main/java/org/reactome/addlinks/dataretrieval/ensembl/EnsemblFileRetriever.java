@@ -1,25 +1,16 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor;
@@ -169,67 +160,38 @@ public class EnsemblFileRetriever extends FileRetriever
 			logger.debug("{} identifiers to look up.", identifiers.size());
 			identifiers.parallelStream().forEach( identifier ->
 			{
-				URIBuilder builder = new URIBuilder();
-
-				builder.setHost(this.uri.getHost())
-						.setPath(this.uri.getPath() + identifier)
-						.setScheme(this.uri.getScheme())
-						.addParameter("content-type", "text/xml")
-						.addParameter("all_levels", "1")
-						.addParameter("species", this.species)
-						.addParameter("external_db", this.getMapToDb());
 				try
 				{
-					HttpGet get = new HttpGet(builder.build());
-					logger.trace("URI: "+get.getURI());
-					boolean done = false;
 					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor(this.logger);
+					HttpURLConnection urlConnection =
+						(HttpURLConnection) getURLForIdentifier(identifier).openConnection();
+					boolean done = false;
 					while (!done)
 					{
-						try (CloseableHttpClient getClient = HttpClients.createDefault();
-								CloseableHttpResponse getResponse = getClient.execute(get);)
+						EnsemblServiceResult result = responseProcessor.processResponse(urlConnection);
+						if (!result.getWaitTime().equals(Duration.ZERO))
 						{
-							EnsemblServiceResult result = responseProcessor.processResponse(getResponse, get.getURI());
-							if (!result.getWaitTime().equals(Duration.ZERO))
-							{
-								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
-								Thread.sleep(result.getWaitTime().toMillis());
-								done = false;
-							}
-							else
-							{
-								// Only record the successful responses.
-								if (result.getStatus() == HttpStatus.SC_OK)
-								{
-									String content = result.getResult().trim();
-									sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(get.getURI().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
-								}
-								else if (result.getStatus() == HttpStatus.SC_BAD_REQUEST)
-								{
-									logger.trace("Got BAD_REQUEST reponse. This was the request that was sent: {}", get.toString());
-								}
-								done = true;
-							}
+							logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
+							Thread.sleep(result.getWaitTime().toMillis());
+							done = false;
 						}
-						catch (InterruptedException e)
+						else
 						{
-							e.printStackTrace();
-							throw new Error(e);
-
+							// Only record the successful responses.
+							if (result.getStatus() == HttpURLConnection.HTTP_OK)
+							{
+								String content = result.getResult().trim();
+								sb.append("<ensemblResponse id=\""+identifier+"\" URL=\"" + URLEncoder.encode(urlConnection.getURL().toString(), "UTF-8")  + "\">\n"+content+"</ensemblResponse>\n");
+							}
+							else if (result.getStatus() == HttpURLConnection.HTTP_BAD_REQUEST)
+							{
+								logger.trace("Got BAD_REQUEST response. This was the request that was sent: {}", urlConnection.getURL());
+							}
+							done = true;
 						}
 					}
 				}
-				catch (URISyntaxException e)
-				{
-					e.printStackTrace();
-					throw new Error(e);
-				}
-				catch (ClientProtocolException e)
-				{
-					e.printStackTrace();
-					throw new Error(e);
-				}
-				catch (IOException e)
+				catch (InterruptedException | IOException e)
 				{
 					e.printStackTrace();
 					throw new Error(e);
@@ -245,15 +207,28 @@ public class EnsemblFileRetriever extends FileRetriever
 			sb.append("</ensemblResponses>");
 			Files.write(path, sb.toString().trim().replaceAll(xml10pattern, "").getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE);
 		}
-		catch (IOException e)
+		catch (IOException | URISyntaxException e)
 		{
 			e.printStackTrace();
 			throw new Error(e);
 		}
-		catch (URISyntaxException e)
-		{
-			e.printStackTrace();
-			throw new Error(e);
-		}
+	}
+
+	private URL getURLForIdentifier(String identifier) throws MalformedURLException {
+		return new URL(this.uri.getHost() + this.uri.getPath() + identifier + "?" + getParametersString());
+	}
+
+	private String getParametersString() {
+		Map<String, String> parameterMap = new LinkedHashMap<>();
+		parameterMap.put("content-type", "text/xml");
+		parameterMap.put("all_levels", "1");
+		parameterMap.put("species", this.species);
+		parameterMap.put("external_db", this.getMapToDb());
+
+		return parameterMap
+			.entrySet()
+			.stream()
+			.map(parameter -> parameter.getKey() + "=" + parameter.getValue())
+			.collect(Collectors.joining("&"));
 	}
 }

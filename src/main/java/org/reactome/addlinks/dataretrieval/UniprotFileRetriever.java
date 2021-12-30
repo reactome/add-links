@@ -1,15 +1,7 @@
 package org.reactome.addlinks.dataretrieval;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.*;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,20 +15,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 
 public class UniprotFileRetriever extends FileRetriever
@@ -112,99 +91,110 @@ public class UniprotFileRetriever extends FileRetriever
 		super(retrieverName);
 	}
 
-	private URIBuilder uriBuilderFromDataLocation(String location) throws URISyntaxException
+	private String getURIStringFromDataLocation(String location) throws URISyntaxException
 	{
-		URIBuilder builder = new URIBuilder();
+		//URIBuilder builder = new URIBuilder();
 		if (location == null || location.length() == 0)
 		{
 			logger.error("Location was NULL/0-length!");
-			return null;
+			return "";
 		}
 		String[] parts = location.split("\\?");
 		String[] schemeAndHost = parts[0].split("://");
-		builder.setScheme(schemeAndHost[0]);
-		if (schemeAndHost.length > 1)
+
+
+		String scheme = schemeAndHost[0];
+		String host = schemeAndHost[1];
+
+		StringBuilder uriStringBuilder = new StringBuilder();
+		if (scheme != null && host != null)
 		{
-			builder.setHost(schemeAndHost[1]);
+			uriStringBuilder.append(scheme).append("://").append(host);
 		}
 		else
 		{
 			logger.warn("schemeAndHost had length < 2: {} ; will use try to host from original URI: {}", schemeAndHost, this.uri.getHost());
-			builder.setScheme(this.uri.getScheme());
-			builder.setHost(this.uri.getHost()+"/"+schemeAndHost[0]);
+			uriStringBuilder.append(this.uri.getScheme()).append("://").append(this.uri.getHost()).append(host);
 		}
 
 		if (parts.length>1)
 		{
+			String parameterString = parts[1];
+			uriStringBuilder.append("?");
+			uriStringBuilder.append(parameterString);
 			// If the Location header string contains query information, we need to properly reformat that before requesting it.
-			String[] params = parts[1].split("&");
-			for(String s : params)
-			{
-				String[] nameAndValue = s.split("=");
-				builder.addParameter(nameAndValue[0], nameAndValue[1]);
-			}
+//			String[] params = parts[1].split("&");
+//
+//			Arrays.stream(params).map(param -> param.split("="))
+//			for(String s : params)
+//			{
+//				String[] nameAndValue = s.split("=");
+//				String parameterName = nameAndValue[0];
+//				String parameterValue = nameAndValue[1];
+//				uriStringBuilder.append(parameterName).append("=").append(parameterValue);
+//				//builder.addParameter(nameAndValue[0], nameAndValue[1]);
+//			}
 		}
 		else
 		{
 			//Add .tab to get table.
-			if (!builder.getHost().endsWith(".tab"))
-				builder.setHost(builder.getHost() + ".tab");
+			if (!host.endsWith(".tab"))
+				uriStringBuilder.append(".tab");
 		}
-		return builder;
+		return uriStringBuilder.toString();
 	}
 
 	/**
 	 * Attempt to GET data from UniProt.
-	 * @param get - the HttpGet object.
+	 * @param uri - the URI to query from UniProt.
 	 * @return A byte array of the result's content.
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 * @throws InterruptedException
 	 */
-	private byte[] attemptGetFromUniprot(HttpGet get) throws IOException, URISyntaxException, InterruptedException
+	private byte[] attemptGetFromUniprot(URI uri) throws IOException, URISyntaxException, InterruptedException
 	{
 		byte[] result = null;
-		logger.trace("getting from: {}",get.getURI());
-		try (CloseableHttpClient getClient = HttpClients.createDefault();
-				CloseableHttpResponse getResponse = getClient.execute(get);)
+		logger.trace("getting from: {}", uri);
+
+		HttpURLConnection urlConnection = (HttpURLConnection) uri.toURL().openConnection();
+		switch (urlConnection.getResponseCode())
 		{
-			switch (getResponse.getStatusLine().getStatusCode())
-			{
-				case HttpStatus.SC_SERVICE_UNAVAILABLE:
-				case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-				case HttpStatus.SC_BAD_GATEWAY:
-				case HttpStatus.SC_GATEWAY_TIMEOUT:
-					logger.error("Error {} detected! Message: {}", getResponse.getStatusLine().getStatusCode() ,getResponse.getStatusLine().getReasonPhrase());
-					break;
+			case HttpURLConnection.HTTP_UNAVAILABLE:
+			case HttpURLConnection.HTTP_INTERNAL_ERROR:
+			case HttpURLConnection.HTTP_BAD_GATEWAY:
+			case HttpURLConnection.HTTP_GATEWAY_TIMEOUT:
+				logger.error("Error detected! Message: {}", urlConnection.getResponseMessage());
+				break;
 
-				case HttpStatus.SC_OK:
-				case HttpStatus.SC_MOVED_PERMANENTLY:
-				case HttpStatus.SC_MOVED_TEMPORARILY:
-					logger.trace("HTTP Status: {}",getResponse.getStatusLine().toString());
-					result = EntityUtils.toByteArray(getResponse.getEntity());
-					if (result == null)
-					{
-						logger.warn("Response did not contain data.");
-					}
-					break;
+			case HttpURLConnection.HTTP_OK:
+			case HttpURLConnection.HTTP_MOVED_PERM:
+			case HttpURLConnection.HTTP_MOVED_TEMP:
+				logger.trace("HTTP Status: {}", urlConnection.getResponseMessage());
+				result = getContent(urlConnection).getBytes();
+				if (result == null)
+				{
+					logger.warn("Response did not contain data.");
+				}
+				break;
 
-				default:
-					logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",getResponse.getStatusLine().getStatusCode(), getResponse.getStatusLine());
-					break;
-			}
+			default:
+				logger.warn("Nothing was downloaded due to an unexpected status code and message: {} ",
+					urlConnection.getResponseMessage());
+				break;
 		}
+
 		return result;
 	}
 
 	/**
 	 * Attempt to POST to UniProt. If successful, the URL to the *actual* data will be returned.
-	 * @param post - the POST object.
+	 * @param baos - ByteArrayOutputStream of content to post
 	 * @return The URL to find the mapped data at, as a string.
-	 * @throws ClientProtocolException
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private String attemptPostToUniprot(HttpPost post) throws ClientProtocolException, IOException, InterruptedException
+	private String attemptPostToUniprot(ByteArrayOutputStream baos) throws IOException, InterruptedException
 	{
 		boolean done = false;
 		int attemptCount = 0;
@@ -212,61 +202,89 @@ public class UniprotFileRetriever extends FileRetriever
 		while(!done)
 		{
 
-			{
-				try (CloseableHttpClient postClient = HttpClients.createDefault();
-						CloseableHttpResponse postResponse = postClient.execute(post);)
-				{
-					switch (postResponse.getStatusLine().getStatusCode())
-					{
-						case HttpStatus.SC_SERVICE_UNAVAILABLE:
-						case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-						case HttpStatus.SC_BAD_GATEWAY:
-						case HttpStatus.SC_GATEWAY_TIMEOUT:
-							logger.error("Error {} detected! Message: {}", postResponse.getStatusLine().getStatusCode() ,postResponse.getStatusLine().getReasonPhrase());
-							break;
+			//HttpPost post = new HttpPost(this.uri);
+			HttpURLConnection urlConnection = (HttpURLConnection) this.uri.toURL().openConnection();
+			urlConnection.setDoOutput(true);
+			urlConnection.setRequestMethod("POST");
+			String formBoundaryString = "---RandomText---"; // Used to delineate post data
+			urlConnection.addRequestProperty("Content-Type", "multipart/form-data; boundary= " + formBoundaryString);
 
-						case HttpStatus.SC_OK:
-						case HttpStatus.SC_MOVED_PERMANENTLY:
-						case HttpStatus.SC_MOVED_TEMPORARILY:
-							if (postResponse.containsHeader("Location"))
+			OutputStream outputStream = urlConnection.getOutputStream();
+			BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+			requestWriter.write("\n -- " + formBoundaryString + "\n");
+			requestWriter.write("Content-Disposition: form-data");
+			requestWriter.write("format=tab;");
+			requestWriter.write("from=" + this.mapFromDb + ";");
+			requestWriter.write("to=" + this.mapToDb + ";");
+			requestWriter.write("\nContent-Type: text/plain\n\n");
+			requestWriter.flush();
+
+			outputStream.write(baos.toByteArray(), 0, baos.toByteArray().length);
+			outputStream.flush();
+
+			requestWriter.write("\n-- " + formBoundaryString + "--\n");
+			requestWriter.flush();;
+
+			outputStream.close();
+			requestWriter.close();
+
+			{
+				switch (urlConnection.getResponseCode())
+				{
+					case HttpURLConnection.HTTP_UNAVAILABLE:
+					case HttpURLConnection.HTTP_INTERNAL_ERROR:
+					case HttpURLConnection.HTTP_BAD_GATEWAY:
+					case HttpURLConnection.HTTP_GATEWAY_TIMEOUT:
+						logger.error("Error detected! Message: {}",
+							urlConnection.getResponseMessage());
+						break;
+
+					case HttpStatus.SC_OK:
+					case HttpStatus.SC_MOVED_PERMANENTLY:
+					case HttpStatus.SC_MOVED_TEMPORARILY:
+						if (urlConnection.getHeaderField("Location") != null)
+						{
+							mappingLocationURI = urlConnection.getHeaderFields().get("Location").get(0);
+							logger.trace("Location of data: {}", mappingLocationURI);
+							if (mappingLocationURI != null && !mappingLocationURI.equals("http://www.uniprot.org/502.htm"))
 							{
-								mappingLocationURI = postResponse.getHeaders("Location")[0].getValue();
-								logger.trace("Location of data: {}", mappingLocationURI);
-								if (mappingLocationURI != null && !mappingLocationURI.equals("http://www.uniprot.org/502.htm"))
-								{
-									done = true;
-								}
-								else
-								{
-									logger.warn("Response did not contain data.");
-								}
+								done = true;
 							}
 							else
 							{
-								logger.warn("Status was {}, \"Location\" header was not present. Other headers are: {}", postResponse.getStatusLine().toString(), Arrays.stream(postResponse.getAllHeaders()).map( (h -> h.toString()) ).collect(Collectors.joining(" ; ")));
+								logger.warn("Response did not contain data.");
 							}
-							break;
-						default:
-							logger.warn("Nothing was downloaded due to an unexpected status code and message: {} / {} ",postResponse.getStatusLine().getStatusCode(), postResponse.getStatusLine());
-							break;
-					}
-					attemptCount++;
+						}
+						else
+						{
+							logger.warn("Status was {}, \"Location\" header was not present. Other headers are: {}",
+								urlConnection.getResponseMessage(),
+								urlConnection.getHeaderFields().entrySet().stream()
+									.map(h -> h.getKey() + ":" + h.getValue()).collect(Collectors.joining(" ; ")));
+						}
+						break;
+					default:
+						logger.warn("Nothing was downloaded due to an unexpected status response: {}",
+							urlConnection.getResponseMessage());
+						break;
+				}
+				attemptCount++;
 
-				}
-				if (attemptCount > this.maxAttemptCount)
+			}
+			if (attemptCount > this.maxAttemptCount)
+			{
+				logger.error("Reached max attempt count! No more attempts.");
+				done = true;
+			}
+			else
+			{
+				if (attemptCount < this.maxAttemptCount && ! done)
 				{
-					logger.error("Reached max attempt count! No more attempts.");
-					done = true;
-				}
-				else
-				{
-					if (attemptCount < this.maxAttemptCount && ! done)
-					{
-						logger.info("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
-						Thread.sleep(Duration.ofSeconds(5).toMillis());
-					}
+					logger.info("Re-trying... {} attempts made, {} allowed", attemptCount, this.maxAttemptCount);
+					Thread.sleep(Duration.ofSeconds(5).toMillis());
 				}
 			}
+
 		}
 		return mappingLocationURI;
 	}
@@ -312,9 +330,9 @@ public class UniprotFileRetriever extends FileRetriever
 				logger.error("We could not determine the location of the data, file was not downloaded.");
 			}
 		}
-		catch (URISyntaxException | ClientProtocolException | InterruptedException e)
+		catch (URISyntaxException | InterruptedException e)
 		{
-			logger.error("A problem occured while trying to get the data location, or the data: {}", e.getMessage());
+			logger.error("A problem occurred while trying to get the data location, or the data: {}", e.getMessage());
 			e.printStackTrace();
 		}
 		catch (IOException e)
@@ -335,11 +353,9 @@ public class UniprotFileRetriever extends FileRetriever
 	 * This function gets the location of the Uniprot-mapped data.
 	 * @return The location of the data, as a string.
 	 * @throws IOException
-	 * @throws MalformedURLException
-	 * @throws ClientProtocolException
 	 * @throws InterruptedException
 	 */
-	private String getDataLocation() throws IOException, MalformedURLException, ClientProtocolException, InterruptedException
+	private String getDataLocation() throws IOException, InterruptedException
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		byte[] buffer = new byte[2048];
@@ -353,21 +369,21 @@ public class UniprotFileRetriever extends FileRetriever
 		while (location == null && attemptCount < maxAttemptCount)
 		{
 			InputStream fileData = new ByteArrayInputStream(baos.toByteArray());
-			HttpPost post = new HttpPost(this.uri);
-			logger.trace("URI: {}", post.getURI().toURL());
-			HttpEntity attachment = MultipartEntityBuilder.create()
-					.addBinaryBody("file", fileData, ContentType.TEXT_PLAIN, "uniprot_ids.txt")
-					.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
-					.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
-					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
-					.build();
-			post.setEntity(attachment);
+			logger.trace("URI: {}", this.uri.toURL());
+
+//			HttpEntity attachment = MultipartEntityBuilder.create()
+//					.addBinaryBody("file", fileData, ContentType.TEXT_PLAIN, "uniprot_ids.txt")
+//					.addPart("format", new StringBody("tab", ContentType.MULTIPART_FORM_DATA))
+//					.addPart("from", new StringBody(this.mapFromDb, ContentType.MULTIPART_FORM_DATA))
+//					.addPart("to", new StringBody(this.mapToDb, ContentType.MULTIPART_FORM_DATA))
+//					.build();
+//			post.setEntity(attachment);
 
 			try
 			{
-				location = this.attemptPostToUniprot(post);
+				location = this.attemptPostToUniprot(baos);
 			}
-			catch (NoHttpResponseException e)
+			catch (Exception e)
 			{
 				// If we don't catch this here, but let it go to "catch (IOException e)" in the outer try-block,
 				// then we won't be able to retry. Catching it here lets us continue processing: increment the attempt counter, and loop through again.
@@ -396,22 +412,17 @@ public class UniprotFileRetriever extends FileRetriever
 
 	/**
 	 * Get values from Uniprot.
-	 * @param location - the URL that the data will be at. This is returned from the inital query to UniProt.
-	 * @param mapped - Set to true to get the list of successfully mapped values. Set to false to get the list of identifiers which UniProt could not map.
-	 * @throws URISyntaxException
-	 * @throws IOException
-	 * @throws InterruptedException
-	 * @throws Exception
+	 * @param uri - the URL that the data will be at. This is returned from the initial query to UniProt.
+	 * @throws Exception Thrown if unable to get uniprot content, creating output file path, or writing output
 	 */
-	private void getUniprotValues(URI uri) throws URISyntaxException, IOException, InterruptedException, Exception
+	private void getUniprotValues(URI uri) throws Exception
 	{
 		int numAttempts = 0;
 		boolean done = false;
 
 		while (!done)
 		{
-			HttpGet get = new HttpGet( uri );
-			byte[] result = this.attemptGetFromUniprot(get);
+			byte[] result = this.attemptGetFromUniprot(uri);
 			numAttempts++;
 			Path path = Paths.get(new URI("file://" + this.destination));
 			// The loop is "done" if the number of attempts exceeds the max allowed, OR if the result is not null/empty.
@@ -452,12 +463,13 @@ public class UniprotFileRetriever extends FileRetriever
 		URI uri;
 		if (mapped)
 		{
-			uri = this.uriBuilderFromDataLocation(location).build();
+			uri = new URI(this.getURIStringFromDataLocation(location));
 		}
 		else
 		{
-			URIBuilder builder = uriBuilderFromDataLocation(location);
-			uri = builder.setHost(builder.getHost().replace(".tab", ".not")).build();
+			//URIBuilder builder = uriBuilderFromDataLocation(location);
+			//uri = builder.setHost(builder.getHost().replace(".tab", ".not")).build();
+			uri = new URI(getURIStringFromDataLocation(location).replace(".tab", ".not"));
 			String[] filenameParts = this.destination.split("\\.");
 			this.destination = this.destination.replace( filenameParts[filenameParts.length - 1] , "notMapped." + filenameParts[filenameParts.length - 1] );
 		}
@@ -530,5 +542,11 @@ public class UniprotFileRetriever extends FileRetriever
 	public List<String> getActualFetchDestinations()
 	{
 		return UniprotFileRetriever.actualFetchDestinations;
+	}
+
+	private String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 	}
 }

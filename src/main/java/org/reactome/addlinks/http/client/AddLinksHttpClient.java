@@ -1,23 +1,16 @@
 package org.reactome.addlinks.http.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.time.Duration;
+import java.util.stream.Collectors;
 
-import org.apache.http.ConnectionClosedException;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.reactome.addlinks.http.AddLinksHttpResponse;
 
 
 public class AddLinksHttpClient 
@@ -31,35 +24,37 @@ public class AddLinksHttpClient
 	private boolean allowRedirects = true;
 
 	
-	public AddLinksHttpResponse executeRequest() throws HttpHostConnectException, IOException, Exception
+	public String executeRequest() throws IOException, Exception
 	{	
-		AddLinksHttpResponse addLinksResponse = null;
-		HttpGet get = new HttpGet(this.uri);
-		
+		String content = null;
+
 		boolean done = this.numAttempts + 1 <= 0;
 		
 		while(!done)
 		{
-			//Need to multiply by 1000 because timeouts are in milliseconds.
-			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-					.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
-					.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
-					.setRedirectsEnabled(allowRedirects)
-					.setRelativeRedirectsAllowed(allowRedirects)
-					.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
-			get.setConfig(config);
+
+//			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
+//					.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
+//					.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
+//					.setRedirectsEnabled(allowRedirects)
+//					.setRelativeRedirectsAllowed(allowRedirects)
+//					.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
+//			get.setConfig(config);
 			Duration responseTime = Duration.ZERO;
 			long startTime = System.currentTimeMillis();
-			try( CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get,  HttpClientContext.create()); )
-			{
-				long endtime = System.currentTimeMillis();
-				responseTime = Duration.ofMillis(endtime - startTime);
-				addLinksResponse = new AddLinksHttpResponse(response, this.numAttempts, responseTime);
-				addLinksResponse.setResponseBody(EntityUtils.toString(response.getEntity()));
+			try{
+				HttpURLConnection urlConnection = (HttpURLConnection) this.uri.toURL().openConnection();
+				//Need to multiply by 1000 because timeouts are in milliseconds.
+				int timeOutInMilliSeconds = 1000 * (int)this.timeout.getSeconds();
+				urlConnection.setReadTimeout(timeOutInMilliSeconds);
+				urlConnection.setConnectTimeout(timeOutInMilliSeconds);
+
+				content = getContent(urlConnection);
+				//addLinksResponse = new AddLinksHttpResponse(response, this.numAttempts, responseTime);
+				//addLinksResponse.setResponseBody(EntityUtils.toString(response.getEntity()));
 				done = true;
 			}
-			catch (ConnectionClosedException | ConnectTimeoutException | SocketTimeoutException e)
+			catch (SocketTimeoutException e)
 			{
 				// we will ONLY be retrying the connection timeouts, defined as the time required to establish a connection, or socket timeouts (inactivity that occurs after the connection has been established).
 				// we will *not* handle connection manager timeouts (time waiting for connection manager or connection pool).
@@ -74,12 +69,6 @@ public class AddLinksHttpClient
 					throw new Exception("Connection timed out. Number of retries ("+this.numAttempts+") exceeded. No further attempts will be made.", e);
 				}
 			}
-			catch (HttpHostConnectException e)
-			{
-				logger.error("Could not connect to host {} !",get.getURI().getHost());
-				e.printStackTrace();
-				throw e;
-			}
 			catch (IOException e) {
 				logger.error("Exception caught: {}",e.getMessage());
 				throw e;
@@ -87,7 +76,7 @@ public class AddLinksHttpClient
 		}
 		
 		
-		return addLinksResponse;
+		return content;
 	}
 
 
@@ -148,5 +137,11 @@ public class AddLinksHttpClient
 	public void setTimeout(Duration timeout)
 	{
 		this.timeout = timeout;
+	}
+
+	private String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 	}
 }

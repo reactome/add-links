@@ -1,6 +1,7 @@
 package org.reactome.addlinks.linkchecking;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -9,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.conn.HttpHostConnectException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -102,7 +102,7 @@ public class LinkCheckManager implements CustomLoggable
 			{
 				r.printStackTrace();
 			}
-			catch (HttpHostConnectException e)
+			catch (ConnectException e)
 			{
 				e.printStackTrace();
 			}
@@ -147,7 +147,7 @@ public class LinkCheckManager implements CustomLoggable
 	/**
 	 * Takes in a (possibly) heterogeneous list of instances with Identifier attributes and then gets links out of them and then checks them.
 	 * The instances do NOT need to be associated with the same Reference Database.
-	 * @param linksData - A list of instances. ALL of them will be checked.
+	 * @param instances - A list of instances. ALL of them will be checked.
 	 * @return A map. The key is the identifier, the value is a LinkCheckInfo object, {@link org.reactome.addlinks.linkchecking.LinkCheckInfo}
 	 */
 	public Map<String, LinkCheckInfo> checkLinks(List<GKInstance> instances)
@@ -200,9 +200,9 @@ public class LinkCheckManager implements CustomLoggable
 	}
 
 	private static void checkTheLink(Map<String, LinkCheckInfo> linkCheckResults, String refDBID, GKInstance inst, String identifierString, String accessURL, String referenceDatabaseName)
-			throws URISyntaxException, HttpHostConnectException, IOException, Exception, InterruptedException
+			throws URISyntaxException, IOException, Exception, InterruptedException
 	{
-		// Some ReferenceDatabases that are added by Curators do not have an Identifer Token (the string: "###ID###".)
+		// Some ReferenceDatabases that are added by Curators do not have an Identifier Token (the string: "###ID###".)
 		// Normally, we don't create references for these databases so we normally do not check links for these databases. BUT...
 		// just in cas someone tries to run link-checking on such a database OR if somehow, a ReferenceDatabase accessURL loses it's token,
 		// we will check for the token before proceeding, and issue a warning if no token was found.

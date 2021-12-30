@@ -13,7 +13,6 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import org.gk.schema.GKSchemaAttribute;
-import org.reactome.addlinks.http.AddLinksHttpResponse;
 import org.reactome.addlinks.http.client.AddLinksHttpClient;
 
 public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< String >
@@ -71,8 +70,7 @@ public class ZincOrthologsReferenceCreator extends SimpleReferenceCreator< Strin
 						client.setTimeout(Duration.ofSeconds(50));
 						URI uri = new URI(refDB.getAttributeValue("accessUrl").toString().replaceAll("###ID###", targetRefDBIdentifier).replaceAll("/$", ".csv"));
 						client.setUri(uri);
-						AddLinksHttpResponse response = client.executeRequest();
-						String responseBody = response.getResponseBody();
+						String responseBody = client.executeRequest();
 						
 						if (responseBody != null && !responseBody.trim().equals(""))
 						{

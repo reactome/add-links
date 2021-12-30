@@ -2,6 +2,7 @@ package org.reactome.addlinks;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -22,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -253,7 +253,7 @@ public class AddLinks
 			// If the keyword is NOT found...
 			if (!result.isKeywordFound())
 			{
-				if (statusCode == HttpStatus.SC_OK)
+				if (statusCode == HttpURLConnection.HTTP_OK)
 				{
 					logger.warn("Link-checking error: Identifier {} was not found when querying the URL {}", identifier, result.getURI());
 				}
@@ -269,7 +269,7 @@ public class AddLinks
 				// Only increment numLinkOK if the keyword is found AND the response code
 				// is 200 or 3xx (some resources will redirect to the correct page, so
 				// 3xx is still "OK enough").
-				if (statusCode == HttpStatus.SC_OK || (statusCode >= 300 && statusCode < 400 ))
+				if (statusCode == HttpURLConnection.HTTP_OK || (statusCode >= 300 && statusCode < 400 ))
 				{
 					numLinkOK++;
 				}
