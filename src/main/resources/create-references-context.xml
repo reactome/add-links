@@ -53,6 +53,7 @@
 		<value>PharosTargetsFileProcessor</value>
 		<value>PharosLigandsFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
+		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
@@ -67,6 +68,7 @@
 		<value>UniprotToPDBFileProcessor</value>
 		<value>UniprotToWormbaseFileProcessor</value>
 		<value>PROFileProcessor</value>
+		<value>ZincMoleculesFileProcessor</value>
 		<value>COSMICProcessor</value>
 		<value>HGNCProcessor</value>
 		<value>zincOrthologFileProcessor</value>
@@ -88,6 +90,42 @@
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
+		<value>PharmacoDBReferenceCreator</value>
+		<value>XenbaseFileProcessor</value>
+		<value>ZFINFileProcessor</value>
+		<value>GlyGenReferenceCreator</value>
+		<value>PharosTargetsReferenceCreator</value>
+		<value>PharosLigandsReferenceCreator</value>
+		<value>GtPLigandsReferenceCreator</value>
+		<value>GtPTargetsReferenceCreator</value>
+		<value>upMappedKEGGRefCreator</value>
+		<value>KEGGReferenceCreator</value>
+		<value>IntEnzRefCreator</value>
+		<value>ENSEMBLToEntrezGeneRefCreator</value>
+		<value>ENSEMBLEnspToEnsgRefCreator</value>
+		<value>ENSEMBLToWormbaseRefCreator</value>
+		<value>OpenTargetsReferenceCreator</value>
+		<value>FlyBaseReferenceCreator</value>
+		<value>upMappedEntrezGeneRefCreator</value>
+		<value>upMappedENSEMBLGeneRefCreator</value>
+		<value>upMappedRefSeqRNARefCreator</value>
+		<value>upMappedUCSCRefCreator</value>
+		<value>upMappedRefSeqPeptideRefCreator</value>
+		<value>upMappedPDBRefCreator</value>
+		<value>upMappedOMIMRefCreator</value>
+		<value>upMappedWormbaseRefCreator</value>
+		<value>proRefCreator</value>
+		<value>COSMICReferenceCreator</value>
+		<value>geneCardsRefCreator</value>
+		<value>zincSubstancesReferenceCreator</value>
+		<value>zincFDAReferenceCreator</value>
+		<value>zincWorldDrugsReferenceCreator</value>
+		<value>zincMetabolitesReferenceCreator</value>
+		<value>zincBiogenicReferenceCreator</value>
+		<value>zincInvestigationalReferenceCreator</value>
+		<value>zincPurchasablePredictionsReferenceCreator</value>
+		<value>zincToUniProtReferenceCreator</value>
+		<value>zincToChEBIReferenceCreator</value>
 		<value>HGNCReferenceCreator</value>
 		<value>RheaReferenceCreator</value>
 		<value>OrphanetReferenceCreator</value>

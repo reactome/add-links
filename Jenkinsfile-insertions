@@ -25,7 +25,7 @@ pipeline{
 				script{
 				    def releaseVersion = utils.getReleaseVersion()
 					def downloadsArchive = "addlinks-downloads-v${releaseVersion}.tar"
-					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${releaseVersion}//add_links/downloads/data/${downloadsArchive}.gz ."
+					sh "aws s3 --no-progress cp ${env.S3_RELEASE_DIRECTORY_URL}/${releaseVersion}/add_links/downloads/data/${downloadsArchive}.gz ."
 				    	sh "gunzip ${downloadsArchive}.gz"
 				    	sh "tar -xvf ${downloadsArchive}"
 				 	sh "mv addlinks-downloaded-files/ /tmp/"
