@@ -53,7 +53,6 @@
 		<value>PharosTargetsFileProcessor</value>
 		<value>PharosLigandsFileProcessor</value>
 		<value>UniprotToKEGGFileProcessor</value>
-		<value>TargetPathogenFileProcessor</value>
 		<value>IntEnzFileProcessor</value>
 		<value>ENSEMBLFileProcessor</value>
 		<value>ENSEMBLNonCoreFileProcessor</value>
