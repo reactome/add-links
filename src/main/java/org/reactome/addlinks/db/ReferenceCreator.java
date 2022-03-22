@@ -1,9 +1,6 @@
 package org.reactome.addlinks.db;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -260,7 +257,8 @@ public class ReferenceCreator
 				{
 					for (String otherAttributeName : otherAttribs.keySet())
 					{
-						identifierInstance.setAttributeValue(otherAttributeName, otherAttribs.get(otherAttributeName));
+						List<String> otherAttributeValues = otherAttribs.computeIfAbsent(otherAttributeName, k -> new ArrayList<>());
+						identifierInstance.setAttributeValue(otherAttributeName, otherAttributeValues);
 					}
 				}
 
