@@ -19,7 +19,7 @@ import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.reactome.release.common.database.InstanceEditUtils;
 
-import com.mysql.jdbc.MysqlDataTruncation;
+import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
 
 public class ReferenceCreator
 {
