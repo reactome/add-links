@@ -158,7 +158,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.ebi.ac.uk/intenz/" />
-				<entry key="AccessURL" value="https://www.ebi.ac.uk/intenz/query?cmd=SearchEC&ec=###ID###" />
+				<entry key="AccessURL" value="https://www.ebi.ac.uk/intenz/query?cmd=SearchEC&amp;ec=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100001"/>
 			</map>
 		</entry>
