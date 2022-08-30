@@ -46,7 +46,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://ctd.mdibl.org/"/>
-				<entry key="AccessURL" value="http://ctdbase.org/detail.go?type=gene&acc=###ID###"/>
+				<entry key="AccessURL" value="http://ctdbase.org/detail.go?type=gene&amp;acc=###ID###"/>
 				<entry key="resourceIdentifier" value="MIR:00100131"/>
 			</map>
 		</entry>
