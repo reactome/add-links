@@ -223,10 +223,8 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<archive>
-						<manifest>
-							<mainClass>org.reactome.addlinks.Main</mainClass>
-						</manifest>
 						<manifestEntries>
+							<Main-Class>org.reactome.addlinks.Main</Main-Class>
 							<Multi-Release>true</Multi-Release>
 						</manifestEntries>
 						<addMavenDescriptor>true</addMavenDescriptor>

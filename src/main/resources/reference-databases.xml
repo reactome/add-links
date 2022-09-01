@@ -250,7 +250,7 @@
 				<entry key="PrimaryName" value="Rhea" />
 				<entry key="URL" value="http://www.rhea-db.org/" />
 				<entry key="AccessURL" value="https://www.rhea-db.org/rhea/###ID###" />
-				<entry key="resourceIdentifier" value="MIR:00000082"/>
+				<entry key="resourceIdentifier" value="MIR:00100113"/>
 			</map>
 		</entry>
 
@@ -528,7 +528,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="PharmacoDB" />
 				<entry key="URL" value="https://pharmacodb.ca" />
-				<entry key="AccessURL" value="https://pharmacodb.ca/drugs/###ID###" />
+				<entry key="AccessURL" value="https://pharmacodb.ca/compounds/###ID###" />
 				<!-- No entry in identifiers.org for PharmacoDB
 				<entry key="resourceIdentifier" value="MIR:"/>
 				-->
@@ -537,11 +537,7 @@
 		<entry key="Guide to Pharmacology - Targets">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Guide to Pharmacology - Targets" />
-				<entry key="Aliases">
-					<list value-type="java.lang.String">
-						<value>Guide to Pharmacology</value>
-					</list>
-				</entry>
+
 				<entry key="URL" value="https://www.guidetopharmacology.org/" />
 				<entry key="AccessURL" value="https://www.guidetopharmacology.org/GRAC/ObjectDisplayForward?objectId=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100362"/>
@@ -550,11 +546,7 @@
 		<entry key="Guide to Pharmacology - Ligands">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Guide to Pharmacology - Ligands" />
-				<entry key="Aliases">
-					<list value-type="java.lang.String">
-						<value>Guide to Pharmacology</value>
-					</list>
-				</entry>
+
 				<entry key="URL" value="https://www.guidetopharmacology.org/" />
 				<entry key="AccessURL" value="https://www.guidetopharmacology.org/GRAC/LigandDisplayForward?ligandId=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100592"/>
