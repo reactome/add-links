@@ -160,7 +160,7 @@
 
 		<entry key="RheaRetriever">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RheaRetriever">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
+				<property name="dataURL" value="https://ftp.expasy.org/databases/rhea/tsv/rhea2reactome.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/RheaRetriever"/>
@@ -219,7 +219,7 @@
 
 		<entry key="IntEnz">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="IntEnz">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
+				<property name="dataURL" value="https://ftp.expasy.org/databases/enzyme/enzyme.dat" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
@@ -277,8 +277,8 @@
 
 		<entry key="ZFIN">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="ZFIN">
-				<property name="dataURL" value="https://zfin.org/downloads/uniprot-zfinpub.txt" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-zfinpub.txt" />
+				<property name="dataURL" value="https://zfin.org/downloads/uniprot.txt" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/uniprot-zfin.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/ZFIN"/>
 			</bean>

@@ -18,7 +18,7 @@ public class ZFINFileProcessor extends FileProcessor<List<String>>{
     }
 
     private static final int ZFIN_IDENTIFIER_INDEX = 0;
-    private static final int UNIPROT_IDENTIFIER_INDEX = 2;
+    private static final int UNIPROT_IDENTIFIER_INDEX = 3;
 
     /**
      * Build map of UniProt identifiers to Zebrafish Information Network (ZFIN) identifiers that is used to create ZFIN cross-references in database.

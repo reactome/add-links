@@ -393,7 +393,7 @@
 				<constructor-arg name="processorName" value="file-processors/ZFINFileProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-zfinpub.txt"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/uniprot-zfin.txt"/>
 					</bean>
 				</property>
 			</bean>
