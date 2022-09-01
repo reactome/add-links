@@ -296,7 +296,7 @@
 		<!-- NOTE: The files retrieved from PharmacoDB and IUPHAR are *both* required to create references for PharmacoDB -->
 		<entry key="PharmacoDB">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PharmacoDB">
-				<property name="dataURL" value="https://github.com/BHKLAB-Pachyderm/Annotations/blob/master/drugs_with_ids.csv" />
+				<property name="dataURL" value="https://raw.githubusercontent.com/BHKLAB-Pachyderm/Annotations/master/drugs_with_ids.csv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharmacodb_drugs_with_ids.csv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PharmacoDB"/>
