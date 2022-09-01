@@ -40,15 +40,11 @@
 
 
 	<util:list id="fileRetrieverFilter" value-type="java.lang.String">
+		<value>ComplexPortal</value>
+		<value>ComplexPortalSARS</value>
 		<value>ComplexPortalSARSCOV2</value>
 		<value>VGNC</value>
-		<value>COSMIC</value>
-		<value>TargetPathogen</value>
-		<value>OpenTargets</value>
-		<value>Zinc</value>
 		<value>PharmacoDB</value>
-
-		<value>ComplexPortalSARSCOV2</value>
 		<value>UniProtToKEGG</value>
 		<value>UniProtToENSEMBL</value>
 		<value>UniProtToEntrez_Gene</value>
@@ -60,7 +56,6 @@
 		<value>UniProtToOMIM</value>
 		<value>KEGGRetriever</value>
 		<value>PROToReferencePeptideSequence</value>
-		<value>VGNC</value>
 		<value>GlyGen</value>
 		<value>GuideToPharmacologyLigands</value>
 		<value>GuideToPharmacologyTargets</value>
@@ -68,7 +63,6 @@
 		<value>PharosLigands</value>
 		<value>COSMIC</value>
 		<value>IntEnz</value>
-		<value>TargetPathogen</value>
 		<value>EnsemblToALL</value>
 		<value>OpenTargets</value>
 		<value>FlyBaseToUniprotReferenceDNASequence</value>
@@ -83,7 +77,6 @@
 		<value>HmdbProteins</value>
 		<value>HmdbMolecules</value>
 		<value>RHEAIdentifierToReactionlikeEvent</value>
-		<value>PharmacoDB</value>
 		<value>HPA</value>
 		<value>MGI</value>
 		<value>RGD</value>
