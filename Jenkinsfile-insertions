@@ -15,6 +15,7 @@ pipeline{
 			steps{
 				script{
 					// This queries the Jenkins API to confirm that the most recent builds of AddLinks-Download and Orthoinference were successful.
+					utils.checkUpstreamBuildsSucceeded("AddLinks-Download")
 					utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/Orthoinference")
 	    			}
     			}
