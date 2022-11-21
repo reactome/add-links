@@ -262,7 +262,7 @@
 						<value>SwissProt</value>
 					</list>
 				</entry>
-				<entry key="URL" value="http://legacy.uniprot.org" />
+				<entry key="URL" value="http://www.uniprot.org" />
 				<entry key="AccessURL" value="http://purl.uniprot.org/uniprot/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100164"/>
 			</map>
