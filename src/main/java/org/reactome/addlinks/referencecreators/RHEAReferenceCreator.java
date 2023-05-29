@@ -90,15 +90,15 @@ public class RHEAReferenceCreator extends SimpleReferenceCreator<List <String>>
 						&& ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)) != null)
 				{
 					GKInstance stId = ((GKInstance)instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier));
-					String displayName = (String) stId.getAttributeValue(ReactomeJavaConstants._displayName);
-					if (displayName == null || displayName.trim().equals(""))
+					String identifier = (String) stId.getAttributeValue(ReactomeJavaConstants.identifier);
+					if (identifier == null || identifier.trim().equals(""))
 					{
-						logger.error("_displayName is null for stableIdentifier {} of {}", stId, instance);
+						logger.error("identifier is null for stableIdentifier {} of {}", stId, instance);
 						return false;
 					}
 					else
 					{
-						return stId.getAttributeValue(ReactomeJavaConstants._displayName).toString().equals(reactomeID);
+						return stId.getAttributeValue(ReactomeJavaConstants.identifier).toString().equals(reactomeID);
 					}
 				}
 				return false;
