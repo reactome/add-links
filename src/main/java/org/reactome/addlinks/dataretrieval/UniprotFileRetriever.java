@@ -105,6 +105,7 @@ public class UniprotFileRetriever extends FileRetriever {
 		List<List<String>> batchesOfUniProtIdentifiers = getBatchesOfUniProtIdentifiers(uniProtIdentifiers);
 
 		try {
+			Files.createDirectories(getOutputFilePath().getParent());
 			writeHeader();
 			for (List<String> uniProtIdentifierBatch : batchesOfUniProtIdentifiers) {
 				UniProtQuery uniprotQuery = UniProtQuery.getUniProtQuery();
@@ -129,6 +130,9 @@ public class UniprotFileRetriever extends FileRetriever {
 				batchesOfUniProtIdentifiers.add(new ArrayList<>(uniProtIdentifierBatch));
 				uniProtIdentifierBatch.clear();
 			}
+		}
+		if (uniProtIdentifierBatch.size() > 0) {
+			batchesOfUniProtIdentifiers.add(new ArrayList<>(uniProtIdentifierBatch));
 		}
 		return batchesOfUniProtIdentifiers;
 	}
