@@ -1,17 +1,16 @@
 package org.reactome.addlinks.ensembl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -22,12 +21,12 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+//import org.apache.http.client.ClientProtocolException;
+//import org.apache.http.client.methods.CloseableHttpResponse;
+//import org.apache.http.client.methods.HttpGet;
+//import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.impl.client.HttpClients;
+//import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.reactome.addlinks.db.ReferenceDatabaseCreator;
@@ -97,64 +96,62 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 	 * names for ReferenceDatabase objects.
 	 * @param objectCache - A ReferenceObjectCache
 	 * @throws URISyntaxException
-	 * @throws ClientProtocolException
 	 * @throws IOException
 	 * @throws XPathExpressionException
 	 * @throws Exception
 	 */
-	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) throws URISyntaxException, ClientProtocolException, IOException, XPathExpressionException, Exception
+	public static void generateSpeciesSpecificReferenceDatabases(ReferenceObjectCache objectCache) throws URISyntaxException, IOException, XPathExpressionException, Exception
 	{
-		URI uri = new URI(EnsemblReferenceDatabaseGenerator.speciesURL);
-		HttpGet get = new HttpGet(uri );
+		URL url = new URL(EnsemblReferenceDatabaseGenerator.speciesURL);
+		//HttpGet get = new HttpGet(uri );
 		//Need to multiply by 1000 because timeouts are in milliseconds.
 		//RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT).build();
-		try( CloseableHttpClient client = HttpClients.createDefault();
-			CloseableHttpResponse response = client.execute(get) )
+		HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+		logger.info("Response: {}", urlConnection.getResponseCode());
+		if (urlConnection.getResponseCode() > 400 )
 		{
-			logger.info("Response: {}",response.getStatusLine());
-			if (response.getStatusLine().getStatusCode() > 400 )
-			{
-				throw new Error("Error getting list of species from ENSEMBL! HTTP response code: " + response.getStatusLine().getStatusCode() + " ; Message: " + response.getStatusLine().getReasonPhrase());
-			}
-			String s = EntityUtils.toString(response.getEntity());
-			InputStream inStream = new ByteArrayInputStream(s.getBytes());
+			throw new Error("Error getting list of species from ENSEMBL! Message: " +
+				urlConnection.getResponseMessage());
+		}
+		String s = getContent(urlConnection);
+		InputStream inStream = new ByteArrayInputStream(s.getBytes());
 
-			TransformerFactory factory = TransformerFactory.newInstance();
-			Source xsl = new StreamSource(new File("resources/ensembl-species-transform.xsl"));
-			Templates template = factory.newTemplates(xsl);
-			Transformer transformer = template.newTransformer();
-			Source xml = new StreamSource(inStream);
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			Result result = new StreamResult(outputStream);
-			transformer.transform(xml, result);
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source xsl = new StreamSource(new File("resources/ensembl-species-transform.xsl"));
+		Templates template = factory.newTemplates(xsl);
+		Transformer transformer = template.newTransformer();
+		Source xml = new StreamSource(inStream);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		Result result = new StreamResult(outputStream);
+		transformer.transform(xml, result);
 
-			logger.info("Flattened species list from ENSEMBL:\n{}",outputStream.toString());
-			String[] lines = outputStream.toString().split("\n");
-			// for each line, create a database for the proper name
-			for (String line : lines)
-			{
-				// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
-				// Aliases can be ignored - they are not needed.
-				String[] parts = line.split(" : ");
-				String speciesName = parts[0].trim().toLowerCase().replace("_", " ");
-				// It looks like we might need to create a ReferenceDatabase for all ENSEMBL species,
-				// for use by some of the ENSEMBL Uniprot-mapped ENSEMBL identifiers.
-				// Otherwise, we get "Requested ENSEMBL ReferenceDatabase "ENSEMBL_cricetulus_griseus_crigri_GENE" does not exists."
-				// In the Reactome database, the closest species name we have to that is "Cricetulus", so it *can* be mapped to.
-				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
-			}
-			// Now we need to create ReferenceDatabases for all of the species names in Reactome... because the Uniprot-mapped ENSEMBL
-			// reference creator might try to create a reference for something that's not in the ENSEMBL species list.
-			// For example, the Uniprot-mapped-to-ENSEMBL reference creation process may want to create references for ENSEMBL
-			// for the hepatitis virus (hep. C, subtype 1a). That species is in Reactome's species list and it seems in UniProt's list as well,
-			// but it is not in the list of species that actually comes from ENSEMBL, even though ENSEMBL does have entries for hepatitis.
-			// So... now we add all Reactome species names as ENSEMBL Reference Database names. Anything that has 0 references will
-			// be removed at the end of AddLinks.
-			for (String speciesName : objectCache.getSetOfSpeciesNames())
-			{
-				speciesName = speciesName.trim().toLowerCase().replace("_", " ");
-				EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
-			}
+		logger.info("Flattened species list from ENSEMBL:\n{}",outputStream.toString());
+		String[] lines = outputStream.toString().split("\n");
+		// for each line, create a database for the proper name
+		for (String line : lines)
+		{
+			// Lines will have the format "<species_name> : <alias1> , <alias2> , ..."
+			// Aliases can be ignored - they are not needed.
+			String[] parts = line.split(" : ");
+			String speciesName = parts[0].trim().toLowerCase().replace("_", " ");
+			// It looks like we might need to create a ReferenceDatabase for all ENSEMBL species,
+			// for use by some of the ENSEMBL Uniprot-mapped ENSEMBL identifiers.
+			// Otherwise, we get "Requested ENSEMBL ReferenceDatabase "ENSEMBL_cricetulus_griseus_crigri_GENE" does not exists."
+			// In the Reactome database, the closest species name we have to that is "Cricetulus", so it *can* be mapped to.
+			EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
+		}
+		// Now we need to create ReferenceDatabases for all of the species names in Reactome... because the Uniprot-mapped ENSEMBL
+		// reference creator might try to create a reference for something that's not in the ENSEMBL species list.
+		// For example, the Uniprot-mapped-to-ENSEMBL reference creation process may want to create references for ENSEMBL
+		// for the hepatitis virus (hep. C, subtype 1a). That species is in Reactome's species list and it seems in UniProt's list as well,
+		// but it is not in the list of species that actually comes from ENSEMBL, even though ENSEMBL does have entries for hepatitis.
+		// So... now we add all Reactome species names as ENSEMBL Reference Database names. Anything that has 0 references will
+		// be removed at the end of AddLinks.
+		for (String speciesName : objectCache.getSetOfSpeciesNames())
+		{
+			speciesName = speciesName.trim().toLowerCase().replace("_", " ");
+			EnsemblReferenceDatabaseGenerator.createReferenceDatabase(objectCache, speciesName);
 		}
 	}
 
@@ -263,5 +260,9 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 		EnsemblReferenceDatabaseGenerator.speciesURL = speciesURL;
 	}
 
-
+	private static String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
+	}
 }

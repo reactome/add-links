@@ -1,14 +1,10 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpStatus;
 import org.reactome.addlinks.EnsemblBioMartUtil;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -51,9 +47,8 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * @throws IOException - Thrown when file can't be found during writing or by HTTPConnection class.
      * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
      * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
-     * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
      */
-    public void downloadData() throws IOException, InterruptedException, BioMartQueryException, HttpException {
+    public void downloadData() throws IOException, InterruptedException, BioMartQueryException {
 
         // Create directory where BioMart files will be stored.
         Files.createDirectories(Paths.get(this.destination));
@@ -171,10 +166,9 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * @throws IOException - Thrown by HttpURLConnection, BufferedReader, URL classes.
      * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
      * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
-     * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
      */
     private Set<String> queryBioMart(String queryString, String biomartDataType)
-            throws InterruptedException, HttpException, BioMartQueryException, IOException {
+            throws InterruptedException, BioMartQueryException, IOException {
 
         int initialRetryCount = 0;
         return queryBioMart(queryString, initialRetryCount, biomartDataType);
@@ -191,15 +185,14 @@ public class EnsemblBioMartRetriever extends FileRetriever {
      * @throws InterruptedException - Thrown if Sleep is interrupted when waiting to retry BioMart query.
      * @throws BioMartQueryException - Thrown if BioMart query doesn't match any existing data in their database.
      * If/When this exception is thrown for this species, it can be ignored. Check the logs from previous runs to confirm.
-     * @throws HttpException - Thrown when the Http request to BioMart returns a non-200 response.
      */
-    private Set<String> queryBioMart(String queryString, int retryCount, String biomartDataType) throws IOException, InterruptedException, BioMartQueryException, HttpException {
+    private Set<String> queryBioMart(String queryString, int retryCount, String biomartDataType) throws IOException, InterruptedException, BioMartQueryException {
         final int MAX_QUERY_RETRIES = 5;
         int numLinesProcessed = 0;
         // Create connection to BioMart URL for each species, retrieving mappings of Ensembl identifiers to microarray, GO, or UniProt identifiers.
         URL biomartUrlWithSpecies = new URL(queryString);
         HttpURLConnection biomartConnection = (HttpURLConnection) biomartUrlWithSpecies.openConnection();
-        if (biomartConnection.getResponseCode() == HttpStatus.SC_OK) {
+        if (biomartConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             Set<String> biomartResponseLines = new HashSet<>();
             BufferedReader br = new BufferedReader(new InputStreamReader(biomartConnection.getInputStream()));
             String line;
@@ -231,7 +224,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
 
         } else {
             if (retryCount > MAX_QUERY_RETRIES) {
-                throw new HttpException(
+                throw new ConnectException(
                         "Unable to connect to BioMart (" +
                                 biomartConnection.getResponseCode() + ": " + biomartConnection.getResponseMessage() +
                                 ") with URL: " + queryString
@@ -242,7 +235,7 @@ public class EnsemblBioMartRetriever extends FileRetriever {
     }
 
     // Recursive method that retries the BioMart query.
-    private Set<String> retryQuery(String queryString, int retryCount, String biomartDataType) throws InterruptedException, IOException, HttpException, BioMartQueryException {
+    private Set<String> retryQuery(String queryString, int retryCount, String biomartDataType) throws InterruptedException, IOException, BioMartQueryException {
         final long QUERY_SLEEP_DURATION = Duration.ofSeconds(5).toMillis();
 
         Thread.sleep(QUERY_SLEEP_DURATION);

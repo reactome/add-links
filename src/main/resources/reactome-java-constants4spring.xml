@@ -52,7 +52,13 @@
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.ReferenceRNASequence"/>
 		</constructor-arg>
 	</bean>
-	
+
+	<bean id="PathwayBean" class="java.lang.String">
+		<constructor-arg>
+			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Pathway"/>
+		</constructor-arg>
+	</bean>
+
 	<bean id="ReactionBean" class="java.lang.String">
 		<constructor-arg>
 			<util:constant static-field="org.gk.model.ReactomeJavaConstants.Reaction"/>

@@ -1,19 +1,12 @@
 package org.reactome.addlinks.dataretrieval.ensembl;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.entity.EntityBuilder;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor.EnsemblServiceResult;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 import org.reactome.util.ensembl.EnsemblServiceResponseProcessor;
@@ -51,8 +44,7 @@ public class EnsemblBatchLookup  extends FileRetriever
 	 * @param species - The species name, will be appended to the URL.
 	 * @return The result of the lookup, as an XML string.
 	 */
-	private String doBatchLookup(List<String> identifiers, String species)
-	{
+	private String doBatchLookup(List<String> identifiers, String species) throws IOException {
 		logger.debug("{} identifiers need to be looked up for species {}; will be done in batch sizes of 1000", identifiers.size(), species);
 		if (identifiers.size() > 0)
 		{
@@ -98,15 +90,13 @@ public class EnsemblBatchLookup  extends FileRetriever
 				// Remove trailing "," and add the "]" to complete the JSON array.
 				String identifiersList = (sb.toString().substring(0, sb.toString().length() - 1)) + "]";
 
-
-				HttpPost post = new HttpPost(this.getDataURL().toString()+"?species="+species);
-
-				HttpEntity attachment = EntityBuilder.create()
-										.setBinary(("{ \"ids\":"+identifiersList + " }").getBytes())
-										.setContentType(ContentType.APPLICATION_JSON)
-										.build();
-				post.setEntity(attachment);
-				post.addHeader("Accept","text/xml");
+				HttpURLConnection urlConnection = (HttpURLConnection) this.getDataURL().resolve("?species=" + species).toURL().openConnection();
+				urlConnection.setRequestMethod("POST");
+				urlConnection.setRequestProperty("Content-Type", "application/json");
+				urlConnection.setRequestProperty("Accept", "text/xml");
+				urlConnection.setDoOutput(true);
+				byte[] postDataBytes = ("{ \"ids\":"+identifiersList + " }").getBytes();
+				urlConnection.getOutputStream().write(postDataBytes);
 
 				try
 				{
@@ -114,33 +104,29 @@ public class EnsemblBatchLookup  extends FileRetriever
 					EnsemblServiceResponseProcessor responseProcessor = new EnsemblServiceResponseProcessor(this.logger);
 					while (!requestDone)
 					{
-
 						logger.debug("Submitting batch request - {}", index);
-						try (CloseableHttpClient postClient = HttpClients.createDefault();
-								CloseableHttpResponse postResponse = postClient.execute(post);)
-						{
-							EnsemblServiceResult result = responseProcessor.processResponse(postResponse, post.getURI());
-							// This means we need to wait, and then retry
-							if (!result.getWaitTime().equals(Duration.ZERO))
-							{
-								logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
-								Thread.sleep(result.getWaitTime().toMillis());
-							}
-							else
-							{
-								if (result.getStatus() == HttpStatus.SC_OK)
-								{
 
-									String responseString = result.getResult();
-									resultBuilder.append(responseString);
-									requestDone = true;
-								}
-								else if (result.isOkToRetry())
-								{
-									// The only case where isOkToRetry is true is when the rate limit was exceeded or when the endpoint timed out.
-									// So, setting requestDone to !isOkToRetry should terminate the request-loop.
-									requestDone = false;
-								}
+						EnsemblServiceResult result = responseProcessor.processResponse(urlConnection);
+						// This means we need to wait, and then retry
+						if (!result.getWaitTime().equals(Duration.ZERO))
+						{
+							logger.info("Need to wait: {} seconds.", result.getWaitTime().getSeconds());
+							Thread.sleep(result.getWaitTime().toMillis());
+						}
+						else
+						{
+							if (result.getStatus() == HttpURLConnection.HTTP_OK)
+							{
+
+								String responseString = result.getResult();
+								resultBuilder.append(responseString);
+								requestDone = true;
+							}
+							else if (result.isOkToRetry())
+							{
+								// The only case where isOkToRetry is true is when the rate limit was exceeded or when the endpoint timed out.
+								// So, setting requestDone to !isOkToRetry should terminate the request-loop.
+								requestDone = false;
 							}
 						}
 					}
@@ -180,9 +166,9 @@ public class EnsemblBatchLookup  extends FileRetriever
 	@Override
 	public void downloadData()
 	{
-		String results = this.doBatchLookup(identifiers, species);
 		try
 		{
+			String results = this.doBatchLookup(identifiers, species);
 			Files.createDirectories(Paths.get(this.destination).getParent());
 			Files.write(Paths.get(this.destination), results.getBytes());
 		}

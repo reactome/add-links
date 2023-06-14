@@ -78,6 +78,9 @@
 		<entry key="PharosTargetsFileProcessor" value="PharosTargetsReferenceCreator" />
 		<entry key="PharosLigandsFileProcessor" value="PharosLigandsReferenceCreator" />
 		<entry key="GlyGenFileProcessor" value="GlyGenReferenceCreator" />
+		<entry key="GlyCosmosFileProcessor" value="GlyCosmosReferenceCreator" />
+		<entry key="GlyTouCanFileProcessor" value="GlyTouCanReferenceCreator" />
+		<entry key="PubChemCompoundFileProcessor" value="PubChemCompoundReferenceCreator" />
 	</util:map>
 
 </beans>

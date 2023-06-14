@@ -130,7 +130,7 @@ public class SimpleReferenceCreator<T> implements BatchReferenceCreator<T>
 						Long speciesID = null;
 						@SuppressWarnings("unchecked")
 						Collection<GKSchemaAttribute> attributes = (Collection<GKSchemaAttribute>) sourceReference.getSchemClass().getAttributes();
-						if ( attributes.stream().filter(attr -> attr.getName().equals(ReactomeJavaConstants.species)).findFirst().isPresent())
+						if (attributes.stream().anyMatch(attr -> attr.getName().equals(ReactomeJavaConstants.species)))
 						{
 							GKInstance speciesInst = (GKInstance) sourceReference.getAttributeValue(ReactomeJavaConstants.species);
 							if (speciesInst != null)

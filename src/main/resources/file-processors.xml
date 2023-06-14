@@ -482,5 +482,37 @@
 			</bean>
 		</entry>
 
+		<entry key="GlyCosmosFileProcessor">
+			<bean id="GlyCosmosFileProcessor" class="org.reactome.addlinks.fileprocessors.GlyCosmosFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GlyCosmosFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/glycosmos.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="GlyTouCanFileProcessor">
+			<bean id="GlyTouCanFileProcessor" class="org.reactome.addlinks.fileprocessors.GlyTouCanFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GlyTouCanFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/chebi_to_glytoucan_mapping.tsv"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
+
+		<entry key="PubChemCompoundFileProcessor">
+			<bean id="PubChemCompoundFileProcessor" class="org.reactome.addlinks.fileprocessors.PubChemCompoundFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/PubChemCompoundFileProcessor"/>
+				<property name="path">
+					<bean class="java.nio.file.Paths" factory-method="get">
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/chebi_reference_3star.tgz"/>
+					</bean>
+				</property>
+			</bean>
+		</entry>
 	</util:map>
 </beans>

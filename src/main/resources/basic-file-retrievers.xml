@@ -347,5 +347,32 @@
 				<constructor-arg name="retrieverName" value="retrievers/GlyGen"/>
 			</bean>
 		</entry>
+
+		<entry key="GlyCosmos">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="GlyCosmos">
+				<property name="dataURL" value="https://test.sparqlist.glycosmos.org/sparqlist/api/glycosmos_pathways_list.csv" />
+				<property name="fetchDestination" value="file:///tmp/addlinks-downloaded-files/glycosmos.tsv" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/GlyCosmos" />
+			</bean>
+		</entry>
+
+		<entry key="GlyTouCan">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="GlyTouCan">
+				<property name="dataURL" value="" />
+				<property name="fetchDestination" value="" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/GlyTouCan" />
+			</bean>
+		</entry>
+
+		<entry key="PubChemCompound">
+			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PubChemCompound">
+				<property name="dataURL" value="https://ftp.ebi.ac.uk/pub/databases/chebi/Flat_file_tab_delimited/reference_3star.tsv.gz" />
+				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/chebi_reference_3star.tgz" />
+				<property name="maxAge" ref="maxFileAge" />
+				<constructor-arg name="retrieverName" value="retrievers/PubChemCompound" />
+			</bean>
+		</entry>
 	</util:map>
 </beans>

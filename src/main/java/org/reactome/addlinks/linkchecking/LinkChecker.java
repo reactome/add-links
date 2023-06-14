@@ -1,21 +1,14 @@
 package org.reactome.addlinks.linkchecking;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.time.Duration;
+import java.util.stream.Collectors;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.reactome.release.common.CustomLoggable;
@@ -48,27 +41,23 @@ public class LinkChecker implements CustomLoggable
 
 	/**
 	 * Tries to GET a URL and then checks that the result contains a keyword.
-	 * @param keyword
-	 * @throws HttpHostConnectException
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public LinkCheckInfo checkLink() throws HttpHostConnectException, IOException, Exception
+	public LinkCheckInfo checkLink() throws IOException, Exception
 	{
 		//TODO: maybe look into refactoring this with some of the FileRetriever code. Maybe a new  higher-up class could be used to get the data and let FileRetriever and
 		// *this* class do what they want with the resulting bytestring.
-		StatusLine responseStatus = null;
-		String responseBody = null;
-		HttpGet get = new HttpGet(this.uri);
+
+		HttpURLConnection urlConnection = (HttpURLConnection) this.uri.toURL().openConnection();
 		//Need to multiply by 1000 because timeouts are in milliseconds.
-		RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-											.setConnectTimeout(1000 * (int)this.timeout.getSeconds())
-											.setSocketTimeout(1000 * (int)this.timeout.getSeconds())
-											// Redirects should be enabled, some resources WILL redirect you to the correct page.
-											.setRedirectsEnabled(true)
-											.setRelativeRedirectsAllowed(true)
-											.setConnectionRequestTimeout(1000 * (int)this.timeout.getSeconds()).build();
-		get.setConfig(config);
+		int timeoutInMilliSeconds = 1000 * (int)this.timeout.getSeconds();
+
+		urlConnection.setReadTimeout(timeoutInMilliSeconds);
+		urlConnection.setConnectTimeout(timeoutInMilliSeconds);
+		urlConnection.setInstanceFollowRedirects(true);
+
+		String responseBody = null;
 
 		boolean done = this.numRetries + 1 <= 0;
 
@@ -79,19 +68,17 @@ public class LinkChecker implements CustomLoggable
 		{
 			Duration responseTime = Duration.ZERO;
 			long startTime = System.currentTimeMillis();
-			try( CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get,  HttpClientContext.create()); )
+			try
 			{
 				long endtime = System.currentTimeMillis();
 				responseTime = Duration.ofMillis(endtime - startTime);
 
 				linkCheckInfo.setResponseTime(responseTime);
-				linkCheckInfo.setStatusCode(response.getStatusLine().getStatusCode());
-				responseBody = EntityUtils.toString(response.getEntity());
-				responseStatus = response.getStatusLine();
+				linkCheckInfo.setStatusCode(urlConnection.getResponseCode());
+				responseBody = getContent(urlConnection);
 				done = true;
 			}
-			catch (ConnectTimeoutException | SocketTimeoutException e)
+			catch (SocketTimeoutException e)
 			{
 				// we will ONLY be retrying the connection timeouts, defined as the time required to establish a connection.
 				// we will *not* handle socket timeouts (inactivity that occurs after the connection has been established).
@@ -107,12 +94,6 @@ public class LinkChecker implements CustomLoggable
 					throw new Exception("Connection timed out. Number of retries ("+this.numRetries+") exceeded. No further attempts will be made.", e);
 				}
 			}
-			catch (HttpHostConnectException e)
-			{
-				logger.error("Could not connect to host {} !",get.getURI().getHost());
-				e.printStackTrace();
-				throw e;
-			}
 			catch (IOException e) {
 				logger.error("While trying to connect to {} an exception was caught: {}", this.uri, e.getMessage());
 				throw e;
@@ -121,12 +102,12 @@ public class LinkChecker implements CustomLoggable
 		linkCheckInfo.setNumRetries(this.numRetries);
 		if (responseBody != null)
 		{
-			if (responseStatus != null)
+			if (urlConnection.getResponseMessage() != null)
 			{
-				switch (responseStatus.getStatusCode())
+				switch (urlConnection.getResponseCode())
 				{
 					// If response was OK, check the body to make sure the string we are checking for is there.
-					case HttpStatus.SC_OK:
+					case HttpURLConnection.HTTP_OK:
 					{
 						if (responseBody.contains(this.keyword))
 						{
@@ -177,5 +158,11 @@ public class LinkChecker implements CustomLoggable
 			}
 		}
 		return linkCheckInfo;
+	}
+
+	private String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 	}
 }

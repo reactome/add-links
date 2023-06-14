@@ -1,8 +1,11 @@
 package org.reactome.addlinks.kegg;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,11 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,79 +46,77 @@ public final class KEGGSpeciesCache
 	{
 		try
 		{
-			URI uri = new URI(KEGGSpeciesCache.speciesURL);
-			HttpGet get = new HttpGet(uri );
+			URL url = new URL(KEGGSpeciesCache.speciesURL);
 			//Need to multiply by 1000 because timeouts are in milliseconds.
 			//RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT).build();
-			try( CloseableHttpClient client = HttpClients.createDefault();
-				CloseableHttpResponse response = client.execute(get) )
+
+			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+			logger.info("Response: {}", urlConnection.getResponseMessage());
+			String s = getContent(urlConnection);
+			// Process each line with the following regexp:
+			//     ^[A-Z]\W*([a-z]{3,4})\W*([a-zA-Z0-9 .=#+,\[\]\/:\-_']*)\W*(\(([a-zA-Z0-9 .=#+,\[\]\/:\-_']*).*\).*)?$
+			// Pattern tested here: http://regexr.com/3emij
+			// Explained:
+			//   first capture group is for the species code.
+			//   second capture group is for the formal name.
+			//   third and fourth deal with "common name" (in brackets).
+			// ...and yes, the formal name and common name *could* contain weird puctuation marks as well as numerals.
+			Pattern p = Pattern.compile("^[A-Z]\\W*([a-z]{3,4})\\W*([a-zA-Z 0-9 .=#+,\\[\\]\\/\\:\\-_']*)\\W*(\\(([a-zA-Z 0-9 .=#+,\\[\\]\\/\\:\\-_']*).*\\).*)?$");
+			for(String line : s.split("\n"))
 			{
-				logger.info("Response: {}",response.getStatusLine());
-				String s = EntityUtils.toString(response.getEntity());
-
-				// Process each line with the following regexp:
-				//     ^[A-Z]\W*([a-z]{3,4})\W*([a-zA-Z0-9 .=#+,\[\]\/:\-_']*)\W*(\(([a-zA-Z0-9 .=#+,\[\]\/:\-_']*).*\).*)?$
-				// Pattern tested here: http://regexr.com/3emij
-				// Explained:
-				//   first capture group is for the species code.
-				//   second capture group is for the formal name.
-				//   third and fourth deal with "common name" (in brackets).
-				// ...and yes, the formal name and common name *could* contain weird puctuation marks as well as numerals.
-				Pattern p = Pattern.compile("^[A-Z]\\W*([a-z]{3,4})\\W*([a-zA-Z 0-9 .=#+,\\[\\]\\/\\:\\-_']*)\\W*(\\(([a-zA-Z 0-9 .=#+,\\[\\]\\/\\:\\-_']*).*\\).*)?$");
-				for(String line : s.split("\n"))
+				Matcher m = p.matcher(line);
+				if (m.matches())
 				{
-					Matcher m = p.matcher(line);
-					if (m.matches())
+					String code = m.group(1).trim();
+					String name = m.group(2).trim();
+					String commonName = "";
+					// Common names in this file are a little hard to determine/extract.
+					// ...and sometimes the KEGG file doesn't have them.
+					if (m.group(3) != null)
 					{
-						String code = m.group(1).trim();
-						String name = m.group(2).trim();
-						String commonName = "";
-						// Common names in this file are a little hard to determine/extract.
-						// ...and sometimes the KEGG file doesn't have them.
-						if (m.group(3) != null)
-						{
-							commonName = m.group(3).replace("(", "").replace(")","").trim();
-						}
+						commonName = m.group(3).replace("(", "").replace(")","").trim();
+					}
 
-						Map<String,String> map = new HashMap<>(2);
-						map.put(KEGG_CODE, code);
-						map.put(COMMON_NAME, commonName);
-						// Check that the name isn't already in the map. Yes, the KEGG species file *does* contain duplicated names with different codes.
-						if (speciesMap.containsKey(name))
-						{
-							speciesMap.get(name).add(map);
-						}
-						else
-						{
-							List<Map<String,String>> list = new ArrayList<>();
-							list.add(map);
-							speciesMap.put(name, list);
-						}
-						codesToSpecies.put(code, name);
+					Map<String,String> map = new HashMap<>(2);
+					map.put(KEGG_CODE, code);
+					map.put(COMMON_NAME, commonName);
+					// Check that the name isn't already in the map. Yes, the KEGG species file *does* contain duplicated names with different codes.
+					if (speciesMap.containsKey(name))
+					{
+						speciesMap.get(name).add(map);
 					}
 					else
 					{
-						// The line does not match the pattern needed to extract a species name + KEGG code.
-						// This is not actually that serious, as the file contains many lines that are HTML, XML
-						// or summary/group headings.
-						logger.trace("Line/pattern mismatch: {}",line);
+						List<Map<String,String>> list = new ArrayList<>();
+						list.add(map);
+						speciesMap.put(name, list);
 					}
+					codesToSpecies.put(code, name);
 				}
-				// Add vg for Virus, and ag for Addendum - they are not in the KEGG species list, but are still valid prefixes.
-				codesToSpecies.put("vg", "Virus");
-				codesToSpecies.put("ag", "Addendum");
-				Map<String, String> virusMap = new HashMap<>();
-				virusMap.put(KEGG_CODE, "vg");
-				virusMap.put(COMMON_NAME, "");
-				speciesMap.put("Virus", Arrays.asList(virusMap));
-				Map<String, String> addendumMap = new HashMap<>();
-				addendumMap.put(KEGG_CODE, "ag");
-				addendumMap.put(COMMON_NAME, "");
-				speciesMap.put("Addendum", Arrays.asList(addendumMap));
-				logger.info("{} keys added to the KEGG species map.", KEGGSpeciesCache.speciesMap.keySet().size());
+				else
+				{
+					// The line does not match the pattern needed to extract a species name + KEGG code.
+					// This is not actually that serious, as the file contains many lines that are HTML, XML
+					// or summary/group headings.
+					logger.trace("Line/pattern mismatch: {}",line);
+				}
 			}
+			// Add vg for Virus, and ag for Addendum - they are not in the KEGG species list, but are still valid prefixes.
+			codesToSpecies.put("vg", "Virus");
+			codesToSpecies.put("ag", "Addendum");
+			Map<String, String> virusMap = new HashMap<>();
+			virusMap.put(KEGG_CODE, "vg");
+			virusMap.put(COMMON_NAME, "");
+			speciesMap.put("Virus", Arrays.asList(virusMap));
+			Map<String, String> addendumMap = new HashMap<>();
+			addendumMap.put(KEGG_CODE, "ag");
+			addendumMap.put(COMMON_NAME, "");
+			speciesMap.put("Addendum", Arrays.asList(addendumMap));
+			logger.info("{} keys added to the KEGG species map.", KEGGSpeciesCache.speciesMap.keySet().size());
+
 		}
-		catch (URISyntaxException | IOException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
 			throw new Error(e);
@@ -232,6 +229,12 @@ public final class KEGGSpeciesCache
 	public static String getSpeciesName(String abbreviation)
 	{
 		return codesToSpecies.get(abbreviation);
+	}
+
+	private static String getContent(HttpURLConnection urlConnection) throws IOException {
+		BufferedReader bufferedReader =
+			new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 	}
 
 }
