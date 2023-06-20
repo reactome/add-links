@@ -210,7 +210,7 @@
 
 		<entry key="OpenTargets">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OpenTargets">
-				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/20.09/output/20.09_target_list.csv.gz" />
+				<property name="dataURL" value="http://ftp.ebi.ac.uk/pub/databases/opentargets/platform/21.02/output/21.02_target_list.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/open_target_list.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
@@ -224,15 +224,6 @@
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
 				<property name="passiveFTP" value="true" />
-			</bean>
-		</entry>
-
-		<entry key="TargetPathogen">
-			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="TargetPathogen">
-				<property name="dataURL" value="https://target.sbg.qb.fcen.uba.ar/patho/reactome_map" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/target_pathogen_reactome_map.txt" />
-				<property name="maxAge" ref="maxFileAge"/>
-				<constructor-arg name="retrieverName" value="retrievers/TargetPathogen"/>
 			</bean>
 		</entry>
 
@@ -266,7 +257,7 @@
 
 		<entry key="RGD">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RGD">
-				<property name="dataURL" value="https://download.rgd.mcw.edu/pub/data_release/GENES_RAT.txt" />
+				<property name="dataURL" value="https://download.rgd.mcw.edu/data_release/GENES.RAT.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/GENES_RAT.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/RGD"/>

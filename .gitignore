@@ -38,3 +38,7 @@ diffReport*.txt
 .springBeans
 
 *.md.html
+
+# Intellij files
+.idea/
+*.iml
