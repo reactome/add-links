@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.reactome.release.common.dataretrieval.FileRetriever;
+import org.reactome.UniProtQuery;
 
 public class UniprotFileRetriever extends FileRetriever {
 	// To be used to wait 500 ms to retry if a URL from UniProt returns nothing.
