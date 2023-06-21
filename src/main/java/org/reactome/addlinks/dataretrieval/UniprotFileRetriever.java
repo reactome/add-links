@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.reactome.UniProtQuery;
 import org.reactome.release.common.dataretrieval.FileRetriever;
 
 public class UniprotFileRetriever extends FileRetriever {
@@ -34,21 +33,20 @@ public class UniprotFileRetriever extends FileRetriever {
 	 */
 	public enum UniprotDB {
 		// For a list of database IDs that Uniprot can map from, see: https://www.uniprot.org/help/api_idmapping
-		OMIM("MIM_ID"),
-		PDB("PDB_ID"),
-		RefSeqPeptide("P_REFSEQ_AC"),
-		RefSeqRNA("REFSEQ_NT_ID"),
-		ENSEMBL("ENSEMBL_ID"),
-		ENSEMBLProtein("ENSEMBL_PRO_ID"),
-		ENSEMBLGenomes("ENSEMBLGENOME_ID"),
-		ENSEMBLTranscript("ENSEMBL_TRS_ID"),
-		Ensembl("ENSEMBL_ID"),
-		Wormbase("WORMBASE_ID"),
-		Entrez_Gene("P_ENTREZGENEID"),
-		GeneName("GENENAME"),
-		KEGG("KEGG_ID"),
-		UniProt("ACC+ID"),
-		UCSC("UCSC_ID");
+		OMIM("MIM"),
+		PDB("PDB"),
+		RefSeqPeptide("RefSeq_Protein"),
+		RefSeqRNA("RefSeq_Nucleotide"),
+		ENSEMBL("Ensembl"),
+		ENSEMBLProtein("Ensembl_Protein"),
+		ENSEMBLGenomes("Ensembl_Genomes"),
+		ENSEMBLTranscript("Ensembl_Transcript"),
+		Wormbase("WormBase"),
+		Entrez_Gene("GeneID"),
+		GeneName("HGNC"),
+		KEGG("KEGG"),
+		UniProt("UniProtKB"),
+		UCSC("UCSC");
 
 		private String uniprotName;
 		private static Map<String,UniprotDB> mapToEnum;
