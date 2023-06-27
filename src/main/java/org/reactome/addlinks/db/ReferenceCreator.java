@@ -1,9 +1,7 @@
 package org.reactome.addlinks.db;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +17,7 @@ import org.gk.schema.SchemaClass;
 import org.reactome.addlinks.linkchecking.LinksToCheckCache;
 import org.reactome.release.common.database.InstanceEditUtils;
 
-import com.mysql.jdbc.MysqlDataTruncation;
+import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
 
 public class ReferenceCreator
 {
@@ -260,6 +258,8 @@ public class ReferenceCreator
 				{
 					for (String otherAttributeName : otherAttribs.keySet())
 					{
+						//List<String> otherAttributeValues = otherAttribs.computeIfAbsent(otherAttributeName, k -> new ArrayList<>()).stream().filter(Objects::nonNull).collect(Collectors.toList());
+						//otherAttributeValues.removeIf(Objects::isNull);
 						identifierInstance.setAttributeValue(otherAttributeName, otherAttribs.get(otherAttributeName));
 					}
 				}

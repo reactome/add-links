@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>3.5</version>
+			<version>3.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -111,7 +111,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.48</version>
+			<version>8.0.30</version>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
@@ -191,6 +191,12 @@
 				</exclusion>
 			</exclusions> -->
 		</dependency>
+
+		<dependency>
+			<groupId>org.reactome</groupId>
+			<artifactId>uniprot-query</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -223,10 +229,8 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<archive>
-						<manifest>
-							<mainClass>org.reactome.addlinks.Main</mainClass>
-						</manifest>
 						<manifestEntries>
+							<Main-Class>org.reactome.addlinks.Main</Main-Class>
 							<Multi-Release>true</Multi-Release>
 						</manifestEntries>
 						<addMavenDescriptor>true</addMavenDescriptor>
@@ -307,4 +311,18 @@
 			</resource>
 		</resources>
 	</build>
+	<repositories>
+                <!-- Sonatype repository from which to obtain SNAPSHOT dependencies created
+                        by Reactome (or others sources) -->
+                <repository>
+                        <id>oss.sonatype.org-snapshot</id>
+                        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                        <releases>
+                                <enabled>false</enabled>
+                        </releases>
+                        <snapshots>
+                                <enabled>true</enabled>
+                        </snapshots>
+                </repository>
+        </repositories>
 </project>

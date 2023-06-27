@@ -23,7 +23,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="BioModels" />
 				<entry key="URL" value="http://www.ebi.ac.uk/biomodels/"/>
-				<entry key="AccessURL" value="http://www.ebi.ac.uk/biomodels-main/publ-model.do?mid=###ID###"/>
+				<entry key="AccessURL" value="https://www.ebi.ac.uk/biomodels/###ID###"/>
 				<entry key="resourceIdentifier" value="MIR:00100006"/>
 			</map>
 		</entry>
@@ -32,7 +32,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.Object">
 				<entry key="PrimaryName" value="COSMIC (genes)"/>
 				<entry key="URL" value="http://cancer.sanger.ac.uk/cosmic"/>
-				<entry key="AccessURL" value="http://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=###ID###"/>
+				<entry key="AccessURL" value="http://cancer.sanger.ac.uk/cosmic/gene/overview?ln=###ID###"/>
 				<entry key="resourceIdentifier" value="MIR:00100802"/>
 			</map>
 		</entry>
@@ -46,7 +46,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://ctd.mdibl.org/"/>
-				<entry key="AccessURL" value="http://ctd.mdibl.org/detail.go?type=gene&amp;db=GENE&amp;acc=###ID###"/>
+				<entry key="AccessURL" value="http://ctdbase.org/detail.go?type=gene&amp;acc=###ID###"/>
 				<entry key="resourceIdentifier" value="MIR:00100131"/>
 			</map>
 		</entry>
@@ -83,7 +83,7 @@
 					</list>
 				</entry> -->
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/sites/entrez?db=gene" />
-				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&amp;Cmd=ShowDetailView&amp;TermToSearch=###ID###" />
+				<entry key="AccessURL" value="https://www.ncbi.nlm.nih.gov/gene/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100099"/>
 			</map>
 		</entry>
@@ -97,7 +97,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://flybase.org" />
-				<entry key="AccessURL" value="http://flybase.org/reports/###ID###" />
+				<entry key="AccessURL" value="http://flybase.org/reports/###ID###.html" />
 				<entry key="resourceIdentifier" value="MIR:00100050"/>
 			</map>
 		</entry>
@@ -106,7 +106,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="GeneCards"/>
 				<entry key="URL" value="http://www.genecards.org" />
-				<entry key="AccessURL" value="http://www.genecards.org/cgi-bin/carddisp.pl?id=###ID###&amp;id_type=uniprot" />
+				<entry key="AccessURL" value="https://www.genecards.org/cgi-bin/carddisp.pl?gene=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100407"/>
 			</map>
 		</entry>
@@ -130,7 +130,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="HapMap"/>
 				<entry key="URL" value="http://www.hapmap.org" />
-				<entry key="AccessURL" value="http://hapmap.ncbi.nlm.nih.gov/cgi-perl/gbrowse/hapmap3r2_B36/?name=###ID###" />
+				<entry key="AccessURL" value="https://hamap.expasy.org/unirule/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100374"/>
 			</map>
 		</entry>
@@ -144,7 +144,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="https://www.ebi.ac.uk/intact/complex/" />
-				<entry key="AccessURL" value="https://www.ebi.ac.uk/intact/complex/details/###ID###" />
+				<entry key="AccessURL" value="https://www.ebi.ac.uk/complexportal/complex/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100875"/>
 			</map>
 		</entry>
@@ -158,7 +158,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.ebi.ac.uk/intenz/" />
-				<entry key="AccessURL" value="http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&amp;ec=###ID###" />
+				<entry key="AccessURL" value="https://www.ebi.ac.uk/intenz/query?cmd=SearchEC&amp;ec=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100001"/>
 			</map>
 		</entry>
@@ -216,7 +216,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.pdb.org" />
-				<entry key="AccessURL" value="http://pdbe.org/###ID###" />
+				<entry key="AccessURL" value="https://www.rcsb.org/structure/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100029"/>
 			</map>
 		</entry>
@@ -231,7 +231,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://pir.georgetown.edu/pro" />
-				<entry key="AccessURL" value="http://purl.obolibrary.org/obo/PR_###ID###" />
+				<entry key="AccessURL" value="https://proconsortium.org/app/entry/PR:###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100184"/>
 			</map>
 		</entry>
@@ -240,7 +240,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="RefSeq" />
 				<entry key="URL" value="http://www.ncbi.nlm.nih.gov/RefSeq/" />
-				<entry key="AccessURL" value="http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?val=###ID###" />
+				<entry key="AccessURL" value="https://www.ncbi.nlm.nih.gov/protein/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100067"/>
 			</map>
 		</entry>
@@ -250,7 +250,7 @@
 				<entry key="PrimaryName" value="Rhea" />
 				<entry key="URL" value="http://www.rhea-db.org/" />
 				<entry key="AccessURL" value="https://www.rhea-db.org/rhea/###ID###" />
-				<entry key="resourceIdentifier" value="MIR:00000082"/>
+				<entry key="resourceIdentifier" value="MIR:00100113"/>
 			</map>
 		</entry>
 
@@ -263,7 +263,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.uniprot.org" />
-				<entry key="AccessURL" value="http://www.uniprot.org/entry/###ID###" />
+				<entry key="AccessURL" value="http://purl.uniprot.org/uniprot/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100164"/>
 			</map>
 		</entry>
@@ -287,7 +287,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Wormbase" />
 				<entry key="URL" value="http://www.wormbase.org/" />
-				<entry key="AccessURL" value="http://www.wormbase.org/db/seq/sequence?name=###ID###;class=Gene_name" />
+				<entry key="AccessURL" value="https://www.wormbase.org/get?name=###ID###" />
 				<!-- I think we want to search by Gene Name but I think identifiers.org only returns a URL to search by Wormbase ID -->
 				<entry key="resourceIdentifier" value="MIR:00100038"/>
 			</map>
@@ -413,7 +413,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.genenames.org/" />
-				<entry key="AccessURL" value="http://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=###ID###" />
+				<entry key="AccessURL" value="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100111"/>
 			</map>
 		</entry>
@@ -445,7 +445,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="https://www.proteinatlas.org/" />
-				<entry key="AccessURL" value="https://www.proteinatlas.org/###ID###" />
+				<entry key="AccessURL" value="http://www.proteinatlas.org/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100431"/>
 			</map>
 		</entry>
@@ -472,7 +472,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="http://www.informatics.jax.org/" />
-				<entry key="AccessURL" value="http://www.informatics.jax.org/marker/MGI:###ID###" />
+				<entry key="AccessURL" value="http://www.informatics.jax.org/accession/MGI:###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100062"/>
 			</map>
 		</entry>
@@ -486,7 +486,7 @@
 					</list>
 				</entry>
 				<entry key="URL" value="https://rgd.mcw.edu/wg/" />
-				<entry key="AccessURL" value="https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=###ID###" />
+				<entry key="AccessURL" value="http://rgd.mcw.edu/rgdweb/report/gene/main.html?id=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100075"/>
 			</map>
 		</entry>
@@ -495,7 +495,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Xenbase" />
 				<entry key="URL" value="http://www.xenbase.org/" />
-				<entry key="AccessURL" value="http://www.xenbase.org/gene/showgene.do?method=display&amp;geneId=###ID###" />
+				<entry key="AccessURL" value="https://www.xenbase.org/entry/###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100232"/>
 
 			</map>
@@ -528,7 +528,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="PharmacoDB" />
 				<entry key="URL" value="https://pharmacodb.ca" />
-				<entry key="AccessURL" value="https://pharmacodb.ca/drugs/###ID###" />
+				<entry key="AccessURL" value="https://pharmacodb.ca/compounds/###ID###" />
 				<!-- No entry in identifiers.org for PharmacoDB
 				<entry key="resourceIdentifier" value="MIR:"/>
 				-->
@@ -537,11 +537,7 @@
 		<entry key="Guide to Pharmacology - Targets">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Guide to Pharmacology - Targets" />
-				<entry key="Aliases">
-					<list value-type="java.lang.String">
-						<value>Guide to Pharmacology</value>
-					</list>
-				</entry>
+
 				<entry key="URL" value="https://www.guidetopharmacology.org/" />
 				<entry key="AccessURL" value="https://www.guidetopharmacology.org/GRAC/ObjectDisplayForward?objectId=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100362"/>
@@ -550,11 +546,7 @@
 		<entry key="Guide to Pharmacology - Ligands">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="PrimaryName" value="Guide to Pharmacology - Ligands" />
-				<entry key="Aliases">
-					<list value-type="java.lang.String">
-						<value>Guide to Pharmacology</value>
-					</list>
-				</entry>
+
 				<entry key="URL" value="https://www.guidetopharmacology.org/" />
 				<entry key="AccessURL" value="https://www.guidetopharmacology.org/GRAC/LigandDisplayForward?ligandId=###ID###" />
 				<entry key="resourceIdentifier" value="MIR:00100592"/>

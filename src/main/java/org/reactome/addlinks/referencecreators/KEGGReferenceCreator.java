@@ -118,18 +118,27 @@ public class KEGGReferenceCreator extends SimpleReferenceCreator<List<Map<KEGGKe
 							sourceIdentifiersWithNewIdentifier++;
 							// Also need to add the keggDefinition and keggGeneID as "name" attributes.
 							List<String> names = new ArrayList<>(3);
-							names.add(keggDefinition);
-							names.add(keggGeneIdentifier);
+							if (keggDefinition != null) {
+								names.add(keggDefinition);
+							}
+							if (keggGeneIdentifier != null) {
+								names.add(keggGeneIdentifier);
+							}
 							keggIdentifier = KEGGSpeciesCache.pruneKEGGSpeciesCode(keggIdentifier);
-							if (! keggIdentifier.equals(keggGeneIdentifier))
+							if (keggIdentifier != null && !keggIdentifier.equals(keggGeneIdentifier))
 							{
 								names.add(keggIdentifier);
 							}
 							Map<String,List<String>> extraAttributes = new HashMap<>(1);
+							names.remove(null);
+							logger.info("'null' removed?' :" , names.remove("null"));
 							extraAttributes.put(ReactomeJavaConstants.name, names);
 							logger.trace("For {}, creating new KEGG xref: {}",sourceReference.getDisplayName(), keggIdentifier);
 							if (!this.testMode && targetDB != null)
 							{
+								logger.info("Kegg Gene Identifier: " + keggGeneIdentifier);
+								logger.info("Names: " + names);
+								logger.info("Extra attributes: " + extraAttributes);
 								this.refCreator.createIdentifier(keggGeneIdentifier, String.valueOf(sourceReference.getDBID()),targetDB, personID, this.getClass().getName(), speciesID, extraAttributes);
 							}
 						}
