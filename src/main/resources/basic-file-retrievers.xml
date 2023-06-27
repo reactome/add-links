@@ -35,7 +35,7 @@
 
 		<entry key="PROToReferencePeptideSequence">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="PROToReferencePeptideSequence">
-				<property name="dataURL" value="ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
+				<property name="dataURL" value="ftp://ftp.proteininformationresource.org/databases/ontology/pro_obo/PRO_mappings/uniprotmapping.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/PRO_to_uniprotmapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PROToReferencePeptideSequence"/>
@@ -160,7 +160,7 @@
 
 		<entry key="RheaRetriever">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RheaRetriever">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/rhea/tsv/rhea2reactome.tsv" />
+				<property name="dataURL" value="https://ftp.expasy.org/databases/rhea/tsv/rhea2reactome.tsv" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/rhea2reactome.tsv" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/RheaRetriever"/>
@@ -210,7 +210,7 @@
 
 		<entry key="OpenTargets">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="OpenTargets">
-				<property name="dataURL" value="https://storage.googleapis.com/open-targets-data-releases/20.09/output/20.09_target_list.csv.gz" />
+				<property name="dataURL" value="http://ftp.ebi.ac.uk/pub/databases/opentargets/platform/21.02/output/21.02_target_list.csv.gz" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/open_target_list.csv.gz" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/OpenTargets"/>
@@ -219,20 +219,11 @@
 
 		<entry key="IntEnz">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="IntEnz">
-				<property name="dataURL" value="ftp://ftp.ebi.ac.uk/pub/databases/intenz/enzyme/enzyme.dat" />
+				<property name="dataURL" value="https://ftp.expasy.org/databases/enzyme/enzyme.dat" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/IntEnz.dat" />
 				<property name="maxAge"  ref="maxFileAge"/>
 				<constructor-arg name="retrieverName" value="retrievers/IntEnzRetriever"/>
 				<property name="passiveFTP" value="true" />
-			</bean>
-		</entry>
-
-		<entry key="TargetPathogen">
-			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="TargetPathogen">
-				<property name="dataURL" value="https://target.sbg.qb.fcen.uba.ar/patho/reactome_map" />
-				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/target_pathogen_reactome_map.txt" />
-				<property name="maxAge" ref="maxFileAge"/>
-				<constructor-arg name="retrieverName" value="retrievers/TargetPathogen"/>
 			</bean>
 		</entry>
 
@@ -266,7 +257,7 @@
 
 		<entry key="RGD">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="RGD">
-				<property name="dataURL" value="ftp://ftp.rgd.mcw.edu/pub/data_release/GENES_RAT.txt" />
+				<property name="dataURL" value="https://download.rgd.mcw.edu/data_release/GENES.RAT.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/GENES_RAT.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/RGD"/>
@@ -276,7 +267,7 @@
 
 		<entry key="Xenbase">
 			<bean class="org.reactome.release.common.dataretrieval.FileRetriever" id="Xenbase">
-				<property name="dataURL" value="ftp://ftp.xenbase.org/pub/DataExchange/Uniprot/XenbaseGeneUniprotMapping.txt" />
+				<property name="dataURL" value="https://ftp.xenbase.org/pub/DataExchange/Uniprot/XenbaseGeneUniprotMapping.txt" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/XenbaseGeneUniprotMapping.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/Xenbase"/>

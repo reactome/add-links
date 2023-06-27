@@ -95,6 +95,7 @@ public class PharmacoDBFileProcessor extends FileProcessor<String>
 			if (pharmacoDB != null && !pharmacoDB.isEmpty() && !pharmacoDB.trim().isEmpty() && pharmacoDB.matches("PDBC\\d+"))
 			{
 				iuphar2PharmacoDB.put(iuphar, pharmacoDB);
+				logger.info("{}    {}", iuphar, pharmacoDB);
 			}
 		}
 		logger.info("There are {} IUPHAR->PharmacoDB mappings.", iuphar2PharmacoDB.size());

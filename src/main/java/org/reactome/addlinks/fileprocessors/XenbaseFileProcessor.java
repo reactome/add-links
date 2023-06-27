@@ -3,7 +3,7 @@ package org.reactome.addlinks.fileprocessors;
 import org.reactome.addlinks.EnsemblBioMartUtil;
 import java.util.*;
 
-public class XenbaseFileProcessor extends FileProcessor{
+public class XenbaseFileProcessor extends FileProcessor<List<String>>{
 
     public XenbaseFileProcessor(String processorName)
     {
@@ -33,7 +33,7 @@ public class XenbaseFileProcessor extends FileProcessor{
             String uniprotId = tabSplit.get(UNIPROT_IDENTIFIER_INDEX);
             mappings.computeIfAbsent(uniprotId, k -> new ArrayList<>()).add(xenbaseId);
         }
-
+        logger.info("{} keys in mapping.", mappings.size());
         return mappings;
     }
 }
