@@ -171,7 +171,7 @@ public final class EnsemblReferenceDatabaseGenerator implements CustomLoggable
 			String normalizedSpeciesName = speciesName.toLowerCase().replaceAll(" ", "_");
 			//TODO: Maybe instead of creating them all in the database, we should store this information in the cache
 			//and only create a ReferenceDatbase object when it's discovered that one is needed.
-			String speciesURL = "http://www.ensembl.org/"+normalizedSpeciesName+"/geneview?gene=###ID###&db=core";
+			String speciesURL = "https://www.ensembl.org/"+normalizedSpeciesName+"/Gene/Summary?db=core;g=###ID###";
 
 			// Special case: "Non-core" species use a different URL prefix than other species.
 			if (nonCoreSpeciesURLs.containsKey(normalizedSpeciesName))

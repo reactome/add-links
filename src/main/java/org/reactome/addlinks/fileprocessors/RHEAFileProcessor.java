@@ -46,7 +46,9 @@ public class RHEAFileProcessor extends FileProcessor<List<String>>
 				 * 10041	LR	10040	R-HSA-176606.2
 				 */
 				String rheaID = parts[0];
-				String reactomeID = parts[3];
+				
+				// We are leaving of the minor version of the stable identifier for comparison
+				String reactomeID = parts[3].split("\\.")[0];
 				
 				if (mappings.containsKey(rheaID))
 				{

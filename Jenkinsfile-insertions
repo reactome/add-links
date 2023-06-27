@@ -51,7 +51,7 @@ pipeline{
 				    sh "mvn clean package -DskipTests"
 				}
 			 }
-   		 }
+   		}
 		// This stage runs the insertion component of AddLinks. It will build links to various external resources and connect them to the relevant instances.
 		// It also connects these linkouts to ReferenceDatabase objects that pertain to their original resource.
 		stage('Main: AddLinks Insertions'){
@@ -64,12 +64,31 @@ pipeline{
 						sh "cp $ConfigFile src/main/resources/auth.properties"
 						sh "ln -sf src/main/resources resources"
 						sh "rm -f src/main/resources/db.properties"
+						sh "sudo service neo4j stop"
 						sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
 						sh "rm -f src/main/resources/auth.properties"
+						sh "sudo service neo4j start"
 					}
 				}
 			}
 		}
+		// This stage checks the number of links relative to the previous release
+		stage("Post: Check add links results") {
+		    steps{
+		    	script{
+		            utils.cloneOrUpdateLocalRepo("add-links-checker")
+		            dir("add-links-checker") {
+		                withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+		                    sh "cp $ConfigFile src/main/resources/config.properties"
+		                }
+		                utils.buildJarFileWithPackage()
+		                sh "java -jar target/add-links-checker-*-jar-with-dependencies.jar -n release_current -o release_previous"
+		            }
+		            input(message: "Should we continue?")
+		        }
+		    }
+		}
+		
 		// This stage backs up the release_current database after it is modified.
 		stage('Post: Backup release_current'){
 			steps{

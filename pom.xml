@@ -27,11 +27,11 @@
 	</developers>
 
 	<properties>
-		<spring.version>5.1.10.RELEASE</spring.version>
+		<spring.version>5.2.22.RELEASE</spring.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<powermock.version>2.0.9</powermock.version>
 		<mockito.version>3.9.0</mockito.version>
-		<log4j.version>2.13.2</log4j.version>
+		<log4j.version>2.17.1</log4j.version>
 	</properties>
 
 	<dependencies>
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
+			<version>4.5.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>3.5</version>
+			<version>3.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -191,6 +191,12 @@
 				</exclusion>
 			</exclusions> -->
 		</dependency>
+
+		<dependency>
+			<groupId>org.reactome</groupId>
+			<artifactId>uniprot-query</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -305,4 +311,18 @@
 			</resource>
 		</resources>
 	</build>
+	<repositories>
+                <!-- Sonatype repository from which to obtain SNAPSHOT dependencies created
+                        by Reactome (or others sources) -->
+                <repository>
+                        <id>oss.sonatype.org-snapshot</id>
+                        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                        <releases>
+                                <enabled>false</enabled>
+                        </releases>
+                        <snapshots>
+                                <enabled>true</enabled>
+                        </snapshots>
+                </repository>
+        </repositories>
 </project>
