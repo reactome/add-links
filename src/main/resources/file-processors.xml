@@ -465,7 +465,7 @@
 				</property>
 				<property name="pathToIUPHARFile">
 					<bean class="java.nio.file.Paths" factory-method="get">
-						<constructor-arg value="file:///tmp/addlinks-downloaded-files/iuphar-ligands.csv"/>
+						<constructor-arg value="file:///tmp/addlinks-downloaded-files/gtp-ligands.csv"/>
 					</bean>
 				</property>
 			</bean>
