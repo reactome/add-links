@@ -322,7 +322,7 @@
 
 		<entry key="PharosTargets">
 			<bean class="org.reactome.addlinks.dataretrieval.pharos.PharosTargetsDataRetriever" id="PharosTargets">
-				<property name="dataURL" value="https://ncatsidg-dev.appspot.com/graphql" />
+				<property name="dataURL" value="https://pharos-api.ncats.io/graphql" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharos-targets.txt" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PharosTargets"/>
@@ -331,7 +331,7 @@
 
 		<entry key="PharosLigands">
 			<bean class="org.reactome.addlinks.dataretrieval.pharos.PharosLigandDataRetriever" id="PharosLigands">
-				<property name="dataURL" value="https://ncatsidg-dev.appspot.com/graphql" />
+				<property name="dataURL" value="https://pharos-api.ncats.io/graphql" />
 				<property name="fetchDestination" value="/tmp/addlinks-downloaded-files/pharos-ligands.tsv" />
 				<property name="maxAge" ref="maxFileAge" />
 				<constructor-arg name="retrieverName" value="retrievers/PharosLigands"/>
