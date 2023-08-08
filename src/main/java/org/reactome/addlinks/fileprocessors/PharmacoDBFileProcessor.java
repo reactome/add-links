@@ -30,7 +30,7 @@ public class PharmacoDBFileProcessor extends FileProcessor<String> {
 		this.pharmacodbFilePath = path;
 	}
 	
-	public void setPathToIUPHARFile(Path path)
+	public void setPathToGuideToPharmacologyFile(Path path)
 	{
 		this.guideToPharmacologyFilePath = path;
 	}

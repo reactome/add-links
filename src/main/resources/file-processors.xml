@@ -463,7 +463,7 @@
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/pharmacodb_drugs_with_ids.csv"/>
 					</bean>
 				</property>
-				<property name="pathToIUPHARFile">
+				<property name="pathToGuideToPharmacologyFile">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/gtp-ligands.csv"/>
 					</bean>
