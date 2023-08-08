@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
+import static org.reactome.addlinks.fileprocessors.gtp.Utils.getCSVParser;
+
 public class PharmacoDBFileProcessor extends FileProcessor<String> {
 
 	private Path pharmacodbFilePath;
@@ -61,11 +63,7 @@ public class PharmacoDBFileProcessor extends FileProcessor<String> {
 			// The regex "PDBC\d+" is because the sample file I got from PharmacoDB sometimes has none-identifiers
 			// in the PharmacoDB.uid field (such as "TRUE", "NA", etc...)
 			// Hopefully those issues will be resolved by the time they are publishing this file live.
-			if (pharmacoDBId != null &&
-				!pharmacoDBId.isEmpty() &&
-				!pharmacoDBId.trim().isEmpty() &&
-				pharmacoDBId.matches("PDBC\\d+")) {
-
+			if (isValidPharmacoDBId(pharmacoDBId)) {
 				guideToPharmacology2PharmacoDB.put(guideToPharmacologyId, pharmacoDBId);
 				logger.info("{}    {}", guideToPharmacologyId, pharmacoDBId);
 			}
@@ -96,30 +94,35 @@ public class PharmacoDBFileProcessor extends FileProcessor<String> {
 //	}
 
 	private Map<String, String> processPharmacoDBFile() {
-        Map<String, String> mapping = new HashMap<>();
+		Map<String, String> mapping = new HashMap<>();
 
-        try(CSVParser parser = new CSVParser(
-            new FileReader(this.pharmacodbFilePath.toString()), CSVFormat.DEFAULT.withFirstRecordAsHeader())
-        ) {
-            parser.forEach(record -> mapping.put(record.get("cid"), record.get("PharmacoDB.uid")));
-        } catch (IOException e) {
-            logger.error("IOException was caught: ", e);
-        }
+		try(CSVParser parser = new CSVParser(
+			new FileReader(this.pharmacodbFilePath.toString()), CSVFormat.DEFAULT.withFirstRecordAsHeader())
+		) {
+			parser.forEach(record -> mapping.put(record.get("cid"), record.get("PharmacoDB.uid")));
+		} catch (IOException e) {
+			logger.error("IOException was caught: ", e);
+		}
 
-        return mapping;
-    }
+		return mapping;
+	}
 
-    private Map<String, String> processGuideToPharmacologyFile() {
-        Map<String, String> mapping = new HashMap<>();
+	private Map<String, String> processGuideToPharmacologyFile() {
+		Map<String, String> mapping = new HashMap<>();
 
-        try(CSVParser parser = new CSVParser(
-            new FileReader(this.guideToPharmacologyFilePath.toString()), CSVFormat.DEFAULT.withFirstRecordAsHeader())
-        ) {
-            parser.forEach(record -> mapping.put(record.get("Ligand id"), record.get("PubChem CID")));
-        } catch (IOException e) {
-            logger.error("IOException was caught: ", e);
-        }
+		try(CSVParser parser = getCSVParser(this.guideToPharmacologyFilePath)) {
+			parser.forEach(record -> mapping.put(record.get("Ligand id"), record.get("PubChem CID")));
+		} catch (IOException e) {
+			logger.error("IOException was caught: ", e);
+		}
 
-        return mapping;
-    }
+		return mapping;
+	}
+
+	private boolean isValidPharmacoDBId(String pharmacoDBId) {
+		return pharmacoDBId != null &&
+			!pharmacoDBId.isEmpty() &&
+			!pharmacoDBId.trim().isEmpty() &&
+			pharmacoDBId.matches("PDBC\\d+");
+	}
 }
