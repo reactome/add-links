@@ -26,8 +26,8 @@ public class GuideToPharmacologyLigandsFileProcessor extends FileProcessor<Strin
 			parser.forEach(line -> {
 				// We need the ligand ID
 				String ligandID = line.get("Ligand id");
-				// we will try to map with ChEBI ID
-				String chebiID = line.get("Chebi ID");
+				// we will try to map with ChEBI ID removing the "ChEBI:" prefix
+				String chebiID = line.get("Chebi ID").replace("ChEBI", "");
 				// but for future reference, some entities don't have ChEBI IDs but they may have CHEMBL, PubChem,
 				// or UniProt identifiers so you could also extract those mappings. It will make reference creation
 				// more complicated, and it may be better to have a different file-process/reference-creator pair for
