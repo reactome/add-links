@@ -558,8 +558,7 @@
 				<entry key="PrimaryName" value="Guide to Pharmacology" />
 				<entry key="Aliases">
 					<list value-type="java.lang.String">
-						<value>GtP</value>
-						<value>IUPHAR</value>
+						<value>GtoP</value>
 					</list>
 				</entry>
 				<entry key="URL" value="https://www.guidetopharmacology.org" />
