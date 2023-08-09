@@ -442,8 +442,8 @@
 		</entry>
 
 		<entry key="GtPLigandsProcessor">
-			<bean id="GtPTargetsProcessor" class="org.reactome.addlinks.fileprocessors.gtp.GuideToPharmacologyLigandsFileProcessor">
-				<constructor-arg name="processorName" value="file-processors/GtPTargetsProcessor"/>
+			<bean id="GtPLigandsProcessor" class="org.reactome.addlinks.fileprocessors.gtp.GuideToPharmacologyLigandsFileProcessor">
+				<constructor-arg name="processorName" value="file-processors/GtPLigandsProcessor"/>
 				<property name="path">
 					<bean class="java.nio.file.Paths" factory-method="get">
 						<constructor-arg value="file:///tmp/addlinks-downloaded-files/gtp-ligands.csv"/>
