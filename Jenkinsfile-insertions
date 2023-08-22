@@ -8,8 +8,21 @@ def utils = new Utilities()
 
 pipeline{
 	agent any
-
-	stages{
+	environment {
+		ECRURL = '851227637779.dkr.ecr.us-east-1.amazonaws.com'
+	}
+	    
+	stages {
+		stage('pull image') {
+			steps {
+				script{
+					sh("eval \$(aws ecr get-login --no-include-email --region us-east-1)")
+					docker.withRegistry("https://" + ECRURL) {
+						docker.image("add-links:latest").pull()
+					}
+				}
+			}
+		}
 		// This stage checks that upstream projects AddLinks-Download and Orthoinference were run successfully for their last build.
 		stage('Check AddLinks-Download and Orthoinference builds succeeded'){
 			steps{
@@ -44,14 +57,7 @@ pipeline{
 				}
 			}
 		}
-		// This stage builds the jar file using maven.
-		stage('Setup: Build jar file'){
-			steps{
-				script{
-				    sh "mvn clean package -DskipTests"
-				}
-			 }
-   		}
+		
 		// This stage runs the insertion component of AddLinks. It will build links to various external resources and connect them to the relevant instances.
 		// It also connects these linkouts to ReferenceDatabase objects that pertain to their original resource.
 		stage('Main: AddLinks Insertions'){
@@ -65,7 +71,7 @@ pipeline{
 						sh "ln -sf src/main/resources resources"
 						sh "rm -f src/main/resources/db.properties"
 						sh "sudo service neo4j stop"
-						sh """java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
+						sh """docker run -v \$(pwd)/output:/graphdb --net=host  ${ECRURL}/add-links:latest java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
 						sh "rm -f src/main/resources/auth.properties"
 						sh "sudo service neo4j start"
 					}
