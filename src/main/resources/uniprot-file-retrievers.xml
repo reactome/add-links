@@ -34,7 +34,7 @@
 	and then override any values that they need to override.
 	-->
 	<bean class="org.reactome.addlinks.dataretrieval.UniprotFileRetriever" id="baseUniProtRetriever" abstract="true">
-		<property name="dataURL" value="https://legacy.uniprot.org/uploadlists/" />
+		<property name="dataURL" value="https://uniprot.org/uploadlists/" />
 		<property name="mapFromDbEnum" ref="UniprotDB_Uniprot"/>
 		<property name="maxAge" ref="maxFileAge" />
 		<constructor-arg name="retrieverName" value="retrievers/Uniprot"/>
