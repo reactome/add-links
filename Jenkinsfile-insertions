@@ -69,9 +69,10 @@ pipeline{
 
 						sh "cp $ConfigFile src/main/resources/auth.properties"
 						sh "ln -sf src/main/resources resources"
+                                                sh "ln -sf /tmp/addlinks-downloaded-files addlinks-downloaded-files"
 						sh "rm -f src/main/resources/db.properties"
 						sh "sudo service neo4j stop"
-						sh """docker run -v \$(pwd)/output:/graphdb --net=host  ${ECRURL}/add-links:latest java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
+						sh """docker run -v \$(pwd)/addlinks-downloaded-files:/tmp/addlinks-downloaded-files --net=host  ${ECRURL}/add-links:latest java -cp "\$(pwd)/resources" -Dconfig.location=\$(pwd)/resources/addlinks.properties -Dlog4j.configurationFile=\$(pwd)/resources/log4j2.xml -Xmx${env.JAVA_MEM_MAX}m -jar target/AddLinks-*-SHADED.jar file://\$(pwd)/resources/create-references-context.xml"""
 						sh "rm -f src/main/resources/auth.properties"
 						sh "sudo service neo4j start"
 					}
