@@ -76,7 +76,12 @@ public class PharmacoDBFileProcessor extends FileProcessor<String> {
 		try(CSVParser parser = new CSVParser(
 			new FileReader(this.pharmacodbFilePath.toString()), CSVFormat.DEFAULT.withFirstRecordAsHeader())
 		) {
-			parser.forEach(record -> mapping.put(record.get("cid"), record.get("PharmacoDB.uid")));
+			parser.forEach(record -> {
+				String status = record.get("PharmacoDB.status");
+				if (status.equalsIgnoreCase("present")) {
+					mapping.put(record.get("cid"), record.get("PharmacoDB.uid"));
+				}
+			});
 		} catch (IOException e) {
 			logger.error("IOException was caught: ", e);
 		}
