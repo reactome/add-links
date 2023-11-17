@@ -65,7 +65,7 @@ public class EnsemblFileRetrieverExecutor extends AbstractFileRetrieverExecutor 
 		// 4) Use list of ensemblFileRetrievers to do xref lookups.
 		// Consider refactoring all of this into a separate class.
 
-		String dbName = "ENSEMBL_%_PROTEIN";
+		String dbName = "ENSEMB%";
 		logger.debug("Trying to find database with name {}", dbName);
 		String url = "%www.ensembl.org%";
 		Set<GKInstance> databases = getRefDatabaseObjects(dbName, url, " LIKE ");
