@@ -1,0 +1,10 @@
+.git
+.github
+
+.dockerignore
+.gitignore
+CHANGELOG.md
+Dockerfile
+Jenkinsfile-downloads
+Jenkinsfile-insertions
+README.md
