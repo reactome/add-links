@@ -155,13 +155,11 @@
 			<version>2.1</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>javax.json</groupId>
 			<artifactId>javax.json-api</artifactId>
 			<version>1.1</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.json</artifactId>
@@ -172,32 +170,37 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.6</version>
 		</dependency>
+        <dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20140107</version>
+		</dependency>
 		<dependency>
-			<!--
-			***NOTE:***
-			For this dependency, you MUST *manually* install jnlp-1.2 from here:
-			https://github.com/reactome/CuratorTool/raw/master/lib/jnlp-1.2.jar
-			If you don't do this, you won't be able to build.
-			-->
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
-			<version>1.2.2</version>
-			<!-- I tried to exclude jnlp but it doesn't work because jnlp is
-			a dependency of reactome-base, not release-common-lib. -->
-<!-- 			<exclusions>
-				<exclusion>
-					<artifactId>jnlp-api</artifactId>
-					<groupId>javax.jnlp</groupId>
-				</exclusion>
-			</exclusions> -->
+			<version>2.0.0-SNAPSHOT</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.reactome</groupId>
 			<artifactId>uniprot-query</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+
+	<repositories>
+		<!-- Sonatype repository from which to obtain SNAPSHOT dependencies created
+				by Reactome (or others sources) -->
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
@@ -301,32 +304,32 @@
 				</executions>
 			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.1.1</version>
-                <dependencies>
-                    <!-- This dependency allows Checkstyle to understand Java 11 syntax -->
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>8.44</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>checkstyle-check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                    <!-- Optional: Set encoding -->
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.1.1</version>
+				<dependencies>
+					<!-- This dependency allows Checkstyle to understand Java 11 syntax -->
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>8.44</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>checkstyle-check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<!-- Optional: Set encoding -->
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
 		</plugins>
 
 		<resources>
@@ -341,19 +344,4 @@
 			</resource>
 		</resources>
 	</build>
-
-	<repositories>
-        <!-- Sonatype repository from which to obtain SNAPSHOT dependencies created
-                by Reactome (or others sources) -->
-        <repository>
-            <id>oss.sonatype.org-snapshot</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>
