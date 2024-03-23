@@ -170,7 +170,7 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.6</version>
 		</dependency>
-        <dependency>
+		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20140107</version>
@@ -260,7 +260,7 @@
 			</plugin>
 
 			<plugin>
- 				<!-- Shade plugin is used to merge spring files, and define main class since it seems to get overwritten from the assembly plugin. -->
+				<!-- Shade plugin is used to merge spring files, and define main class since it seems to get overwritten from the assembly plugin. -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.1.0</version>
