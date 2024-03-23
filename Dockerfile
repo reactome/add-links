@@ -2,7 +2,7 @@ ARG REPO_DIR=/opt/add-links
 
 
 # ===== stage 1 =====
-FROM maven:3.9.6-eclipse-temurin-11-focal AS setup-env
+FROM maven:3.6.3-openjdk-11 AS setup-env
 
 ARG REPO_DIR
 
