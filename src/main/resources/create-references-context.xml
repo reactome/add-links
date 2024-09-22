@@ -44,101 +44,11 @@
 	</util:list>
 
 	<util:list id="fileProcessorFilter" value-type="java.lang.String">
-		<value>PharmacoDBFileProcessor</value>
-		<value>XenbaseFileProcessor</value>
-		<value>ZFINFileProcessor</value>
-		<value>GlyGenFileProcessor</value>
-		<value>GtPLigandsProcessor</value>
-		<value>GtPTargetsProcessor</value>
-		<value>PharosTargetsFileProcessor</value>
-		<value>PharosLigandsFileProcessor</value>
-		<value>UniprotToKEGGFileProcessor</value>
-		<value>IntEnzFileProcessor</value>
-		<value>ENSEMBLFileProcessor</value>
-		<value>ENSEMBLNonCoreFileProcessor</value>
-		<value>UniprotToEnsemblFileProcessor</value>
-		<value>OpenTargetsFileProcessor</value>
-		<value>FlyBaseFileProcessor</value>
-		<value>CTDProcessor</value>
-		<value>UniprotToEntrezGeneFileProcessor</value>
-		<value>UniprotToRefSeqPeptideFileProcessor</value>
-		<value>UniprotToUCSCFileProcessor</value>
-		<value>UniprotToRefSeqRNAFileProcessor</value>
-		<value>UniprotToPDBFileProcessor</value>
-		<value>UniprotToWormbaseFileProcessor</value>
-		<value>PROFileProcessor</value>
-		<value>ZincMoleculesFileProcessor</value>
-		<value>COSMICProcessor</value>
-		<value>HGNCProcessor</value>
-		<value>zincOrthologFileProcessor</value>
-		<value>KEGGFileProcessor</value>
-		<value>zincProtFileProcessor</value>
-		<value>RheaFileProcessor</value>
-		<value>HmdbProteinsFileProcessor</value>
-		<value>HmdbMetabolitesFileProcessor</value>
-		<value>OrphanetFileProcessor</value>
-		<value>OMIMProcessor</value>
-		<value>ComplexPortalFileProcessor</value>
-		<value>ComplexPortalSARSFileProcessor</value>
-		<value>ComplexPortalSARSCOV2FileProcessor</value>
-		<value>HPAFileProcessor</value>
-		<value>VGNCFileProcessor</value>
-		<value>MGIFileProcessor</value>
-		<value>RGDFileProcessor</value>
-		<value>EnsemblBioMartFileProcessor</value>
+		
 	</util:list>
 
 	<util:list id="referenceCreatorFilter" value-type="java.lang.String">
-		<value>PharmacoDBReferenceCreator</value>
-		<value>XenbaseReferenceCreator</value>
-		<value>ZFINReferenceCreator</value>
-		<value>GlyGenReferenceCreator</value>
-		<value>PharosTargetsReferenceCreator</value>
-		<value>PharosLigandsReferenceCreator</value>
-		<value>GtPLigandsReferenceCreator</value>
-		<value>GtPTargetsReferenceCreator</value>
-		<value>upMappedKEGGRefCreator</value>
-		<value>KEGGReferenceCreator</value>
-		<value>IntEnzRefCreator</value>
-		<value>ENSEMBLToEntrezGeneRefCreator</value>
-		<value>ENSEMBLEnspToEnsgRefCreator</value>
-		<value>ENSEMBLToWormbaseRefCreator</value>
-		<value>OpenTargetsReferenceCreator</value>
-		<value>FlyBaseReferenceCreator</value>
-		<value>upMappedEntrezGeneRefCreator</value>
-		<value>upMappedENSEMBLGeneRefCreator</value>
-		<value>upMappedRefSeqRNARefCreator</value>
-		<value>upMappedUCSCRefCreator</value>
-		<value>upMappedRefSeqPeptideRefCreator</value>
-		<value>upMappedPDBRefCreator</value>
-		<value>upMappedOMIMRefCreator</value>
-		<value>upMappedWormbaseRefCreator</value>
-		<value>proRefCreator</value>
-		<value>COSMICReferenceCreator</value>
-		<value>geneCardsRefCreator</value>
-		<value>zincSubstancesReferenceCreator</value>
-		<value>zincFDAReferenceCreator</value>
-		<value>zincWorldDrugsReferenceCreator</value>
-		<value>zincMetabolitesReferenceCreator</value>
-		<value>zincBiogenicReferenceCreator</value>
-		<value>zincInvestigationalReferenceCreator</value>
-		<value>zincPurchasablePredictionsReferenceCreator</value>
-		<value>zincToUniProtReferenceCreator</value>
-		<value>zincToChEBIReferenceCreator</value>
-		<value>HGNCReferenceCreator</value>
-		<value>RheaReferenceCreator</value>
-		<value>OrphanetReferenceCreator</value>
-		<value>HMDBProtReferenceCreator</value>
-		<value>HmdbMoleculeReferenceCreator</value>
-		<value>ComplexPortalRefCreator</value>
-		<value>ComplexPortalSARSCOV2RefCreator</value>
-		<value>ComplexPortalSARSRefCreator</value>
-		<value>HPAReferenceCreator</value>
-		<value>VGNCReferenceCreator</value>
-		<value>MGIReferenceCreator</value>
-		<value>RGDReferenceCreator</value>
-		<value>EnsemblReferenceCreator</value>
-		<value>EnsemblBioMartOtherIdentifierPopulator</value>
+		
 	</util:list>
 
 	<util:list id="referenceDatabasesToLinkCheck" value-type="java.lang.String">
@@ -146,54 +56,11 @@
 		return a 200 response code even if the identifier
 		is not found, so you need to look for "WARN" messages
 		in the LinkCheckManager log. -->
-		<value>Guide to Pharmacology - Targets</value>
-		<value>Guide to Pharmacology - Ligands</value>
 		<!-- NOTE: Sometimes Pharos will return a 502 (Bad Gateway) error code,
 		but when you load the URL manually in your browser, it works. I suspect
 		this is a transient issue which will make link-checking of Pharos
 		a bit error-prone. If you see a few Pharos link-check errors,
 		verify them manually. They will *probably* be OK. -->
-		<value>Pharos - Targets</value>
-		<value>Pharos - Ligands</value>
-		<value>PharmacoDB</value>
-		<value>IntEnz</value>
-		<value>ENSEMBL</value>
-		<value>PDB</value>
-		<value>CTD Gene</value>
-		<value>dbSNP Gene</value>
-		<value>NCBI Gene</value>
-		<value>Monarch</value>
-		<value>UniProt</value>
-		<value>Flybase</value>
-		<value>BioModels</value>
-		<value>Flybase</value>
-		<value>Gene Ontology</value>
-		<value>HapMap</value>
-		<value>IntEnz</value>
-		<value>KEGG</value>
-		<value>Orphanet</value>
-		<value>RefSeq</value>
-		<value>Rhea</value>
-		<value>UCSC human</value>
-		<value>Wormbase</value>
-		<value>ZINC target</value>
-		<value>ZINC</value>
-		<value>ZINC - Substances</value>
-		<value>ZINC - FDA approved</value>
-		<value>ZINC - World Drugs</value>
-		<value>ZINC - Metabolites</value>
-		<value>ZINC - Biogenic</value>
-		<value>ZINC - Investigational</value>
-		<value>ZINC - Predictions - Purchasable</value>
-		<value>HMDB Protein</value>
-		<value>HMDB Metabolite</value>
-		<value>COSMIC</value>
-		<value>HPA</value>
-		<value>MGI</value>
-		<value>RGD</value>
-		<value>Xenbase</value>
-		<value>ZFIN</value>
-		<value>Ensembl</value>
 		<!--
 		GlyGen uses Javscript to load the page contents so a simple GET is not enough
 		to verify the link.
